@@ -75,6 +75,17 @@ happened yet, so treat it as a technical preview (see `docs/KNOWN_ISSUES.md`).
   progress, `externalFileKeys` editing, level state; My Words — filter chips bound to real state and
   a `combine`d filter in `WordsViewModel`, auto-translate guard; `HomeScreen` referenced an undefined
   `viewmodel`.
+- Fixed (first CI compile of the Android modules): missing `Star`/`Share` icon and `background`
+  imports, `WindowInsetsCompat.Type.systemBars()`, a duplicate `ExperimentalMaterial3Api` import that
+  hid `ModalBottomSheet`, `TabEntry` as a `RowScope` extension so `NavigationBarItem` resolves; the
+  Compose BOM is declared on the test configurations too (AGP's `androidTestImplementation` does not
+  inherit the platform, so `ui-test-junit4` resolved with no version).
+- Fixed (lint): the backup rules named a `sharedpref` domain the app never uses and excluded paths that
+  were not included; they now cover `files/datastore` (minus the secrets file) and the Room database.
+  `windowLayoutInDisplayCutoutMode` lives in `values-v27`; the HLS mime type in the stream intent
+  filter is lower-case.
+- Fixed: Windows-1256 subtitle files decode the Arabic yeh/kaf to the Persian yeh/keheh, so a legacy
+  Persian file produces the same words as a UTF-8 one (the code page cannot store U+06CC/U+06A9).
 
 ### Phase 0 — Foundations
 

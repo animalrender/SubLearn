@@ -32,9 +32,11 @@ review turned up, and make GitHub Actions build release APKs for `arm64-v8a`, `a
 
 **Remaining / in progress**
 
-1. **CI green on `arena/956a666c-sublearn`**, then `gh workflow run release.yml --ref
-   arena/956a666c-sublearn -f tag=v0.1.0` creates the tag and the release; the PR to `main` follows.
-   Status of both is recorded below as soon as it is known.
+1. **CI is green on `arena/956a666c-sublearn`** (run 37854997366, 2026-10-09: the first green run of
+   this repository — four red→green rounds fixed missing imports, a `RowScope` receiver, the test
+   classpath BOM and three lint errors, all read through the failure-report check run). Next:
+   `gh workflow run release.yml --ref arena/956a666c-sublearn -f tag=v0.1.0` creates the tag and the
+   release, then the PR to `main`; the outcome is recorded here.
 2. Device pass (REQ-7): nothing in this entry has run on a phone. Install the `arm64-v8a` APK from
    the release, walk the smoke path below, and file what breaks under KNOWN_ISSUES.
 3. KNOWN_ISSUES 15–17: English literals in view models, floating quick-action drag, one file per layer.

@@ -11,8 +11,9 @@ TODO comment; each entry has a route to being fixed.
    a kotlinc 2.0.21 harness during the 2026-10-09 review (122 tests, 1 skipped); everything that touches
    `android.*`, Media3, Room or Compose was reviewed by hand and compiled by CI. The CI job publishes
    the first Gradle errors as the "Gradle failure report" check run (`tools/ci_failure_report.py`) so
-   an agent that cannot download logs can read them through the API. Review the first green commit
-   range carefully: that is where mechanical mistakes live.
+   an agent that cannot download logs can read them through the API. The first green CI run is
+   37854997366 on `arena/956a666c-sublearn` (2026-10-09); review that commit range carefully, that
+   is where mechanical mistakes live.
 2. **The four static checkers are not a type checker.** `tools/check_sources.py` (brace balance, 140
    columns, no `FIXME`), `tools/check_symbols.py` (every `com.sublearn.*` import resolves to a declared
    name, generated `R`/`BuildConfig` skipped, and a type declared in another package that is used without an
