@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- API 31+ rules; same policy as backup_rules.xml for cloud backup and device-to-device transfer:
+     DataStore settings and the Room database go, the Keystore-wrapped secrets do not (D-14). -->
 <data-extraction-rules>
     <cloud-backup>
-        <include domain="sharedpref" path="." />
-        <exclude domain="sharedpref" path="sublearn_secrets.preferences_pb" />
-        <exclude domain="database" path="sublearn.db" />
+        <include domain="file" path="datastore" />
+        <exclude domain="file" path="datastore/sublearn_secrets.preferences_pb" />
+        <include domain="database" path="." />
     </cloud-backup>
     <device-transfer>
-        <include domain="sharedpref" path="." />
-        <include domain="database" path="sublearn.db" />
-        <exclude domain="sharedpref" path="sublearn_secrets.preferences_pb" />
+        <include domain="file" path="datastore" />
+        <exclude domain="file" path="datastore/sublearn_secrets.preferences_pb" />
+        <include domain="database" path="." />
     </device-transfer>
 </data-extraction-rules>

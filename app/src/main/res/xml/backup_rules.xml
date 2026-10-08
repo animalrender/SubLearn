@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- API 26-30 backup rules. Settings (DataStore) and the Room database (My Words, recents and the
+     bounded translation cache) travel with the user; the Keystore-wrapped secrets stay on the device
+     (docs/DECISIONS.md D-14) — the key that decrypts them cannot leave it anyway. -->
 <full-backup-content>
-    <!-- Settings and My Words are backed up; secrets and caches are not. -->
-    <include domain="sharedpref" path="." />
-    <exclude domain="sharedpref" path="sublearn_secrets.preferences_pb" />
-    <exclude domain="database" path="sublearn.db" />
-    <exclude domain="file" path="translation_cache" />
+    <include domain="file" path="datastore" />
+    <exclude domain="file" path="datastore/sublearn_secrets.preferences_pb" />
+    <include domain="database" path="." />
 </full-backup-content>
