@@ -93,7 +93,7 @@ jobs:
           # task, with the JVM stack frames filtered out. Gradle prints the useful text only inside
           # "* What went wrong", so summary lines alone are not enough to fix a build remotely.
           {
-            grep -E "^e: |^w: .*(deprecat|unused)" "$log" | head -60
+            grep -E -A 3 "^e: " "$log" | head -180
             grep -E "^> Task .* FAILED" "$log" | head -40
             grep -A 16 -E "^\* What went wrong" "$log" | grep -vE "^\s+at |^\s*\* Try|^[0-9]+ \*|^(--)$" | head -120
           } | head -140 | sed 's/%/%25/g; s/"/%22/g' | while IFS= read -r line; do

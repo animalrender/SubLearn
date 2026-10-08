@@ -182,7 +182,7 @@ class RoomMyWordsRepository(private val dao: MyWordDao) : MyWordsRepository {
     override suspend fun findByWords(words: List<String>): Map<String, MarkedWord> {
         if (words.isEmpty()) return emptyMap()
         val keys = words.map { WordKey.lower(it) }.distinct()
-        return dao.findByWords(keys).associateBy { it.wordLower }
+        return dao.findByWords(keys).associateBy({ it.wordLower }, { it.toDomain() })
     }
 
     override suspend fun mark(word: MarkedWord): Long {

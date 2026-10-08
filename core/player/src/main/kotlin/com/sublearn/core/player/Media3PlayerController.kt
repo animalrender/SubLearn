@@ -5,11 +5,12 @@ import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.Cue
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.datasource.DefaultDataSource
-import androidx.media3.datasource.http.DefaultHttpDataSource
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
@@ -91,12 +92,13 @@ class Media3PlayerController(
                 _state.value = _state.value.copy(
                     videoWidth = size.width,
                     videoHeight = size.height,
-                    videoRotationDegrees = size.rotationDegrees,
+                    videoRotationDegrees = player.videoRotationDegrees,
                 )
             }
             if (events.contains(Player.EVENT_CUES)) {
-                _embeddedCues.value = player.currentCues.mapNotNull { cue ->
-                    cue.text?.toString()?.takeIf { it.isNotBlank() }?.let { EmbeddedCue(it) }
+                val cues: List<Cue?> = player.currentCues
+                _embeddedCues.value = cues.mapNotNull { cue: Cue? ->
+                    cue?.text?.toString()?.takeIf { it.isNotBlank() }?.let { EmbeddedCue(it) }
                 }
             }
             if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITIONED)) flushPositionNow()
