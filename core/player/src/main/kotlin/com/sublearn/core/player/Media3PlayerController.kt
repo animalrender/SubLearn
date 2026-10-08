@@ -100,7 +100,7 @@ class Media3PlayerController(
                     .mapNotNull { cue -> cue?.text?.toString()?.takeIf { it.isNotBlank() } }
                     .map { EmbeddedCue(it) }
             }
-            if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITIONED)) flushPositionNow()
+            if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)) flushPositionNow()
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -132,16 +132,19 @@ class Media3PlayerController(
             old.release()
         }
         val renderers = DefaultRenderersFactory(context)
-            .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_MODE_DISABLED)
+            .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF)
             .setEnableDecoderFallback(decoder != DecoderMode.HARDWARE)
         if (decoder == DecoderMode.SOFTWARE) {
-            renderers.setMediaCodecSelector { format, requiresSecure, softwareDecoderNeeded ->
-                MediaCodecSelector.DEFAULT.getDecoderInfos(format, requiresSecure, true)
-                    .filter { it.isSoftwareOnly || softwareDecoderNeeded }
+            // The platform names its software codecs after a well-known prefix; Media3's info object has
+            // no "is software" flag in this media3 version, so the name is the honest test.
+            renderers.setMediaCodecSelector { format, requiresSecure, _ ->
+                val candidates = MediaCodecSelector.DEFAULT.getDecoderInfos(format, requiresSecure, true)
+                candidates.filter { it.name.startsWith("OMX.google.") || it.name.startsWith("c2.android.") }
+                    .ifEmpty { candidates }
             }
         }
         val http = DefaultHttpDataSource.Factory()
-            .setUserAgentString(USER_AGENT)
+            .setUserAgent(USER_AGENT)
             .setAllowCrossProtocolRedirects(true)
         val dataSourceFactory = DefaultDataSource.Factory(context, http)
         val built = ExoPlayer.Builder(context)
