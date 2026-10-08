@@ -53,7 +53,6 @@ dependencies {
     api(project(":core:common"))
     api(project(":core:settings"))
     api(libs.androidx.core.ktx)
-    api(libs.androidx.appcompat)
     api(libs.androidx.lifecycle.runtime)
     api(libs.androidx.activity.compose)
     api(platform(libs.compose.bom))
