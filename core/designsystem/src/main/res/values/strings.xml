@@ -234,7 +234,6 @@
     <string name="settings_ai_key_clear">Delete key</string>
     <string name="settings_ai_prompt">Prompt</string>
     <string name="settings_ai_prompt_hint">Placeholders: %1$s</string>
-    <string name="settings_ai_context_blocks">Context blocks sent</string>
     <string name="settings_ai_temperature">Creativity</string>
     <string name="settings_ai_max_tokens">Maximum answer length</string>
     <string name="settings_ai_test">Test the connection</string>
@@ -417,8 +416,6 @@
     <string name="settings_ai_enabled">The AI button is shown</string>
     <string name="settings_ai_pause">Pause while it answers</string>
     <string name="settings_ai_context">Lines of context sent</string>
-    <string name="settings_ai_temperature">How free the answer may be</string>
-    <string name="settings_ai_max_tokens">Longest answer</string>
     <string name="settings_ai_key_hint">The key is kept encrypted on this device only.</string>
     <string name="settings_ai_prompt_reset">Back to the default question</string>
     <string name="settings_ai_prompt_unknown">These names are not known to the app: %1$s</string>

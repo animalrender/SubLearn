@@ -220,7 +220,6 @@
     <string name="settings_ai_key_clear">پاک کردن کلید</string>
     <string name="settings_ai_prompt">متن پرسش</string>
     <string name="settings_ai_prompt_hint">متغیرها: %1$s</string>
-    <string name="settings_ai_context_blocks">تعداد بلوک‌های زمینه</string>
     <string name="settings_ai_temperature">خلاقیت</string>
     <string name="settings_ai_max_tokens">حداکثر طول پاسخ</string>
     <string name="settings_ai_test">آزمایش اتصال</string>
@@ -401,8 +400,6 @@
     <string name="settings_ai_enabled">دکمه‌ی دستیار نمایش داده می‌شود</string>
     <string name="settings_ai_pause">هنگاس پاسخ، پخش متوقف شود</string>
     <string name="settings_ai_context">تعداد خطوط زمینه فرستاده‌شود</string>
-    <string name="settings_ai_temperature">میزان آزادی پاسخ</string>
-    <string name="settings_ai_max_tokens">بیشترین طول پاسخ</string>
     <string name="settings_ai_key_hint">کلید فقط رمزنگاری‌شده روی همین دستگاه می‌ماند.</string>
     <string name="settings_ai_prompt_reset">بازگشت به پرسش پیش‌فرض</string>
     <string name="settings_ai_prompt_unknown">این نام‌ها برای برنامه شناخته شده نیستند: %1$s</string>

@@ -39,7 +39,10 @@ pushing, run the static checks that catch the cheap mistakes:
 python3 tools/check_sources.py core app feature tools   # brace balance, 140 columns, no FIXME
 python3 tools/check_symbols.py                          # every com.sublearn import resolves
 python3 tools/check_deps.py                             # no module imports an AndroidX package it
-                                                        # does not declare
+                                                        # does not declare, and no cross-module import
+                                                        # without a project() dependency
+python3 tools/check_resources.py core app feature       # aapt2 text rules: escapes, placeholders,
+                                                        # duplicates, translations without a default
 ```
 
 These are name and shape checks, **not** type checking. They will not catch a wrong argument type, a

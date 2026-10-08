@@ -8,10 +8,11 @@ TODO comment; each entry has a route to being fixed.
 1. **This branch has not been compiled locally, and cannot be**: the agent sandbox has no JVM. CI runs
    the first real compile; `docs/PROGRESS.md` records the run status, and red→green iteration happens on
    this PR. Review the first green commit range carefully: that is where mechanical mistakes live.
-2. **The three static checkers are not a type checker.** `tools/check_sources.py` (brace balance, 140
+2. **The four static checkers are not a type checker.** `tools/check_sources.py` (brace balance, 140
    columns, no `FIXME`), `tools/check_symbols.py` (every `com.sublearn.*` import resolves to a declared
-   name, generated `R`/`BuildConfig` skipped) and `tools/check_deps.py` (declared dependencies vs
-   imports, catalog alias existence) catch a lot, but not argument types or `when` exhaustiveness.
+   name, generated `R`/`BuildConfig` skipped), `tools/check_deps.py` (declared dependencies vs imports,
+   catalog alias existence, cross-module visibility) and `tools/check_resources.py` (the aapt2 text rules
+   that make `packageDebugResources` fail) catch a lot, but not argument types or `when` exhaustiveness.
 3. **No view-model-level tests yet.** `FakePlayerController` exists precisely to make them cheap; that
    gap is `REQ-5` in [AGENT_REQUESTS.md](AGENT_REQUESTS.md). 18 test classes cover the pure and
    Android-adjacent logic today.

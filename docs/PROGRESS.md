@@ -57,7 +57,8 @@ tools and the app shell — with CI, license audit and docs, and `main` never br
 python3 tools/check_sources.py core app feature tools
 python3 tools/check_symbols.py
 python3 tools/check_deps.py
-gh run list --branch arena/49da4955-sublearn
+python3 tools/check_resources.py core app feature
+gh run list --branch arena/49da4955-sublearn   # tools/ci_report.py turns a red run's log into annotations
 
 # on a machine with JDK 17 + SDK 35
 ./gradlew assembleDebug test lintDebug
