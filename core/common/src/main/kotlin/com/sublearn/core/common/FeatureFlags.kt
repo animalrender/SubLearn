@@ -24,7 +24,7 @@ enum class FeatureFlag(val id: String, val specIds: String) {
     companion object {
         /**
          * Compile-time map kept deliberately small and explicit. `false` means the UI shows a
-         * disabled "Coming soon" entry and the stub throws [NotImplementedError].
+         * disabled "Coming soon" entry and the stub throws [NotImplementedInThisBuild].
          */
         val enabled: Map<FeatureFlag, Boolean> = entries.associateWith { false }
 
@@ -33,6 +33,11 @@ enum class FeatureFlag(val id: String, val specIds: String) {
     }
 }
 
-/** Thrown by LATER stubs. Never thrown by a NOW code path. */
+/**
+ * Thrown by LATER stubs. Never thrown by a NOW code path.
+ *
+ * Extends [UnsupportedOperationException] rather than `NotImplementedError`, because the stdlib type is
+ * final and because callers already handle unsupported operations as a normal failure mode.
+ */
 class NotImplementedInThisBuild(feature: FeatureFlag) :
-    NotImplementedError("${feature.id} is a LATER feature. See docs/EXTENSION_POINTS.md")
+    UnsupportedOperationException("${feature.id} is a LATER feature. See docs/EXTENSION_POINTS.md")

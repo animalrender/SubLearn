@@ -49,11 +49,6 @@ sealed interface AppResult<out T> {
         is Failure -> onFailure(error)
     }
 
-    fun getOrElse(fallback: @UnsafeVariance (SubLearnError) -> T): T = when (this) {
-        is Success -> value
-        is Failure -> fallback(error)
-    }
-
     companion object {
         fun <T> success(value: T): AppResult<T> = Success(value)
         fun failure(error: SubLearnError): AppResult<Nothing> = Failure(error)

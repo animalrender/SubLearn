@@ -28,7 +28,7 @@ interface SubLearnLogger {
 class RecordingLogger : SubLearnLogger {
     data class Entry(val level: SubLearnLogger.Level, val tag: String, val message: String)
 
-    val entries = mutableListOf<SubLearnLogger.Entry>()
+    val entries = mutableListOf<Entry>()
 
     override fun log(level: SubLearnLogger.Level, tag: String, message: String, throwable: Throwable?) {
         entries.add(Entry(level, tag, SubLearnLogger.redact(message)))
