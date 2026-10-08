@@ -38,9 +38,11 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.Icon

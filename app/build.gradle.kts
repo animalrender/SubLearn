@@ -147,7 +147,11 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
     testImplementation(libs.robolectric)
+    // The BOM pins the test artifacts too: AGP's test configurations do not inherit the platform
+    // from `implementation`, so without these two lines ui-test-junit4 resolves with no version.
+    testImplementation(platform(libs.compose.bom))
     testImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.compose.ui.test.junit4)

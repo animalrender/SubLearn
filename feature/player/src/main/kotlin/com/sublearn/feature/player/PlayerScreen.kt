@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.ui.PlayerView
@@ -85,7 +86,8 @@ fun PlayerScreen(
         val hide = ui.locked || ui.layoutMode
         activity?.window?.let { window ->
             WindowInsetsControllerCompat(window, window.decorView).apply {
-                if (hide) hide(systemBars()) else show(systemBars())
+                val bars = WindowInsetsCompat.Type.systemBars()
+                if (hide) hide(bars) else show(bars)
                 systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
         }

@@ -14,6 +14,10 @@ import java.nio.charset.StandardCharsets
  * Order: byte-order mark, UTF-16 heuristic (NUL bytes are valid UTF-8, so this must come first),
  * UTF-8 (strict), then the legacy Windows code page that Persian SRT files were exported with most
  * often, then Latin-1 as the never-failing fallback.
+ *
+ * Windows-1256 has no code point for the Persian yeh (U+06CC) and keheh (U+06A9); files written with
+ * it use the Arabic yeh and kaf instead. Those two letters are mapped to their Persian forms after
+ * decoding so word lookups and My Words match the same text a UTF-8 file would give.
  */
 object CharsetSniffer {
     private val windows1256: Charset by lazy { lookup("windows-1256") ?: lookup("CP1256") ?: StandardCharsets.ISO_8859_1 }
@@ -52,7 +56,7 @@ object CharsetSniffer {
         // produces a plausible Arabic-script text, otherwise fall back to windows-1250 for
         // Central-European subtitles, then Latin-1 so decoding never fails.
         decodeStrict(bytes, windows1256)?.let { decoded ->
-            if (decoded.any { TextDirection.isRtlChar(it) }) return Decoded(decoded, windows1256, false)
+            if (decoded.any { TextDirection.isRtlChar(it) }) return Decoded(persianLetters(decoded), windows1256, false)
         }
         decodeStrict(bytes, windows1250)?.let { decoded ->
             if (decoded.any { it.code in 0x0100..0x017F }) return Decoded(decoded, windows1250, false)
@@ -60,6 +64,14 @@ object CharsetSniffer {
         val fallback = String(bytes, StandardCharsets.ISO_8859_1)
         return Decoded(fallback, StandardCharsets.ISO_8859_1, false)
     }
+
+    /** Arabic yeh/kaf (the only forms Windows-1256 can store) become the Persian yeh/keheh. */
+    fun persianLetters(text: String): String = text.replace(ARABIC_YEH, PERSIAN_YEH).replace(ARABIC_KAF, PERSIAN_KEHEH)
+
+    private const val ARABIC_YEH = '\u064A'
+    private const val PERSIAN_YEH = '\u06CC'
+    private const val ARABIC_KAF = '\u0643'
+    private const val PERSIAN_KEHEH = '\u06A9'
 
     fun decodeUtf16(bytes: ByteArray, littleEndian: Boolean): String {
         val charset = if (littleEndian) StandardCharsets.UTF_16LE else StandardCharsets.UTF_16BE
