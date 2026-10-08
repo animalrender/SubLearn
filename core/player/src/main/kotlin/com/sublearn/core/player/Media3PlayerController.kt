@@ -5,7 +5,6 @@ import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
-import androidx.media3.common.Cue
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -92,14 +91,14 @@ class Media3PlayerController(
                 _state.value = _state.value.copy(
                     videoWidth = size.width,
                     videoHeight = size.height,
-                    videoRotationDegrees = player.videoRotationDegrees,
+                    videoRotationDegrees = videoRotationDegrees(player),
                 )
             }
             if (events.contains(Player.EVENT_CUES)) {
-                val cues: List<Cue?> = player.currentCues
-                _embeddedCues.value = cues.mapNotNull { cue: Cue? ->
-                    cue?.text?.toString()?.takeIf { it.isNotBlank() }?.let { EmbeddedCue(it) }
-                }
+                // currentCues is a CueGroup whose list entries are nullable, so nothing here assumes otherwise.
+                _embeddedCues.value = player.currentCues.cues.orEmpty()
+                    .mapNotNull { cue -> cue?.text?.toString()?.takeIf { it.isNotBlank() } }
+                    .map { EmbeddedCue(it) }
             }
             if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITIONED)) flushPositionNow()
         }
@@ -422,6 +421,23 @@ class Media3PlayerController(
                 else -> PlaylistRepeat.OFF
             },
         )
+    }
+
+    /**
+     * Rotation of the video track that is actually selected. Media3 1.4 keeps the angle on the track
+     * format rather than on `videoSize`, and before the selection settles the first video group still
+     * carries the right value, so it is the fallback: the subtitle overlay has to rotate with the
+     * picture, otherwise a rotated video puts the text over the wrong line (PLY-8).
+     */
+    private fun videoRotationDegrees(player: Player): Int {
+        var fallback = 0
+        for (group in player.currentTracks.groups) {
+            if (group.type != C.TRACK_TYPE_VIDEO) continue
+            val degrees = group.getTrackFormat(0).rotationDegrees
+            if (group.isSelected) return degrees
+            if (fallback == 0) fallback = degrees
+        }
+        return fallback
     }
 
     private fun publishTracks(exo: Player) {

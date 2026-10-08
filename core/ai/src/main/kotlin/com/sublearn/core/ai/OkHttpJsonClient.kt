@@ -8,6 +8,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
@@ -31,14 +32,32 @@ class OkHttpJsonClient(
             .build()
         val response = execute(request)
         return response.use { resp ->
-            val body = resp.body?.let { responseBody ->
-                val source = responseBody.source()
-                source.request(maxResponseBytes.toLong())
-                val available = minOf(maxResponseBytes.toLong(), source.buffer.size)
-                source.snapshot(available).utf8()
-            }.orEmpty()
-            HttpJsonResponse(status = resp.code, body = body, contentType = resp.header("content-type"))
+            HttpJsonResponse(
+                status = resp.code,
+                body = resp.body?.let { readCapped(it, maxResponseBytes) }.orEmpty(),
+                contentType = resp.header("content-type"),
+            )
         }
+    }
+
+    /**
+     * Reads at most [limit] bytes of the body and decodes them as UTF-8. The cap matters because an error
+     * page served by a proxy has no declared length, so a provider response cannot make the app allocate
+     * without bound; reading the byte stream here instead of Okio's snapshot keeps that promise explicit.
+     */
+    private fun readCapped(body: ResponseBody, limit: Int): String {
+        val input = body.byteStream()
+        val chunk = ByteArray(8 * 1024)
+        val out = ByteArrayOutputStream(minOf(limit, 64 * 1024))
+        var total = 0
+        while (total < limit) {
+            val read = input.read(chunk, 0, minOf(chunk.size, limit - total))
+            if (read < 0) break
+            out.write(chunk, 0, read)
+            total += read
+        }
+        out.close()
+        return String(out.toByteArray(), Charsets.UTF_8)
     }
 
     private suspend fun execute(request: Request): Response = suspendCancellableCoroutine { cont ->
