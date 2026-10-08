@@ -89,9 +89,15 @@ jobs:
             echo "::error::no gradle log was produced"
             exit 0
           fi
-          grep -E "^e: |^FAILURE:|^\* What went wrong|^\* Try:|^> Task .* FAILED|^Caused by:|Execution failed for task|error: |Lint found .* errors" "$log" \
-            | head -90 | sed 's/%/%25/g; s/"/%22/g' | while IFS= read -r line; do
-            echo "::error::${line:0:300}"
+          # Compiler errors first (file:line:line: message), then the reason block of every failed
+          # task, with the JVM stack frames filtered out. Gradle prints the useful text only inside
+          # "* What went wrong", so summary lines alone are not enough to fix a build remotely.
+          {
+            grep -E "^e: |^w: .*(deprecat|unused)" "$log" | head -60
+            grep -E "^> Task .* FAILED" "$log" | head -40
+            grep -A 16 -E "^\* What went wrong" "$log" | grep -vE "^\s+at |^\s*\* Try|^[0-9]+ \*|^(--)$" | head -120
+          } | head -140 | sed 's/%/%25/g; s/"/%22/g' | while IFS= read -r line; do
+            echo "::error::${line:0:280}"
           done
           echo "--- last lines ---"
           tail -25 "$log" | sed 's/%/%25/g; s/"/%22/g' | while IFS= read -r line; do
