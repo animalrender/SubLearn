@@ -16,7 +16,7 @@ phase: the listed deliverables exist on the real code path, CI is green, `docs/C
 | 6 | Learning mode | Popup pipeline, WordLevelProvider, manual level + frequency list import, word-colouring styles | LRN-2, SUB-5 | in review |
 | 7 | AI button | Providers, settings, prompt editor, context builder, loading ring and pause/resume contract | AI-1..4 | in review |
 | 8 | Subtitle tools | Batch line-break removal, max-char split, search, no-spoiler mode | SUB-6, SUB-7, PLY-6 | in review |
-| 9 | Hardening | Animation and accessibility polish, performance pass, process-death restore, test gaps, README screenshots, `v0.1.0` tag | GEN-4..6, accessibility | not started |
+| 9 | Hardening | Animation and accessibility polish, performance pass, process-death restore, test gaps, README screenshots, `v0.1.0` tag | GEN-4..6, accessibility | in progress — review fixes and the `v0.1.0` release pipeline landed 2026-10-09 (`release.yml`, ABI splits); device pass, screenshots and test gaps remain |
 | 10+ | LATER, in order | (a) offline dictionary import + lookup, (b) My Words quiz, (c) update checker via GitHub Releases. One at a time, never breaking NOW; stop after (c) | LATER set | not started |
 
 ## Notes on the split actually used
@@ -27,4 +27,6 @@ phase: the listed deliverables exist on the real code path, CI is green, `docs/C
   order (`chore(repo)` → `feat(core)` → `feat(features)` → `feat(app)` → docs). See
   [DECISIONS.md](DECISIONS.md) D-20.
 - Phase 9 is where the remaining verification work belongs: a device pass on RTL, animation and
-  process death, plus the screenshots the README should have.
+  process death, plus the screenshots the README should have. The `v0.1.0` tag is cut from the review
+  branch by `release.yml` (D-21) so the first installable build exists before the device pass, not
+  after it; later tags follow the same route from `main`.

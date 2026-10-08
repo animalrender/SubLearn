@@ -52,6 +52,20 @@ symbols you assumed: enum entry names, data class field names and function ariti
 easy to get wrong from memory. Then push, watch `gh run watch`, and fix until green. Report honestly
 that local compilation was not possible.
 
+Two routes exist beyond the static checks (both documented in `docs/AGENT_REQUESTS.md`, REQ-3):
+
+- The pure-JVM modules (`core:common`, `core:subtitles`, `core:settings`, `core:lexicon`, the logic
+  in `core:data`/`core:translate`/`core:ai`) compile with a plain `kotlinc`; a JRE (`jdk4py` wheel on
+  pypi) and `kotlin-compiler` (npm) are reachable from the sandbox, Gradle and the Android SDK are not.
+- The Actions log and artifact hosts are **not** reachable. CI therefore publishes the first Gradle
+  errors as the "Gradle failure report" check run (`tools/ci_failure_report.py`); read it with
+  `gh api repos/<owner>/<repo>/commits/<sha>/check-runs` → `.output.text`. Do not loop on
+  `gh run view --log` / `gh run download`; they fail here.
+
+Releases: `release.yml` builds `assembleRelease` (one APK per ABI plus universal, R8 shrink without
+obfuscation, debug-signed unless the `SUBLEARN_KEYSTORE_*` secrets exist) and attaches them to the
+GitHub Release for a `v*` tag; the tag must equal `versionName` in `app/build.gradle.kts`. See D-21.
+
 ## Module map and boundaries
 
 ```
@@ -73,7 +87,7 @@ Rules that keep those boundaries:
 
 - A feature depends on `core:*` only. Shared UI code goes to `core:designsystem`, shared logic to the
   owning `core:*` module.
-- Only `core:designsystem` owns `strings.xml` (`values/` + `values-fa/`, 418 keys, kept in sync by
+- Only `core:designsystem` owns `strings.xml` (`values/` + `values-fa/`, 417 keys, kept in sync by
   hand and by CI review). Features import `com.sublearn.core.designsystem.R`.
 - `core:settings` and `core:subtitles`/`core:lexicon`/`core:common` have **no Compose dependency**;
   keep them JVM-testable.
