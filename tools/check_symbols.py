@@ -64,10 +64,73 @@ def declarations(root: Path) -> dict[str, set[str]]:
     return out
 
 
+TOP_TYPE = re.compile(
+    r"^(?:@[\w.]+\s+)*(?:(?:public|internal|private|abstract|open|sealed|data|value|enum|annotation)\s+)*"
+    r"(?:class|interface|object|typealias)\s+`?(\w+)`?",
+    re.M,
+)
+USED_TYPE = re.compile(r"(?<![\w.$])([A-Z][A-Za-z0-9_]*)\b")
+ANY_IMPORT = re.compile(r"^import\s+([\w.]+)(?:\s+as\s+(\w+))?", re.M)
+
+
+def strip_noise(text: str) -> str:
+    """Source with comments and string literals removed, so prose cannot look like code."""
+    text = re.sub(r"/\*.*?\*/", " ", text, flags=re.S)
+    text = re.sub(r"//[^\n]*", " ", text)
+    text = re.sub(r"\"\"\".*?\"\"\"", '""', text, flags=re.S)
+    text = re.sub(r'"(?:\\.|[^"\\\n])*"', '""', text)
+    text = re.sub(r"'(?:\\.|[^'\\])*'", "' '", text)
+    return text
+
+
+def missing_imports(root: Path) -> list[str]:
+    """Names a file uses that only exist in another package, without an import for them.
+
+    The mirror image of the import check: `Unresolved reference` for a type that exists elsewhere in
+    the repo is the cheapest possible mistake to make and the most expensive to discover through CI.
+    """
+    declared: dict[str, set[str]] = {}
+    files: list[tuple[Path, str, str, str]] = []
+    for path in sorted(root.rglob("*.kt")):
+        if "build" in path.parts or ".git" in path.parts:
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        package = PKG.search(text)
+        if not package:
+            continue
+        names = set(TOP_TYPE.findall(text))
+        declared.setdefault(package.group(1), set()).update(names)
+        files.append((path, package.group(1), text))
+    problems: list[str] = []
+    for path, package, text in files:
+        body = strip_noise(text)
+        imports = set()
+        star_packages = set()
+        for match in ANY_IMPORT.finditer(body):
+            target, alias = match.group(1), match.group(2)
+            if target.endswith("*"):
+                star_packages.add(target[:-2])
+            else:
+                imports.add(alias or target.rsplit(".", 1)[-1])
+        own = set(TOP_TYPE.findall(body))
+        local = declared.get(package, set())
+        for name in sorted(set(USED_TYPE.findall(body))):
+            if name in GENERATED or name in imports or name in own or name in local:
+                continue
+            if star_packages:
+                continue  # a wildcard could legitimately provide it
+            # Package-level types elsewhere in the repo are only reachable through an import.
+            providers = {other for other, names in declared.items() if name in names}
+            if not providers:
+                continue
+            problems.append(f"{path}: uses {name} (declared in {', '.join(sorted(providers))}) with no import")
+    return problems
+
+
 def main(argv: list[str]) -> int:
     root = Path(".")
     decls = declarations(root)
-    problems: list[str] = []
+    problems: list[str] = missing_imports(root)
     for path in sorted(list(root.glob("*/src/**/*.kt")) + list(root.glob("*/*/src/**/*.kt"))):
         if "/build/" in str(path):
             continue

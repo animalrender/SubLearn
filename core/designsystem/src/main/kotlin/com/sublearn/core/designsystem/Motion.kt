@@ -4,12 +4,14 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideOutVertically
 
 /**
@@ -32,7 +34,7 @@ object Motion {
     const val POPUP_FADE_MS = 520
     const val SHEET_MS = 320
 
-    fun gentleSpring(stiffness: Float = Spring.StiffnessMediumLow): Spring<Float> = spring(stiffness = stiffness)
+    fun gentleSpring(stiffness: Float = Spring.StiffnessMediumLow): AnimationSpec<Float> = spring(stiffness = stiffness)
 
     fun controlsEnter(reduceMotion: Boolean): EnterTransition = if (reduceMotion) {
         fadeIn(tween(MICRO_MS))

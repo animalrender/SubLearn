@@ -37,7 +37,8 @@ pushing, run the static checks that catch the cheap mistakes:
 
 ```bash
 python3 tools/check_sources.py core app feature tools   # brace balance, 140 columns, no FIXME
-python3 tools/check_symbols.py                          # every com.sublearn import resolves
+python3 tools/check_symbols.py                          # com.sublearn imports resolve, and every
+                                                        # repo type used is imported
 python3 tools/check_deps.py                             # no module imports an AndroidX package it
                                                         # does not declare, and no cross-module import
                                                         # without a project() dependency

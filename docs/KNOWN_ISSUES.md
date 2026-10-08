@@ -10,7 +10,9 @@ TODO comment; each entry has a route to being fixed.
    this PR. Review the first green commit range carefully: that is where mechanical mistakes live.
 2. **The four static checkers are not a type checker.** `tools/check_sources.py` (brace balance, 140
    columns, no `FIXME`), `tools/check_symbols.py` (every `com.sublearn.*` import resolves to a declared
-   name, generated `R`/`BuildConfig` skipped), `tools/check_deps.py` (declared dependencies vs imports,
+   name, generated `R`/`BuildConfig` skipped, and a type declared in another package that is used without an
+   import is reported — the `Unresolved reference` that a same-package name in the author's head hides),
+   `tools/check_deps.py` (declared dependencies vs imports,
    catalog alias existence, cross-module visibility) and `tools/check_resources.py` (the aapt2 text rules
    that make `packageDebugResources` fail) catch a lot, but not argument types or `when` exhaustiveness.
 3. **No view-model-level tests yet.** `FakePlayerController` exists precisely to make them cheap; that

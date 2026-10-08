@@ -77,3 +77,6 @@ object Dimens {
 
 /** Minimal dp/span so this module does not need to import foundation everywhere. */
 val Int.dp: androidx.compose.ui.unit.Dp get() = androidx.compose.ui.unit.Dp(this.toFloat())
+
+/** Hairlines and strokes are fractional, and a literal like `1.5.dp` is a Double, not a Float. */
+val Double.dp: androidx.compose.ui.unit.Dp get() = androidx.compose.ui.unit.Dp(this.toFloat())
