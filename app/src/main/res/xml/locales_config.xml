@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Per-app language list (A13+). Only EN and FA ship now; adding a language means a values-<cc>
+     folder plus one entry here, see docs/EXTENSION_POINTS.md. -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="fa" />
+</locale-config>
