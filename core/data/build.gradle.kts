@@ -54,7 +54,6 @@ dependencies {
     api(project(":core:subtitles"))
     api(libs.room.runtime)
     api(libs.room.ktx)
-    api(libs.room.fts)
     implementation(libs.coroutines.android)
     ksp(libs.room.compiler)
 
