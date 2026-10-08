@@ -62,25 +62,34 @@ data class QuickActionSpec(
     }
 
     companion object {
-        /** Default layout: the two subtitle toggles and the learning tools in the top-left column (PLY-1). */
-        val defaults: Map<String, QuickActionSpec> = mapOf(
-            QuickActionId.TOGGLE_LEARNING, QuickActionId.TOGGLE_TRANSLATION, QuickActionId.LAYOUT_MODE,
-            QuickActionId.REPEAT_BLOCK, QuickActionId.STOP_AT_BLOCK_END, QuickActionId.SUBTITLE_LIST,
-            QuickActionId.AI_EXPLAIN, QuickActionId.MY_WORDS,
-        ).mapIndexed { index, id ->
-            id.key to QuickActionSpec(dock = DockMode.BAR, order = index)
-        } + mapOf(
-            QuickActionId.PLAYLIST to QuickActionSpec(dock = DockMode.BAR, order = 100),
-            QuickActionId.ASPECT_RATIO to QuickActionSpec(dock = DockMode.BAR, order = 101),
-            QuickActionId.DECODER to QuickActionSpec(dock = DockMode.BAR, order = 102),
-            QuickActionId.AUDIO_TRACK to QuickActionSpec(dock = DockMode.BAR, order = 103),
-            QuickActionId.SUBTITLE_TRACKS to QuickActionSpec(dock = DockMode.BAR, order = 104),
-            QuickActionId.SUBTITLE_TOOLS to QuickActionSpec(dock = DockMode.BAR, order = 105),
-            QuickActionId.SPEED to QuickActionSpec(dock = DockMode.BAR, order = 106),
-            QuickActionId.PICTURE_IN_PICTURE to QuickActionSpec(dock = DockMode.BAR, order = 107),
-            QuickActionId.SHARE to QuickActionSpec(dock = DockMode.BAR, order = 108),
-            QuickActionId.SETTINGS to QuickActionSpec(dock = DockMode.BAR, order = 109),
-        )
+        /**
+         * Default layout: the two subtitle toggles and the learning tools lead the bar, the rest of
+         * the set follows in a fixed order so an update that adds an action does not shuffle the dock.
+         */
+        val defaults: Map<String, QuickActionSpec> = buildMap {
+            val bar = listOf(
+                QuickActionId.TOGGLE_LEARNING,
+                QuickActionId.TOGGLE_TRANSLATION,
+                QuickActionId.LAYOUT_MODE,
+                QuickActionId.REPEAT_BLOCK,
+                QuickActionId.STOP_AT_BLOCK_END,
+                QuickActionId.SUBTITLE_LIST,
+                QuickActionId.AI_EXPLAIN,
+                QuickActionId.MY_WORDS,
+                QuickActionId.PLAYLIST,
+                QuickActionId.ASPECT_RATIO,
+                QuickActionId.DECODER,
+                QuickActionId.AUDIO_TRACK,
+                QuickActionId.SUBTITLE_TRACKS,
+                QuickActionId.SUBTITLE_TOOLS,
+                QuickActionId.SPEED,
+                QuickActionId.PICTURE_IN_PICTURE,
+                QuickActionId.SHARE,
+                QuickActionId.SETTINGS,
+            )
+            bar.forEachIndexed { index, id -> put(id.key, QuickActionSpec(dock = DockMode.BAR, order = index)) }
+        }
+
     }
 }
 
