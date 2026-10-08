@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sublearn.core.data.MarkedWord
 import com.sublearn.core.data.WordStatus
 import com.sublearn.core.designsystem.R
+import com.sublearn.core.designsystem.badgeColorArgb
 import com.sublearn.core.designsystem.toTextStyle
 import com.sublearn.core.settings.CefrLevel
 import com.sublearn.core.settings.FontSurface
@@ -67,6 +69,7 @@ fun MyWordsScreen(
     val rows by viewModel.rows.collectAsStateWithLifecycle()
     val count by viewModel.count.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+    val activeFilter by viewModel.filter.collectAsStateWithLifecycle()
     var query by remember { mutableStateOf("") }
 
     Scaffold(
@@ -94,7 +97,7 @@ fun MyWordsScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 WordFilter.entries.forEach { filter ->
                     FilterChip(
-                        selected = filter == WordFilter.ALL,
+                        selected = filter == activeFilter,
                         onClick = { viewModel.setFilter(filter) },
                         label = { Text(stringResource(filter.labelRes())) },
                     )
@@ -213,7 +216,7 @@ private fun LevelChip(level: String) {
     Text(
         text = level,
         style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSecondaryContainer,
+        color = Color(parsed.badgeColorArgb()),
         modifier = Modifier
             .padding(end = 6.dp)
             .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(8.dp))

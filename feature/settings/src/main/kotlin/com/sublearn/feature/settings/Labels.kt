@@ -61,7 +61,7 @@ fun OrientationLock.labelRes(): Int = when (this) {
 fun DecoderMode.labelRes(): Int = when (this) {
     DecoderMode.SOFTWARE -> R.string.player_decoder_software
     DecoderMode.HARDWARE -> R.string.player_decoder_hardware
-    DecoderMode.HARDWARE_FALLBACK -> R.string.player_decoder_hardware_plus
+    DecoderMode.HARDWARE_PLUS -> R.string.player_decoder_hardware_plus
 }
 
 fun AspectMode.labelRes(): Int = when (this) {

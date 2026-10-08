@@ -11,6 +11,7 @@ import com.sublearn.core.data.MarkedWord
 import com.sublearn.core.data.MyWordsRepository
 import com.sublearn.core.data.RecentVideoRepository
 import com.sublearn.core.data.WordStatus
+import com.sublearn.core.designsystem.R
 import com.sublearn.core.lexicon.WordLevelSource
 import com.sublearn.core.player.MediaTarget
 import com.sublearn.core.player.PlaybackState
@@ -35,6 +36,7 @@ import com.sublearn.core.subtitles.SubtitleDocument
 import com.sublearn.core.subtitles.SubtitleFile
 import com.sublearn.core.subtitles.TrackRole
 import com.sublearn.core.subtitles.SubtitleLanguage
+import com.sublearn.core.translate.TranslationProgress
 import com.sublearn.core.translate.TranslationService
 import com.sublearn.core.translate.WordTranslation
 import kotlinx.coroutines.Dispatchers
@@ -86,6 +88,8 @@ class PlayerViewModel(
     private var openedTarget: MediaTarget? = null
     private var muted = false
     private var embeddedCueText: String? = null
+    private var aiKeyPresent = false
+    private var checkedKeyRef: String? = null
 
     val playback: StateFlow<PlaybackState> get() = controller.state
 
@@ -121,8 +125,29 @@ class PlayerViewModel(
     /** Loads the media, restores the saved position and pulls in sidecar subtitle files. */
     fun open(uri: String, title: String, subtitleUris: List<PickedSubtitle> = emptyList()) {
         viewModelScope.launch {
+            val stillLoaded = openedTarget?.uri == uri && controller.state.value.target?.uri == uri
+            if (stillLoaded) {
+                // Coming back to the video that is already playing: keep playback and the loaded layers.
+                subtitleUris.forEach { picked -> loadFile(picked.role, picked.uri, picked.name) }
+                // A file picked in Settings while this video stayed loaded fills an empty layer.
+                TrackRole.entries.forEach { role ->
+                    val key = _ui.value.settings.subtitleLayer(role).externalFileKeys.lastOrNull()
+                    val doc = if (role == TrackRole.LEARNING) learningDoc else translationDoc
+                    if (key != null && doc == null && subtitleUris.none { it.role == role }) {
+                        loadFile(role, key, key.substringAfterLast('/'))
+                    }
+                }
+                _ui.value = _ui.value.copy(opening = false, playback = controller.state.value)
+                publish()
+                return@launch
+            }
             _ui.value = _ui.value.copy(opening = true)
             val settings = _ui.value.settings
+            // Layers and their remembered file keys belong to one video at a time.
+            TrackRole.entries.forEach { role ->
+                applyDocument(role, null, null, emptyList(), null)
+                persistLayerKeys(role) { emptyList() }
+            }
             val saved = if (settings.player.rememberPosition && settings.player.resumeOnOpen) {
                 runCatching { recentVideos.find(uri) }.getOrNull()
             } else {
@@ -162,15 +187,13 @@ class PlayerViewModel(
         viewModelScope.launch {
             val config = _ui.value.settings.subtitles.normalizer
             val result = subtitles.load(SubtitleFile(key = uri, name = name), role, config)
-            result.fold(
-                onSuccess = { loaded ->
-                    applyDocument(role, loaded.document, loaded.charsetName, loaded.warnings, name)
-                    persistLayerKeys(role) { keys -> keys + uri }
-                },
-                onFailure = { error ->
-                    _ui.value = _ui.value.copy(message = error.message)
-                },
-            )
+            val loaded = result.getOrNull()
+            if (loaded != null) {
+                applyDocument(role, loaded.document, loaded.charsetName, loaded.warnings, name)
+                persistLayerKeys(role) { keys -> (keys + uri).distinct() }
+            } else {
+                _ui.value = _ui.value.copy(message = result.errorOrNull()?.message)
+            }
             publish()
         }
     }
@@ -214,6 +237,7 @@ class PlayerViewModel(
     // ------------------------------------------------------------------ settings
 
     private fun onSettings(settings: AppSettings) {
+        refreshAiKey(settings)
         val current = _ui.value
         _ui.value = current.copy(
             settings = settings,
@@ -329,7 +353,7 @@ class PlayerViewModel(
                 usesCues -> LayerSource.PLAYER_CUES
                 else -> LayerSource.NONE
             }
-            role to _ui.value.layer(role).copy(
+            _ui.value.layer(role).copy(
                 block = block,
                 text = text,
                 source = source,
@@ -351,7 +375,7 @@ class PlayerViewModel(
                 pausedForRepeat = plan?.paused == true,
                 segmentLabel = plan?.let { "repeat ${it.completed + 1}/${it.repeatTotal}" },
             ),
-            ai = _ui.value.ai.copy(configured = aiConfigured(settings.ai.provider, settings.ai.keyRef)),
+            ai = _ui.value.ai.copy(configured = aiConfigured(settings)),
         )
     }
 
@@ -627,13 +651,19 @@ class PlayerViewModel(
         }
     }
 
-    /** Downloads the missing ML Kit model, reporting progress through [message]. */
+    /** Downloads the missing ML Kit model; ML Kit reports no byte counts, so the status is coarse. */
     fun downloadModel() {
         viewModelScope.launch {
+            message(application.getString(R.string.translate_downloading))
             translation.downloadModel { progress ->
-                message("model: ${progress.transferredBytes / 1024} kB / ${progress.totalBytesEstimate / 1024} kB")
+                if (progress.status == TranslationProgress.Status.RUNNING && progress.fraction > 0f) {
+                    message(application.getString(R.string.translate_downloading) + " " + (progress.fraction * 100f).toInt() + "%")
+                }
             }.fold(
-                onSuccess = { message("model ready"); _ui.value = _ui.value.copy(modelMissing = false) },
+                onSuccess = {
+                    message(application.getString(R.string.settings_model_ready))
+                    _ui.value = _ui.value.copy(modelMissing = false, popup = _ui.value.popup?.copy(needsModelDownload = false))
+                },
                 onFailure = { error -> message(error.message) },
             )
         }
@@ -923,7 +953,7 @@ class PlayerViewModel(
 
     fun askAi(selectedText: String?) {
         val settings = _ui.value.settings
-        if (!aiConfigured(settings.ai.provider, settings.ai.keyRef)) {
+        if (!aiConfigured(settings)) {
             message(NO_AI_KEY)
             return
         }
@@ -991,9 +1021,20 @@ class PlayerViewModel(
 
     fun sectionsOf(answer: AiAnswer?) = AiAnswerParser.parse(answer?.text ?: "")
 
-    private fun aiConfigured(provider: AiProviderToken, keyRef: String?): Boolean =
-        keyRef != null && runCatching { secrets.get(keyRef) }.getOrNull()?.isNotBlank() == true &&
-            provider != AiProviderToken.CUSTOM // a custom base URL needs the extra check in the settings screen
+    /** The keystore is read once per key reference, never on the playback tick. */
+    private fun refreshAiKey(settings: AppSettings) {
+        val ref = settings.ai.keyRef
+        if (ref == checkedKeyRef) return
+        checkedKeyRef = ref
+        viewModelScope.launch {
+            aiKeyPresent = ref != null && runCatching { secrets.get(ref) }.getOrNull()?.isNotBlank() == true
+            publish()
+        }
+    }
+
+    // A custom endpoint is only usable once its base URL is set in Settings -> AI.
+    private fun aiConfigured(settings: AppSettings): Boolean =
+        aiKeyPresent && (settings.ai.provider != AiProviderToken.CUSTOM || settings.ai.customBaseUrl.isNotBlank())
 
     // ------------------------------------------------------------------ lifecycle
 
@@ -1004,9 +1045,7 @@ class PlayerViewModel(
         viewModelScope.launch {
             controller.flushPosition()
             openedTarget?.let { target ->
-                recentVideos.touch(
- target.uri, target.title, playback.value.durationMs, playback.value.positionMs,
- )
+                recentVideos.touch(target.uri, target.title, playback.value.durationMs, playback.value.positionMs)
             }
         }
     }

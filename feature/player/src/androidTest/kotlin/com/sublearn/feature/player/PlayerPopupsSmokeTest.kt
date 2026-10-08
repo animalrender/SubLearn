@@ -1,5 +1,6 @@
 package com.sublearn.feature.player
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -58,7 +59,7 @@ class PlayerPopupsSmokeTest {
     fun busyCardShowsTheLineButNoGlossYet() {
         showPopup(PopupUi(kind = PopupKind.LINE, sourceText = "He was none the wiser.", busy = true))
         rule.onNodeWithText("He was none the wiser.").assertIsDisplayed()
-        rule.onAllNodes(androidx.compose.ui.test.hasText("بی‌میل")).assertNone()
+        rule.onAllNodes(androidx.compose.ui.test.hasText("بی‌میل")).assertCountEquals(0)
     }
 
     @Test

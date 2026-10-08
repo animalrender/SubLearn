@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sublearn.core.designsystem.Dimens
 import com.sublearn.core.designsystem.R
 import com.sublearn.core.player.OpenDocumentContract
@@ -193,7 +194,7 @@ fun PlayerSection(settings: AppSettings, viewModel: SettingsViewModel) {
 
 /** Both layers, the list and the cleaning rules (SUB-1..SUB-6). */
 @Composable
-fun SubtitlesSection(settings: AppSettings, viewModel: SettingsViewModel, context: android.content.Context) {
+fun SubtitlesSection(settings: AppSettings, viewModel: SettingsViewModel) {
     val subtitles = settings.subtitles
     TrackRole.entries.forEach { role ->
         val layer = subtitles.layer(role)
@@ -262,13 +263,12 @@ fun SubtitlesSection(settings: AppSettings, viewModel: SettingsViewModel, contex
             val filePicker = rememberLauncherForActivityResult(OpenDocumentContract(arrayOf("text/*",
                 "application/octet-stream"))) { picked ->
                 if (picked != null) {
-                    viewModel.update { it.copy(subtitles = it.subtitles.copy(sidecarTreeUri = it.subtitles.sidecarTreeUri)) }
+                    viewModel.updateLayer(role) { it.copy(externalFileKeys = (it.externalFileKeys + picked.uri).distinct()) }
                 }
             }
             ActionRow(
                 title = stringResource(R.string.subtitle_add_file),
-                onClick = { filePicker.launch(arrayOf("text/*")) },
-                subtitle = stringResource(R.string.subtitle_list_empty),
+                onClick = { filePicker.launch(arrayOf("text/*", "application/octet-stream")) },
             )
         }
     }
@@ -534,7 +534,7 @@ fun ShadowingSection(settings: AppSettings, viewModel: SettingsViewModel) {
 
 /** Learning mode, level and word colours (LRN-2..LRN-5). */
 @Composable
-fun LearningSection(settings: AppSettings, viewModel: SettingsViewModel, context: android.content.Context) {
+fun LearningSection(settings: AppSettings, viewModel: SettingsViewModel) {
     val learning = settings.learning
     val level = settings.level
     SectionCard(stringResource(R.string.settings_learning_mode)) {
@@ -636,9 +636,10 @@ fun LearningSection(settings: AppSettings, viewModel: SettingsViewModel, context
         }
         ActionRow(title = stringResource(R.string.settings_level_import), subtitle = stringResource(R.string.settings_level_import_hint),
             onClick = { listPicker.launch(arrayOf("text/plain")) })
-        val state = viewModel.levelState()
+        val state by viewModel.levelState.collectAsStateWithLifecycle()
         Text(
-            text = state.details(context),
+            text = stringResource(R.string.learn_imported_words, state.importedWords) +
+                state.warnings.joinToString(separator = "") { " · $it" },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

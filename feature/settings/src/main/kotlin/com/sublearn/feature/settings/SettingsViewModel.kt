@@ -195,7 +195,9 @@ class SettingsViewModel(
     }
 
     fun openUrl(url: String) {
-        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+        // The injected context is the Application, which may only start an Activity in a new task.
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { context.startActivity(intent) }
     }
 
     private fun AiProviderToken.tokenToId(): String = when (this) {

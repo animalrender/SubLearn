@@ -49,7 +49,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sublearn.core.designsystem.R
-import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Home: the entry point for local video (GEN / APP entry).

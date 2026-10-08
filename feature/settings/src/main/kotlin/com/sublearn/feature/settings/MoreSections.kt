@@ -104,7 +104,6 @@ fun FontsSection(settings: AppSettings, viewModel: SettingsViewModel) {
 
 @Composable
 private fun FontEditor(spec: FontSpec, overriden: Boolean, onChange: (FontSpec) -> Unit) {
-    val previewStyle: TextStyle = spec.toTextStyle()
     Column(Modifier.fillMaxWidth().padding(vertical = Dimens.xs)) {
         PreviewText(previewStyle = spec.toTextStyle())
         ChoiceRow(
@@ -399,11 +398,14 @@ fun TranslationSection(settings: AppSettings, viewModel: SettingsViewModel) {
             subtitle = stringResource(R.string.settings_fallback_online_hint),
             onChange = { value -> viewModel.update { it.copy(translation = it.translation.copy(fallbackToOnline = value)) } },
         )
-        if (modelProgress != null) {
-            LinearProgressIndicator(
-                progress = { modelProgress.coerceIn(0f, 1f) },
-                modifier = Modifier.fillMaxWidth(),
-            )
+        val progress = modelProgress
+        if (progress != null) {
+            // ML Kit only reports start and finish, so a zero fraction means "running" rather than "0 %".
+            if (progress > 0f) {
+                LinearProgressIndicator(progress = { progress.coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
+            } else {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
             Text(stringResource(R.string.translate_downloading), style = MaterialTheme.typography.labelSmall)
         }
         Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Dimens.sm)) {

@@ -2,6 +2,7 @@ package com.sublearn.feature.player
 
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -121,7 +122,6 @@ private fun SubtitleLayerView(
         styleWords(text, wordStates, settings.wordStyles)
     }
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
-    fun wordAt(position: Offset): String? = layout?.wordUnder(position)
 
     Box(
         modifier = Modifier
@@ -133,14 +133,13 @@ private fun SubtitleLayerView(
             colorArgb = spec.backgroundColorArgb,
             cornerRadiusDp = spec.cornerRadiusDp,
             modifier = Modifier
-                .subtitlePlacement(layer.placement)
+                .subtitlePlacement(this, layer.placement)
                 .pointerInput(layoutMode, tapEnabled) {
                     if (layoutMode) {
                         detectDragGestures { change, drag ->
                             change.consume()
                             onDragBy(drag.x / density, drag.y / density)
                         }
-
                     } else if (tapEnabled) {
                         detectMultiTap(
                             windowMs = settings.learning.multiTapWindowMs,
@@ -181,14 +180,13 @@ private fun TextLayoutResult.wordUnder(position: Offset): String? {
 
 private const val WORD_TAG = "sublearn-word"
 
-/** Anchors a layer box inside the video area. */
 /**
  * Places the plate in the video area from its anchors plus the user's offsets.
  *
- * `Box` alignment is the only sane source for "top / centre / bottom", so the drag handler writes
- * back both the anchor it landed in and the remaining pixel offset.
+ * `Box` alignment is the only sane source for "top / centre / bottom", which is why the enclosing
+ * [BoxScope] is passed in; the drag handler writes back the remaining dp offset.
  */
-private fun Modifier.subtitlePlacement(placement: SubtitlePlacement): Modifier {
+private fun Modifier.subtitlePlacement(scope: BoxScope, placement: SubtitlePlacement): Modifier {
     val vertical = when (placement.vertical) {
         SubtitleVerticalAnchor.TOP -> Alignment.TopStart
         SubtitleVerticalAnchor.CENTER -> Alignment.CenterStart
@@ -205,7 +203,7 @@ private fun Modifier.subtitlePlacement(placement: SubtitlePlacement): Modifier {
         SubtitleVerticalAnchor.CENTER -> 0f
         SubtitleVerticalAnchor.BOTTOM -> maxOf(0f, -placement.offsetYDp)
     }
-    return align(vertical)
+    return with(scope) { align(vertical) }
         .padding(start = horizontalPadding.dp, end = endPadding.dp, top = verticalPadding.dp, bottom = verticalPadding.dp)
         .fillMaxWidth()
 }
@@ -215,14 +213,18 @@ private fun Modifier.subtitlePlacement(placement: SubtitlePlacement): Modifier {
  * name the word it landed on.
  */
 internal fun styleWords(text: String, wordStates: Map<String, WordVisualState>, styles: WordStyleSettings): AnnotatedString {
-    if (!styles.enabled || wordStates.isEmpty()) return AnnotatedString(text)
+    // Words are always tagged so a tap can name the word under it; colouring is what the setting toggles.
+    val colour = styles.enabled && wordStates.isNotEmpty()
     return AnnotatedString.Builder().apply {
+        var cursor = 0
         Tokenizer.spans(text).forEach { span ->
+            if (span.start > cursor) append(text.substring(cursor, span.start))
             val start = length
             append(text.substring(span.start, span.end))
+            cursor = span.end
+            if (!span.isWord) return@forEach
             addStringAnnotation(WORD_TAG, span.text, start, length)
-            val state = if (span.isWord) wordStates[span.text.lowercase()] else null
-            val style = when (state) {
+            val style = when (if (colour) wordStates[span.text.lowercase()] else null) {
                 WordVisualState.MARKED -> styles.myWords
                 WordVisualState.ABOVE_LEVEL -> styles.unknownAboveLevel
                 WordVisualState.PHRASE -> styles.phrases
@@ -230,12 +232,13 @@ internal fun styleWords(text: String, wordStates: Map<String, WordVisualState>, 
             }
             if (style != null) addStyle(style.toSpanStyle(), start, length)
         }
+        if (cursor < text.length) append(text.substring(cursor))
     }.toAnnotatedString()
 }
 
 internal fun WordStyle.toSpanStyle(): SpanStyle = SpanStyle(
-    color = colorArgb?.let { Color(it) },
-    background = backgroundArgb?.let { Color(it) },
+    color = colorArgb?.let { Color(it) } ?: Color.Unspecified,
+    background = backgroundArgb?.let { Color(it) } ?: Color.Unspecified,
     fontWeight = if (bold) FontWeight.Bold else null,
     fontStyle = null,
     textDecoration = decoration.toCompose(),
