@@ -69,7 +69,7 @@ these terms explicitly rather than imply they are Apache-2.0. Tracked in
 
 | Source | Status | Why |
 | --- | --- | --- |
-| `hoangkuid18/dual-sub-replay` (MIT) | Ideas only | Its architecture, cue-merging approach and CI shape were adopted; no code was copied, so no notice is required. MIT would have permitted reuse with attribution — the Apache-2.0 re-implementation is cleaner to audit. |
+| `hoangkien1703/dual-sub-replay` (MIT) | Ideas only | Its architecture, cue-merging approach and CI shape were adopted; no code was copied, so no notice is required. MIT would have permitted reuse with attribution — the Apache-2.0 re-implementation is cleaner to audit. |
 | `kgurniak91/yall-mp` (GPL-3.0) | Ideas only | Timeline editing and preset ideas re-implemented independently. No file, no snippet, no translation unit was taken; GPL code in an Apache project would force relicensing. |
 | `arianneorpilla/jidoujisho` (GPL-3.0) | Ideas only | Same reason. Its selection and swipe-to-repeat gestures are re-implemented from the described behaviour. |
 | `melonityhub/dictionaryproject` | **Schema not shipped, data never** | Its README states the schema and queries came from a third-party Android dictionary app's Java source and that the model loader was reverse-engineered from `.bipe` files. That makes both the data and the loader unsafe to redistribute. SubLearn therefore treats an offline dictionary as a **user-supplied local import** with its own documented schema, and translates only through ML Kit. Logged as a rights question in `docs/AGENT_REQUESTS.md`. |
