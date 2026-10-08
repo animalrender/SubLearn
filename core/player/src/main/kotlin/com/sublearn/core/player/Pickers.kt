@@ -3,7 +3,6 @@ package com.sublearn.core.player
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.provider.DocumentsContract
 import androidx.activity.result.contract.ActivityResultContract
 
 /**
@@ -45,14 +44,25 @@ class OpenTreeContract : ActivityResultContract<Unit, String?>() {
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 
-    override fun parseResult(resultCode: Int, intent: Intent?): String? {
-        val tree = intent?.data ?: return null
-        runCatching {
-            context.contentResolver.takePersistableUriPermission(
-                tree,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION,
-            )
+    /**
+     * The tree URI exactly as SAF handed it back. It is deliberately not converted into a document URI:
+     * the caller needs the grant, and the reader resolves children from the tree itself.
+     */
+    override fun parseResult(resultCode: Int, intent: Intent?): String? = intent?.data?.toString()
+
+    companion object {
+        /**
+         * Keeps the read grant alive across reboots. Parsing the result happens without a Context, so the
+         * screen that stores the tree URI calls this once, otherwise the folder is unreadable after the
+         * next launch and the sidecar list comes up empty for a reason the user cannot see (SUB-2).
+         */
+        fun persistReadPermission(context: Context, treeUri: String) {
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    Uri.parse(treeUri),
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                )
+            }
         }
-        return DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree)).toString()
     }
 }

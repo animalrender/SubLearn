@@ -322,7 +322,9 @@ fun SubtitlesSection(settings: AppSettings, viewModel: SettingsViewModel, contex
                 viewModel.updateLayer(TrackRole.LEARNING) { it.copy(stackDirection = value) }
             },
         )
+        val pickerContext = LocalContext.current
         val treePicker = rememberLauncherForActivityResult(OpenTreeContract()) { tree ->
+            if (tree != null) OpenTreeContract.persistReadPermission(pickerContext, tree)
             viewModel.update { it.copy(subtitles = it.subtitles.copy(sidecarTreeUri = tree)) }
         }
         ActionRow(

@@ -7,6 +7,7 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.Player
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
@@ -14,7 +15,6 @@ import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.ui.PlayerView
 import com.sublearn.core.common.SubLearnLogger
 import com.sublearn.core.settings.AspectMode
@@ -157,7 +157,7 @@ class Media3PlayerController(
             .build()
         built.addListener(listener)
         built.volume = if (muted) 0f else 1f
-        built.playbackParameters = built.playbackParameters.setSpeed(speedPercent / 100f)
+        built.playbackParameters = built.playbackParameters.withSpeed(speedPercent / 100f)
         player = built
         attachedView?.let { view ->
             view.player = built
@@ -171,7 +171,7 @@ class Media3PlayerController(
         view.player = player
         view.useController = false
         view.controllerAutoShow = false
-        view.keepContentOnPlayerReset = true
+        view.setKeepContentOnPlayerReset(true)
         // SubLearn paints its own layers so word taps work: the built-in cue view must stay hidden.
         view.subtitleView?.visibility = android.view.View.GONE
         view.setShutterBackgroundColor(android.graphics.Color.BLACK)
@@ -308,7 +308,7 @@ class Media3PlayerController(
 
     override fun setSpeedPercent(percent: Int) {
         speedPercent = percent.coerceIn(MIN_SPEED_PERCENT, MAX_SPEED_PERCENT)
-        player?.let { it.playbackParameters = it.playbackParameters.setSpeed(speedPercent / 100f) }
+        player?.let { it.playbackParameters = it.playbackParameters.withSpeed(speedPercent / 100f) }
         _state.value = _state.value.copy(speedPercent = speedPercent)
     }
 
@@ -352,7 +352,7 @@ class Media3PlayerController(
         val exo = player ?: return
         val group = exo.currentTracks.groups.getOrNull(ref.groupId) ?: return
         exo.trackSelectionParameters = exo.trackSelectionParameters.buildUpon()
-            .setOverrideForType(DefaultTrackSelector.TrackSelectionOverride(group.getMediaTrackGroup(), ref.trackIndex))
+            .setOverrideForType(TrackSelectionOverride(group.getMediaTrackGroup(), ref.trackIndex))
             .build()
         publishTracks(exo)
     }
