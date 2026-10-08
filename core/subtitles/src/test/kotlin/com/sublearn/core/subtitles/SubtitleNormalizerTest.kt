@@ -18,6 +18,14 @@ class SubtitleNormalizerTest {
     }
 
     @Test
+    fun `punctuation fixes leave numbers times and abbreviations alone`() {
+        assertEquals("It costs 3.5 dollars at 10:30, e.g. 1,000 times.", SubtitleNormalizer.fixPunctuation("It costs 3.5 dollars at 10:30, e.g. 1,000 times."))
+        assertEquals("Stop. Now", SubtitleNormalizer.fixPunctuation("Stop.Now"))
+        assertEquals("Why? Because", SubtitleNormalizer.fixPunctuation("Why?Because"))
+        assertEquals("خب، بریم", SubtitleNormalizer.fixPunctuation("خب ، بریم"))
+    }
+
+    @Test
     fun `strips ass and html markup`() {
         assertEquals("clean", SubtitleNormalizer.stripMarkup("{\\an8}<i>clean</i>"))
     }
@@ -34,6 +42,28 @@ class SubtitleNormalizerTest {
         assertTrue(pieces.isNotEmpty())
         assertTrue(pieces.all { it.length <= 40 })
         assertEquals(text, SubtitleNormalizer.removeLineBreaks(pieces.joinToString(" ")))
+    }
+
+    @Test
+    fun `split pieces join back with single spaces and prefer punctuation`() {
+        val text = "First clause ends here, and the second one goes on. Third sentence follows it closely"
+        val pieces = SubtitleNormalizer.splitToMaxChars(text, 40)
+        assertTrue(pieces.all { it.length <= 40 })
+        assertTrue(pieces.none { it.contains("  ") || it.startsWith(" ") || it.endsWith(" ") })
+        assertEquals(text, pieces.joinToString(" "))
+        assertTrue(pieces.first().endsWith(","))
+    }
+
+    @Test
+    fun `continuation detection follows case and function words`() {
+        assertTrue(SubtitleNormalizer.continuesSentence("When you", "have to go"))
+        assertTrue(SubtitleNormalizer.continuesSentence("and then", "I went home."))
+        assertTrue(SubtitleNormalizer.continuesSentence("He said,", "Come here."))
+        assertTrue(SubtitleNormalizer.continuesSentence("I bought the", "Beatles record."))
+        assertTrue(SubtitleNormalizer.continuesSentence("من به", "خانه رفتم"))
+        assertTrue(!SubtitleNormalizer.continuesSentence("First", "Second"))
+        assertTrue(!SubtitleNormalizer.continuesSentence("Done.", "New scene"))
+        assertTrue(!SubtitleNormalizer.continuesSentence("", "x"))
     }
 
     @Test

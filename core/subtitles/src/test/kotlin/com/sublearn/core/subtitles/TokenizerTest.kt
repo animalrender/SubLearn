@@ -15,7 +15,10 @@ class TokenizerTest {
 
     @Test
     fun `keeps contractions together and detaches a trailing apostrophe`() {
-        assertEquals(listOf("don't", "the", "girls'"), Tokenizer.words("don't say the girls'").map { it.text })
+        val spans = Tokenizer.spans("don't say the girls' 'quoted'")
+        assertEquals(listOf("don't", "say", "the", "girls", "quoted"), spans.filter { it.isWord }.map { it.text })
+        assertEquals(listOf("'", "'", "'"), spans.filter { !it.isWord }.map { it.text })
+        assertEquals(listOf(19, 21, 28), spans.filter { !it.isWord }.map { it.start })
     }
 
     @Test

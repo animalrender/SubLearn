@@ -31,7 +31,7 @@ class SettingsRepositoryTest {
 
     @Test
     fun `unknown keys are ignored instead of failing`() {
-        val text = SettingsJson.encode(AppSettings.DEFAULT).replace("\"schemaVersion\"", "\"schemaVersion\", \"futureOption\": 12")
+        val text = SettingsJson.encode(AppSettings.DEFAULT).replace("\"schemaVersion\"", "\"futureOption\": 12, \"schemaVersion\"")
         assertNotNull(SettingsJson.decode(text).getOrNull())
     }
 
@@ -73,7 +73,7 @@ class SettingsRepositoryTest {
                 }
             }
         }
-        assertEquals(20, repo.current().shadowing.repeatCount)
+        assertEquals(AppSettings.DEFAULT.shadowing.repeatCount + 20, repo.current().shadowing.repeatCount)
     }
 
     @Test
@@ -82,9 +82,10 @@ class SettingsRepositoryTest {
         repo.update { it.copy(ai = it.ai.copy(model = "gemini-test", contextBlocks = 3)) }
         val exported = repo.exportJson()
         repo.reset()
-        assertEquals(0, repo.current().ai.contextBlocks)
+        assertEquals(AppSettings.DEFAULT.ai.contextBlocks, repo.current().ai.contextBlocks)
         val report = repo.importJson(exported).getOrThrow()
-        assertTrue(report.appliedSections.isNotEmpty())
+        assertTrue(report.appliedSections.contains(Sections.AI))
+        assertTrue(report.droppedUnknownSections.isEmpty())
         assertEquals(3, repo.current().ai.contextBlocks)
         assertEquals("gemini-test", repo.current().ai.model)
     }
@@ -93,10 +94,12 @@ class SettingsRepositoryTest {
     fun `merge import keeps sections that are absent`() = runTest {
         val repo = DefaultSettingsRepository(InMemorySettingsStorage())
         repo.update { it.copy(shadowing = it.shadowing.copy(repeatCount = 7)) }
-        val partial = "{\"schemaVersion\": 3, \"player\": {\"seekStepMs\": 5000}}"
-        repo.importJson(partial, ImportMode.MERGE)
+        val partial = "{\"schemaVersion\": 3, \"player\": {\"seekStepMs\": 5000}, \"mystery\": true}"
+        val report = repo.importJson(partial, ImportMode.MERGE).getOrThrow()
         assertEquals(7, repo.current().shadowing.repeatCount)
         assertEquals(5_000L, repo.current().player.seekStepMs)
+        assertEquals(listOf(Sections.PLAYER), report.appliedSections)
+        assertEquals(listOf("mystery"), report.droppedUnknownSections)
     }
 
     @Test
@@ -137,7 +140,9 @@ class SettingsRepositoryTest {
     fun `quick action layout respects dock mode and order`() {
         val settings = QuickActionSettings()
         val hidden = settings.updated(QuickActionId.AI_EXPLAIN, QuickActionSpec(dock = DockMode.HIDDEN))
-        assertTrue(hidden.visibleIn(DockMode.HIDDEN).none { it.first == QuickActionId.AI_EXPLAIN })
+        assertTrue(hidden.visibleIn(DockMode.HIDDEN).isEmpty())
+        assertTrue(hidden.visibleIn(DockMode.BAR).none { it.first == QuickActionId.AI_EXPLAIN })
+        assertTrue(hidden.visibleIn(DockMode.FLOATING).none { it.first == QuickActionId.AI_EXPLAIN })
         assertTrue(settings.specs.isNotEmpty())
         assertEquals(DockMode.BAR, settings.spec(QuickActionId.TOGGLE_LEARNING).dock)
     }
@@ -146,7 +151,7 @@ class SettingsRepositoryTest {
     fun `prompt template keeps its placeholders`() {
         val prompt = AiSettings.DEFAULT_PROMPT
         listOf("nativeLanguage", "level", "title", "timestamp", "context", "selected").forEach {
-            assertTrue("missing placeholder ${'$'}{$it}", prompt.contains("\${'$'}{$it}"))
+            assertTrue("missing placeholder ${'$'}{$it}", prompt.contains("\${$it}"))
         }
     }
 }

@@ -23,6 +23,15 @@ class CharsetSnifferTest {
         val decoded = CharsetSniffer.decode(bytes)
         assertEquals("hi", decoded.text)
         assertEquals("UTF-16LE", decoded.charset.name())
+        assertTrue(decoded.hadBom)
+    }
+
+    @Test
+    fun `utf-16 be bom is detected`() {
+        val bytes = byteArrayOf(0xFE.toByte(), 0xFF.toByte()) + "hi".toByteArray(StandardCharsets.UTF_16BE)
+        val decoded = CharsetSniffer.decode(bytes)
+        assertEquals("hi", decoded.text)
+        assertEquals("UTF-16BE", decoded.charset.name())
     }
 
     @Test
@@ -49,5 +58,8 @@ class CharsetSnifferTest {
         val bytes = "abc def ghi".toByteArray(StandardCharsets.UTF_16LE)
         val decoded = CharsetSniffer.decode(bytes)
         assertTrue(decoded.text.startsWith("abc"))
+        assertEquals("UTF-16LE", decoded.charset.name())
+        val big = CharsetSniffer.decode("abc def ghi".toByteArray(StandardCharsets.UTF_16BE))
+        assertEquals("abc def ghi", big.text)
     }
 }

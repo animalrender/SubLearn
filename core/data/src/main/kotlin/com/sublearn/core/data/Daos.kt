@@ -78,7 +78,7 @@ interface MyWordDao {
      * is what a learner wants at the top anyway.
      */
     @Query(
-        "SELECT m.* FROM my_words_fts f JOIN my_words m ON m.rowid = f.rowid " +
+        "SELECT m.* FROM my_words_fts JOIN my_words m ON m.rowid = my_words_fts.rowid " +
             "WHERE my_words_fts MATCH :query ORDER BY m.markedAt DESC LIMIT :limit",
     )
     fun searchFts(query: String, limit: Int = 200): Flow<List<MyWordEntity>>

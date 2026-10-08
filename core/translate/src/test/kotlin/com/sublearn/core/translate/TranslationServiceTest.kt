@@ -90,8 +90,9 @@ class TranslationServiceTest {
         val long = (1..120).joinToString(". ") { "sentence $it" }
         val result = service.translate(long).getOrThrow()
         assertTrue(provider.calls > 1)
-        assertTrue(result.startsWith("[EN->FA]"))
-        assertTrue(result.contains("SENTENCE 120".lowercase()) || result.contains("SENTENCE 120"))
+        assertTrue(result.startsWith("SENTENCE 1."))
+        assertTrue(result.endsWith("SENTENCE 120"))
+        assertEquals(long.uppercase(), result)
     }
 
     @Test

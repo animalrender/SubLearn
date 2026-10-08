@@ -11,8 +11,9 @@ import java.nio.charset.StandardCharsets
  * Decodes subtitle bytes without asking the user, because a wrong charset makes Persian
  * subtitles unreadable and no Android API detects one (SUB-7).
  *
- * Order: byte-order mark, UTF-8 (strict), UTF-16 heuristic, then the legacy Windows code page
- * that Persian SRT files were exported with most often, then Latin-1 as the never-failing fallback.
+ * Order: byte-order mark, UTF-16 heuristic (NUL bytes are valid UTF-8, so this must come first),
+ * UTF-8 (strict), then the legacy Windows code page that Persian SRT files were exported with most
+ * often, then Latin-1 as the never-failing fallback.
  */
 object CharsetSniffer {
     private val windows1256: Charset by lazy { lookup("windows-1256") ?: lookup("CP1256") ?: StandardCharsets.ISO_8859_1 }
@@ -32,19 +33,20 @@ object CharsetSniffer {
                 return Decoded(String(bytes, 3, bytes.size - 3, StandardCharsets.UTF_8), StandardCharsets.UTF_8, true)
 
             bytes.size >= 2 && bytes[0] == 0xFF.toByte() && bytes[1] == 0xFE.toByte() ->
-                return Decoded(decodeUtf16(bytes, littleEndian = true), StandardCharsets.UTF_16LE, true)
+                return Decoded(decodeUtf16(bytes.copyOfRange(2, bytes.size), littleEndian = true), StandardCharsets.UTF_16LE, true)
 
             bytes.size >= 2 && bytes[0] == 0xFE.toByte() && bytes[1] == 0xFF.toByte() ->
-                return Decoded(decodeUtf16(bytes, littleEndian = false), StandardCharsets.UTF_16BE, true)
+                return Decoded(decodeUtf16(bytes.copyOfRange(2, bytes.size), littleEndian = false), StandardCharsets.UTF_16BE, true)
         }
 
-        decodeStrict(bytes, StandardCharsets.UTF_8)?.let { return Decoded(it, StandardCharsets.UTF_8, false) }
-
         if (looksLikeUtf16(bytes)) {
-            val little = countNulOnEven(bytes) > countNulOnOdd(bytes)
+            // Little endian puts the high (zero) byte of a Latin character second, i.e. at odd offsets.
+            val little = countNulOnOdd(bytes) > countNulOnEven(bytes)
             val charset = if (little) StandardCharsets.UTF_16LE else StandardCharsets.UTF_16BE
             return Decoded(decodeUtf16(bytes, little), charset, false)
         }
+
+        decodeStrict(bytes, StandardCharsets.UTF_8)?.let { return Decoded(it, StandardCharsets.UTF_8, false) }
 
         // Persian subtitles exported on Windows are commonly windows-1256. Prefer it when it
         // produces a plausible Arabic-script text, otherwise fall back to windows-1250 for

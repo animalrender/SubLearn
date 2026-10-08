@@ -1,13 +1,12 @@
 package com.sublearn.core.translate
 
-import android.content.Context
 import com.google.android.gms.tasks.Task
 import com.google.mlkit.common.MlKitException
 import com.google.mlkit.common.model.DownloadConditions
+import com.google.mlkit.common.model.RemoteModelManager
 import com.google.mlkit.nl.translate.TranslateLanguage
-import com.google.mlkit.nl.translate.TranslateModel
+import com.google.mlkit.nl.translate.TranslateRemoteModel
 import com.google.mlkit.nl.translate.Translation
-import com.google.mlkit.nl.translate.TranslationModelManager
 import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
 import com.sublearn.core.common.AppResult
@@ -16,7 +15,7 @@ import com.sublearn.core.common.SubLearnLogger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWith
+import kotlin.coroutines.resumeWithException
 
 /**
  * On-device translation through the official ML Kit Translate client.
@@ -24,15 +23,17 @@ import kotlin.coroutines.resumeWith
  * ML Kit downloads and owns its own models, which is exactly what the licence audit requires: no
  * extracted `.bipe` packs, no reverse-engineered model loader (docs/DECISIONS.md D-014). Model
  * files live in the app's private storage and are never copied into the repository.
+ *
+ * ML Kit stores one model per language (English is the pivot and ships with the SDK), so a "pair"
+ * here is available when both of its language models are on the device.
  */
 class MlKitTranslationProvider(
-    private val context: Context,
     private val logger: SubLearnLogger? = null,
 ) : TranslationProvider {
     override val id: String = PROVIDER_ID
 
-    private val modelManager: TranslationModelManager
-        get() = TranslationManagerHolder.get(context)
+    private val modelManager: RemoteModelManager
+        get() = RemoteModelManager.getInstance()
 
     @Volatile
     private var cachedTranslator: Translator? = null
@@ -40,8 +41,23 @@ class MlKitTranslationProvider(
     @Volatile
     private var cachedKey: String? = null
 
-    override suspend fun isPairAvailable(sourceLanguage: String, targetLanguage: String): Boolean =
-        runCatching { modelManager.isModelDownloaded(languageTag(sourceLanguage), languageTag(targetLanguage)) }.getOrDefault(false)
+    override suspend fun isPairAvailable(sourceLanguage: String, targetLanguage: String): Boolean {
+        val source = languageTag(sourceLanguage)
+        val target = languageTag(targetLanguage)
+        return isModelDownloaded(source) && isModelDownloaded(target)
+    }
+
+    private suspend fun isModelDownloaded(language: String): Boolean {
+        if (language == TranslateLanguage.ENGLISH) return true
+        return try {
+            modelManager.isModelDownloaded(remoteModel(language)).awaitTask()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (t: Throwable) {
+            logger?.log(SubLearnLogger.Level.WARN, TAG, "model lookup failed for $language: ${t.message}")
+            false
+        }
+    }
 
     override suspend fun translate(text: String, sourceLanguage: String, targetLanguage: String): AppResult<String> {
         if (text.isBlank()) return AppResult.success("")
@@ -56,8 +72,11 @@ class MlKitTranslationProvider(
         if (texts.isEmpty()) return emptyList()
         val source = languageTag(sourceLanguage)
         val target = languageTag(targetLanguage)
-        val translator = runCatching { obtainTranslator(source, target) }
-            .getOrElse { return texts.map { AppResult.failure(errorFrom(it, source, target)) } }
+        val translator = try {
+            obtainTranslator(source, target)
+        } catch (t: Throwable) {
+            return texts.map { AppResult.failure(errorFrom(t, source, target)) }
+        }
         return texts.map { text ->
             try {
                 AppResult.success(translator.translate(text).awaitTask())
@@ -87,11 +106,10 @@ class MlKitTranslationProvider(
     }
 
     /**
-     * Downloads the pair's model with ML Kit's own task API.
+     * Downloads the pair's models with ML Kit's own task API.
      *
-     * Progress is reported as coarse states rather than bytes: the bundled `translate` client only
-     * exposes byte counts through a listener whose shape changed across ML Kit versions, and the
-     * app prefers a stable indeterminate indicator over a version-fragile API (docs/KNOWN_ISSUES.md).
+     * Progress is reported as coarse states rather than bytes: the `translate` client exposes no
+     * byte counts, and the app prefers a stable indeterminate indicator (docs/KNOWN_ISSUES.md).
      */
     override suspend fun downloadModel(
         sourceLanguage: String,
@@ -106,7 +124,7 @@ class MlKitTranslationProvider(
         }
         onProgress(TranslationProgress(TranslationProgress.Status.PENDING))
         return try {
-            obtainTranslator(source, target).downloadModelIfNeeded(downloadConditions()).awaitTask<Unit>()
+            obtainTranslator(source, target).downloadModelIfNeeded(downloadConditions()).awaitTask()
             onProgress(TranslationProgress(TranslationProgress.Status.SUCCESS))
             AppResult.success(Unit)
         } catch (cancelled: CancellationException) {
@@ -123,18 +141,43 @@ class MlKitTranslationProvider(
         .requireWifi()
         .build()
 
-    override suspend fun deleteModel(sourceLanguage: String, targetLanguage: String): AppResult<Unit> =
-        runCatching {
-            modelManager.deleteDownloadedModel(languageTag(sourceLanguage), languageTag(targetLanguage)).awaitTask<Unit>()
+    /** Removes the non-English model(s) of the pair; the English pivot is part of the SDK. */
+    override suspend fun deleteModel(sourceLanguage: String, targetLanguage: String): AppResult<Unit> {
+        val languages = listOf(languageTag(sourceLanguage), languageTag(targetLanguage))
+            .distinct()
+            .filter { it != TranslateLanguage.ENGLISH }
+        return try {
+            synchronized(this) {
+                cachedTranslator?.close()
+                cachedTranslator = null
+                cachedKey = null
+            }
+            for (language in languages) modelManager.deleteDownloadedModel(remoteModel(language)).awaitTask()
             AppResult.success(Unit)
-        }.getOrElse {
-            if (it is CancellationException) throw it
-            AppResult.failure(SubLearnError.from(it))
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (t: Throwable) {
+            AppResult.failure(SubLearnError.from(t))
         }
+    }
 
-    override suspend fun downloadedPairs(): List<Pair<String, String>> = runCatching {
-        modelManager.downloadedModels.getOrEmpty().map { it.sourceLanguage to it.targetLanguage }
-    }.getOrDefault(emptyList())
+    /** Every downloaded language paired with the English pivot, in both directions. */
+    override suspend fun downloadedPairs(): List<Pair<String, String>> {
+        val downloaded = try {
+            modelManager.getDownloadedModels(TranslateRemoteModel::class.java).awaitTask()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (t: Throwable) {
+            logger?.log(SubLearnLogger.Level.WARN, TAG, "listing downloaded models failed: ${t.message}")
+            return emptyList()
+        }
+        return downloaded.map { it.language }
+            .filter { it != TranslateLanguage.ENGLISH }
+            .sorted()
+            .flatMap { language -> listOf(TranslateLanguage.ENGLISH to language, language to TranslateLanguage.ENGLISH) }
+    }
+
+    private fun remoteModel(language: String): TranslateRemoteModel = TranslateRemoteModel.Builder(language).build()
 
     /** BCP-47 in, ML Kit code out. Unknown codes pass through so a user list still works. */
     internal fun languageTag(tag: String): String {
@@ -164,45 +207,48 @@ class MlKitTranslationProvider(
         }
     }
 
-    private fun errorFrom(t: Throwable, source: String, target: String): SubLearnError = when {
-        t is MlKitException && t.errorCode == MlKitException.CODE_UNAVAILABLE_MODEL -> SubLearnError(
-            SubLearnError.Kind.ModelMissing,
-            "translation model $source->$target is not downloaded",
-            t,
-        )
+    private fun errorFrom(t: Throwable, source: String, target: String): SubLearnError {
+        if (t !is MlKitException) return SubLearnError.from(t)
+        val message = t.message.orEmpty()
+        return when {
+            t.errorCode == MlKitException.NETWORK_ISSUE -> SubLearnError(
+                SubLearnError.Kind.NetworkUnavailable,
+                "the model needs to be fetched once before it can work offline",
+                t,
+            )
 
-        t is MlKitException && (t.message?.contains("network", ignoreCase = true) == true) -> SubLearnError(
-            SubLearnError.Kind.NetworkUnavailable,
-            "the model needs to be fetched once before it can work offline",
-            t,
-        )
-        t is MlKitException -> SubLearnError(SubLearnError.Kind.Unknown, t.message ?: "ML Kit error ${t.errorCode}", t)
+            t.errorCode == MlKitException.NOT_FOUND ||
+                t.errorCode == MlKitException.UNAVAILABLE ||
+                message.contains("download", ignoreCase = true) ||
+                message.contains("model", ignoreCase = true) -> SubLearnError(
+                SubLearnError.Kind.ModelMissing,
+                "translation model $source->$target is not downloaded",
+                t,
+            )
 
-        else -> SubLearnError.from(t)
+            t.errorCode == MlKitException.NOT_ENOUGH_SPACE -> SubLearnError(
+                SubLearnError.Kind.Unknown,
+                "not enough free space for the translation model",
+                t,
+            )
+
+            else -> SubLearnError(SubLearnError.Kind.Unknown, message.ifBlank { "ML Kit error ${t.errorCode}" }, t)
+        }
     }
 
     private suspend fun <T> Task<T>.awaitTask(): T = suspendCancellableCoroutine { cont ->
-        addOnSuccessListener { value -> if (cont.isActive) cont.resume(value) }
-        addOnFailureListener { t ->
-            if (cont.isActive) cont.resumeWith(Result.failure(t ?: IllegalStateException("ML Kit task failed")))
+        addOnCompleteListener { task ->
+            val failure = task.exception
+            when {
+                failure != null -> if (cont.isActive) cont.resumeWithException(failure)
+                task.isCanceled -> cont.cancel(CancellationException("ML Kit task cancelled"))
+                else -> if (cont.isActive) cont.resume(task.result)
+            }
         }
-        addOnCanceledListener { if (cont.isActive) cont.cancel(CancellationException("translation cancelled")) }
     }
-
-    private fun <T> Task<T>.getOrEmpty(): T? = if (isSuccessful) result else null
 
     companion object {
         const val PROVIDER_ID = "mlkit"
         private const val TAG = "Translate"
-    }
-}
-
-/** Keeps one manager per process: ML Kit's own client is a singleton and repeated gets are wasteful. */
-private object TranslationManagerHolder {
-    @Volatile
-    private var instance: TranslationModelManager? = null
-
-    fun get(context: Context): TranslationModelManager = instance ?: synchronized(this) {
-        instance ?: Translation.getClientManager(context.applicationContext).also { instance = it }
     }
 }

@@ -36,10 +36,14 @@ class BlockBuilder(
             val gap = cue.startMs - previous.endMs
             val duration = cue.endMs - blockCues.first().startMs
             val combinedLength = blocksText(blockCues).length + cue.text.length + 1
+            // With breakOnSentenceEnd a cue is only absorbed when it reads as the continuation of the
+            // previous one; without it everything inside the gap, duration and length limits merges.
+            val sentenceBoundary = config.breakOnSentenceEnd &&
+                !SubtitleNormalizer.continuesSentence(previous.text, cue.text)
             val mustClose = gap > config.mergeGapMs ||
                 duration > config.maxBlockDurationMs ||
                 combinedLength > config.maxBlockChars ||
-                (config.breakOnSentenceEnd && SubtitleNormalizer.endsSentence(previous.text))
+                sentenceBoundary
             if (mustClose) {
                 flush()
                 blockCues += cue
@@ -49,7 +53,8 @@ class BlockBuilder(
             if (index == regroupedCues.lastIndex) flush()
         }
         flush()
-        return blocks
+        // Ids are the position in the list: the player, My Words and the AI context rely on that.
+        return blocks.mapIndexed { index, block -> if (block.id == index.toLong()) block else block.copy(id = index.toLong()) }
     }
 
     private fun blocksText(cues: List<Cue>): String = cues.joinToString(" ") { it.text }

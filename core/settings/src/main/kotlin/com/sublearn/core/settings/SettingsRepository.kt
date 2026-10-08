@@ -180,8 +180,8 @@ class DefaultSettingsRepository(
         val imported = decoded.getOrNull() ?: return@withLock AppResult.failure(decoded.errorOrNull()!!)
         val present = presentSections(text)
         val merged = if (mode == ImportMode.REPLACE) imported else mergeSections(state.value, imported, present)
-        val known = importedSections(imported)
-        val dropped = Sections.ALL.filterNot { known.contains(it) }
+        val known = Sections.ALL.filter { it in present }
+        val dropped = present.filterNot { it in Sections.ALL || it == SCHEMA_VERSION_KEY }.sorted()
         persist(merged)
         AppResult.success(
             ImportReport(
@@ -225,20 +225,9 @@ class DefaultSettingsRepository(
         storage.write(key, SettingsJson.encode(value))
     }
 
-    private fun importedSections(value: AppSettings): List<String> = buildList {
-        add(Sections.PLAYER)
-        add(Sections.SUBTITLES)
-        add(Sections.FONTS)
-        add(Sections.APPEARANCE)
-        if (value.quickActions.specs.isNotEmpty()) add(Sections.QUICK_ACTIONS)
-        if (value.gestures.mapping.isNotEmpty()) add(Sections.GESTURES)
-        add(Sections.SHADOWING)
-        add(Sections.LEARNING)
-        add(Sections.AI)
-    }
-
     companion object {
         const val KEY = "app_settings"
+        private const val SCHEMA_VERSION_KEY = "schemaVersion"
     }
 }
 

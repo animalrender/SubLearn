@@ -1,6 +1,8 @@
 package com.sublearn.core.lexicon
 
 import com.sublearn.core.common.FeatureFlag
+import com.sublearn.core.common.NotImplementedInThisBuild
+import com.sublearn.core.common.SubLearnError
 import com.sublearn.core.settings.CefrLevel
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -71,10 +73,13 @@ class LexiconTest {
 
     @Test
     fun `stubs refuse instead of pretending`() = runTest {
-        assertTrue(runCatching { NotImplementedWordAnalyzer().analyze(com.sublearn.core.subtitles.SubtitleBlock(0, 0, 1, "x", "t", emptyList()), "w") }.exceptionOrNull() is NotImplementedError)
-        assertTrue(runCatching { NotImplementedSpeechToText().generate("u", "en") }.exceptionOrNull() is NotImplementedError)
-        assertTrue(runCatching { NotImplementedUpdateChecker().check("0.1.0") }.exceptionOrNull() is NotImplementedError)
-        assertTrue(runCatching { NotImplementedLevelDetector().detect(listOf("a")) }.exceptionOrNull() is NotImplementedError)
+        val block = com.sublearn.core.subtitles.SubtitleBlock(0, 0, 1, "x", "t", emptyList())
+        val analyzed = runCatching { NotImplementedWordAnalyzer().analyze(block, "w") }.exceptionOrNull()
+        assertTrue(analyzed is NotImplementedInThisBuild)
+        assertEquals(SubLearnError.Kind.NotImplemented, SubLearnError.from(analyzed!!).kind)
+        assertTrue(runCatching { NotImplementedSpeechToText().generate("u", "en") }.exceptionOrNull() is NotImplementedInThisBuild)
+        assertTrue(runCatching { NotImplementedUpdateChecker().check("0.1.0") }.exceptionOrNull() is NotImplementedInThisBuild)
+        assertTrue(runCatching { NotImplementedLevelDetector().detect(listOf("a")) }.exceptionOrNull() is NotImplementedInThisBuild)
         assertEquals(false, NotImplementedDictionaryProvider().isAvailable())
         assertEquals(FeatureFlag.POS_ANALYSIS, NotImplementedWordAnalyzer().feature)
     }

@@ -137,6 +137,7 @@ class DefaultSubtitleRepository(private val source: SubtitleFileSource) : Subtit
         val base = videoName.substringBeforeLast('.')
         return source.candidatesFor(videoKey)
             .mapNotNull { file ->
+                if (!SubtitleFormat.isUnambiguousName(file.name)) return@mapNotNull null
                 if (!SubtitleAutoMatcher.matches(base, file.name)) return@mapNotNull null
                 val language = SubtitleLanguage.guessFromName(file.name)
                 SubtitleCandidate(

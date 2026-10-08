@@ -91,7 +91,8 @@ data class SubLearnError(
                 t,
             )
             is SecurityException -> SubLearnError(Kind.PermissionDenied, t.message ?: "Permission denied", t)
-            is NotImplementedError -> SubLearnError(Kind.NotImplemented, t.message ?: "Not implemented", t)
+            is NotImplementedError, is NotImplementedInThisBuild ->
+                SubLearnError(Kind.NotImplemented, t.message ?: "Not implemented", t)
             else -> SubLearnError(Kind.Unknown, t.javaClass.simpleName + ": " + (t.message ?: ""), t)
         }
     }

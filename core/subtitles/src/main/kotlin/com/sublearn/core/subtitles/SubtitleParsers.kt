@@ -1,5 +1,7 @@
 package com.sublearn.core.subtitles
 
+import com.sublearn.core.common.TimeUtils
+
 /** Format detection and parser selection shared by every caller. */
 object SubtitleParsers {
     private val srtCue = Regex("""^\s*\d+\s*\n\s*\d{1,2}:\d{2}""")
@@ -42,11 +44,9 @@ object SubtitleParsers {
         cues.forEachIndexed { index, cue ->
             append(index + 1)
             append('\n')
-            append(com.sublearn.core.common.TimeUtils.formatTimestamp(cue.startMs, '.'))
-                .replace(Regex("""^(\d+):(\d{2}):(\d{2})\.(\d{3})$"""), "$1:$2:$3,$4")
+            append(TimeUtils.formatTimestamp(cue.startMs, ','))
             append(" --> ")
-            append(com.sublearn.core.common.TimeUtils.formatTimestamp(cue.endMs, '.'))
-                .replace(Regex("""^(\d+):(\d{2}):(\d{2})\.(\d{3})$"""), "$1:$2:$3,$4")
+            append(TimeUtils.formatTimestamp(cue.endMs, ','))
             append('\n')
             append(cue.text)
             append("\n\n")
