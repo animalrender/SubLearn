@@ -1,6 +1,9 @@
 package com.sublearn.core.settings
 
 import com.sublearn.core.subtitles.TrackRole
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -63,9 +66,9 @@ class SettingsRepositoryTest {
     @Test
     fun `concurrent updates are serialised and both land`() = runTest {
         val repo = DefaultSettingsRepository(InMemorySettingsStorage())
-        kotlinx.coroutines.coroutineScope {
+        coroutineScope {
             repeat(20) {
-                kotlinx.coroutines.launch(kotlinx.coroutines.Dispatchers.Unconfined) {
+                launch(Dispatchers.Unconfined) {
                     repo.update { it.copy(shadowing = it.shadowing.copy(repeatCount = it.shadowing.repeatCount + 1)) }
                 }
             }
