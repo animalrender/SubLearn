@@ -88,6 +88,7 @@ fun PopupLayer(
             shape = RoundedCornerShape(settings.appearance.cornerRadiusDp.dp),
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
             tonalElevation = Dimens.cardElevation,
+            shadowElevation = spec.shadowElevationDp.dp,
         ) {
             Column(
                 modifier = Modifier

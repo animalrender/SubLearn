@@ -33,8 +33,9 @@ class OkHttpJsonClient(
         return response.use { resp ->
             val body = resp.body?.let { responseBody ->
                 val source = responseBody.source()
-                source.request(maxResponseBytes.toLong())
-                source.buffer.snapshot(minOf(maxResponseBytes.toLong(), source.buffer.size)).utf8()
+                val budget = maxResponseBytes.toLong()
+                source.request(budget)
+                source.buffer.snapshot(minOf(budget, source.buffer.size.toLong())).utf8()
             }.orEmpty()
             HttpJsonResponse(status = resp.code, body = body, contentType = resp.header("content-type"))
         }

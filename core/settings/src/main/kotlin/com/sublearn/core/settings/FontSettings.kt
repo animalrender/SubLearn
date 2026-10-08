@@ -112,17 +112,17 @@ data class FontSpec(
             val isNative = role == SubtitleLayerRole.NATIVE
             val base = when (surface) {
                 FontSurface.APP_MENUS -> FontSpec(
-                    family = FontFamilyToken.DEFAULT
-                    sizeSp = 15f
-                    weight = FontWeightToken.REGULAR
-                    lineHeightEm = 1.4f
+                    family = FontFamilyToken.DEFAULT,
+                    sizeSp = 15f,
+                    weight = FontWeightToken.REGULAR,
+                    lineHeightEm = 1.4f,
                 )
                 FontSurface.PLAYER_CHROME -> FontSpec(
-                    family = FontFamilyToken.DEFAULT
-                    sizeSp = 13f
-                    weight = FontWeightToken.MEDIUM
-                    colorArgb = 0xFFFFFFFF
-                    lineHeightEm = 1.2f
+                    family = FontFamilyToken.DEFAULT,
+                    sizeSp = 13f,
+                    weight = FontWeightToken.MEDIUM,
+                    colorArgb = 0xFFFFFFFF,
+                    lineHeightEm = 1.2f,
                 )
                 FontSurface.SUBTITLE_LEARNING -> FontSpec(
                     sizeSp = if (isNative) 22f else 26f,

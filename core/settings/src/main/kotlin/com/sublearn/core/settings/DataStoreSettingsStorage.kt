@@ -41,7 +41,7 @@ class DataStoreSettingsStorage(
         fun create(context: Context): DataStoreSettingsStorage {
             val store = androidx.datastore.preferences.core.PreferenceDataStoreFactory.create(
                 produceFile = { context.preferencesDataStoreFile(FILE_NAME) },
-                corruptionHandler = androidx.datastore.core.handlers.ReplaceFileCorruptionHandler(emptyPreferences()),
+                corruptionHandler = androidx.datastore.core.handlers.ReplaceFileCorruptionHandler { emptyPreferences() },
             )
             return DataStoreSettingsStorage(store)
         }

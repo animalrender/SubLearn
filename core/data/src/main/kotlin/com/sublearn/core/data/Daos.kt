@@ -70,10 +70,16 @@ interface MyWordDao {
     @Query("UPDATE my_words SET translation = :translation WHERE id = :id")
     suspend fun updateTranslation(id: Long, translation: String?)
 
-    /** FTS search; falls back to a LIKE query when the query has no FTS-safe tokens. */
+    /**
+     * FTS search; [searchLike] is the fallback when the query has no FTS-safe tokens.
+     *
+     * Ordered by recency rather than by the FTS `rank` column: `rank` is a hidden column of the
+     * external-content table and is not visible through this join, and the most recently marked word
+     * is what a learner wants at the top anyway.
+     */
     @Query(
         "SELECT m.* FROM my_words_fts f JOIN my_words m ON m.rowid = f.rowid " +
-            "WHERE my_words_fts MATCH :query ORDER BY rank LIMIT :limit",
+            "WHERE my_words_fts MATCH :query ORDER BY m.markedAt DESC LIMIT :limit",
     )
     fun searchFts(query: String, limit: Int = 200): Flow<List<MyWordEntity>>
 
