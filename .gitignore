@@ -1,0 +1,45 @@
+# Build outputs
+.gradle/
+build/
+*/build/
+app/build/
+.kotlin/
+captures/
+*.apk
+*.aab
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+.cxx/
+.externalNativeBuild/
+*.prof
+
+# IDE / OS
+.idea/
+*.iml
+.DS_Store
+local.properties
+.fleet/
+.vscode/
+
+# Secrets & signing material (never commit)
+*.jks
+*.keystore
+*.p12
+keystore.properties
+secrets.properties
+google-services.json
+
+# Third-party data / model files that must not be shipped (see docs/DECISIONS.md, LICENSE SAFETY)
+*.sqlite
+*.sqlite3
+*.db
+*.bipe
+fastdic_plain*
+*translate_enfa*
+*translate_faen*
+assets/dictionaries/
+assets/models/
+
+# Scratch
+__pycache__/
+*.log
