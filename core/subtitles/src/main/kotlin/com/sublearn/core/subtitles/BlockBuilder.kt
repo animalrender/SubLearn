@@ -8,9 +8,12 @@ package com.sublearn.core.subtitles
 class BlockBuilder(
     private val config: NormalizerConfig = NormalizerConfig.DEFAULT,
 ) {
-    fun build(cues: List<Cue>, trackId: String = ""): List<SubtitleBlock> = build(SubtitleNormalizer.regroup(cues, config), trackId)
+    /** Cleans, regroups and groups in one call; the entry point every caller uses. */
+    fun build(cues: List<Cue>, trackId: String = ""): List<SubtitleBlock> =
+        buildRegrouped(SubtitleNormalizer.regroup(cues, config), trackId)
 
-    fun build(regroupedCues: List<Cue>, trackId: String): List<SubtitleBlock> {
+    /** Groups an already-regrouped cue list, so a caller that cleaned the text does not pay twice. */
+    private fun buildRegrouped(regroupedCues: List<Cue>, trackId: String): List<SubtitleBlock> {
         if (regroupedCues.isEmpty()) return emptyList()
         val blocks = ArrayList<SubtitleBlock>(regroupedCues.size)
         var blockCues = mutableListOf<Cue>()
