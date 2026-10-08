@@ -58,6 +58,7 @@ dependencies {
     api(project(":core:translate"))
     api(project(":core:ai"))
     api(project(":core:data"))
+    api(project(":core:security"))
     api(project(":core:lexicon"))
     api(libs.androidx.navigation.compose)
     api(libs.koin.compose)

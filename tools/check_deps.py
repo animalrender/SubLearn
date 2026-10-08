@@ -6,6 +6,10 @@
 2. A build script must not reference a version-catalog alias that does not exist — that fails the
    Kotlin DSL compile of the whole build, before any module is even configured.
 
+3. A module must depend on the module whose `com.sublearn.*` package it imports, directly or through an
+   `api` edge — the error `core:ai` importing `SubtitleBlock` without `:core:subtitles` is invisible to a
+   symbol check that only asks "does this name exist anywhere".
+
 Usage: python3 tools/check_deps.py
 Exit code is non-zero when anything is reported.
 """
@@ -83,6 +87,65 @@ def aliases_in(text: str, catalog: set[str], namespace: str = "") -> set[str]:
     return found
 
 
+def project_deps(build_text: str) -> tuple[set[str], set[str]]:
+    """(api deps, implementation deps) of a module, as project paths like "core/subtitles"."""
+    api = {"/".join(m.strip(":").split(":")) for m in re.findall(r'api\(project\("(:[\w:]+)"\)\)', build_text)}
+    impl = {"/".join(m.strip(":").split(":")) for m in re.findall(r'implementation\(project\("(:[\w:]+)"\)\)', build_text)}
+    return api, impl
+
+
+def visible_modules(root: Path, module: Path) -> set[str]:
+    """Modules whose public API this module can see: its deps plus their transitive api edges."""
+    graph = {}
+    for build in root.rglob("build.gradle.kts"):
+        if "build" in build.parts and build.parent.name == "build":
+            continue
+        path = build.parent
+        if path == root:
+            continue
+        graph[str(path)] = project_deps(build.read_text())
+    seen: set[str] = set()
+    frontier = [module]
+    first = True
+    while frontier:
+        current = Path(frontier.pop())
+        api, impl = graph.get(str(current), (set(), set()))
+        deps = api | impl if first else api
+        first = False
+        for dep in deps:
+            if dep not in seen:
+                seen.add(dep)
+                frontier.append(Path(dep))
+    return seen
+
+
+def cross_module_import_problems(root: Path, modules: list[Path], sources: list[Path]) -> list[str]:
+    problems: list[str] = []
+    for path in sources:
+        module = module_of(path)
+        text = path.read_text()
+        imports = re.findall(r"^import\s+com\.sublearn\.((?:core|feature|app)\.[\w.]+)", text, re.M)
+        if not imports:
+            continue
+        available = visible_modules(root, module)
+        for fq in imports:
+            owner = "com.sublearn.".replace("com.sublearn.", "") + fq
+            parts = fq.split(".")
+            if len(parts) < 2:
+                continue
+            candidate = f"{parts[0]}/{parts[1]}"
+            if candidate == str(module):
+                continue
+            if not (root / candidate / "build.gradle.kts").exists():
+                continue  # com.sublearn.app.<package> — the app module is flat
+            if candidate not in available:
+                problems.append(
+                    f"{module}: {path.name} imports com.sublearn.{fq.split('.')[0]}.{parts[1]}.* "
+                    f"but does not depend on :{parts[0]}:{parts[1]}"
+                )
+    return sorted(set(problems))
+
+
 def main() -> int:
     root = Path(".")
     libraries = catalog_keys(root, "libraries")
@@ -117,6 +180,8 @@ def main() -> int:
         for key in re.findall(r"libs\.plugins\.([a-zA-Z0-9.]+)", root_build.read_text()):
             if key.replace(".", "-") not in plugins:
                 problems.append(f"root: build script uses libs.plugins.{key} but the catalog has no such plugin")
+
+    problems.extend(cross_module_import_problems(root, modules, sources))
 
     for problem in problems:
         print(problem)

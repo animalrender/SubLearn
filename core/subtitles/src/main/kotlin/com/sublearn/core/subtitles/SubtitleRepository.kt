@@ -53,7 +53,7 @@ class InMemorySubtitleSource(files: Map<String, String>) : SubtitleFileSource {
             .map { SubtitleFile(key = it, name = it, sizeBytes = contents.getValue(it).toByteArray().size.toLong()) }
 
     override suspend fun read(file: SubtitleFile): ByteArray =
-        contents[file.key] ?: throw java.io.FileNotFoundException(file.key)
+        contents[file.key]?.toByteArray() ?: throw java.io.FileNotFoundException(file.key)
 }
 
 /** Result of loading one track: everything the player needs to render and index it. */

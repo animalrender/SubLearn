@@ -53,7 +53,7 @@ sealed interface AppResult<out T> {
         fun <T> success(value: T): AppResult<T> = Success(value)
         fun failure(error: SubLearnError): AppResult<Nothing> = Failure(error)
 
-        fun <T> of(block: () -> T): AppResult<T> =
+        inline fun <T> of(block: () -> T): AppResult<T> =
             try {
                 Success(block())
             } catch (cancelled: kotlinx.coroutines.CancellationException) {

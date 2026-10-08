@@ -16,6 +16,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 
 dependencies {
     api(project(":core:common"))
+    api(project(":core:subtitles"))
     api(libs.okhttp)
     api(libs.kotlinx.serialization.json)
     api(libs.coroutines.core)

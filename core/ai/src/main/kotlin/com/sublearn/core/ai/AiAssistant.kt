@@ -10,7 +10,7 @@ import com.sublearn.core.subtitles.SubtitleBlock
  */
 class AiAssistant(
     private val providers: Map<String, AiProvider>,
-    private val defaultProviderId: String = GeminiProvider().id,
+    private val defaultProviderId: String = DEFAULT_PROVIDER_ID,
 ) {
     constructor(
         gemini: AiProvider,
@@ -51,6 +51,11 @@ class AiAssistant(
                     AppResult.failure(SubLearnError.from(throwable))
                 },
             )
+    }
+
+    companion object {
+        /** Matches [GeminiProvider.id]; naming the constant avoids building a provider to read it. */
+        const val DEFAULT_PROVIDER_ID = "gemini"
     }
 
     /** Assembles the request from the user's template and the current block (AI-2, AI-4). */
