@@ -2,6 +2,7 @@ package com.sublearn.app
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -242,7 +243,7 @@ private fun MenuEntry(icon: ImageVector, labelRes: Int, onClick: () -> Unit) {
 }
 
 @Composable
-private fun TabEntry(selected: Boolean, icon: ImageVector, labelRes: Int, onClick: () -> Unit) {
+private fun RowScope.TabEntry(selected: Boolean, icon: ImageVector, labelRes: Int, onClick: () -> Unit) {
     NavigationBarItem(
         selected = selected,
         onClick = onClick,
