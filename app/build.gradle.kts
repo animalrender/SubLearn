@@ -6,6 +6,10 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Release signing comes from the environment only (CI secrets → files outside the tree); without it
+// the release build falls back to the debug key so that anyone can reproduce the build (REQ-6).
+val releaseKeystorePath: String? = System.getenv("SUBLEARN_KEYSTORE_PATH")?.takeIf { it.isNotBlank() }
+
 android {
     namespace = "com.sublearn.app"
     compileSdk = libs.versions.compileSdk.get().toInt()
@@ -21,6 +25,17 @@ android {
         vectorDrawables { useSupportLibrary = true }
     }
 
+    signingConfigs {
+        if (releaseKeystorePath != null) {
+            create("release") {
+                storeFile = file(releaseKeystorePath)
+                storePassword = System.getenv("SUBLEARN_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("SUBLEARN_KEY_ALIAS")
+                keyPassword = System.getenv("SUBLEARN_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             isMinifyEnabled = false
@@ -28,11 +43,24 @@ android {
             versionNameSuffix = "-debug"
         }
         release {
-            // Debug-style signing only; a release signing config is wired from CI secrets (see docs/releasing).
+            // Shrunk but not obfuscated (see proguard-rules.pro and docs/DECISIONS.md D-21): stack traces
+            // from the first public builds must be readable without a mapping file.
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+        }
+    }
+
+    // One APK per common ABI plus a universal one; the release workflow attaches all four to the
+    // GitHub Release. ML Kit's translation engine is the only native code, so the split is what
+    // keeps the per-device download small.
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86_64")
+            isUniversalApk = true
         }
     }
 
