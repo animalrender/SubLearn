@@ -54,9 +54,22 @@ def module_of(path: Path) -> Path:
     return Path(*parts[: parts.index("src")])
 
 
-def catalog_keys(root: Path, kind: str) -> set[str]:
+def catalog_keys(root: Path, section: str) -> set[str]:
+    """Keys of one table in the version catalog. Entries may span several lines, so parse sections."""
     text = (root / "gradle" / "libs.versions.toml").read_text()
-    return set(re.findall(rf"^([a-zA-Z0-9-]+)\s*=\s*\{{\s*{kind}", text, re.M))
+    current = ""
+    keys: set[str] = set()
+    for line in text.splitlines():
+        stripped = line.strip()
+        header = re.fullmatch(r"\[([a-zA-Z0-9_.]+)\]", stripped)
+        if header:
+            current = header.group(1)
+            continue
+        if current == section:
+            key = re.match(r"([a-zA-Z0-9_-]+)\s*=", stripped)
+            if key:
+                keys.add(key.group(1))
+    return keys
 
 
 def aliases_in(text: str, catalog: set[str], namespace: str = "") -> set[str]:
@@ -72,7 +85,7 @@ def aliases_in(text: str, catalog: set[str], namespace: str = "") -> set[str]:
 
 def main() -> int:
     root = Path(".")
-    libraries = catalog_keys(root, "module")
+    libraries = catalog_keys(root, "libraries")
     plugins = catalog_keys(root, "plugins")
     sources = sorted(p for p in root.rglob("*.kt") if "build" not in p.parts and "/src/" in str(p))
     modules = sorted({module_of(p) for p in sources})
