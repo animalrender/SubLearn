@@ -59,7 +59,7 @@ object AiPromptBuilder {
         )
     }
 
-    const val DEFAULT_USER_TEMPLATE = "Explain this line for a learner: \${'$'}{selected}"
+    const val DEFAULT_USER_TEMPLATE = "Explain this line for a learner: \${selected}"
 
     /** Placeholders the editor offers; keeps the settings screen and the builder in sync. */
     val HINTS: Map<String, String> = mapOf(
@@ -157,30 +157,57 @@ object AiAnswerParser {
     )
 
     private val numbered = Regex("^\\d{1,2}[.)]\\s+")
-    private val leadingMarkers = Regex("^[#*>\\-\\s]+")
 
+    /**
+     * Text before the first heading and any paragraph that follows the last section's own paragraph
+     * are "extra": a model that appends a note after the four sections should not have that note
+     * glued to the last section's content. Sections in the middle keep all their paragraphs.
+     */
     fun parse(text: String): AiAnswerSections {
         if (text.isBlank()) return AiAnswerSections.EMPTY
+        val lines = text.lines()
+        val lastHeading = lines.indexOfLast { headingKey(it) != null }
+        if (lastHeading < 0) return AiAnswerSections(meaning = text.trim())
         val buckets = LinkedHashMap<String, StringBuilder>()
-        var current = "extra"
-        var sawHeading = false
-        for (raw in text.lines()) {
+        val preamble = StringBuilder()
+        var current: String? = null
+        var paragraphsInCurrent = 0
+        var afterBlankLine = false
+        for ((index, raw) in lines.withIndex()) {
             val line = raw.trim()
             val heading = headingKey(line)
             if (heading != null) {
                 current = heading
-                sawHeading = true
+                paragraphsInCurrent = 0
+                afterBlankLine = false
                 val rest = remainderAfterHeading(line)
-                if (rest.isNotEmpty()) buckets.getOrPut(heading) { StringBuilder() }.append(rest).append('\n')
+                if (rest.isNotEmpty()) {
+                    buckets.getOrPut(heading) { StringBuilder() }.append(rest).append('\n')
+                    paragraphsInCurrent = 1
+                }
                 continue
             }
             if (line.isEmpty()) {
-                if (current != "extra") buckets.getOrPut(current) { StringBuilder() }.append('\n')
+                afterBlankLine = true
                 continue
             }
-            buckets.getOrPut(current) { StringBuilder() }.append(line).append('\n')
+            val key = current
+            when {
+                key == null -> preamble.append(line).append('\n')
+                index > lastHeading && afterBlankLine && paragraphsInCurrent > 0 -> {
+                    buckets.getOrPut(EXTRA) { StringBuilder() }.append(line).append('\n')
+                    current = EXTRA
+                }
+                else -> {
+                    if (afterBlankLine || paragraphsInCurrent == 0) paragraphsInCurrent++
+                    val target = buckets.getOrPut(key) { StringBuilder() }
+                    if (afterBlankLine && target.isNotEmpty()) target.append('\n')
+                    target.append(line).append('\n')
+                }
+            }
+            afterBlankLine = false
         }
-        if (!sawHeading) return AiAnswerSections(meaning = text.trim())
+        if (preamble.isNotBlank()) buckets.getOrPut(EXTRA) { StringBuilder() }.insert(0, preamble.toString().trim() + "\n")
 
         fun take(key: String): String? = buckets[key]?.toString()?.trim()?.takeIf { it.isNotEmpty() }
 
@@ -189,9 +216,11 @@ object AiAnswerParser {
             whyUsed = take("why"),
             synonyms = take("synonyms"),
             elsewhere = take("elsewhere"),
-            extra = take("extra"),
+            extra = take(EXTRA),
         )
     }
+
+    private const val EXTRA = "extra"
 
     /** Returns the section key when the line looks like a heading, otherwise null. */
     internal fun headingKey(line: String): String? {

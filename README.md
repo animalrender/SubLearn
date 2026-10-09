@@ -46,6 +46,22 @@ The offline dictionary, YouTube, PDF/OCR learning, quizzes, automatic level dete
 and speech-to-text subtitles are designed for but not built. Each has an interface, a flag and a
 short section in [docs/EXTENSION_POINTS.md](docs/EXTENSION_POINTS.md).
 
+## Download
+
+Every tagged version is built by GitHub Actions and attached to the matching entry on the
+[Releases page](https://github.com/animalrender/SubLearn/releases):
+
+| File | Install it on |
+| --- | --- |
+| `SubLearn-<version>-arm64-v8a.apk` | almost every phone made after 2017 |
+| `SubLearn-<version>-armeabi-v7a.apk` | older or very cheap 32-bit phones |
+| `SubLearn-<version>-x86_64.apk` | emulators and Chromebooks |
+| `SubLearn-<version>-universal.apk` | any of the above (larger download) |
+
+`SHA256SUMS` lists the checksum of each file. Releases are signed with the public debug key until a
+release keystore is configured (see `docs/AGENT_REQUESTS.md`, REQ-6), so Android will ask you to
+uninstall before switching to a differently signed build.
+
 ## Build
 
 Requirements: JDK 17, Android SDK platform 35 + build-tools 35.0.0, and the Gradle wrapper (no
@@ -53,10 +69,15 @@ system Gradle needed).
 
 ```bash
 ./gradlew assembleDebug            # APK in app/build/outputs/apk/debug/
+./gradlew assembleRelease          # shrunk, one APK per ABI plus universal, in app/build/outputs/apk/release/
 ./gradlew test                     # every unit test (18 test classes today)
 ./gradlew lintDebug                # Android lint, abort on error
-./gradlew testDebugUnitTest lintDebug assembleDebug --stacktrace   # what CI runs
+./gradlew assembleDebug assembleRelease test lintDebug assembleDebugAndroidTest --continue   # what CI runs
 ```
+
+Release builds use the debug key unless `SUBLEARN_KEYSTORE_PATH`, `SUBLEARN_KEYSTORE_PASSWORD`,
+`SUBLEARN_KEY_ALIAS` and `SUBLEARN_KEY_PASSWORD` are set in the environment. The release workflow
+(`.github/workflows/release.yml`) runs on a `v*` tag or by hand and publishes the APKs itself.
 
 Without a JVM (the agent sandbox case) run the static checks instead and let CI compile:
 
@@ -64,6 +85,7 @@ Without a JVM (the agent sandbox case) run the static checks instead and let CI 
 python3 tools/check_sources.py core app feature tools
 python3 tools/check_symbols.py
 python3 tools/check_deps.py
+python3 tools/check_resources.py core app feature
 ```
 
 Translation needs the ML Kit model, which the Play Store service downloads on first use; the app

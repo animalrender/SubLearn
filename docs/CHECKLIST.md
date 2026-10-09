@@ -3,14 +3,15 @@
 Status codes: **real** = implemented on the shipped path; **stub** = deliberate LATER stub with flag,
 disabled entry and a section in [EXTENSION_POINTS.md](EXTENSION_POINTS.md); **device-pending** = code
 complete, needs the on-device pass (phase 9) because there is no emulator or JVM in the agent sandbox;
-**ci-pending** = also waiting for the first green compile of this branch.
+**ci-pending** = also waiting for the first green compile of this branch; **partial** = part of the
+requirement is on the shipped path and the gap has a KNOWN_ISSUES entry.
 
 | ID | Requirement | Phase | Where | Status | How it was verified / to verify |
 | --- | --- | --- | --- | --- | --- |
 | GEN-1 | Modern, animated UI/UX | 0, 9 | `core/designsystem` (`Motion`, `Tokens`), every `feature:*` screen | real, device-pending | tokens only, no literals; durations named in DESIGN_SYSTEM.md; visual pass on device in phase 9 |
 | GEN-2 | Every option exposed as a setting | 1 | `core/settings/AppSettings.kt`, `feature/settings` sections | real | read a feature, find its knob; the settings tree has a section per group and a search box |
 | GEN-3 | Fonts per language role **and** per surface | 1 | `core/settings/FontSettings.kt` (`FontSurface` × `SubtitleLayerRole`), `feature/settings/MoreSections.kt` | real | change one surface and confirm no other surface moves; `FontSpec.defaultFor` test |
-| GEN-4 | RTL correctness per text run | 1, 9 | `feature/player/SubtitleOverlay.kt`, popups, `values-fa` strings | real, device-pending | 418 EN + 418 FA keys in sync; hit testing uses real `TextLayoutResult`; instrumented test `PlayerPopupsSmokeTest` |
+| GEN-4 | RTL correctness per text run | 1, 9 | `feature/player/SubtitleOverlay.kt`, popups, `values-fa` strings | real, device-pending | 417 EN + 417 FA keys in sync; hit testing uses real `TextLayoutResult`; instrumented test `PlayerPopupsSmokeTest` |
 | GEN-5 | Android best practices | 0-2 | SAF everywhere, `data_extraction_rules.xml`, `locales_config.xml`, PiP, process death | real, device-pending | no storage permissions in the manifest; rotation/PiP/restart checks on device |
 | GEN-6 | Modular, extensible | 0 | 16 modules, `tools/check_deps.py` | real | a feature cannot see another feature (dependency graph is checked by the tool) |
 | GEN-7 | NOW features work offline | 0-8 | `core/translate` (ML Kit), Room, no network in any other path | real | airplane-mode run: play, subtitles, translate after model download, My Words, shadowing, list |
@@ -20,7 +21,7 @@ complete, needs the on-device pass (phase 9) because there is no emulator or JVM
 | PLY-4 | Gestures, all remappable | 2 | `feature/player/Gestures.kt`, `GestureSettings.actionFor/withAction/reset`, settings gesture editor | real | remap volume→seek in settings and confirm; two-finger speed = `PLAYBACK_SPEED` |
 | PLY-5 | Orientation + rotation lock | 2 | `PlayerIntent.Orientation`, `OrientationLock`, `app/…/MainActivity.kt` | real, device-pending | sensor values on device; lock icon in chrome |
 | PLY-6 | Subtitle List View, panel side by orientation, no-spoiler | 3 | `Sheets.kt` `SubtitleListPanel`, `SubtitleSettings.noSpoilerMode` | real | search filter is `SubtitleListUi.matches` (unit-testable); panel placement on device |
-| PLY-7 | Two layers, tab per layer, multiple tracks per layer | 3 | `SubtitleLayerSettings` (embedded + external keys), `Sheets.kt` `LayerOptionsSheet` | real | add two files to one layer and check stacking order |
+| PLY-7 | Two layers, tab per layer, multiple tracks per layer | 3 | `SubtitleLayerSettings` (embedded + external keys), `Sheets.kt` `LayerOptionsSheet` | partial | two layers with a tab each are real; a layer holds one file or the embedded track, a second file replaces the first (KNOWN_ISSUES 17) |
 | SUB-1 | Two toggle buttons, tap toggle / hold invert, per-button size/position | 3 | `QuickActionBar`, `QuickActionSpec {sizeDp, xFraction, yFraction, transparency}`, `onQuickAction(id, inverted)` | real | hold a button: the state inverts until release (`previewInvert`) |
 | SUB-2 | Dockable buttons: bar / floating / hidden | 3 | `DockMode {BAR, FLOATING, HIDDEN}`, `QuickActionsSettings` | real | floating drag persists fractions; hidden removes the row |
 | SUB-3 | Layout mode adjusts each layer separately | 3 | `PlayerViewModel.setLayoutMode`, `SubtitlePlacement`, `movedBy` | real | drag one layer while the other stays; placement written per role |

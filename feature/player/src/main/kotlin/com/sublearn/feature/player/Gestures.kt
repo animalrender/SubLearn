@@ -1,6 +1,9 @@
 package com.sublearn.feature.player
 
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -9,7 +12,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import com.sublearn.core.settings.AppSettings
-import kotlinx.coroutines.withTimeoutOrNull
 import com.sublearn.core.settings.GestureAction
 import com.sublearn.core.settings.GestureSlot
 import kotlin.math.abs
@@ -68,12 +70,7 @@ fun GestureLayer(
                         }
                         onDrag(action, fraction)
                     },
-                    onEnd = { action, total ->
-                        if (action == GestureAction.SEEK) {
-                            val seconds = (total / size.width.toFloat() * settings.player.swipeSeekSecondsPerScreen)
-                            }
-                        onDragEnd()
-                    },
+                    onEnd = { onDragEnd() },
                 )
             },
     )
@@ -111,7 +108,7 @@ internal fun surfaceActionFor(
  */
 private suspend fun PointerInputScope.detectSurfaceDrag(
     onDrag: (Offset, Offset) -> Unit,
-    onEnd: (GestureAction, Float) -> Unit,
+    onEnd: () -> Unit,
 ) {
     awaitEachGesture {
         val down = awaitFirstDown(requireUnconsumed = false)
@@ -129,7 +126,7 @@ private suspend fun PointerInputScope.detectSurfaceDrag(
                 lifted = true
             }
         }
-        onEnd(GestureAction.SEEK, total.x)
+        onEnd()
     }
 }
 
@@ -141,17 +138,16 @@ internal suspend fun PointerInputScope.detectMultiTap(
 ) {
     awaitEachGesture {
         var taps = 0
-        var position = Offset.Zero
+        var down = awaitFirstDown(requireUnconsumed = false)
+        var position = down.position
         while (true) {
-            val down = awaitFirstDown(requireUnconsumed = false)
-            position = down.position
             taps++
+            position = down.position
             val up = waitForUpOrCancellation()
-            if (up == null) break
-            if (taps >= maxTaps) break
-            val next = withTimeoutOrNull(windowMs) { awaitFirstDown(requireUnconsumed = false) }
-            if (next == null) break
+            if (up == null || taps >= maxTaps) break
+            // The next down inside the window continues the same gesture; otherwise the count is final.
+            down = withTimeoutOrNull(windowMs) { awaitFirstDown(requireUnconsumed = false) } ?: break
         }
-        if (taps > 0) onTaps(taps, position)
+        onTaps(taps, position)
     }
 }

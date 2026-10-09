@@ -23,6 +23,15 @@ class CharsetSnifferTest {
         val decoded = CharsetSniffer.decode(bytes)
         assertEquals("hi", decoded.text)
         assertEquals("UTF-16LE", decoded.charset.name())
+        assertTrue(decoded.hadBom)
+    }
+
+    @Test
+    fun `utf-16 be bom is detected`() {
+        val bytes = byteArrayOf(0xFE.toByte(), 0xFF.toByte()) + "hi".toByteArray(StandardCharsets.UTF_16BE)
+        val decoded = CharsetSniffer.decode(bytes)
+        assertEquals("hi", decoded.text)
+        assertEquals("UTF-16BE", decoded.charset.name())
     }
 
     @Test
@@ -38,9 +47,12 @@ class CharsetSnifferTest {
         val cp1256 = runCatching { Charset.forName("windows-1256") }.getOrNull()
         assumeTrue("windows-1256 unavailable in this JVM", cp1256 != null)
         val charset: Charset = cp1256 ?: return
-        val text = "1\n00:00:01,000 --> 00:00:02,000\nسلام دنیا\n"
+        // Windows-1256 cannot store the Persian yeh (U+06CC): exporters write the Arabic yeh (U+064A),
+        // and the sniffer maps it back so the text equals what a UTF-8 file would give.
+        val text = "1\n00:00:01,000 --> 00:00:02,000\nسلام دن\u064Aا\n"
         val decoded = CharsetSniffer.decode(text.toByteArray(charset))
-        assertEquals("سلام دنیا", decoded.text.lines()[2].trim())
+        assertEquals("windows-1256", decoded.charset.name())
+        assertEquals("سلام دن\u06CCا", decoded.text.lines()[2].trim())
         assertTrue(TextDirection.of(decoded.text) == TextDirection.RTL)
     }
 
@@ -49,5 +61,8 @@ class CharsetSnifferTest {
         val bytes = "abc def ghi".toByteArray(StandardCharsets.UTF_16LE)
         val decoded = CharsetSniffer.decode(bytes)
         assertTrue(decoded.text.startsWith("abc"))
+        assertEquals("UTF-16LE", decoded.charset.name())
+        val big = CharsetSniffer.decode("abc def ghi".toByteArray(StandardCharsets.UTF_16BE))
+        assertEquals("abc def ghi", big.text)
     }
 }

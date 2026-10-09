@@ -47,7 +47,7 @@ fun SectionCard(title: String, content: @Composable ColumnScope.() -> Unit) {
             modifier = Modifier.padding(bottom = Dimens.xs),
         )
         Card(
-            shape = RoundedCornerShape(MaterialTheme.shapes.large),
+            shape = MaterialTheme.shapes.large,
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
         ) {
             Column(Modifier.padding(Dimens.md), verticalArrangement = Arrangement.spacedBy(Dimens.xs), content = content)
@@ -97,7 +97,7 @@ fun SliderRow(
 }
 
 @Composable
-fun <T> ChoiceRow(title: String, options: List<T>, selected: T, label: (T) -> String, onSelect: (T) -> Unit) {
+fun <T> ChoiceRow(title: String, options: List<T>, selected: T, label: @Composable (T) -> String, onSelect: (T) -> Unit) {
     Column(Modifier.fillMaxWidth().padding(vertical = Dimens.xs)) {
         Text(title, style = MaterialTheme.typography.bodyLarge)
         Spacer(Modifier.size(4.dp))

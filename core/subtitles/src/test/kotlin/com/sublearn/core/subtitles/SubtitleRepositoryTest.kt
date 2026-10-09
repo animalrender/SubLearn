@@ -82,6 +82,7 @@ class SubtitleRepositoryTest {
         val reparsed = SrtParser.parse(text, "t")
         assertEquals(cues.map { it.text to it.startMs }, reparsed.map { it.text to it.startMs })
         assertEquals(cues.map { it.endMs }, reparsed.map { it.endMs })
+        assertTrue(text.startsWith("1\n00:01:05,000 --> 00:01:08,500\nHello, world.\n"))
     }
 
     private fun DefaultSubtitleRepository.fileNamed(name: String) = SubtitleFile(key = name, name = name)

@@ -105,10 +105,13 @@ data class QuickActionSettings(
 
     fun updated(id: QuickActionId, value: QuickActionSpec): QuickActionSettings = copy(specs = specs + (id.key to value))
 
-    fun visibleIn(mode: DockMode): List<Pair<QuickActionId, QuickActionSpec>> =
-        specs.mapNotNull { (key, spec) -> QuickActionId.fromKey(key)?.let { it to spec } }
+    /** Actions shown in [mode], in display order. Nothing is visible in [DockMode.HIDDEN]. */
+    fun visibleIn(mode: DockMode): List<Pair<QuickActionId, QuickActionSpec>> {
+        if (mode == DockMode.HIDDEN) return emptyList()
+        return specs.mapNotNull { (key, spec) -> QuickActionId.fromKey(key)?.let { it to spec } }
             .filter { it.second.dock == mode }
             .sortedWith(compareBy({ it.second.order }, { it.first.name }))
+    }
 }
 
 @Serializable

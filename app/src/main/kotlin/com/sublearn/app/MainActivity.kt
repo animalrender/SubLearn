@@ -6,8 +6,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.collectAsStateWithLifecycle
-import androidx.compose.runtime.getValue
 import com.sublearn.feature.player.PlayerViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -108,21 +106,14 @@ object LocaleOverride {
         Locale.setDefault(locale)
         val configuration = Configuration(base.resources.configuration)
         configuration.setLocale(locale)
-        configuration.layoutDirection = if (isRtl(locale)) {
-            Configuration.SCREEN_LAYOUT_DIRECTION_RTL
-        } else {
-            Configuration.SCREEN_LAYOUT_DIRECTION_LTR
-        }
+        // The layout direction follows the locale (Persian is RTL); the platform knows the script.
+        configuration.setLayoutDirection(locale)
         return base.createConfigurationContext(configuration)
     }
-
-    private fun isRtl(locale: Locale): Boolean = locale.language in RTL_LANGUAGES
 
     fun persist(context: Context, tag: String?) {
         context.getSharedPreferences("sublearn_locale", Context.MODE_PRIVATE).edit()
             .putString("lang", tag)
             .apply()
     }
-
-    private val RTL_LANGUAGES = setOf("fa", "ar", "he", "ur", "ps", "ku", "sd", "yi")
 }

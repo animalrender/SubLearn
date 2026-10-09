@@ -38,9 +38,11 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.Icon
@@ -275,6 +277,7 @@ fun QuickActionBar(
                 inverted = ui.settings.shadowing.holdInvertsTemporarily,
                 onClick = { onAction(id, false) },
                 onLongClick = { onAction(id, true) },
+                onAddSubtitleFile = onAddSubtitleFile,
                 dragModifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(start = (spec.xFraction * 1000f).dp, top = (spec.yFraction * 1000f).dp),
@@ -321,7 +324,7 @@ private fun QuickActionIcon(
         contentPaddingHorizontal = 2,
         contentPaddingVertical = 2,
         modifier = modifier
-            .dragModifier
+            .then(dragModifier)
             .clip(RoundedCornerShape(12.dp))
             .combinedClickable(onClick = onClick, onLongClick = if (inverted) onLongClick else null),
     ) {
@@ -338,6 +341,24 @@ private fun QuickActionIcon(
                 color = MaterialTheme.colorScheme.primary,
             )
         }
+    }
+}
+
+/** One chrome button: white on the scrim, accent when the state it toggles is on. */
+@Composable
+internal fun ChromeIcon(
+    imageVector: ImageVector,
+    contentDescription: String,
+    modifier: Modifier = Modifier,
+    selected: Boolean = false,
+    onClick: () -> Unit,
+) {
+    IconButton(onClick = onClick, modifier = modifier.size(Dimens.iconButton)) {
+        Icon(
+            imageVector = imageVector,
+            contentDescription = contentDescription,
+            tint = if (selected) MaterialTheme.colorScheme.primary else Color.White,
+        )
     }
 }
 

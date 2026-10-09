@@ -34,10 +34,16 @@ object WebVttParser : SubtitleParser {
                     skipRegion = false
                     flush()
                 }
-                // NOTE and STYLE regions run to the next blank line and never produce text.
+                // NOTE and STYLE regions run to the next blank line and never produce text. A timing
+                // line ends them early: files that forget the blank line are common and losing the
+                // first cue is worse than reading a stray comment line.
+                line.contains("-->") -> {
+                    skipRegion = false
+                    block += line
+                }
                 line.startsWith("NOTE", ignoreCase = true) -> skipRegion = true
                 line.startsWith("STYLE", ignoreCase = true) -> skipRegion = true
-                line.startsWith("Region", ignoreCase = true) && !line.contains("-->") -> skipRegion = true
+                line.startsWith("Region", ignoreCase = true) -> skipRegion = true
                 skipRegion -> Unit
                 else -> block += line
             }

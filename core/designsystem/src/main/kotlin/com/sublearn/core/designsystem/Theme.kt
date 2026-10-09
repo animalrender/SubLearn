@@ -49,11 +49,10 @@ fun SubLearnTheme(
     val accent = remember(appearance.accent, dark) { accentColor(appearance.accent, dark) }
 
     val scheme = remember(dark, amoled, accent, appearance.useDynamicColor) {
-        val base = when {
-            appearance.useDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
-                if (dark) dynamicLightOrDark(context, true) else dynamicLightOrDark(context, false)
-
-            dark -> darkColorScheme(
+        val base = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && appearance.useDynamicColor) {
+            if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        } else if (dark) {
+            darkColorScheme(
                 primary = accent,
                 onPrimary = Color(Palette.DARK_BACKGROUND),
                 secondary = accent.copy(alpha = 0.85f),
@@ -66,8 +65,8 @@ fun SubLearnTheme(
                 outline = Color(0xFF6B7A83L),
                 outlineVariant = Color(0xFF2A333AL),
             )
-
-            else -> lightColorScheme(
+        } else {
+            lightColorScheme(
                 primary = accent,
                 secondary = accent,
                 background = Color(Palette.LIGHT_BACKGROUND),
@@ -118,9 +117,6 @@ private fun CompositionLocals(
         content = { MaterialTheme(colorScheme = scheme, typography = typography, content = content) },
     )
 }
-
-private fun dynamicLightOrDark(context: android.content.Context, dark: Boolean): androidx.compose.material3.ColorScheme =
-    if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
 
 private fun accentColor(token: AccentToken, dark: Boolean): Color {
     val pair = Palette.accent(token.name)

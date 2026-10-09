@@ -135,12 +135,11 @@ class Media3PlayerController(
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF)
             .setEnableDecoderFallback(decoder != DecoderMode.HARDWARE)
         if (decoder == DecoderMode.SOFTWARE) {
-            // The platform names its software codecs after a well-known prefix; Media3's info object has
-            // no "is software" flag in this media3 version, so the name is the honest test.
-            renderers.setMediaCodecSelector { format, requiresSecure, _ ->
-                val candidates = MediaCodecSelector.DEFAULT.getDecoderInfos(format, requiresSecure, true)
-                candidates.filter { it.name.startsWith("OMX.google.") || it.name.startsWith("c2.android.") }
-                    .ifEmpty { candidates }
+            // Prefer the platform's software decoders; fall back to the full list rather than failing
+            // when a format only has a hardware decoder, because "no video" is worse than "hardware".
+            renderers.setMediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
+                val candidates = MediaCodecSelector.DEFAULT.getDecoderInfos(mimeType, requiresSecureDecoder, requiresTunnelingDecoder)
+                candidates.filter { it.softwareOnly }.ifEmpty { candidates }
             }
         }
         val http = DefaultHttpDataSource.Factory()

@@ -117,8 +117,8 @@ object FrequencyListFormat {
             frequency >= 200_000L -> 0
             frequency >= 60_000L -> 1
             frequency >= 15_000L -> 2
-            frequency >= 3_000L -> 3
-            frequency >= 400L -> 4
+            frequency >= 2_000L -> 3
+            frequency >= 300L -> 4
             else -> 5
         }
         return levels[index]

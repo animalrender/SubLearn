@@ -125,6 +125,8 @@ data class AiUi(
     val configured: Boolean = false,
     /** AI-2: the player paused for the answer and the sheet decides when to resume. */
     val pausedForAnswer: Boolean = false,
+    /** Whether playback was running when the question was asked, so the resume is exact. */
+    val wasPlaying: Boolean = false,
 )
 
 /** LRN-1 card. `level` is the CEFR name as stored on a marked word, so the badge needs no lookup. */

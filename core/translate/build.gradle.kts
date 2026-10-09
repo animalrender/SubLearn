@@ -47,7 +47,6 @@ dependencies {
     api(project(":core:common"))
     api(project(":core:data"))
     api(libs.mlkit.translate)
-    api(libs.mlkit.language.id)
     implementation(libs.coroutines.android)
 
     api(libs.coroutines.core)

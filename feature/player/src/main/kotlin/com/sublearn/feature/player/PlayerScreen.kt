@@ -3,12 +3,10 @@ package com.sublearn.feature.player
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.view.WindowManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,8 +19,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -36,12 +33,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -49,7 +44,6 @@ import androidx.media3.ui.PlayerView
 import com.sublearn.core.designsystem.LocalReduceMotion
 import com.sublearn.core.designsystem.R
 import com.sublearn.core.player.OpenDocumentContract
-import com.sublearn.core.designsystem.Motion
 import com.sublearn.core.settings.OrientationLock
 import com.sublearn.core.subtitles.TrackRole
 
@@ -70,7 +64,7 @@ fun PlayerScreen(
     start: PlayerStart? = null,
     inPip: Boolean = false,
 ) {
-    val context0 = LocalContext.current
+    val context = LocalContext.current
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     val activity = context.findActivity()
     val viewRef = remember { arrayOfNulls<PlayerView>(1) }
@@ -92,7 +86,8 @@ fun PlayerScreen(
         val hide = ui.locked || ui.layoutMode
         activity?.window?.let { window ->
             WindowInsetsControllerCompat(window, window.decorView).apply {
-                if (hide) hide(systemBars()) else show(systemBars())
+                val bars = WindowInsetsCompat.Type.systemBars()
+                if (hide) hide(bars) else show(bars)
                 systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             }
         }
@@ -109,8 +104,8 @@ fun PlayerScreen(
     LaunchedEffect(ui.settings.player.keepScreenOn) {
         val keep = ui.settings.player.keepScreenOn
         activity?.window?.let { window ->
-                val flags = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-                if (keep) window.addFlags(flags) else window.clearFlags(flags)
+            val flags = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+            if (keep) window.addFlags(flags) else window.clearFlags(flags)
         }
     }
     LaunchedEffect(Unit) {
@@ -135,18 +130,18 @@ fun PlayerScreen(
         }
     }
 
-    BoxWithConstraints(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(Color.Black)
             .then(if (ui.layoutMode) Modifier.imePadding() else Modifier)
     ) {
         val reduceMotion = LocalReduceMotion.current
-    
+
         AndroidView(
             factory = { ctx ->
                 PlayerView(ctx).also {
-                    it.setBackgroundColor(Color.BLACK)
+                    it.setBackgroundColor(android.graphics.Color.BLACK)
                     viewRef[0] = it
                     viewModel.controller.attachView(it)
                 }
@@ -270,14 +265,14 @@ fun PlayerScreen(
             LayoutModeBanner(
                 hint = stringResource(R.string.subtitle_layout_hint),
                 onDone = { viewModel.setLayoutMode(false) },
-                modifier = Modifier.align(Alignment.TopCenter).statusBarsPaddingCompat(),
+                modifier = Modifier.align(Alignment.TopCenter).statusBarsPadding(),
             )
         }
 
         if (ui.ai.state != AiState.IDLE && !inPip) {
             AiAnswerSheet(
                 ui = ui,
-                onDismiss = { viewModel.setSheet(Sheet.NONE) },
+                onDismiss = viewModel::cancelAi,
                 onAskAgain = { viewModel.askAi(ui.ai.question) },
                 onResume = viewModel::resumeAfterAi,
                 onCopy = { text -> context.copyToClipboard(text) },
@@ -366,7 +361,4 @@ fun Activity.enterPipMode(aspectWidth: Int, aspectHeight: Int) {
 }
 
 private val SUBTITLE_MIMES = arrayOf("text/*", "application/octet-stream", "application/x-subrip")
-
-private fun Modifier.statusBarsPaddingCompat(): Modifier =
-    padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
 

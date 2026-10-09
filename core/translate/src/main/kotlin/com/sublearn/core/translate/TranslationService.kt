@@ -141,6 +141,10 @@ class TranslationService(
 
         val result = try {
             runWithChunking(trimmed, opts)
+        } catch (t: Throwable) {
+            // Waiters must never hang on a request that was cancelled or blew up underneath them.
+            own.completeExceptionally(t)
+            throw t
         } finally {
             mutex.withLock { if (inFlight[key] === own) inFlight.remove(key) }
         }

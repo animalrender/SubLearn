@@ -85,7 +85,7 @@ the AI providers read them only at request time through `SecretStore`.
 
 **D-15 — String resources live only in `core:designsystem` (EN + FA).** A feature adding a string in
 its own module would be invisible to the other features and to the RTL audit; the single owner keeps
-`values-fa` provably in sync (418 keys each).
+`values-fa` provably in sync (417 keys each, checked by `tools/check_resources.py`).
 
 **D-16 — Enum labels are exhaustive `when` in `feature/settings/Labels.kt`, no `else`.** Adding a
 `GestureAction` entry must break the build until it has a name; a silent default would ship an
@@ -95,7 +95,8 @@ untranslated row.
 contents: read`.** Supply-chain hygiene plus the guarantee that no workflow can push back to the repo.
 The instrumented suite is a separate manual workflow because GitHub's standard runners do not reliably
 expose KVM; CI still compiles the instrumented sources via `assembleDebugAndroidTest` so API drift in
-tests is caught automatically.
+tests is caught automatically. Amended by D-21/D-22: the release workflow alone holds `contents:
+write` (to upload assets), and both workflows hold `checks: write` (to publish the failure report).
 
 **D-18 — RTL is decided per text run, not per app locale.** Subtitle layers and popups pass an
 explicit `TextDirection` derived from the content, because a Persian gloss inside an English card (and
@@ -111,3 +112,32 @@ plus an implementation, never a refactor of the NOW features.
 first real compile of this codebase is CI (no JVM in the sandbox); splitting uncompiled UI code from
 the modules it calls across two PRs would only have doubled the red runs. Phase boundaries are still
 kept in the commit history (`chore(repo)` / `feat(core)` / `feat(features)` / `feat(app)` / docs).
+
+## Release and verification
+
+**D-21 — Releases are built by `release.yml` only, split per ABI plus universal, shrunk but not
+obfuscated, and debug-signed until a keystore exists.** A `v*` tag (or a manual run with a `tag`
+input, which creates the tag on the chosen branch head) builds `assembleRelease`, checks that the tag
+equals `versionName`, and uploads `SubLearn-<tag>-{arm64-v8a,armeabi-v7a,x86_64,universal}.apk` plus
+`SHA256SUMS` to the GitHub Release; the notes come from the matching `CHANGELOG.md` section
+(`tools/release_notes.py`). R8 shrinking is on (resources and dead code; ML Kit and Media3 are large)
+but `-dontobfuscate` keeps stack traces readable without a mapping file, which matters more for a
+preview that nobody can symbolicate for the user. Signing reads `SUBLEARN_KEYSTORE_*` from the
+environment (repository secrets in Actions) and falls back to the debug key so a release always
+builds; `REQ-6` tracks the real key. CI runs `assembleRelease` on every push so R8 breakage is found
+before a tag, never at release time.
+
+**D-22 — Compile errors travel through a Check Run, not the log.** The sandbox can reach
+`api.github.com` but not the Actions log or artifact hosts, so both workflows end with
+`tools/ci_failure_report.py`, which posts the first errors of the Gradle log as the output text of a
+"Gradle failure report" / "Release failure report" check run on the commit. Annotations alone were
+not enough (ten per step, and dependency-resolution failures have none).
+
+**D-23 — Koin binds interfaces explicitly; nothing is resolved by concrete type.**
+`single<TranslationProvider> { MlKitTranslationProvider(logger = get()) }`, `single<HttpJsonClient>
+{ OkHttpJsonClient() }` and `bind X::class` for the storage and repository implementations, so
+feature modules only ever ask for the interface and the fakes slot in without touching the graph.
+
+**D-24 — ML Kit progress is status-only.** `RemoteModelManager.download` has no byte progress, so
+`TranslationProgress` carries a `Status` and the UI shows an indeterminate bar instead of a fake
+percentage (KNOWN_ISSUES 18).

@@ -29,6 +29,17 @@ enum class SubtitleFormat(
             return entries.firstOrNull { format -> extension in format.aliases } ?: UNKNOWN
         }
 
+        /**
+         * True for extensions that only subtitles use. `.txt` parses as SRT when the user picks it,
+         * but auto-loading must not treat every text file next to a video as a subtitle.
+         */
+        fun isUnambiguousName(name: String): Boolean {
+            val extension = name.substringAfterLast('.', "").lowercase()
+            return extension.isNotEmpty() && extension != AMBIGUOUS_EXTENSION && fromFileName(name) != UNKNOWN
+        }
+
+        private const val AMBIGUOUS_EXTENSION = "txt"
+
         fun fromMime(mimeType: String?): SubtitleFormat = when (mimeType?.lowercase()) {
             "text/vtt", "application/vtt", "application/mp4vtt" -> VTT
             "text/x-ssa", "text/x-ass", "application/ass" -> ASS

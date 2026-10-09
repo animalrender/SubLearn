@@ -30,14 +30,26 @@ object TimeUtils {
     }
 
     /** `h:mm:ss.mmm` used by subtitle files and AI context headers. */
-    fun formatTimestamp(ms: Long, separator: Char = ':'): String {
+    /**
+     * `HH:MM:SS<sep>mmm` as subtitle files write it: [millisSeparator] is `,` for SRT and `.` for
+     * WebVTT. Digits are always ASCII, whatever the device locale, because this goes into files.
+     */
+    fun formatTimestamp(ms: Long, millisSeparator: Char = '.'): String {
         val clamped = ms.coerceAtLeast(0L)
         val millis = clamped % 1000L
         val totalSeconds = clamped / 1000L
         val hours = totalSeconds / 3600L
         val minutes = (totalSeconds % 3600L) / 60L
         val seconds = totalSeconds % 60L
-        return "%d:%02d:%02d.%03d".format(hours, minutes, seconds, millis).replace(':', separator)
+        return buildString {
+            append(hours.toString().padStart(2, '0'))
+            append(':')
+            append(minutes.toString().padStart(2, '0'))
+            append(':')
+            append(seconds.toString().padStart(2, '0'))
+            append(millisSeparator)
+            append(millis.toString().padStart(3, '0'))
+        }
     }
 
     fun clamp(value: Long, min: Long, max: Long): Long = if (max < min) min else value.coerceIn(min, max)

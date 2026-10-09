@@ -85,19 +85,22 @@ object WordKey {
         .lowercase()
         .replace('\u2019', '\'')
         .replace('\u00A0', ' ')
+        .replace("\u200c", " ")
         .replace(Regex("[\"“”‘’!?,.;:،。！？؛]"), "")
         .replace(Regex("\\s+"), " ")
-        .replace("\u200c", " ")
         .trim()
 
     /** True for tokens that are punctuation-only and should never become a word entry. */
     fun isMarkable(word: String): Boolean = normalize(word).any { it.isLetterOrDigit() }
 
-    /** Builds the FTS match string from a user query, quoting tokens so FTS syntax cannot leak in. */
+    /**
+     * Builds the FTS match string from a user query: every token becomes a quoted prefix phrase
+     * (`"mak*"`), which is the FTS4 form that keeps `NOT`, `OR` and column syntax from leaking in.
+     */
     fun ftsQuery(query: String): String? {
-        val tokens = query.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+        val tokens = query.trim().split(Regex("\\s+")).map { it.replace("\"", "").replace("*", "") }.filter { it.isNotEmpty() }
         if (tokens.isEmpty()) return null
-        return tokens.joinToString(" ") { "\"" + it.replace("\"", "") + "\"" + "*" }
+        return tokens.joinToString(" ") { "\"" + it + "*\"" }
     }
 }
 

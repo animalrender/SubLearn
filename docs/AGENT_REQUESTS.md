@@ -46,9 +46,12 @@ blocking, the workaround used in the meantime is stated too.
   api.github.com, registry.npmjs.org, pypi.org are allowed); (2) downloading a Temurin tarball — host not
   reachable; (3) running Gradle from the wrapper with a system JVM — no JVM exists at all.
 - **Suspected cause**: deliberate egress allowlist in the sandbox.
-- **Workaround used**: three static checkers in `tools/` (name, style, dependency-declaration) plus a CI
-  loop that publishes compile errors as check-run annotations because the Actions log host itself is not
-  reachable from here. Cost: each iteration is minutes instead of seconds.
+- **Workaround used**: four static checkers in `tools/` (name, style, dependency-declaration,
+  resources), a pure-JVM kotlinc harness for the non-Android modules (a JRE from the `jdk4py` wheel on
+  pypi and `kotlin-compiler` from npm are reachable; Gradle, Maven Central and the Android SDK are
+  not), and a CI loop that publishes the first Gradle errors as the "Gradle failure report" check run
+  (`tools/ci_failure_report.py`, D-22) because neither the Actions log host nor the artifact host is
+  reachable from here. Cost: each Android iteration is minutes instead of seconds.
 - **Next step**: either allow `download-java` hosts, or register a self-hosted runner with a JDK;
   otherwise accept the CI loop as the build step.
 - **Severity**: medium (it is the main reason red commits appear on the branch).
@@ -86,7 +89,14 @@ blocking, the workaround used in the meantime is stated too.
 - **Tried**: wiring `release` to the debug signing config as a placeholder that *builds* and is
   documented in the build file, so no keystore is ever needed to reproduce a build.
 - **Suspected cause**: not an agent decision (secrets).
-- **Next step**: owner provides a signing route (or says "debug artifact only for now").
+- **Workaround used (2026-10-09)**: `app/build.gradle.kts` creates a `release` signing config only when
+  `SUBLEARN_KEYSTORE_PATH`, `SUBLEARN_KEYSTORE_PASSWORD`, `SUBLEARN_KEY_ALIAS` and
+  `SUBLEARN_KEY_PASSWORD` are set, and `release.yml` fills them from the repository secrets
+  `SUBLEARN_KEYSTORE_BASE64` (the `.jks` as base64), `SUBLEARN_KEYSTORE_PASSWORD`,
+  `SUBLEARN_KEY_ALIAS` and `SUBLEARN_KEY_PASSWORD`. Without them the release APKs are debug-signed and
+  the release notes say so (D-21). F-Droid metadata is not added.
+- **Next step**: owner adds the four secrets (Settings → Secrets and variables → Actions); the next tag
+  is then properly signed. Users of a debug-signed build must uninstall before installing it.
 - **Severity**: low for the tag, high for a store listing.
 
 ### REQ-7 — Device for the verification pass and README screenshots

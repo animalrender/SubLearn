@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -26,14 +25,13 @@ class WordsViewModel(
     private val _query = MutableStateFlow("")
     private val _filter = MutableStateFlow(WordFilter.ALL)
 
+    val filter: StateFlow<WordFilter> = _filter.asStateFlow()
+
     val settings: StateFlow<AppSettings> = settingsRepository.settings
 
-    val rows: StateFlow<List<MarkedWord>> = combine(
-        myWords.observeAll().map { list -> list.filter { it.matches(_query.value, _filter.value) } },
-        _query,
-        _filter,
-    ) { list, _, _ -> list }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val rows: StateFlow<List<MarkedWord>> = combine(myWords.observeAll(), _query, _filter) { list, query, filter ->
+        list.filter { it.matches(query, filter) }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val count: StateFlow<Int> = myWords.observeCount()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
@@ -62,13 +60,12 @@ class WordsViewModel(
         viewModelScope.launch { myWords.remove(word.id) }
     }
 
-    /** Fills an empty translation from the on-device engine (LRN-4). */
+    /** Fills an empty translation from the on-device engine (LRN-4); an existing one is never overwritten. */
     fun autoTranslate(word: MarkedWord) {
+        if (!word.translation.isNullOrBlank()) return
         viewModelScope.launch {
-            val source = word.translation ?: word.contextText ?: word.word
-            translation.translate(source).onSuccess { text ->
-                if (word.translation.isNullOrBlank()) myWords.setTranslation(word.id, text)
-            }
+            val text = translation.translate(word.word).getOrNull() ?: return@launch
+            myWords.setTranslation(word.id, text)
         }
     }
 

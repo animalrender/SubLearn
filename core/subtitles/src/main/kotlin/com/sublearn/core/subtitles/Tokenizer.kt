@@ -1,7 +1,6 @@
 package com.sublearn.core.subtitles
 
 import kotlin.math.max
-import kotlin.math.roundToLong
 
 /**
  * Splits subtitle text into tappable units. SubLearn draws the subtitle layers itself (never the
@@ -19,6 +18,16 @@ object Tokenizer {
             ch.code in 0x0670..0x0670 ||
             ch.code in 0x06D6..0x06ED
 
+    private fun isApostrophe(ch: Char): Boolean = ch == '\'' || ch == '\u2019'
+
+    /** A punctuation run: anything that is neither whitespace nor the start of a word. */
+    private fun isPunctuationChar(ch: Char): Boolean = !ch.isWhitespace() && (!isWordChar(ch) || isApostrophe(ch))
+
+    /**
+     * Splits [text] into word and punctuation spans that tile the text (whitespace excluded). An
+     * apostrophe inside a word stays in it (`don't`); a leading or trailing one (`girls'`, `'quoted'`)
+     * is emitted as punctuation so the word itself stays usable for lookups.
+     */
     fun spans(text: String): List<TokenSpan> {
         if (text.isEmpty()) return emptyList()
         val result = ArrayList<TokenSpan>(text.length / 6 + 1)
@@ -27,17 +36,17 @@ object Tokenizer {
             val ch = text[index]
             when {
                 ch.isWhitespace() -> index++
-                isWordChar(ch) -> {
+                isWordChar(ch) && !isApostrophe(ch) -> {
                     val start = index
                     while (index < text.length && isWordChar(text[index])) index++
                     var end = index
-                    // Trailing apostrophes ("girls'", French "l'") should not become part of the word.
-                    while (end > start + 1 && (text[end - 1] == '\'' || text[end - 1] == '\u2019')) end--
+                    while (end > start + 1 && isApostrophe(text[end - 1])) end--
                     result.add(TokenSpan(text.substring(start, end), start, end, isWord = true))
+                    index = end
                 }
                 else -> {
                     val start = index
-                    while (index < text.length && !index.isWhitespaceOrWord(text)) index++
+                    while (index < text.length && isPunctuationChar(text[index])) index++
                     val end = max(start + 1, index)
                     result.add(TokenSpan(text.substring(start, end), start, end, isWord = false))
                     index = end
@@ -45,11 +54,6 @@ object Tokenizer {
             }
         }
         return result
-    }
-
-    private fun Int.isWhitespaceOrWord(text: String): Boolean {
-        val ch = text[this]
-        return ch.isWhitespace() || isWordChar(ch)
     }
 
     fun words(text: String): List<TokenSpan> = spans(text).filter { it.isWord }
@@ -71,7 +75,6 @@ object Tokenizer {
         val duration = (endMs - startMs).coerceAtLeast(0L)
         val words = spans.filter { it.isWord }
         if (timings != null && timings.size == words.size && timings.isNotEmpty()) {
-            val duration = (endMs - startMs).coerceAtLeast(0L)
             val length = text.length.coerceAtLeast(1)
             var wordOrdinal = -1
             return spans.map { span ->

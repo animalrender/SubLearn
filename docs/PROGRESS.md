@@ -2,6 +2,61 @@
 
 Always answers: what was the goal, what is done, what remains, how to test it. Newest entry on top.
 
+## 2026-10-09 — full review, first compile of the pure-JVM modules, release pipeline (v0.1.0)
+
+**Goal.** Review every module against the docs, fix what the first compile and a line-by-line Compose
+review turned up, and make GitHub Actions build release APKs for `arm64-v8a`, `armeabi-v7a`,
+`x86_64` and a universal one, attached to a GitHub Release.
+
+**Done**
+
+- Diagnosed why every CI run on `main` was red before a single Kotlin file compiled:
+  `:app:checkDebugAarMetadata` failed on the nonexistent `com.google.mlkit:language-id:16.5.5`
+  (`core:translate`). Removed; language identification stays a LATER stub.
+- Built a local kotlinc 2.0.21 harness (JRE from the `jdk4py` wheel, compiler from npm, serialization
+  jars from the `kotlin-jupyter-kernel` wheel — the only reachable sources) and ran every pure-JVM test
+  class: 97 pass / 19 fail at the start, 122 pass / 0 fail / 1 skipped after the fixes listed in
+  `CHANGELOG.md` → 0.1.0 → "Review fixes" (subtitles, settings, lexicon, common, data, translate, ai).
+- Hand-reviewed the Android-only modules (`core:player`, `core:security`, `core:designsystem`, all
+  `feature:*`, `app`) with a checklist of Compose mistakes that do not survive `kotlinc`; the fixes
+  are in the same CHANGELOG section. Highlights: `dynamicDarkColorScheme` crash on API < 31, the ML
+  Kit provider built on APIs that do not exist, composable calls inside click lambdas, `align` outside
+  a `Box`, `PlayerViewModel.open()` wiping the running video on every re-entry.
+- Release pipeline: ABI splits + universal, R8 shrink without obfuscation, optional secrets-driven
+  signing (`REQ-6`), `release.yml` (tag or manual, `contents: write` only there), `tools/release_notes.py`,
+  CI builds `assembleRelease` and publishes the "Gradle failure report" check run
+  (`tools/ci_failure_report.py`) because the log and artifact hosts are unreachable from the sandbox.
+  Decisions D-21…D-24.
+- Docs: CHANGELOG 0.1.0 section, KNOWN_ISSUES 1, 4, 15–18, REQ-3/REQ-6 updates, README download table,
+  CHECKLIST PLY-7 corrected to partial.
+
+**Remaining / in progress**
+
+1. **CI is green on `arena/956a666c-sublearn`** (run 37854997366, 2026-10-09: the first green run of
+   this repository — four red→green rounds fixed missing imports, a `RowScope` receiver, the test
+   classpath BOM and three lint errors, all read through the failure-report check run).
+   **v0.1.0 is published**: tag `v0.1.0` on the branch head (`f32ae6f`) ran `release.yml` (run
+   37856428079) and <https://github.com/animalrender/SubLearn/releases/tag/v0.1.0> carries
+   `arm64-v8a` (18.6 MB), `armeabi-v7a` (14.1 MB), `x86_64` (19.6 MB), `universal` (62.8 MB) and
+   `SHA256SUMS`, debug-signed. `workflow_dispatch` could not be used because GitHub only registers
+   workflows that exist on the default branch; once `main` has `release.yml`, later tags can be cut by
+   hand from the Actions tab. PR #2 takes this branch to `main`.
+2. Device pass (REQ-7): nothing in this entry has run on a phone. Install the `arm64-v8a` APK from
+   the release, walk the smoke path below, and file what breaks under KNOWN_ISSUES.
+3. KNOWN_ISSUES 15–17: English literals in view models, floating quick-action drag, one file per layer.
+4. Phase 9 proper: view-model tests on `FakePlayerController` (REQ-5), animation/accessibility pass,
+   README screenshots.
+
+**How to test right now**
+
+```bash
+python3 tools/check_sources.py core app feature tools && python3 tools/check_symbols.py \
+  && python3 tools/check_deps.py && python3 tools/check_resources.py core app feature
+gh run list --branch arena/956a666c-sublearn
+gh api repos/animalrender/SubLearn/commits/<sha>/check-runs --jq '.check_runs[] | select(.name | test("failure report")) | .output.text'
+gh release view v0.1.0          # four APKs + SHA256SUMS once the release workflow has run
+```
+
 ## 2026-10-08 — phases 0–8 implemented on one branch, CI is the first compiler
 
 **Goal.** Take the repository from a `hello world` commit to the full NOW scope: module scaffold, core
@@ -22,7 +77,7 @@ tools and the app shell — with CI, license audit and docs, and `main` never br
   contracts; ML Kit translation with model-download state and cache; AI providers with prompt builder and
   answer parser; Keystore AES-GCM secret store; word-level providers and frequency importer; Room for My
   Words, recents and the translation cache; design system tokens/motion/theme/backdrop/badge and the
-  single EN+FA string owner (418 keys each).
+  single EN+FA string owner (417 keys each).
 - `feature:*`: the whole player screen (layers, hit testing, gestures, quick actions, layout mode, list
   panel, sheets, popups, AI sheet, shadowing), the searchable settings tree, My Words, the Learn tab,
   Home with recents and open-a-file/open-a-url; `app` with Koin, intent filters, PiP and locale override.

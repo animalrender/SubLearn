@@ -85,7 +85,6 @@ fun SheetsHost(
 }
 
 @Composable
-@Composable
 private fun SheetTitle(text: String) {
     Text(text, style = MaterialTheme.typography.titleMedium)
 }
@@ -158,7 +157,7 @@ private fun SpeedSheet(ui: PlayerUi, onSet: (Int) -> Unit) {
         value = percent.toFloat(),
         onValueChange = { onSet(it.toInt()) },
         valueRange = ui.settings.player.speedMinPercent.toFloat()..ui.settings.player.speedMaxPercent.toFloat(),
-        steps = (ui.settings.player.speedMaxPercent - ui.settings.player.speedMinPercent) / ui.settings.player.speedStepPercent - 1,
+        steps = speedSteps(ui.settings.player.speedMinPercent, ui.settings.player.speedMaxPercent, ui.settings.player.speedStepPercent),
     )
     Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
         listOf(50, 75, 100, 125, 150).forEach { value ->
@@ -167,6 +166,12 @@ private fun SpeedSheet(ui: PlayerUi, onSet: (Int) -> Unit) {
             })
         }
     }
+}
+
+/** Discrete slider stops between the two bounds; never negative, which the Slider would reject. */
+private fun speedSteps(minPercent: Int, maxPercent: Int, stepPercent: Int): Int {
+    if (stepPercent <= 0 || maxPercent <= minPercent) return 0
+    return ((maxPercent - minPercent) / stepPercent - 1).coerceAtLeast(0)
 }
 
 @Composable
@@ -233,7 +238,7 @@ private fun DecoderSheet(ui: PlayerUi, onSet: (DecoderMode) -> Unit) {
 internal fun DecoderMode.labelRes(): Int = when (this) {
     DecoderMode.SOFTWARE -> R.string.player_decoder_software
     DecoderMode.HARDWARE -> R.string.player_decoder_hardware
-    DecoderMode.HARDWARE_FALLBACK -> R.string.player_decoder_hardware_plus
+    DecoderMode.HARDWARE_PLUS -> R.string.player_decoder_hardware_plus
 }
 
 /** Per-layer controls for delay, size, transparency and the file behind the layer (SUB-3). */
@@ -309,6 +314,7 @@ private fun ToolsSheet(ui: PlayerUi, viewModel: PlayerViewModel) {
     var removeBreaks by remember { mutableStateOf(ui.settings.subtitles.normalizer.removeLineBreaks) }
     var maxChars by remember { mutableStateOf(ui.settings.subtitles.normalizer.maxBlockChars.toFloat()) }
     var mergeGap by remember { mutableStateOf(ui.settings.subtitles.normalizer.mergeGapMs.toFloat()) }
+    val appliedMessage = stringResource(R.string.subtitle_tool_apply)
     SheetTitle(stringResource(R.string.subtitle_tools))
     Row(verticalAlignment = Alignment.CenterVertically) {
         FilterChip(selected = removeBreaks, onClick = { removeBreaks = !removeBreaks }, label = {
@@ -341,7 +347,7 @@ private fun ToolsSheet(ui: PlayerUi, viewModel: PlayerViewModel) {
                         viewModel.loadFile(role, key, key.substringAfterLast('/'))
                     }
                 }
-                viewModel.message(stringResource(R.string.subtitle_tool_apply))
+                viewModel.message(appliedMessage)
             }
         }) { Text(stringResource(R.string.subtitle_tool_apply)) }
     }
@@ -452,10 +458,13 @@ fun SubtitleListPanel(
 }
 
 @Composable
-private fun uiListStyle() = remember {
-    com.sublearn.core.settings.FontSpec
-        .defaultFor(FontSurface.SUBTITLE_LIST, SubtitleLayerRole.LEARNING)
-        .toTextStyle(LocalAppFontScale.current)
+private fun uiListStyle(): androidx.compose.ui.text.TextStyle {
+    val scale = LocalAppFontScale.current
+    return remember(scale) {
+        com.sublearn.core.settings.FontSpec
+            .defaultFor(FontSurface.SUBTITLE_LIST, SubtitleLayerRole.LEARNING)
+            .toTextStyle(scale)
+    }
 }
 
 @Composable

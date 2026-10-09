@@ -156,6 +156,31 @@ class AiTest {
     }
 
     @Test
+    fun `middle sections keep their paragraphs and a preamble is extra`() {
+        val answer = """
+            Sure, here is the breakdown.
+
+            **Meaning here**
+            First paragraph.
+
+            Second paragraph of the meaning.
+
+            **Why it is used**
+            Because.
+        """.trimIndent()
+        val sections = AiAnswerParser.parse(answer)
+        assertEquals("First paragraph.\n\nSecond paragraph of the meaning.", sections.meaning)
+        assertEquals("Because.", sections.whyUsed)
+        assertEquals("Sure, here is the breakdown.", sections.extra)
+    }
+
+    @Test
+    fun `the default template substitutes the selection`() {
+        val request = AiPromptRequest(userTemplate = "", selectedText = "break a leg", block = null)
+        assertEquals("Explain this line for a learner: break a leg", AiPromptBuilder.build(request).userPrompt)
+    }
+
+    @Test
     fun `a plain answer becomes the meaning section`() {
         val sections = AiAnswerParser.parse("Just a normal explanation with no headings at all.")
         assertEquals("Just a normal explanation with no headings at all.", sections.meaning)

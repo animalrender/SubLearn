@@ -129,7 +129,7 @@ class SubtitleDocument(
                 hi = mid - 1
             }
         }
-        if (candidate < 0) return blocks.first().takeIf { timeMs < it.endMs }
+        if (candidate < 0) return null
         val block = blocks[candidate]
         return if (timeMs < block.endMs) block else null
     }

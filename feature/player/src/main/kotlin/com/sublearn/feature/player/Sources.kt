@@ -65,7 +65,7 @@ private fun Context.listSubtitleChildren(treeUri: String, videoKey: String): Lis
                     val name = cursor.getString(1) ?: continue
                     if (!name.startsWith(stem, ignoreCase = true)) continue
                     if (SubtitleFormat.fromFileName(name) != SubtitleFormat.UNKNOWN) {
-                        val docId = cursor.getString(0)
+                        val docId = cursor.getString(0) ?: continue
                         out += SubtitleFile(
                             key = DocumentsContract.buildDocumentUriUsingTree(Uri.parse(treeUri), docId).toString(),
                             name = name,

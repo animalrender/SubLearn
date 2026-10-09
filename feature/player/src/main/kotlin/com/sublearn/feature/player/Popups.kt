@@ -23,9 +23,9 @@ import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -80,108 +80,114 @@ fun PopupLayer(
     ) {
         val current = popup ?: return@AnimatedVisibility
         val spec = settings.fontFor(FontSurface.TRANSLATION_POPUP, SubtitleLayerRole.NATIVE)
-        Surface(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .widthIn(max = 520.dp)
-                .padding(Dimens.lg),
-            shape = RoundedCornerShape(settings.appearance.cornerRadiusDp.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            tonalElevation = Dimens.cardElevation,
-            shadowElevation = spec.shadowElevationDp.dp,
-        ) {
-            Column(
+        Box(Modifier.fillMaxSize()) {
+            Surface(
                 modifier = Modifier
-                    .padding(Dimens.lg)
-                    .heightIn(max = 360.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(Dimens.sm),
+                    .align(Alignment.BottomCenter)
+                    .widthIn(max = 520.dp)
+                    .padding(Dimens.lg),
+                shape = RoundedCornerShape(settings.appearance.cornerRadiusDp.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                tonalElevation = Dimens.cardElevation,
+                shadowElevation = spec.shadowElevationDp.dp,
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(
-                            when (current.kind) {
-                                PopupKind.WORD -> R.string.translate_word
-                                PopupKind.LINE -> R.string.translate_line
-                                PopupKind.BLOCK -> R.string.translate_block
-                            },
-                        ),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                    current.level?.let { level ->
-                        Spacer(Modifier.size(Dimens.sm))
-                        LevelBadge(level)
-                    }
-                    Spacer(Modifier.weight(1f))
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_close))
-                    }
-                }
-
-                Text(
-                    text = current.sourceText,
-                    style = settings.fontFor(FontSurface.TRANSLATION_POPUP, SubtitleLayerRole.LEARNING)
-                        .toTextStyle(LocalAppFontScale.current),
-                    maxLines = 6,
-                )
-
-                if (current.busy) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-                        CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                        Text(stringResource(R.string.ai_thinking), style = MaterialTheme.typography.bodySmall)
-                    }
-                } else {
-                    current.translation?.let { translated ->
+                Column(
+                    modifier = Modifier
+                        .padding(Dimens.lg)
+                        .heightIn(max = 360.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.sm),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = translated,
-                            style = spec.toTextStyle(LocalAppFontScale.current),
-                            color = MaterialTheme.colorScheme.onSurface,
+                            text = stringResource(
+                                when (current.kind) {
+                                    PopupKind.WORD -> R.string.translate_word
+                                    PopupKind.LINE -> R.string.translate_line
+                                    PopupKind.BLOCK -> R.string.translate_block
+                                },
+                            ),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
                         )
-                    }
-                    current.contextTranslation?.let { context ->
-                        Text(
-                            text = context,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    current.error?.let { error ->
-                        Column {
-                            Text(error, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
-                            if (current.needsModelDownload) {
-                                TextButton(onClick = onDownloadModel) { Text(stringResource(R.string.translate_download)) }
-                            }
+                        current.level?.let { level ->
+                            Spacer(Modifier.size(Dimens.sm))
+                            LevelBadge(level)
+                        }
+                        Spacer(Modifier.weight(1f))
+                        IconButton(onClick = onDismiss) {
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_close))
                         }
                     }
-                    if (current.translation == null && current.error == null && !current.busy) {
+
+                    Text(
+                        text = current.sourceText,
+                        style = settings.fontFor(FontSurface.TRANSLATION_POPUP, SubtitleLayerRole.LEARNING)
+                            .toTextStyle(LocalAppFontScale.current),
+                        maxLines = 6,
+                    )
+
+                    if (current.busy) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+                            CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                            Text(stringResource(R.string.ai_thinking), style = MaterialTheme.typography.bodySmall)
+                        }
+                    } else {
+                        current.translation?.let { translated ->
+                            Text(
+                                text = translated,
+                                style = spec.toTextStyle(LocalAppFontScale.current),
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                        current.contextTranslation?.let { context ->
+                            Text(
+                                text = context,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        current.error?.let { error ->
+                            Column {
+                                Text(error, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                                if (current.needsModelDownload) {
+                                    TextButton(onClick = onDownloadModel) { Text(stringResource(R.string.translate_download)) }
+                                }
+                            }
+                        }
+                        if (current.translation == null && current.error == null && !current.busy) {
+                            Text(
+                                stringResource(R.string.translate_offline_hint),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onToggleMark) {
+                            Icon(
+                                imageVector = if (current.marked) Icons.Default.Star else Icons.Default.StarBorder,
+                                contentDescription = stringResource(
+                                    if (current.marked) R.string.word_remove else R.string.word_add,
+                                ),
+                                tint = if (current.marked) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                            )
+                        }
+                        IconButton(onClick = { onAskAi(current.sourceText) }) {
+                            Icon(Icons.Default.AutoAwesome, contentDescription = stringResource(R.string.ai_explain))
+                        }
+                        Spacer(Modifier.weight(1f))
                         Text(
-                            stringResource(R.string.translate_offline_hint),
-                            style = MaterialTheme.typography.bodySmall,
+                            text = clock(current.timestampMs),
+                            style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onToggleMark) {
-                        Icon(
-                            imageVector = if (current.marked) Icons.Default.Star else Icons.Default.StarBorder,
-                            contentDescription = stringResource(
-                                if (current.marked) R.string.word_remove else R.string.word_add,
-                            ),
-                            tint = if (current.marked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    IconButton(onClick = { onAskAi(current.sourceText) }) {
-                        Icon(Icons.Default.AutoAwesome, contentDescription = stringResource(R.string.ai_explain))
-                    }
-                    Spacer(Modifier.weight(1f))
-                    Text(
-                        text = "%d:%02d".format(current.timestampMs / 60_000L, (current.timestampMs % 60_000L) / 1000L),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                 }
             }
         }

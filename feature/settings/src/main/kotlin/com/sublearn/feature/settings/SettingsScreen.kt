@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -130,17 +131,17 @@ fun SettingsScreen(
                 "root" -> RootList(query = query, onQuery = { query = it }, onOpen = { section = it })
                 "appearance" -> AppearanceSection(settings, viewModel)
                 "player" -> PlayerSection(settings, viewModel)
-                "subtitles" -> SubtitlesSection(settings, viewModel, context)
+                "subtitles" -> SubtitlesSection(settings, viewModel)
                 "fonts" -> FontsSection(settings, viewModel)
                 "gestures" -> GesturesSection(settings, viewModel)
                 "shadowing" -> ShadowingSection(settings, viewModel)
-                "learning" -> LearningSection(settings, viewModel, context)
+                "learning" -> LearningSection(settings, viewModel)
                 "ai" -> AiSection(settings, viewModel, onOpenPrompt = { section = "prompt" })
                 "translation" -> TranslationSection(settings, viewModel)
                 "dictionary" -> DictionarySection(settings, viewModel)
                 "quick" -> QuickActionsSection(settings, viewModel)
                 "prompt" -> PromptSection(settings, viewModel, onDone = { section = "ai" })
-                            "about" -> AboutSection(settings, viewModel, versionName, onBack)
+                "about" -> AboutSection(settings, viewModel, versionName, onBack)
             }
             Spacer(Modifier.height(32.dp))
         }
@@ -321,7 +322,7 @@ private fun AppearanceSection(settings: com.sublearn.core.settings.AppSettings, 
 }
 
 private fun Context.applyLocale(tag: String) {
-    val editor = getSharedPreferences("sublearn_locale", MODE_PRIVATE).edit()
+    val editor = getSharedPreferences("sublearn_locale", Context.MODE_PRIVATE).edit()
     if (tag == "system") editor.remove("lang") else editor.putString("lang", tag)
     editor.apply()
     (findActivity())?.recreate()
@@ -334,12 +335,5 @@ private fun Context.findActivity(): Activity? {
         ctx = ctx.baseContext
     }
     return null
-}
-
-private fun ThemeMode.labelRes(): Int = when (this) {
-    ThemeMode.SYSTEM -> R.string.settings_theme_system
-    ThemeMode.LIGHT -> R.string.settings_theme_light
-    ThemeMode.DARK -> R.string.settings_theme_dark
-    ThemeMode.AMOLED -> R.string.settings_theme_amoled
 }
 

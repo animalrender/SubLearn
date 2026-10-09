@@ -46,7 +46,7 @@ RULES = [
     ("kotlinx.serialization.", "kotlinx-serialization-json"),
     ("com.squareup.okhttp3.", "okhttp"),
     ("com.google.mlkit.", "mlkit-translate"),
-    ("com.google.android.gms.", "mlkit-language-id"),
+    ("com.google.android.gms.", "mlkit-translate"),
     ("org.junit.", "junit"),
     ("org.robolectric.", "robolectric"),
 ]
