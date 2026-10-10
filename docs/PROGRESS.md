@@ -38,6 +38,11 @@ Actions login (the artifact host is unreachable from the agent sandbox anyway).
   marked latest, debug-signed and saying so. No tag was pushed by hand.
 - Both jobs took about half a minute together, because the APKs came from the CI artifact: the build
   steps reported `skipped`, the download step `success`.
+- The dev channel was checked the same way on this branch: CI run 38093233271 (`arena/7487aaef-sublearn`,
+  commit `bbb22c0`) produced the pre-release `dev-arena-7487aaef-sublearn` —
+  `SubLearn-0.2.0-dev-bbb22c0-<abi>.apk`, titled with the branch and the commit, notes saying the next
+  green build replaces it, not marked latest. Pushing again to the same branch moves the tag, drops the
+  assets of the previous commit and uploads the new ones.
 
 **How to test it again**
 - Push anything to `main` while `versionName` is already tagged: the same job refreshes the
