@@ -22,7 +22,9 @@ jobs:
   build:
     name: Build, test, lint
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 60, not 30: on a branch with a cold Gradle cache (read-only on arena/* branches) the first
+    # full assemble ran past 30 minutes, and the job was cancelled before it could report errors.
+    timeout-minutes: 60
     permissions:
       contents: read
       # Only for the failure report below: a check run is the one place a sandboxed agent can read a

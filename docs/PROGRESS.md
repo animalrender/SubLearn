@@ -54,6 +54,11 @@ hard-coded colours and sizes.
 - In portrait the subtitle list takes the lower 45 % of the screen and the picture keeps the rest.
 - Playlist rows are read-only.
 
+**CI change.** The build job timeout went from 30 to 60 minutes. On this branch the first full
+`assembleDebug assembleRelease test lintDebug assembleDebugAndroidTest` ran past 30 minutes with a cold
+Gradle cache (the green run on the previous branch took 12 minutes in that step), so the job was
+cancelled before it could report compile errors.
+
 **Not verified**
 - Nothing in this entry has been compiled. The sandbox has no JVM or Android SDK. The four static
   checkers report 0 problems, and CI's `assembleDebug` is the first compiler. Expect a round of compile fixes.
