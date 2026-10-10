@@ -62,9 +62,16 @@ Two routes exist beyond the static checks (both documented in `docs/AGENT_REQUES
   `gh api repos/<owner>/<repo>/commits/<sha>/check-runs` → `.output.text`. Do not loop on
   `gh run view --log` / `gh run download`; they fail here.
 
-Releases: `release.yml` builds `assembleRelease` (one APK per ABI plus universal, R8 shrink without
-obfuscation, debug-signed unless the `SUBLEARN_KEYSTORE_*` secrets exist) and attaches them to the
-GitHub Release for a `v*` tag; the tag must equal `versionName` in `app/build.gradle.kts`. See D-21.
+Releases happen on their own (D-28). When CI goes green, `auto-release.yml` publishes the APKs CI
+just built: on `main` whose `versionName` has no tag yet it creates the stable release `v<version>`;
+any other green push (`main` at an already-released version, `phase/**`, `arena/**`) refreshes the
+rolling pre-release `dev-<branch>`, which is also how an agent gets an installable APK without
+reaching the artifact host. So **releasing is bumping `versionName` in `app/build.gradle.kts`, adding
+the matching `## [x.y.z]` section to `CHANGELOG.md`, and merging to `main`** — do not push tags by
+hand; `versionCode` is derived from the name. `release.yml` still builds a `v*` tag manually (one APK
+per ABI plus universal, R8 shrink without obfuscation, debug-signed unless the `SUBLEARN_KEYSTORE_*`
+secrets exist, in which case `auto-release.yml` rebuilds and signs too). See D-21 and D-28. Pipeline
+changes only take effect once they are on `main`: `workflow_run` always runs the default-branch copy.
 
 ## Module map and boundaries
 

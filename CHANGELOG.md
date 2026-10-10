@@ -4,12 +4,52 @@ All notable changes to SubLearn are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses semantic versioning.
 Unreleased work lands on phase branches; `main` only ever contains merged, CI-green phases.
 
-[Unreleased]: https://github.com/animalrender/SubLearn/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/animalrender/SubLearn/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/animalrender/SubLearn/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/animalrender/SubLearn/releases/tag/v0.1.0
 
 ## [Unreleased]
 
 Nothing yet.
+
+## [0.2.0] - 2026-10-11
+
+The rebuilt player, and a release that publishes itself: once CI is green on `main`, the APKs are
+attached to a GitHub Release without anyone pushing a tag.
+
+### Release pipeline
+
+- Added: `.github/workflows/auto-release.yml` — reacts to a successful CI run (`workflow_run`) and
+  publishes the APKs. On `main` with a `versionName` that has no tag yet it creates the stable
+  release `v<version>`; every other green push (`main` again, `phase/**`, `arena/**`) refreshes a
+  rolling pre-release tagged `dev-<branch>`. Pre-releases of deleted branches are cleaned up on the
+  next run from `main`; `v*` releases are never touched by it.
+- Added: the published APKs are the ones CI already built and checked — the workflow downloads the
+  CI artifact instead of building a second time. When the `SUBLEARN_KEYSTORE_BASE64` secret exists
+  it rebuilds the commit instead, so a signed release never needs the key inside CI (REQ-6).
+- Changed: `versionCode` is derived from `versionName` (`0.2.0` → `200`), overridable with
+  `SUBLEARN_VERSION_CODE`, so a release bumps exactly one number.
+- Changed: `tools/release_notes.py` takes `--channel`, `--branch`, `--commit`, `--signing` and
+  `--build-url`; the notes now say which commit was built and which key signed it instead of
+  hedging, and a dev build shows the `[Unreleased]` section as "what is new so far".
+- Changed: `release.yml` (the `v*` tag path) passes the signing state into the notes. Its behaviour
+  is otherwise unchanged and it stays the way to publish a tag by hand.
+
+### Player
+
+- Changed: the video player was rebuilt around MX-style controls — top bar (audio, subtitle and
+  decoder pickers, PiP, share, rotation lock, layout mode), a centred replay/play/forward cluster,
+  a bottom row with the seek bar, subtitle steps and repeat block, a lock button and the
+  quick-action dock.
+- Added: `Hud.kt` (brightness, volume, seek, speed and double-tap feedback) and `PlayerGestures.kt`
+  with a single gesture surface and `PlayerHitRegistry`, so taps on words, drags, double taps,
+  two-finger speed and pinch no longer fight each other (D-25).
+- Added: `PlayerSettings.longPressSpeedPercent` (100–400 %, default 200) with its Settings row, and
+  29 new EN/FA strings (446 keys per language).
+- Fixed: layer drags ignored the stored vertical offset; the seek slider passed a wrong delta; the
+  floating quick-action drag handler was never attached; the gesture layer sat above the subtitle
+  layers; system bars and orientation were not restored when the screen left; subtitle tools could
+  reload with the previous settings; player messages were English literals.
 
 ## [0.1.0] - 2026-10-09
 

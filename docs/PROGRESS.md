@@ -2,6 +2,44 @@
 
 Always answers: what was the goal, what is done, what remains, how to test it. Newest entry on top.
 
+## 2026-10-11 — releases publish themselves after CI is green
+
+**Goal.** Stop releasing by hand. A change that passes every check should end up as installable APKs
+on the Releases page without a tag push, and a branch build should be downloadable without an
+Actions login (the artifact host is unreachable from the agent sandbox anyway).
+
+**Done**
+- `.github/workflows/auto-release.yml` (new): reacts to a successful CI run (`workflow_run`, push
+  runs only) and to a manual dispatch. A `plan` job reads `versionName` at the tested commit and
+  picks the channel — stable (`v<version>` on `main`, only while that tag does not exist) or dev
+  (`dev-<branch>`, pre-release, assets replaced on every run). A `publish` job downloads the release
+  APKs from the CI run that just passed, renames them, writes `SHA256SUMS`, moves or creates the tag
+  and creates or updates the release. It rebuilds and signs instead of reusing when
+  `SUBLEARN_KEYSTORE_BASE64` exists, and it deletes `dev-*` pre-releases whose branch is gone.
+- `tools/release_notes.py`: `--channel`, `--branch`, `--commit`, `--signing`, `--build-url`. Dev
+  notes say which commit they came from, that the next green build replaces them, and show the
+  `[Unreleased]` changelog section; the signing paragraph now states the key that was actually used.
+  The old positional call still works.
+- `app/build.gradle.kts`: `versionName = "0.2.0"`, and `versionCode` derived from it (`200`) with a
+  `SUBLEARN_VERSION_CODE` override, so a release bumps one number.
+- `release.yml`: passes the signing state and the commit into the notes; the `v*` path is otherwise
+  unchanged and still works for a hand-made release.
+- Docs: D-28 (and D-17's permission note), `AGENTS.md` release section, README download/build
+  sections, REQ-6 update, `CHANGELOG.md` `## [0.2.0]`.
+
+**Remains**
+- The keystore secrets (REQ-6). Until they exist every release is debug-signed, which the notes say.
+- F-Droid metadata and an update check inside the app are still not planned work.
+
+**How to test it**
+- Merge to `main`: the CI run of the merge commit turns green, `Auto release` starts by itself and
+  `v0.2.0` appears on the Releases page with four APKs plus `SHA256SUMS`, built from the CI run (the
+  summary of the run shows the plan table: branch, commit, channel, tag, source of the APKs).
+- Push anything else to `main` afterwards: the same job refreshes the `dev-main` pre-release instead.
+- `workflow_run` only uses the default-branch copy of the workflow, so none of this fires for a
+  branch until it is merged; a branch can be released early with `gh workflow run auto-release.yml
+  --ref <branch>` (that path rebuilds, because there is no CI run attached to a manual dispatch).
+
 ## 2026-10-10 — player rebuild (MX-style controls, two subtitle layers, gestures)
 
 **Goal.** Rebuild the video player (`feature/player`, with `core/player` and the designsystem pieces it

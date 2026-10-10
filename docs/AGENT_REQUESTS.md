@@ -95,8 +95,13 @@ blocking, the workaround used in the meantime is stated too.
   `SUBLEARN_KEYSTORE_BASE64` (the `.jks` as base64), `SUBLEARN_KEYSTORE_PASSWORD`,
   `SUBLEARN_KEY_ALIAS` and `SUBLEARN_KEY_PASSWORD`. Without them the release APKs are debug-signed and
   the release notes say so (D-21). F-Droid metadata is not added.
-- **Next step**: owner adds the four secrets (Settings → Secrets and variables → Actions); the next tag
-  is then properly signed. Users of a debug-signed build must uninstall before installing it.
+- **Update (2026-10-11)**: `auto-release.yml` reads the same four secrets and decides from them how a
+  build is produced (D-28). While they are absent it republishes the APKs CI already built and tested
+  (debug-signed, and the notes now name the key instead of hedging); the moment
+  `SUBLEARN_KEYSTORE_BASE64` exists it rebuilds the released commit inside the release workflow and
+  signs it there, so the key never enters CI. Nothing else has to change when the key arrives.
+- **Next step**: owner adds the four secrets (Settings → Secrets and variables → Actions); the next
+  release is then properly signed. Users of a debug-signed build must uninstall before installing it.
 - **Severity**: low for the tag, high for a store listing.
 
 ### REQ-7 — Device for the verification pass and README screenshots
