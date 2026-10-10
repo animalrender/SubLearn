@@ -59,10 +59,17 @@ hard-coded colours and sizes.
 Gradle cache (the green run on the previous branch took 12 minutes in that step), so the job was
 cancelled before it could report compile errors.
 
+**CI history for this entry.** The sandbox has no JVM or Android SDK, so CI was the first compiler. The
+first run failed on compile errors in `feature:player` (a delegate missing its import, a missing
+`waitForUpOrCancellation` import, a nonexistent `Offset.getDistance`, a scope error, two missing imports).
+The second run failed on one lint error (an unstable Media3 API, now removed, because `core:player`
+already hides the subtitle view). The third run, commit `494a8e6`, is green: static checks,
+`assembleDebug`, `assembleRelease`, `test`, `lintDebug` and `assembleDebugAndroidTest` all pass.
+
 **Not verified**
-- Nothing in this entry has been compiled. The sandbox has no JVM or Android SDK. The four static
-  checkers report 0 problems, and CI's `assembleDebug` is the first compiler. Expect a round of compile fixes.
-- Nothing has run on a device. The instrumented smoke test is updated but has not run.
+- Nothing has run on a device or an emulator. The instrumented smoke test compiles but has not been run.
+- The behaviour of gestures, picture-in-picture, rotation and word hit testing on real glyphs is reviewed,
+  not tested on hardware (KNOWN_ISSUES 21).
 
 **How to test by hand** (once CI is green): open a video with an external SRT; check the top bar, the centre
 cluster, the bottom chrome and the lock; double-tap left and right; two-finger swipe up; long-press a word
