@@ -31,14 +31,28 @@ Actions login (the artifact host is unreachable from the agent sandbox anyway).
 - The keystore secrets (REQ-6). Until they exist every release is debug-signed, which the notes say.
 - F-Droid metadata and an update check inside the app are still not planned work.
 
-**How to test it**
-- Merge to `main`: the CI run of the merge commit turns green, `Auto release` starts by itself and
-  `v0.2.0` appears on the Releases page with four APKs plus `SHA256SUMS`, built from the CI run (the
-  summary of the run shows the plan table: branch, commit, channel, tag, source of the APKs).
-- Push anything else to `main` afterwards: the same job refreshes the `dev-main` pre-release instead.
-- `workflow_run` only uses the default-branch copy of the workflow, so none of this fires for a
-  branch until it is merged; a branch can be released early with `gh workflow run auto-release.yml
-  --ref <branch>` (that path rebuilds, because there is no CI run attached to a manual dispatch).
+**Verified on the merge of PR #4 (2026-10-11)**
+- CI run 38092802028 (`main`, merge commit `128a339`) went green; `Auto release` run 38093127642
+  started by itself and published **v0.2.0** — `SubLearn-v0.2.0-{universal,arm64-v8a,armeabi-v7a,
+  x86_64}.apk` (62.9 / 18.7 / 14.1 / 19.6 MB) plus `SHA256SUMS`, notes from the changelog section,
+  marked latest, debug-signed and saying so. No tag was pushed by hand.
+- Both jobs took about half a minute together, because the APKs came from the CI artifact: the build
+  steps reported `skipped`, the download step `success`.
+- The dev channel was checked the same way on this branch: CI run 38093233271 (`arena/7487aaef-sublearn`,
+  commit `bbb22c0`) produced the pre-release `dev-arena-7487aaef-sublearn` —
+  `SubLearn-0.2.0-dev-bbb22c0-<abi>.apk`, titled with the branch and the commit, notes saying the next
+  green build replaces it, not marked latest. Pushing again to the same branch moves the tag, drops the
+  assets of the previous commit and uploads the new ones.
+
+**How to test it again**
+- Push anything to `main` while `versionName` is already tagged: the same job refreshes the
+  `dev-main` pre-release instead of creating a release.
+- Push to a `phase/**` or `arena/**` branch: a `dev-<branch>` pre-release appears with that commit's
+  APKs and is replaced on every later green run; it is deleted on the next run from `main` after the
+  branch is gone.
+- `workflow_run` only uses the default-branch copy of the workflow, so pipeline changes take effect
+  once merged; a branch can also be released on demand with `gh workflow run auto-release.yml --ref
+  <branch>` (that path rebuilds, because a manual dispatch has no CI run attached to it).
 
 ## 2026-10-10 — player rebuild (MX-style controls, two subtitle layers, gestures)
 

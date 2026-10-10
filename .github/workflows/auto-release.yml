@@ -339,6 +339,12 @@ jobs:
             gh release upload "$TAG" "$RUNNER_TEMP"/release-apks/* --clobber --repo "$GITHUB_REPOSITORY"
             gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" \
               --title "$TITLE" --notes-file "$notes" "${flags[@]}"
+            # The tag already moved above, but an existing release keeps the commit it was created
+            # from, which is what the releases page counts "commits since" against. The REST API does
+            # accept a new one, so the pre-release stops pointing at the previous dev build.
+            release_id=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.id')
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$release_id" \
+              -f target_commitish="$SHA" >/dev/null
           else
             gh release create "$TAG" "$RUNNER_TEMP"/release-apks/* \
               --repo "$GITHUB_REPOSITORY" \
