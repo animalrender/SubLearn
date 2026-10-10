@@ -7,7 +7,6 @@ import android.content.pm.ActivityInfo
 import android.media.AudioManager
 import android.provider.Settings as SystemSettings
 import android.util.Rational
-import android.view.View
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -60,7 +59,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
 import com.sublearn.core.designsystem.Dimens
 import com.sublearn.core.designsystem.LocalReduceMotion
@@ -84,9 +82,6 @@ import com.sublearn.core.settings.OrientationLock
  * One-shot requests from the ViewModel arrive as [PlayerIntent]s and are handled here, because only
  * the Activity can carry them out.
  */
-// The subtitle view is hidden, not used: the picture is shown without Media3 captions, because
-// SubLearn draws its own layers. Only that call needs the unstable Media3 API.
-@OptIn(UnstableApi::class)
 @Composable
 fun PlayerScreen(
     viewModel: PlayerViewModel,
@@ -242,7 +237,6 @@ fun PlayerScreen(
                     PlayerView(ctx).apply {
                         setUseController(false)
                         setBackgroundColor(colors.letterbox.toArgb())
-                        subtitleView?.visibility = View.GONE
                         viewRef[0] = this
                         viewModel.controller.attachView(this)
                     }
