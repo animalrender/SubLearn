@@ -1,66 +1,66 @@
 package com.sublearn.feature.player
 
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import com.sublearn.core.designsystem.Dimens
 import com.sublearn.core.designsystem.LocalAppFontScale
-import com.sublearn.core.designsystem.R
+import com.sublearn.core.designsystem.LocalSubLearnColors
 import com.sublearn.core.designsystem.SubtitleBackdrop
 import com.sublearn.core.designsystem.toCompose
 import com.sublearn.core.designsystem.toTextStyle
-import com.sublearn.core.settings.AppSettings
 import com.sublearn.core.settings.FontSurface
 import com.sublearn.core.settings.LayerStackDirection
 import com.sublearn.core.settings.SubtitleHorizontalAnchor
 import com.sublearn.core.settings.SubtitleLayerRole
 import com.sublearn.core.settings.SubtitlePlacement
 import com.sublearn.core.settings.SubtitleVerticalAnchor
-import com.sublearn.core.settings.TextDecorationToken
 import com.sublearn.core.settings.WordStyle
 import com.sublearn.core.settings.WordStyleSettings
-import com.sublearn.core.subtitles.SubtitleBlock
 import com.sublearn.core.subtitles.Tokenizer
 import com.sublearn.core.subtitles.TrackRole
 
+/** Percent to fraction, shared by scale and transparency. */
+private const val PERCENT = 100f
+
 /**
- * Both subtitle layers, drawn by SubLearn rather than by the player so that every word can be
+ * Both subtitle layers, drawn by SubLearn rather than by the player (D-8), so every word can be
  * touched (PLY-7, SUB-4).
  *
- * Hit testing uses the real [TextLayoutResult] of the rendered text: the touch position becomes a
- * character offset, which becomes the token covering it. Keeping a parallel "word grid" would have
- * been a second source of truth about where the text is, so there is none.
+ * This file only draws and reports geometry. Touches are routed by [PlayerGestures] through the
+ * [PlayerHitRegistry] that each plate and text block registers with, so there is one place that
+ * decides what a tap means.
  */
 @Composable
-fun SubtitleLayerStack(
+internal fun SubtitleLayerStack(
     ui: PlayerUi,
-    onLayerTap: (TrackRole, PopupKind, String?, SubtitleBlock?) -> Unit,
-    onMove: (TrackRole, SubtitlePlacement) -> Unit,
+    registry: PlayerHitRegistry,
     modifier: Modifier = Modifier,
 ) {
-    val roles = when (ui.settings.subtitles.layer(TrackRole.LEARNING).stackDirection) {
+    val roles = when (ui.settings.subtitleLayer(TrackRole.LEARNING).stackDirection) {
         LayerStackDirection.ABOVE -> listOf(TrackRole.LEARNING, TrackRole.TRANSLATION)
         LayerStackDirection.BELOW -> listOf(TrackRole.TRANSLATION, TrackRole.LEARNING)
     }
@@ -68,152 +68,121 @@ fun SubtitleLayerStack(
         roles.forEach { role ->
             val layer = ui.layer(role)
             val text = layer.text
-            if (!layer.visible || text.isNullOrBlank()) return@forEach
-            SubtitleLayerView(
-                role = role,
-                text = text,
-                block = layer.block,
-                settings = ui.settings,
-                wordStates = ui.wordStates,
-                layoutMode = ui.layoutMode,
-                tapEnabled = layer.canStepBySubtitle || ui.settings.learning.tapCountsForLineAndBlock,
-                onTaps = { count, word ->
-                    val kind = when {
-                        word != null -> PopupKind.WORD
-                        count >= 3 -> PopupKind.BLOCK
-                        else -> PopupKind.LINE
-                    }
-                    onLayerTap(role, kind, word, layer.block)
-                },
-                onDragBy = { dx, dy -> onMove(role, layer.placement.movedBy(dx, dy)) },
-            )
+            if (layer.visible && !text.isNullOrBlank()) {
+                SubtitlePlate(role = role, text = text, ui = ui, registry = registry)
+            }
         }
     }
 }
 
 /**
- * Nudge a placement by a drag. Both deltas are already in dp (the caller divides by the density it
- * reads from the pointer input scope). The range keeps a layer reachable from every anchor: the
- * offsets are relative to the anchored position, so a larger screen just has more room to move.
+ * One layer's plate. The plate is anchored by its placement and offset by the user's drag; in
+ * layout mode it gets an outline so the user can see what they are moving.
  */
-internal fun SubtitlePlacement.movedBy(dx: Float, dy: Float): SubtitlePlacement = copy(
-    offsetXDp = (offsetXDp + dx).coerceIn(-600f, 600f),
-    offsetYDp = (offsetYDp + dy).coerceIn(-900f, 900f),
-)
-
 @Composable
-private fun SubtitleLayerView(
+private fun BoxScope.SubtitlePlate(
     role: TrackRole,
     text: String,
-    block: SubtitleBlock?,
-    settings: AppSettings,
-    wordStates: Map<String, WordVisualState>,
-    layoutMode: Boolean,
-    tapEnabled: Boolean,
-    onTaps: (Int, String?) -> Unit,
-    onDragBy: (Float, Float) -> Unit,
+    ui: PlayerUi,
+    registry: PlayerHitRegistry,
 ) {
-    val layer = settings.subtitleLayer(role)
-    val surface = if (role == TrackRole.LEARNING) FontSurface.SUBTITLE_LEARNING else FontSurface.SUBTITLE_TRANSLATION
-    val spec = settings.fontFor(surface, if (role == TrackRole.LEARNING) SubtitleLayerRole.LEARNING else SubtitleLayerRole.NATIVE)
-    val baseScale = LocalAppFontScale.current * (layer.scalePercent / 100f)
-    val style: TextStyle = remember(spec, baseScale) { spec.toTextStyle(baseScale) }
-    val annotated = remember(text, wordStates, settings.wordStyles) {
-        styleWords(text, wordStates, settings.wordStyles)
+    val settings = ui.settings
+    val layer = ui.layer(role)
+    val placement = layer.placement
+    val colors = LocalSubLearnColors.current
+    val isLearning = role == TrackRole.LEARNING
+    val surface = if (isLearning) FontSurface.SUBTITLE_LEARNING else FontSurface.SUBTITLE_TRANSLATION
+    val spec = settings.fontFor(surface, if (isLearning) SubtitleLayerRole.LEARNING else SubtitleLayerRole.NATIVE)
+    val scale = LocalAppFontScale.current * (layer.scalePercent / PERCENT)
+    val style = remember(spec, scale) { spec.toTextStyle(scale) }
+    val annotated = remember(text, ui.wordStates, settings.wordStyles) {
+        styleWords(text, ui.wordStates, settings.wordStyles)
     }
-    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
+    val refs = remember(role) { PlateRefs() }
+    DisposableEffect(role, registry) {
+        onDispose { registry.forgetSubtitle(role) }
+    }
+    val outline = if (ui.layoutMode) {
+        Modifier.border(Dimens.strokeWidth, colors.overlayOutline, RoundedCornerShape(spec.cornerRadiusDp.dp))
+    } else {
+        Modifier
+    }
+    SubtitleBackdrop(
+        modifier = placed(placement)
+            .then(outline)
+            .onGloballyPositioned { coordinates ->
+                refs.plate = coordinates
+                registry.putSubtitlePlate(role, coordinates)
+            },
+        alpha = (1f - layer.transparencyPercent / PERCENT).coerceIn(0f, 1f),
+        colorArgb = spec.backgroundColorArgb,
+        cornerRadiusDp = spec.cornerRadiusDp,
     ) {
-        SubtitleBackdrop(
-            alpha = (1f - layer.transparencyPercent / 100f).coerceIn(0f, 1f),
-            colorArgb = spec.backgroundColorArgb,
-            cornerRadiusDp = spec.cornerRadiusDp,
-            modifier = Modifier
-                .subtitlePlacement(this, layer.placement)
-                .pointerInput(layoutMode, tapEnabled) {
-                    if (layoutMode) {
-                        detectDragGestures { change, drag ->
-                            change.consume()
-                            onDragBy(drag.x / density, drag.y / density)
-                        }
-                    } else if (tapEnabled) {
-                        detectMultiTap(
-                            windowMs = settings.learning.multiTapWindowMs,
-                            onTaps = { count, position -> onTaps(count, layout?.wordUnder(position)) },
-                        )
-                    }
-                },
-        ) {
-            Text(
-                text = annotated,
-                style = style.copy(
-                    textAlign = when (layer.placement.horizontal) {
-                        SubtitleHorizontalAnchor.START -> TextAlign.Start
-                        SubtitleHorizontalAnchor.END -> TextAlign.End
-                        SubtitleHorizontalAnchor.CENTER -> TextAlign.Center
-                    },
-                ),
-                maxLines = settings.subtitles.maxLinesPerLayer,
-                color = Color.White,
-                onTextLayout = { layout = it },
-            )
-        }
-        if (settings.subtitles.showLanguageBadge && block != null) {
-            Text(
-                text = block.cues.size.toString(),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(start = 4.dp),
-            )
-        }
+        Text(
+            text = annotated,
+            style = style.copy(textAlign = placement.textAlign()),
+            color = spec.colorArgb?.let { Color(it) } ?: colors.subtitleText,
+            maxLines = settings.subtitles.maxLinesPerLayer,
+            onTextLayout = { layout: TextLayoutResult ->
+                refs.layout = layout
+                refs.text?.let { registry.putSubtitleText(role, it, layout) }
+            },
+            modifier = Modifier.onGloballyPositioned { coordinates: LayoutCoordinates ->
+                refs.text = coordinates
+                refs.layout?.let { registry.putSubtitleText(role, coordinates, it) }
+            },
+        )
     }
 }
 
-private fun TextLayoutResult.wordUnder(position: Offset): String? {
-    val offset = runCatching { getOffsetForPosition(position) }.getOrNull() ?: return null
-    return layoutInput.text.getStringAnnotations(WORD_TAG, offset, offset).firstOrNull()?.item
+/** The last coordinates and text layout reported for one plate, kept so either can arrive first. */
+private class PlateRefs {
+    var plate: LayoutCoordinates? = null
+    var text: LayoutCoordinates? = null
+    var layout: TextLayoutResult? = null
 }
-
-private const val WORD_TAG = "sublearn-word"
 
 /**
- * Places the plate in the video area from its anchors plus the user's offsets.
+ * Anchors the plate inside the video area and applies the user's offset.
  *
- * `Box` alignment is the only sane source for "top / centre / bottom", which is why the enclosing
- * [BoxScope] is passed in; the drag handler writes back the remaining dp offset.
+ * The offset is stored relative to the anchor it was dragged from, so it is mirrored for END and
+ * BOTTOM anchors: a positive stored value always means "further from the anchor edge". This is the
+ * exact inverse of [SubtitlePlacement] movement in [PlayerViewModel] (see `movedBy`).
  */
-private fun Modifier.subtitlePlacement(scope: BoxScope, placement: SubtitlePlacement): Modifier {
-    val vertical = when (placement.vertical) {
-        SubtitleVerticalAnchor.TOP -> Alignment.TopStart
-        SubtitleVerticalAnchor.CENTER -> Alignment.CenterStart
-        SubtitleVerticalAnchor.BOTTOM -> Alignment.BottomStart
-    }
-    val horizontalPadding = when (placement.horizontal) {
-        SubtitleHorizontalAnchor.START -> maxOf(0f, placement.offsetXDp)
-        SubtitleHorizontalAnchor.END -> 0f
+private fun BoxScope.placed(placement: SubtitlePlacement): Modifier {
+    val horizontal = when (placement.horizontal) {
+        SubtitleHorizontalAnchor.START -> -1f
         SubtitleHorizontalAnchor.CENTER -> 0f
+        SubtitleHorizontalAnchor.END -> 1f
     }
-    val endPadding = if (placement.horizontal == SubtitleHorizontalAnchor.END) maxOf(0f, placement.offsetXDp) else 0f
-    val verticalPadding = when (placement.vertical) {
-        SubtitleVerticalAnchor.TOP -> maxOf(0f, placement.offsetYDp)
+    val vertical = when (placement.vertical) {
+        SubtitleVerticalAnchor.TOP -> -1f
         SubtitleVerticalAnchor.CENTER -> 0f
-        SubtitleVerticalAnchor.BOTTOM -> maxOf(0f, -placement.offsetYDp)
+        SubtitleVerticalAnchor.BOTTOM -> 1f
     }
-    return with(scope) { align(vertical) }
-        .padding(start = horizontalPadding.dp, end = endPadding.dp, top = verticalPadding.dp, bottom = verticalPadding.dp)
-        .fillMaxWidth()
+    val x: Dp = (if (placement.horizontal == SubtitleHorizontalAnchor.END) -placement.offsetXDp else placement.offsetXDp).dp
+    val y: Dp = (if (placement.vertical == SubtitleVerticalAnchor.BOTTOM) -placement.offsetYDp else placement.offsetYDp).dp
+    return Modifier
+        .align(BiasAlignment(horizontal, vertical))
+        .padding(horizontal = Dimens.playerEdgeInset)
+        .offset(x = x, y = y)
+}
+
+private fun SubtitlePlacement.textAlign(): TextAlign = when (horizontal) {
+    SubtitleHorizontalAnchor.START -> TextAlign.Start
+    SubtitleHorizontalAnchor.CENTER -> TextAlign.Center
+    SubtitleHorizontalAnchor.END -> TextAlign.End
 }
 
 /**
  * Styles every word according to the user's word-colour settings (SUB-5) and tags it so a tap can
- * name the word it landed on.
+ * name the word under the finger. Tagging is unconditional; the colours are what the setting turns off.
  */
-internal fun styleWords(text: String, wordStates: Map<String, WordVisualState>, styles: WordStyleSettings): AnnotatedString {
-    // Words are always tagged so a tap can name the word under it; colouring is what the setting toggles.
+internal fun styleWords(
+    text: String,
+    wordStates: Map<String, WordVisualState>,
+    styles: WordStyleSettings,
+): AnnotatedString {
     val colour = styles.enabled && wordStates.isNotEmpty()
     return AnnotatedString.Builder().apply {
         var cursor = 0
@@ -223,12 +192,16 @@ internal fun styleWords(text: String, wordStates: Map<String, WordVisualState>, 
             append(text.substring(span.start, span.end))
             cursor = span.end
             if (!span.isWord) return@forEach
-            addStringAnnotation(WORD_TAG, span.text, start, length)
-            val style = when (if (colour) wordStates[span.text.lowercase()] else null) {
-                WordVisualState.MARKED -> styles.myWords
-                WordVisualState.ABOVE_LEVEL -> styles.unknownAboveLevel
-                WordVisualState.PHRASE -> styles.phrases
-                WordVisualState.KNOWN, WordVisualState.NONE, null -> null
+            addStringAnnotation(SUBTITLE_WORD_TAG, span.text, start, length)
+            val style: WordStyle? = if (colour) {
+                when (wordStates[span.text.lowercase()]) {
+                    WordVisualState.MARKED -> styles.myWords
+                    WordVisualState.ABOVE_LEVEL -> styles.unknownAboveLevel
+                    WordVisualState.PHRASE -> styles.phrases
+                    WordVisualState.KNOWN, WordVisualState.NONE, null -> null
+                }
+            } else {
+                null
             }
             if (style != null) addStyle(style.toSpanStyle(), start, length)
         }
@@ -236,10 +209,17 @@ internal fun styleWords(text: String, wordStates: Map<String, WordVisualState>, 
     }.toAnnotatedString()
 }
 
+/**
+ * The span for one styled word. Scale is relative (`em`), so a word stays in proportion to the line
+ * it sits in whatever the layer's size is; alpha is applied to the colour only, never the background.
+ */
 internal fun WordStyle.toSpanStyle(): SpanStyle = SpanStyle(
-    color = colorArgb?.let { Color(it) } ?: Color.Unspecified,
+    color = colorArgb?.let { Color(it).copy(alpha = alphaPercent / PERCENT) } ?: Color.Unspecified,
     background = backgroundArgb?.let { Color(it) } ?: Color.Unspecified,
     fontWeight = if (bold) FontWeight.Bold else null,
-    fontStyle = null,
+    fontStyle = if (italic) FontStyle.Italic else null,
+    fontSize = if (scalePercent == DEFAULT_WORD_SCALE_PERCENT) TextUnit.Unspecified else (scalePercent / PERCENT).em,
     textDecoration = decoration.toCompose(),
 )
+
+private const val DEFAULT_WORD_SCALE_PERCENT = 100

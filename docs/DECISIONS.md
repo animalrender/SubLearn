@@ -85,7 +85,7 @@ the AI providers read them only at request time through `SecretStore`.
 
 **D-15 — String resources live only in `core:designsystem` (EN + FA).** A feature adding a string in
 its own module would be invisible to the other features and to the RTL audit; the single owner keeps
-`values-fa` provably in sync (417 keys each, checked by `tools/check_resources.py`).
+`values-fa` provably in sync (446 keys each, checked by `tools/check_resources.py`).
 
 **D-16 — Enum labels are exhaustive `when` in `feature/settings/Labels.kt`, no `else`.** Adding a
 `GestureAction` entry must break the build until it has a name; a silent default would ship an
@@ -141,3 +141,24 @@ feature modules only ever ask for the interface and the fakes slot in without to
 **D-24 — ML Kit progress is status-only.** `RemoteModelManager.download` has no byte progress, so
 `TranslationProgress` carries a `Status` and the UI shows an indeterminate bar instead of a fake
 percentage (KNOWN_ISSUES 18).
+
+**D-25 — One hit registry and an explicit layer order for the player.** Everything drawn over the
+picture is laid out in one screen in a fixed order (picture, subtitle layers, gesture surface, chrome,
+feedback, list, popups, sheets). Subtitle plates, words, chrome, popups and the list report their
+coordinates to one `PlayerHitRegistry`, and the gesture surface asks it what a touch means. Subtitle
+text never consumes pointer input itself. The alternative, a pointer handler per element, gave the
+overlapping-layer bugs that the rebuild removes; its cost is one more class to read, which the
+registry's KDoc explains.
+
+**D-26 — Play and pause are centred, not in the bottom row.** PLY-3 lists play/pause among the bottom
+controls. The rebuild puts replay, play/pause and forward in one centred cluster, as MX Player does, so
+the thumb reaches the main action without leaving the picture. The bottom row keeps the seek bar, the
+subtitle steps and the repeat block. This is a deliberate wording deviation from PLY-3.
+
+**D-27 — The player owns its window effects and restores them on leave.** `PlayerScreen` hides the
+system bars for the whole screen (they return on swipe), sets the orientation from
+`PlayerSettings.orientationLock`, and keeps the screen on while `keepScreenOn` is set. Its
+`DisposableEffect`s restore the bars, reset the orientation to unspecified, clear the brightness
+override and clear keep-screen-on when the screen leaves. `ON_STOP` is a save point for the position,
+and `ON_START` after a stop rebuilds the chrome. Only requests that need the Activity cross the
+`PlayerIntent` seam (brightness, volume, PiP, share, navigation).

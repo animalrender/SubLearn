@@ -156,6 +156,8 @@ data class PlayerSettings(
     val speedMinPercent: Int = 25,
     val speedMaxPercent: Int = 400,
     val twoFingerSpeedShortcut: Boolean = true,
+    /** Speed while a long press on the video fast-forwards (PLY-4); released back to the previous speed. */
+    val longPressSpeedPercent: Int = 200,
     val orientationLock: OrientationLock = OrientationLock.AUTO,
     val keepScreenOn: Boolean = true,
     val rememberPosition: Boolean = true,
