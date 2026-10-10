@@ -1,6 +1,7 @@
 package com.sublearn.feature.player
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,8 +17,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,12 +34,12 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
 import com.sublearn.core.designsystem.Dimens
 import com.sublearn.core.designsystem.LocalReduceMotion
@@ -62,7 +61,7 @@ import com.sublearn.core.designsystem.toTextStyle
  * only way forward and the button takes the user straight there.
  */
 @Composable
-fun PopupLayer(
+internal fun PopupLayer(
     popup: PopupUi?,
     settings: AppSettings,
     onDismiss: () -> Unit,
@@ -70,21 +69,26 @@ fun PopupLayer(
     onDownloadModel: () -> Unit,
     onAskAi: (String) -> Unit,
     modifier: Modifier = Modifier,
+    registry: PlayerHitRegistry? = null,
 ) {
     val reduce = LocalReduceMotion.current
+    // The card keeps its last content while it animates out; without this it went blank mid-exit.
+    val lastShown = remember { mutableStateOf(popup) }
+    LaunchedEffect(popup) { if (popup != null) lastShown.value = popup }
     AnimatedVisibility(
         visible = popup != null,
         enter = Motion.popupEnter(reduce),
         exit = Motion.popupExit(reduce),
         modifier = modifier.fillMaxSize(),
     ) {
-        val current = popup ?: return@AnimatedVisibility
+        val current = popup ?: lastShown.value ?: return@AnimatedVisibility
         val spec = settings.fontFor(FontSurface.TRANSLATION_POPUP, SubtitleLayerRole.NATIVE)
         Box(Modifier.fillMaxSize()) {
             Surface(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .widthIn(max = 520.dp)
+                    .blocksGestures(registry)
+                    .widthIn(max = Dimens.cardMaxWidth)
                     .padding(Dimens.lg),
                 shape = RoundedCornerShape(settings.appearance.cornerRadiusDp.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -94,7 +98,7 @@ fun PopupLayer(
                 Column(
                     modifier = Modifier
                         .padding(Dimens.lg)
-                        .heightIn(max = 360.dp)
+                        .heightIn(max = Dimens.cardMaxHeight)
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(Dimens.sm),
                 ) {
@@ -129,7 +133,7 @@ fun PopupLayer(
 
                     if (current.busy) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-                            CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                            CircularProgressIndicator(Modifier.size(Dimens.spinnerSmall), strokeWidth = Dimens.spinnerStroke)
                             Text(stringResource(R.string.ai_thinking), style = MaterialTheme.typography.bodySmall)
                         }
                     } else {
@@ -206,7 +210,7 @@ fun LevelBadge(level: String, modifier: Modifier = Modifier) {
             text = level,
             style = MaterialTheme.typography.labelSmall,
             color = Color(parsed.badgeColorArgb()),
-            modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
+            modifier = Modifier.padding(horizontal = Dimens.sm, vertical = Dimens.xxs),
         )
     }
 }
@@ -249,7 +253,7 @@ fun AiAnswerSheet(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
                 ) {
-                    CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                    CircularProgressIndicator(Modifier.size(Dimens.inlineIcon), strokeWidth = Dimens.spinnerStroke)
                     Text(stringResource(R.string.ai_thinking), style = MaterialTheme.typography.bodySmall)
                     if (ui.playback.isPlaying.not()) {
                         Text(stringResource(R.string.ai_pause_hint), style = MaterialTheme.typography.labelSmall)

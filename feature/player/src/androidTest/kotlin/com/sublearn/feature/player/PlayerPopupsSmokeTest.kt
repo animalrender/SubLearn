@@ -64,7 +64,7 @@ class PlayerPopupsSmokeTest {
 
     @Test
     fun listRowsRenderForSearchAndSeek() {
-        val rows = List(25) { index -> SubtitleListRow(index.toLong(), index, index * 1_500L, "line $index", index == 3) }
+        val rows = List(25) { index -> SubtitleListRow(index.toLong(), index, index * 1_500L, "line $index") }
         rule.setContent {
             SubLearnTheme(settings = AppSettings.DEFAULT) {
                 SubtitleListPanel(

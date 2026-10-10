@@ -12,36 +12,52 @@ import com.sublearn.core.subtitles.TrackRole
 /**
  * Everything the player screen draws, in one immutable snapshot.
  *
- * The [PlayerViewModel] is the only writer; the composables below take `PlayerUi` by value so a
- * recomposition can never observe half an update. Playback itself stays in
- * [com.sublearn.core.player.PlayerController] and is copied in here on every tick, which keeps the
- * screen testable against `FakePlayerController` without any subtitle machinery.
+ * The [PlayerViewModel] is the only writer; the composables take `PlayerUi` by value so a
+ * recomposition never observes a half-finished update. Playback stays in
+ * [com.sublearn.core.player.PlayerController] and is copied in on every tick, which keeps the
+ * screen testable against `FakePlayerController`.
  *
- * Per-layer state lives in [layers] rather than in two fields, so adding a third layer (a second
- * learning language, LATER) touches no UI code.
+ * Transient gesture feedback ([hud]), the lock affordance and in-flight drags live here too, so
+ * the one gesture owner and the chrome always agree on what is happening.
  */
+@Immutable
 data class PlayerUi(
     val settings: AppSettings = AppSettings(),
     val playback: PlaybackState = PlaybackState(),
-    /** A media or subtitle load is in flight; the screen shows a subtle progress affordance. */
+    /** A media or subtitle load is in flight. */
     val opening: Boolean = false,
-    /** Transient one-line status (seek past the end, model download progress, decoder result...). */
+    /** Transient one-line status; cleared on its own after a few seconds. */
     val message: String? = null,
     val learningMode: LearningMode = LearningMode.ENTERTAINMENT,
-    /** SUB-3: gestures go to the layers, chrome is hidden. */
+    /** SUB-3: subtitle plates are draggable, gestures are off and the chrome is hidden. */
     val layoutMode: Boolean = false,
     val controlsVisible: Boolean = true,
+    /** PLY-1 lock: gestures and chrome are off until the lock button is pressed again. */
     val locked: Boolean = false,
+    /** While locked, the unlock button shows for a few seconds after a tap on the video. */
+    val lockButtonVisible: Boolean = false,
     val sheet: Sheet = Sheet.NONE,
+    /** The overflow menu is open; the chrome must not hide underneath it. */
+    val menuOpen: Boolean = false,
+    /** The user is dragging the seekbar; the chrome must not hide and the time label follows the thumb. */
+    val scrubbing: Boolean = false,
+    /** Feedback for the current gesture (brightness, volume, seek, speed, double tap). */
+    val hud: GestureHud? = null,
+    /** Long-press fast forward is active. */
+    val holdSpeed: Boolean = false,
+    /** Mute is the app's own state (not the device volume), so the chrome can show it. */
+    val muted: Boolean = false,
     /** LRN-1: the word/line/block card, or null when nothing is selected. */
     val popup: PopupUi? = null,
     /** The ML Kit translation model is missing; popups offer a download instead of an error. */
     val modelMissing: Boolean = false,
     val layers: Map<TrackRole, LayerUi> = TrackRole.entries.associateWith { LayerUi() },
+    /** Placements being dragged in layout mode; persisted only when the drag ends. */
+    val layerDrafts: Map<TrackRole, SubtitlePlacement> = emptyMap(),
     val list: SubtitleListUi = SubtitleListUi(),
     val shadowing: ShadowUi = ShadowUi(),
     val ai: AiUi = AiUi(),
-    /** Subtitle text to AnnotatedString (SUB-5): marked words and above-level words get a style. */
+    /** SUB-5: marked words and above-level words get a style. */
     val wordStates: Map<String, WordVisualState> = emptyMap(),
     /** Last translation per word, so a re-tap shows the gloss instantly while the popup loads. */
     val glosses: Map<String, String> = emptyMap(),
@@ -52,6 +68,24 @@ data class PlayerUi(
 
     /** Whether the subtitle list and block stepping work, which needs a parsed file (see ARCHITECTURE). */
     val canStepBySubtitle: Boolean get() = layers.values.any { it.canStepBySubtitle }
+}
+
+/** One gesture's feedback. The composable only draws; the ViewModel decides the numbers. */
+sealed interface GestureHud {
+    /** Brightness 0..1 of the window, shown as a vertical level on the left. */
+    data class Brightness(val level: Float) : GestureHud
+
+    /** Media volume 0..1, shown as a vertical level on the right. */
+    data class Volume(val level: Float) : GestureHud
+
+    /** Horizontal seek: the absolute target and the change from where the drag started. */
+    data class Seek(val targetMs: Long, val deltaMs: Long, val durationMs: Long) : GestureHud
+
+    /** Speed in percent (100 = normal), from a two-finger drag or a long press. */
+    data class Speed(val percent: Int) : GestureHud
+
+    /** Double tap seek: how many seconds have been accumulated on this side so far. */
+    data class DoubleTap(val forward: Boolean, val seconds: Int) : GestureHud
 }
 
 /** Sheets opened from the chrome or the quick actions; one enum keeps the back handling simple. */
@@ -82,6 +116,7 @@ enum class LayerSource {
 enum class PopupKind { WORD, LINE, BLOCK }
 
 /** UI state of one subtitle layer: the settings it renders with plus the current text. */
+@Immutable
 data class LayerUi(
     val visible: Boolean = true,
     val text: String? = null,
@@ -130,6 +165,7 @@ data class AiUi(
 )
 
 /** LRN-1 card. `level` is the CEFR name as stored on a marked word, so the badge needs no lookup. */
+@Immutable
 data class PopupUi(
     val kind: PopupKind,
     val sourceText: String,
@@ -145,6 +181,7 @@ data class PopupUi(
     val wasPlayingBeforePause: Boolean = false,
 )
 
+@Immutable
 data class SubtitleListUi(
     val open: Boolean = false,
     val role: TrackRole = TrackRole.LEARNING,
@@ -152,6 +189,7 @@ data class SubtitleListUi(
     val rows: List<SubtitleListRow> = emptyList(),
     val available: Boolean = false,
     val noSpoiler: Boolean = false,
+    /** Index of the block on screen right now; the highlight and auto-scroll follow it. */
     val currentIndex: Int = -1,
 ) {
     /** Rows after the search filter; a blank query shows everything. */
@@ -164,11 +202,10 @@ data class SubtitleListRow(
     val index: Int,
     val startMs: Long,
     val text: String,
-    val isCurrent: Boolean,
 )
 
 /**
- * Which style [com.sublearn.feature.player.styleWords] applies to a word.
+ * Which style [styleWords] applies to a word.
  *
  * KNOWN and MARKED both come from My Words; ABOVE_LEVEL from the word level provider; PHRASE needs
  * the offline analyser and is therefore never produced yet (LATER, see EXTENSION_POINTS).

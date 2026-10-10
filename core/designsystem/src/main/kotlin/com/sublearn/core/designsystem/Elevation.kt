@@ -11,6 +11,10 @@ import com.sublearn.core.settings.CefrLevel
 @Immutable
 data class SubLearnColors(
     val playerScrim: Color,
+    /** Subtitle text sits on the dark subtitle backdrop in both themes, so it is always light. */
+    val subtitleText: Color,
+    /** The letterbox around the picture. Black in both themes, because the video is the content. */
+    val letterbox: Color,
     val subtitleBackdrop: Color,
     val cardBackdrop: Color,
     val strongBackdrop: Color,

@@ -126,6 +126,8 @@ private fun accentColor(token: AccentToken, dark: Boolean): Color {
 private fun semanticColors(dark: Boolean, amoled: Boolean): SubLearnColors = SubLearnColors(
     playerScrim = Color(if (dark) Palette.SCRIM_PLAYER else Palette.SCRIM_SOFT),
     subtitleBackdrop = Color(if (amoled) Palette.BACKDROP_STRONG else Palette.BACKDROP),
+    subtitleText = Color(0xFFF5F8FAL),
+    letterbox = Color(0xFF000000L),
     cardBackdrop = Color(if (dark) Palette.BACKDROP else Palette.LIGHT_SURFACE),
     strongBackdrop = Color(Palette.BACKDROP_STRONG),
     overlayOutline = Color(Palette.OUTLINE_SUBTITLE),

@@ -61,7 +61,8 @@ helpers is a bug.
   value (`AccentPair`), because a single accent that reads well on white rarely survives on a video
   frame behind a 40 %-alpha scrim.
 - `MaterialTheme.colorScheme` is built from those, and the app-specific roles live in
-  **`SubLearnColors`**: `playerScrim` (the gradient under the chrome), `subtitleBackdrop`,
+  **`SubLearnColors`**: `playerScrim` (the gradient under the chrome), `subtitleBackdrop`, `subtitleText` (always light, because the backdrop is always dark), `letterbox`
+  (black around the picture in both themes),
   `cardBackdrop`, `strongBackdrop` (popups over bright snow scenes), `overlayOutline`,
   `controlIdle`, `controlActive`, `controlDisabled`, `listCurrentRow`, `listHoverRow`,
   `levelBadgeBackgroundAlpha`.

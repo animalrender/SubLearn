@@ -71,8 +71,33 @@ object Dimens {
     val playerEdgeInset = 12.dp
     val subtitleBottomSafe = 24.dp
     val listPanelMinWidth = 260.dp
+    val listPanelMaxWidth = 420.dp
+    /** Portrait: the subtitle list takes this share of the height and the picture keeps the rest. */
+    val listPortraitShare = 0.45f
     val cardElevation = 6.dp
     val strokeWidth = 1.5.dp
+
+    // Player chrome. Named here so a feature never types a literal size (DESIGN_SYSTEM).
+    val xxs = 2.dp
+    val spinnerStroke = 2.dp
+    val spinnerSmall = 16.dp
+    val inlineIcon = 18.dp
+    val pillHeight = 32.dp
+    val topBarHeight = 56.dp
+    val quickColumnTop = 64.dp
+    val bottomChromeReserve = 128.dp
+    val snackbarBottom = 148.dp
+    val cardMaxWidth = 520.dp
+    val cardMaxHeight = 360.dp
+    val menuMaxWidth = 240.dp
+    val bannerMaxWidth = 480.dp
+    val seekbarTrack = 4.dp
+    val seekbarThumb = 14.dp
+    val hudTrackWidth = 6.dp
+    val hudTrackHeight = 160.dp
+    val hudCircle = 72.dp
+    val hudPadding = 24.dp
+    val dockGap = 4.dp
 }
 
 /** Minimal dp/span so this module does not need to import foundation everywhere. */

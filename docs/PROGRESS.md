@@ -2,6 +2,80 @@
 
 Always answers: what was the goal, what is done, what remains, how to test it. Newest entry on top.
 
+## 2026-10-10 — player rebuild (MX-style controls, two subtitle layers, gestures)
+
+**Goal.** Rebuild the video player (`feature/player`, with `core/player` and the designsystem pieces it
+needs) so it looks and behaves like MX Player's controls while meeting PLY-1..7, SUB-1..7, SHD-1..3 and
+GEN-1..7. The old player had overlapping gesture layers, window effects that never restored, and
+hard-coded colours and sizes.
+
+**Done**
+- `Controls.kt` (rewritten): top bar (back and title; audio, subtitles, decoder SW/HW/HW+, and More with
+  PiP, share, rotation lock, layout mode, subtitle options, add subtitle file and settings); centre
+  cluster (replay, play or pause, forward); bottom chrome (elapsed and total over a seek bar with a buffer
+  track; previous subtitle, repeat block, next subtitle; speed, aspect, playlist and the subtitle list,
+  where a long press toggles no-spoiler); lock button; quick-action dock (bar and floating; floating
+  actions drag); layout-mode banner.
+- `Hud.kt` (new): brightness and volume levels, seek readout, speed pill and double-tap bubbles, with
+  reduce-motion honoured.
+- `PlayerGestures.kt` (new): the single gesture surface and `PlayerHitRegistry`; multi-tap on words; left
+  and right vertical drags; horizontal seek; double tap; two-finger speed; long-press speed; pinch.
+- `SubtitleOverlay.kt` (rewritten): two layers with placement anchors and offsets, an outline in layout
+  mode, and word styles (colour, background, decoration, bold, italic, alpha and scale) as annotations.
+- `PlayerScreen.kt` (rewritten): fixed layer order; immersive bars, orientation and keep-screen-on are
+  restored on leave; back closes the innermost open thing first; `ON_STOP` saves the position; every
+  `PlayerIntent` is handled.
+- `Sheets.kt` (rewritten): tracks, speed, aspect, decoder, playlist, per-layer options, subtitle tools and
+  the subtitle list (right panel in landscape, below the picture in portrait). Choices are radio buttons
+  for TalkBack.
+- `PlayerViewModel.kt` (rewritten): `applyNormalizer` saves the tool settings and reloads the files in one
+  coroutine; word states are computed off the main thread; no-spoiler hides only lines not yet reached.
+- `Popups.kt`: the popup card blocks gestures; sizes are tokens.
+- `core:designsystem`: new `Dimens` tokens; `SubLearnColors.subtitleText` and `letterbox`; 29 new
+  strings in EN and FA (446 keys each).
+- `core:settings`: `PlayerSettings.longPressSpeedPercent` (default 200), with a Settings row (100–400 %,
+  step 25).
+- `PlayerPopupsSmokeTest` updated to the four-field `SubtitleListRow`.
+
+**Fixed defects from the old player**
+- Layer drags ignored the stored vertical offset. Plates now position from the offset the ViewModel stores.
+- The seek slider passed `fraction × duration − position` as a delta. Scrubbing now passes the target time.
+- The floating quick-action drag handler was never attached. It is attached now.
+- The gesture layer sat above the subtitle layers despite a comment saying otherwise. The order is explicit.
+- System bars stayed hidden after lock or layout mode. They are restored when the screen leaves.
+- Orientation was not restored on leave. It is restored.
+- The language badge showed a cue count, not a language. It is removed.
+- Subtitle tools could reload files with the previous settings (a race). `applyNormalizer` fixes it.
+- Player messages and quick-action labels were English literals. They are resources now.
+
+**Deviations from the spec wording** (recorded in DECISIONS D-26 and KNOWN_ISSUES 19–20)
+- Play and pause sit in the centre cluster, not the bottom row.
+- The repeat-block hold runs the auto-repeat count but does not invert the setting until release.
+- In portrait the subtitle list takes the lower 45 % of the screen and the picture keeps the rest.
+- Playlist rows are read-only.
+
+**CI change.** The build job timeout went from 30 to 60 minutes. On this branch the first full
+`assembleDebug assembleRelease test lintDebug assembleDebugAndroidTest` ran past 30 minutes with a cold
+Gradle cache (the green run on the previous branch took 12 minutes in that step), so the job was
+cancelled before it could report compile errors.
+
+**CI history for this entry.** The sandbox has no JVM or Android SDK, so CI was the first compiler. The
+first run failed on compile errors in `feature:player` (a delegate missing its import, a missing
+`waitForUpOrCancellation` import, a nonexistent `Offset.getDistance`, a scope error, two missing imports).
+The second run failed on one lint error (an unstable Media3 API, now removed, because `core:player`
+already hides the subtitle view). The third run, commit `494a8e6`, is green: static checks,
+`assembleDebug`, `assembleRelease`, `test`, `lintDebug` and `assembleDebugAndroidTest` all pass.
+
+**Not verified**
+- Nothing has run on a device or an emulator. The instrumented smoke test compiles but has not been run.
+- The behaviour of gestures, picture-in-picture, rotation and word hit testing on real glyphs is reviewed,
+  not tested on hardware (KNOWN_ISSUES 21).
+
+**How to test by hand** (once CI is green): open a video with an external SRT; check the top bar, the centre
+cluster, the bottom chrome and the lock; double-tap left and right; two-finger swipe up; long-press a word
+for the multi-tap popups; open the list in landscape and in portrait; rotate with the lock on; press back
+with a sheet open; leave the app and come back.
+
 ## 2026-10-09 — full review, first compile of the pure-JVM modules, release pipeline (v0.1.0)
 
 **Goal.** Review every module against the docs, fix what the first compile and a line-by-line Compose

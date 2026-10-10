@@ -126,6 +126,14 @@ fun PlayerSection(settings: AppSettings, viewModel: SettingsViewModel) {
             onChange = { value -> viewModel.update { it.copy(player = it.player.copy(speedStepPercent = value)) } },
         )
         StepperRow(
+            title = stringResource(R.string.settings_long_press_speed),
+            value = player.longPressSpeedPercent,
+            range = 100..400,
+            step = 25,
+            suffix = "%",
+            onChange = { value -> viewModel.update { it.copy(player = it.player.copy(longPressSpeedPercent = value)) } },
+        )
+        StepperRow(
             title = stringResource(R.string.settings_speed_range),
             value = player.speedMinPercent,
             range = 10..90,

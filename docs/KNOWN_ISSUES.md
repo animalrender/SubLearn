@@ -63,16 +63,15 @@ TODO comment; each entry has a route to being fixed.
 14. Gradle 8.11.1 is reported as out-of-date by `setup-gradle`. It is the newest line compatible with
     AGP 8.7.3 + Kotlin 2.0.21 as pinned in the catalog; bumping all three is one deliberate commit, not
     a drive-by.
-15. **Some status messages are English literals in view models**: `PlayerViewModel`'s "no subtitle
-    file", "no block here", "no AI key", "no media here", "resumed at …" and "repeat x/y" toasts,
-    `SettingsViewModel`'s import/export status lines and the `LaterCapabilities` descriptions; the
-    quick-actions section shows `id.key` with underscores replaced instead of a translated label.
-    Route: a `UiText` (resource id + args) carried in the UI state and resolved in the composable, so
-    the strings move into `core:designsystem` without the view models touching `Context`.
-16. **Floating quick actions cannot be dragged yet.** The `floating` dock mode renders and the
-    position is stored in settings, but `Controls.kt` never wires `onDragged`; the About section's
-    "feedback" row is a no-op for the same reason (no destination yet). Route: `pointerInput` drag on
-    the floating cluster writing `QuickActionsSettings.floatingX/Y`, and a feedback URL once one exists.
+15. **Some status text is still English outside the player**: `Sources.kt`'s file errors (`cannot read …`,
+    `the file could not be opened`), `SettingsViewModel`'s import and export status lines and the
+    `LaterCapabilities` descriptions. The player's own messages and its quick-action labels have been
+    resources since the 2026-10-10 rebuild. Route: a `UiText` (resource id + arguments) carried in the
+    UI state and resolved in the composable, so the strings move into `core:designsystem` without the
+    view models touching `Context`.
+16. **The About section's "feedback" row is a no-op.** There is no destination yet, so the row does
+    nothing. Floating quick actions drag since the 2026-10-10 rebuild (`detectDragGestures` writes the
+    stored fractions). Route: a feedback URL once one exists.
 17. **One file per layer (PLY-7 is partial).** A layer shows either one subtitle file or the player's
     embedded track; loading a second file into the same layer replaces the first. The remembered
     `externalFileKeys` belong to the video that is currently open: they are cleared when another video
@@ -82,3 +81,14 @@ TODO comment; each entry has a route to being fixed.
 18. **ML Kit model download progress is coarse.** `RemoteModelManager.download` only reports
     start/success/failure, so the Settings → Translation row shows an indeterminate bar while the
     model downloads. Route: none in the public ML Kit API; revisit if a progress callback appears.
+19. **Repeat-block hold does not invert the auto-repeat setting until release.** A hold runs the
+    auto-repeat count once. The chrome button has no release callback, so the setting is not
+    temporarily inverted as SHD-2 describes. Route: a release callback on `ChromeIconButton`, and a
+    ViewModel pair `beginRepeatHold` and `endRepeatHold`.
+20. **The playlist sheet is read-only.** It shows the entries and the repeat mode, but tapping an entry
+    does not jump to it, because `PlayerController` has no call to play an index. Route:
+    `PlayerController.playIndex(index)` in `core:player`, and a row tap in `Sheets.kt`.
+21. **The rebuilt player has not run on a device or an emulator.** Picture-in-picture, rotation, the
+    immersive bars and word hit testing on real glyph layouts were reviewed by hand and by the static
+    checkers. Route: the manual checklist in the 2026-10-10 entry of PROGRESS.md, and the
+    `PlayerPopupsSmokeTest` run on a device.

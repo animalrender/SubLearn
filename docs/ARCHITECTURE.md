@@ -97,35 +97,40 @@ user and a trap for the next contributor.
 
 ## Rendering and hit testing (SUB-4, GEN-4)
 
-`SubtitleLayerStack` draws each layer in a `Box` positioned by `SubtitlePlacement` (anchor + dp
-offsets), wrapped in `SubtitleBackdrop` (rounded, semi-opaque, outline). Each layer renders one
-`Text` with an `AnnotatedString`, and `onTextLayout` captures the `TextLayoutResult`.
+`SubtitleLayerStack` (`SubtitleOverlay.kt`) draws each layer as a plate. Its anchor picks a
+`BiasAlignment`, and the stored offset is mirrored for END and BOTTOM anchors, so a positive offset
+always means "further from the anchor edge". `PlayerViewModel.movedBy` uses the same rule, which keeps
+a drag and its rendering in step. Each layer renders one `Text` whose words carry the
+`SUBTITLE_WORD_TAG` string annotation, and `onTextLayout` keeps the `TextLayoutResult`.
 
-Word taps resolve like this: `pointerInput` gives a position → `TextLayoutResult` is asked for the
-layout line at the y position → `getWordBoundaryAtOffset`-style binary search over the line's
-`getStringAnnotations`/`OffsetMapping` yields the word and its box. Because it uses the *real* glyph
-layout, it is correct for Persian, for bidi mixtures and for a text scale factor, all of which break the
-"one clickable composable per word" approach. The tokens that a tap maps back to come from
-`SubtitleBlock.tokens` (`CueToken`), so marking a word stores the same string the parser saw.
+Nothing in the overlay consumes pointer input. Each plate and text block reports its
+`LayoutCoordinates` (and the layout) to the screen's `PlayerHitRegistry`, which turns a position into
+a layer and a word only when a pointer arrives. That keeps hit testing right through rotation and
+recomposition, and it means one place decides what a touch means. Word lookup uses the real glyph
+layout, so it is correct for Persian, bidi text and text scaling; "one clickable composable per word"
+is not. The tokens a tap maps back to come from `SubtitleBlock.tokens`, so a marked word stores the
+same string the parser saw.
 
-Multi-tap granularity (1 word / 2 line / 3 block) is implemented in one `detectMultiTap` in
-`Gestures.kt` with the window from `LearningSettings.multiTapWindowMs`, so a double tap on a word
-never reaches the player's own double-tap handler.
+Multi-tap granularity (1 word / 2 line / 3 block) is recognised in `PlayerGestures.kt`, with the window
+from `LearningSettings.multiTapWindowMs`.
 
 ## Gesture priority
 
-One `GestureLayer` sits above the video and below the subtitle layers and controls:
+`PlayerScreen` draws, in this order: picture, subtitle layers, the gesture surface, chrome, transient
+feedback (HUD, buffering, errors), then the subtitle list, popups, the AI answer and the sheets. The
+chrome, the popup card and the list register their bounds as blockers (`blocksGestures`), so the
+surface never reacts to a touch that a control has taken:
 
 ```
-subtitle text (tap/drag on the layer)  >  buttons (chrome, quick actions)  >  video surface gestures
+subtitle word or plate  >  chrome, popup card, list (registered blockers)  >  video surface
 ```
 
-Implemented by ordering composables (top-most consumes first) plus `Modifier.pointerInput` blocks that
-consume only what they handle; the subtitle layer consumes taps only when it has text and the tap
-target is inside a word box. The video surface handler consults
-`GestureSettings.actionFor(GestureSlot)` so every slot is remappable (PLY-4), and the two-edge
-double-tap seek respects `DoubleTapAction`. System gesture areas (status bar, nav bar) are excluded
-by `playerEdgeInset` padding rather than by fighting the system.
+The surface decides a tap's meaning by position through the registry: a word (multi-tap), a plate
+(a drag in layout mode), or a side of the picture (left, centre, right). It asks the ViewModel for the
+action of each `GestureSlot`, so every slot is remappable (PLY-4), and a double tap follows
+`PlayerSettings.doubleTapAction`. `GestureMode` turns the surface off while locked or in PiP, and
+limits it to plate drags in layout mode. The system bars are hidden for the whole player screen
+(D-27), so the edges need no exclusion beyond `playerEdgeInset`.
 
 ## Settings, storage and migration
 
@@ -165,9 +170,9 @@ death is *derived*, not snapshotted: the recent-video row (URI, title, duration 
 again. `PlayerStart(documentId/startPositionMs)` is how a restart re-attaches the same target without a
 custom Parcelable of the whole UI.
 
-Orientation lock, window brightness, immersive bars and PiP are the only things `PlayerIntent`
-carries, because they are window effects Compose cannot own — the seam is intentionally tiny and is the
-same one an `Activity`-based player would need.
+`PlayerIntent` carries only the requests that need the Activity: brightness, volume, PiP, share, and
+the two navigation requests (words, settings). Orientation, immersive bars and keep-screen-on are applied
+by `PlayerScreen` itself, and restored when it leaves composition (D-27).
 
 ## Adding a language
 
