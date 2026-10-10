@@ -10,6 +10,14 @@ plugins {
 // the release build falls back to the debug key so that anyone can reproduce the build (REQ-6).
 val releaseKeystorePath: String? = System.getenv("SUBLEARN_KEYSTORE_PATH")?.takeIf { it.isNotBlank() }
 
+// 0.2.0 → 200. The code is derived from the name so that a release only ever edits one number, which
+// is what lets `auto-release.yml` publish a version bump without touching the build file (D-28). A
+// pre-release suffix (0.3.0-rc1) maps to the code of the version it leads to.
+fun versionCodeOf(name: String): Int {
+    val parts = name.substringBefore('-').split('.').map { part -> part.takeWhile(Char::isDigit).toIntOrNull() ?: 0 }
+    return parts.getOrElse(0) { 0 } * 10_000 + parts.getOrElse(1) { 0 } * 100 + parts.getOrElse(2) { 0 }
+}
+
 android {
     namespace = "com.sublearn.app"
     compileSdk = libs.versions.compileSdk.get().toInt()
@@ -18,8 +26,10 @@ android {
         applicationId = "com.sublearn.app"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "0.1.0"
+        // The release workflows read this exact line to check a tag against the build, so keep it a
+        // plain literal. SUBLEARN_VERSION_CODE overrides the derived code if one is ever dictated.
+        versionName = "0.2.0"
+        versionCode = System.getenv("SUBLEARN_VERSION_CODE")?.toIntOrNull() ?: versionCodeOf(versionName!!)
         resourceConfigurations += listOf("en", "fa")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }

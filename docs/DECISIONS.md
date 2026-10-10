@@ -95,8 +95,11 @@ untranslated row.
 contents: read`.** Supply-chain hygiene plus the guarantee that no workflow can push back to the repo.
 The instrumented suite is a separate manual workflow because GitHub's standard runners do not reliably
 expose KVM; CI still compiles the instrumented sources via `assembleDebugAndroidTest` so API drift in
-tests is caught automatically. Amended by D-21/D-22: the release workflow alone holds `contents:
-write` (to upload assets), and both workflows hold `checks: write` (to publish the failure report).
+tests is caught automatically. Amended by D-21/D-22/D-28: the two release workflows (`release.yml`
+and `auto-release.yml`) are the only ones that hold `contents: write` (to create a tag and upload
+assets), `auto-release.yml` also holds `actions: read` (to fetch the APK artifact of the CI run it
+reacts to), and the three of them hold `checks: write` (to publish the failure report). CI itself is
+still read-only and never sees a signing secret.
 
 **D-18 — RTL is decided per text run, not per app locale.** Subtitle layers and popups pass an
 explicit `TextDirection` derived from the content, because a Persian gloss inside an English card (and
@@ -162,3 +165,25 @@ system bars for the whole screen (they return on swipe), sets the orientation fr
 override and clear keep-screen-on when the screen leaves. `ON_STOP` is a save point for the position,
 and `ON_START` after a stop rebuilds the chrome. Only requests that need the Activity cross the
 `PlayerIntent` seam (brightness, volume, PiP, share, navigation).
+
+**D-28 — A green CI run publishes the APKs; nobody pushes a tag by hand.** `auto-release.yml` listens
+for a successful CI run (`workflow_run`, pushes only — a `pull_request` run would publish the same
+commit twice) and decides the channel from the commit itself. On `main`, if `versionName` has no
+`v<version>` tag yet, that is the stable release and it is created on the tested commit, exactly as a
+hand-pushed tag would have; every other green push — `main` again at the same version, `phase/**`,
+`arena/**` — refreshes one rolling pre-release per branch, tagged `dev-<branch>`, whose assets are
+replaced each time and whose release is deleted when the branch is gone. So a merge is the whole
+release procedure, and a branch build is downloadable as a pre-release instead of a 14-day artifact
+that needs a GitHub login.
+
+The APKs are **not** rebuilt by default: CI already ran `assembleRelease` on that commit, so the
+workflow downloads that artifact and publishes the very bytes the checks passed on, which also keeps
+the extra cost near zero instead of a second fifteen-minute build. The exception is signing — the
+keystore stays out of CI (REQ-6), so when `SUBLEARN_KEYSTORE_BASE64` exists the commit is rebuilt
+inside the release workflow and signed there. `release.yml` is unchanged and remains the way to
+publish a tag by hand (or to re-publish an old one); a tag created by `auto-release.yml` does not
+trigger it, because events raised with `GITHUB_TOKEN` do not start new workflow runs, so there is no
+double release. Two consequences worth remembering: `workflow_run` only ever runs the copy of the
+file on the default branch, so changes to the pipeline take effect after they are merged; and
+`versionCode` is derived from `versionName` in `app/build.gradle.kts` so that a release bumps one
+number only.

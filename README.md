@@ -48,8 +48,8 @@ short section in [docs/EXTENSION_POINTS.md](docs/EXTENSION_POINTS.md).
 
 ## Download
 
-Every tagged version is built by GitHub Actions and attached to the matching entry on the
-[Releases page](https://github.com/animalrender/SubLearn/releases):
+Every version is built, checked and published by GitHub Actions — there is no manual step — and the
+files are on the [Releases page](https://github.com/animalrender/SubLearn/releases):
 
 | File | Install it on |
 | --- | --- |
@@ -61,6 +61,11 @@ Every tagged version is built by GitHub Actions and attached to the matching ent
 `SHA256SUMS` lists the checksum of each file. Releases are signed with the public debug key until a
 release keystore is configured (see `docs/AGENT_REQUESTS.md`, REQ-6), so Android will ask you to
 uninstall before switching to a differently signed build.
+
+Besides the numbered `v*` releases there are **development builds**: every green CI run on `main` or
+on a working branch refreshes a pre-release tagged `dev-<branch>` with the APKs of that commit
+(`SubLearn-<version>-dev-<commit>-<abi>.apk`). They are replaced by the next green build of the same
+branch and disappear with the branch, so use them to try the newest work, not to stay on.
 
 ## Build
 
@@ -76,8 +81,15 @@ system Gradle needed).
 ```
 
 Release builds use the debug key unless `SUBLEARN_KEYSTORE_PATH`, `SUBLEARN_KEYSTORE_PASSWORD`,
-`SUBLEARN_KEY_ALIAS` and `SUBLEARN_KEY_PASSWORD` are set in the environment. The release workflow
-(`.github/workflows/release.yml`) runs on a `v*` tag or by hand and publishes the APKs itself.
+`SUBLEARN_KEY_ALIAS` and `SUBLEARN_KEY_PASSWORD` are set in the environment. `versionCode` is derived
+from `versionName` (`0.2.0` → `200`), so a release only changes one number; `SUBLEARN_VERSION_CODE`
+overrides it.
+
+Publishing is automatic (`.github/workflows/auto-release.yml`, see `docs/DECISIONS.md` D-28): a
+successful CI run on `main` whose `versionName` has no tag yet becomes the release `v<version>`, and
+every other green push refreshes the `dev-<branch>` pre-release. The APKs come from the CI run that
+passed; if the `SUBLEARN_KEYSTORE_BASE64` secret exists the commit is rebuilt and signed with the
+release key instead. `.github/workflows/release.yml` still builds and publishes a `v*` tag by hand.
 
 Without a JVM (the agent sandbox case) run the static checks instead and let CI compile:
 

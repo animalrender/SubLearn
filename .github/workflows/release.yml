@@ -98,8 +98,10 @@ jobs:
           if [ -n "${KEYSTORE_BASE64}" ]; then
             printf '%s' "${KEYSTORE_BASE64}" | base64 -d > "$RUNNER_TEMP/release.keystore"
             echo "SUBLEARN_KEYSTORE_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+            echo "SUBLEARN_SIGNING=release" >> "$GITHUB_ENV"
             echo "signing=release key from secrets" >> "$GITHUB_STEP_SUMMARY"
           else
+            echo "SUBLEARN_SIGNING=debug" >> "$GITHUB_ENV"
             echo "signing=debug key (no SUBLEARN_KEYSTORE_BASE64 secret)" >> "$GITHUB_STEP_SUMMARY"
           fi
 
@@ -133,7 +135,11 @@ jobs:
           done
           [ "$found" -eq 4 ] || { ls -R app/build/outputs/apk || true; exit 1; }
           (cd "$out" && sha256sum *.apk > "SubLearn-${TAG}-SHA256SUMS.txt")
-          python3 tools/release_notes.py "${TAG#v}" "$out" CHANGELOG.md > "$RUNNER_TEMP/release-notes.md"
+          # The notes state how the files were actually signed instead of hedging (REQ-6).
+          python3 tools/release_notes.py "${TAG#v}" "$out" CHANGELOG.md \
+            --signing "${SUBLEARN_SIGNING:-unknown}" --commit "$GITHUB_SHA" \
+            --build-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            > "$RUNNER_TEMP/release-notes.md"
           cat "$RUNNER_TEMP/release-notes.md" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload the APKs as a workflow artifact

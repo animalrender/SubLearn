@@ -1,0 +1,402 @@
+# Publishes APKs by itself once CI is green, so merging is the whole release procedure (D-28).
+#
+# Two channels, decided from the commit CI just checked:
+#   * `main` whose `versionName` has no `v<version>` tag yet  -> the stable release `v<version>`,
+#     identical to what a hand-pushed tag would have produced;
+#   * everything else (`main` after its tag exists, `phase/**`, `arena/**`) -> one rolling
+#     pre-release per branch, tag `dev-<branch>`, replaced on every green run and removed again when
+#     the branch is deleted.
+#
+# Where the APKs come from: the CI run that just passed already built `assembleRelease`, so its
+# artifact is published unchanged (same bytes that were tested, no second 15-minute build). When the
+# `SUBLEARN_KEYSTORE_BASE64` secret exists the commit is rebuilt instead, because only this workflow
+# may see the signing key (REQ-6); CI never gets it.
+#
+# NOTE: `workflow_run` and `workflow_dispatch` only ever use the copy of this file on the default
+# branch. Nothing here runs for a branch until it has been merged to `main`.
+name: Auto release
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: auto-release-${{ github.event.workflow_run.head_branch || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  ANDROID_HOME: /usr/local/lib/android/sdk
+
+jobs:
+  plan:
+    name: Decide what to publish
+    # A manual run publishes whatever ref it was started on; an automatic one only reacts to a
+    # successful CI run of a pushed branch (a `pull_request` run would publish the same commit twice).
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      publish: ${{ steps.plan.outputs.publish }}
+      channel: ${{ steps.plan.outputs.channel }}
+      sha: ${{ steps.plan.outputs.sha }}
+      branch: ${{ steps.plan.outputs.branch }}
+      version: ${{ steps.plan.outputs.version }}
+      tag: ${{ steps.plan.outputs.tag }}
+      title: ${{ steps.plan.outputs.title }}
+      prerelease: ${{ steps.plan.outputs.prerelease }}
+      asset_prefix: ${{ steps.plan.outputs.asset_prefix }}
+      mode: ${{ steps.plan.outputs.mode }}
+      signing: ${{ steps.plan.outputs.signing }}
+      ci_run_id: ${{ steps.plan.outputs.ci_run_id }}
+
+    steps:
+      - name: Checkout the commit CI checked
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # `workflow_run` runs against the default branch, not the commit that triggered it, so the
+          # head SHA of the CI run is what has to be read and later released.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+
+      - name: Look for the signing secret
+        id: keystore
+        # The `secrets` context is not available in a job-level `if`, so the answer travels as an output.
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.SUBLEARN_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "${KEYSTORE_BASE64}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Decide the channel, the tag and where the APKs come from
+        id: plan
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          BRANCH: ${{ github.event.workflow_run.head_branch || github.ref_name }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          CI_RUN_ID: ${{ github.event.workflow_run.id }}
+          HAS_KEYSTORE: ${{ steps.keystore.outputs.present }}
+        run: |
+          set -euo pipefail
+          version=$(sed -n 's/^[[:space:]]*versionName = "\([^"]*\)"/\1/p' app/build.gradle.kts | head -1)
+          if [ -z "$version" ]; then
+            echo "::error::versionName was not found in app/build.gradle.kts"
+            exit 1
+          fi
+
+          # Branch filter: the same set CI builds, plus any branch a human dispatched by hand.
+          publish=true
+          case "$EVENT:$BRANCH" in
+            workflow_dispatch:*) ;;
+            *:main|*:phase/*|*:arena/*) ;;
+            *) publish=false ;;
+          esac
+
+          # Stable only on main, and only while `v<version>` does not exist yet: the first green run
+          # after a version bump releases it, every later run of the same version is a dev build.
+          channel=dev
+          if [ "$BRANCH" = "main" ] && ! gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v$version" >/dev/null 2>&1; then
+            channel=stable
+          fi
+
+          short="${SHA:0:7}"
+          slug=$(printf '%s' "$BRANCH" | sed 's#[^A-Za-z0-9._-]#-#g; s#-\{2,\}#-#g; s#^-*##; s#-*$##')
+          if [ "$channel" = "stable" ]; then
+            tag="v$version"
+            prerelease=false
+            title="SubLearn v$version"
+            asset_prefix="SubLearn-v$version"
+          else
+            tag="dev-$slug"
+            prerelease=true
+            title="SubLearn $version dev build ($BRANCH @ $short)"
+            asset_prefix="SubLearn-$version-dev-$short"
+          fi
+
+          # Rebuild only when there is a key to sign with; otherwise publish the artifact CI produced.
+          if [ "$HAS_KEYSTORE" = "true" ]; then
+            mode=build
+            signing=release
+          elif [ "$EVENT" = "workflow_run" ]; then
+            mode=reuse
+            signing=debug
+          else
+            mode=build
+            signing=debug
+          fi
+
+          {
+            echo "publish=$publish"
+            echo "channel=$channel"
+            echo "sha=$SHA"
+            echo "branch=$BRANCH"
+            echo "version=$version"
+            echo "tag=$tag"
+            echo "title=$title"
+            echo "prerelease=$prerelease"
+            echo "asset_prefix=$asset_prefix"
+            echo "mode=$mode"
+            echo "signing=$signing"
+            echo "ci_run_id=${CI_RUN_ID:-}"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Auto release plan"
+            echo ""
+            echo "| | |"
+            echo "| --- | --- |"
+            echo "| branch | \`$BRANCH\` |"
+            echo "| commit | \`$SHA\` |"
+            echo "| version | \`$version\` |"
+            echo "| channel | $channel |"
+            echo "| tag | \`$tag\` |"
+            echo "| APKs | $mode (signing: $signing) |"
+            echo "| publishing | $publish |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    name: Build or collect the APKs and publish them
+    needs: plan
+    if: needs.plan.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      # The only write scope in the repository besides release.yml (D-21/D-28): tags and releases.
+      contents: write
+      # Reading the APK artifact of the CI run that triggered this one.
+      actions: read
+      # The failure report, same mechanism as CI (D-22).
+      checks: write
+
+    steps:
+      - name: Checkout the released commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.plan.outputs.sha }}
+          persist-credentials: false
+
+      - name: Take the APKs from the CI run that just passed
+        if: needs.plan.outputs.mode == 'reuse'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CI_RUN_ID: ${{ needs.plan.outputs.ci_run_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p app/build/outputs/apk/release
+          if ! gh run download "$CI_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+              --name SubLearn-release-apk --dir app/build/outputs/apk/release; then
+            echo "::error::the SubLearn-release-apk artifact of CI run $CI_RUN_ID is gone (artifacts expire \
+          after 14 days). Re-run CI on this commit, or start this workflow by hand to rebuild it."
+            exit 1
+          fi
+          ls -l app/build/outputs/apk/release
+
+      - name: Set up JDK 17
+        if: needs.plan.outputs.mode == 'build'
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        if: needs.plan.outputs.mode == 'build'
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+
+      - name: Install platform and build tools
+        if: needs.plan.outputs.mode == 'build'
+        run: yes | sdkmanager --licenses >/dev/null 2>&1 || true; sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle
+        if: needs.plan.outputs.mode == 'build'
+        uses: gradle/actions/setup-gradle@b9bee63ef481cc545e4517ec730544a4d8b1dfa0 # v6.4.0
+        with:
+          cache-read-only: true
+
+      - name: Prepare the signing key
+        if: needs.plan.outputs.mode == 'build'
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.SUBLEARN_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          if [ -n "${KEYSTORE_BASE64}" ]; then
+            printf '%s' "${KEYSTORE_BASE64}" | base64 -d > "$RUNNER_TEMP/release.keystore"
+            echo "SUBLEARN_KEYSTORE_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build the release APKs
+        if: needs.plan.outputs.mode == 'build'
+        shell: bash
+        env:
+          SUBLEARN_KEYSTORE_PASSWORD: ${{ secrets.SUBLEARN_KEYSTORE_PASSWORD }}
+          SUBLEARN_KEY_ALIAS: ${{ secrets.SUBLEARN_KEY_ALIAS }}
+          SUBLEARN_KEY_PASSWORD: ${{ secrets.SUBLEARN_KEY_PASSWORD }}
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleRelease --stacktrace --console=plain 2>&1 | tee "$RUNNER_TEMP/gradle.log"
+
+      - name: Collect and name the APKs
+        shell: bash
+        env:
+          PREFIX: ${{ needs.plan.outputs.asset_prefix }}
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/release-apks"
+          mkdir -p "$out"
+          found=0
+          for abi in universal arm64-v8a armeabi-v7a x86_64; do
+            src="app/build/outputs/apk/release/app-${abi}-release.apk"
+            if [ -f "$src" ]; then
+              cp "$src" "$out/${PREFIX}-${abi}.apk"
+              found=$((found + 1))
+            else
+              echo "::error::expected $src was not produced"
+            fi
+          done
+          [ "$found" -eq 4 ] || { ls -R app/build/outputs/apk || true; exit 1; }
+          (cd "$out" && sha256sum *.apk > "${PREFIX}-SHA256SUMS.txt")
+
+      - name: Write the release notes
+        shell: bash
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+          CHANNEL: ${{ needs.plan.outputs.channel }}
+          BRANCH: ${{ needs.plan.outputs.branch }}
+          SHA: ${{ needs.plan.outputs.sha }}
+          SIGNING: ${{ needs.plan.outputs.signing }}
+          MODE: ${{ needs.plan.outputs.mode }}
+          CI_RUN_ID: ${{ needs.plan.outputs.ci_run_id }}
+        run: |
+          set -euo pipefail
+          runs="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs"
+          if [ "$MODE" = "reuse" ] && [ -n "$CI_RUN_ID" ]; then
+            build_url="$runs/$CI_RUN_ID"
+          else
+            build_url="$runs/$GITHUB_RUN_ID"
+          fi
+          python3 tools/release_notes.py "$VERSION" "$RUNNER_TEMP/release-apks" CHANGELOG.md \
+            --channel "$CHANNEL" --branch "$BRANCH" --commit "$SHA" \
+            --signing "$SIGNING" --build-url "$build_url" > "$RUNNER_TEMP/release-notes.md"
+          cat "$RUNNER_TEMP/release-notes.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Point the tag at this commit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.plan.outputs.tag }}
+          SHA: ${{ needs.plan.outputs.sha }}
+        run: |
+          set -euo pipefail
+          # A dev tag is a moving label, so it is forced onto the new commit; a stable tag is created
+          # once and never moved (the plan step only picks `stable` when it does not exist yet).
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" >/dev/null 2>&1; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/$TAG" \
+              -f sha="$SHA" -F force=true >/dev/null
+          else
+            gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" \
+              -f ref="refs/tags/$TAG" -f sha="$SHA" >/dev/null
+          fi
+
+      - name: Create or update the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.plan.outputs.tag }}
+          SHA: ${{ needs.plan.outputs.sha }}
+          TITLE: ${{ needs.plan.outputs.title }}
+          PRERELEASE: ${{ needs.plan.outputs.prerelease }}
+        run: |
+          set -euo pipefail
+          notes="$RUNNER_TEMP/release-notes.md"
+          if [ "$PRERELEASE" = "true" ]; then
+            flags=(--prerelease --latest=false)
+          else
+            flags=(--latest=true)
+          fi
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            # Old assets carry the previous commit in their name, so they are removed instead of
+            # piling up next to the new ones.
+            gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets \
+              --jq '.assets[].name' | while IFS= read -r asset; do
+              [ -n "$asset" ] || continue
+              gh release delete-asset "$TAG" "$asset" --repo "$GITHUB_REPOSITORY" --yes
+            done
+            gh release upload "$TAG" "$RUNNER_TEMP"/release-apks/* --clobber --repo "$GITHUB_REPOSITORY"
+            gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" \
+              --title "$TITLE" --notes-file "$notes" "${flags[@]}"
+          else
+            gh release create "$TAG" "$RUNNER_TEMP"/release-apks/* \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$SHA" \
+              --title "$TITLE" \
+              --notes-file "$notes" \
+              "${flags[@]}"
+          fi
+          echo "Release: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$TAG" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove the dev pre-releases of branches that no longer exist
+        # Housekeeping only, and deliberately narrow: a `dev-` tag, marked pre-release, whose branch
+        # is gone. Stable releases and anything tagged differently are never touched.
+        if: needs.plan.outputs.channel == 'stable' || needs.plan.outputs.branch == 'main'
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          alive="$RUNNER_TEMP/alive-tags.txt"
+          gh api "repos/$GITHUB_REPOSITORY/branches" --paginate --jq '.[].name' \
+            | sed 's#[^A-Za-z0-9._-]#-#g; s#-\{2,\}#-#g; s#^-*##; s#-*$##; s#^#dev-#' > "$alive"
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 100 \
+            --json tagName,isPrerelease --jq '.[] | select(.isPrerelease) | .tagName' \
+            | while IFS= read -r tag; do
+              case "$tag" in dev-*) ;; *) continue ;; esac
+              if ! grep -Fxq "$tag" "$alive"; then
+                echo "deleting $tag (its branch is gone)"
+                gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes
+              fi
+            done
+
+      - name: Publish the failure report as a check run
+        if: failure() && needs.plan.outputs.mode == 'build'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ needs.plan.outputs.sha }}
+        run: |
+          report="$RUNNER_TEMP/failure-report.md"
+          python3 tools/ci_failure_report.py "$RUNNER_TEMP/gradle.log" . > "$report" || echo "report generation failed" > "$report"
+          gh api -X POST "repos/$GITHUB_REPOSITORY/check-runs" \
+            -f name="Auto release failure report" \
+            -f head_sha="$HEAD_SHA" \
+            -f status=completed \
+            -f conclusion=failure \
+            -f "details_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            -f "output[title]=Auto release failed (run $GITHUB_RUN_ID)" \
+            -f "output[summary]=Compiler errors, failed tasks and the log tail from this run." \
+            -F "output[text]=@$report" \
+            >/dev/null || echo "::warning::the failure report could not be published as a check run"
+
+      - name: Upload the build log on failure
+        if: failure() && needs.plan.outputs.mode == 'build'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: auto-release-gradle-log
+          path: ${{ runner.temp }}/gradle.log
+          if-no-files-found: ignore
+          retention-days: 7
