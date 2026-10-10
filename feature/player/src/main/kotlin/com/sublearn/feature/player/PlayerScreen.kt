@@ -219,6 +219,7 @@ fun PlayerScreen(
         val landscape = maxWidth > maxHeight
         // In portrait the subtitle list sits below the picture; the picture and its chrome shrink to fit.
         val listBelow = ui.list.open && !landscape && !inPip
+        val regionWidth = maxWidth
         val regionHeight = if (listBelow) maxHeight * (1f - Dimens.listPortraitShare) else maxHeight
         val chromeShown = (ui.controlsVisible || ui.playback.isEnded || ui.playback.error != null) &&
             !ui.layoutMode && !ui.locked && !inPip
@@ -264,7 +265,7 @@ fun PlayerScreen(
             if (dockShown) {
                 QuickActionDock(
                     ui = ui,
-                    areaWidth = maxWidth,
+                    areaWidth = regionWidth,
                     areaHeight = regionHeight,
                     onTap = viewModel::onQuickTap,
                     onHoldStart = viewModel::onQuickHoldStart,

@@ -2,8 +2,10 @@ package com.sublearn.feature.player
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
@@ -21,6 +23,7 @@ import com.sublearn.core.settings.GestureAction
 import com.sublearn.core.subtitles.TrackRole
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.abs
+import kotlin.math.sqrt
 
 /**
  * Who may receive a pointer on the video surface.
@@ -45,6 +48,9 @@ private const val THIRDS = 3f
 
 /** The tag [styleWords] puts on every word, so a tap can ask which word is under the finger. */
 internal const val SUBTITLE_WORD_TAG = "word"
+
+/** Straight-line length of a vector, used for drag slop and pinch distance. */
+private fun Offset.length(): Float = sqrt(x * x + y * y)
 
 /**
  * Hit testing for everything drawn over the video.
@@ -241,7 +247,7 @@ private suspend fun AwaitPointerEventScope.surfaceGesture(
             change.consume()
             continue
         }
-        if (axis == Axis.PENDING && total.getDistance() > slop) {
+        if (axis == Axis.PENDING && total.length() > slop) {
             axis = when {
                 abs(total.x) > abs(total.y) -> Axis.HORIZONTAL
                 origin.x < width / 2f -> Axis.LEFT
@@ -328,7 +334,7 @@ private suspend fun AwaitPointerEventScope.subtitleTaps(
     while (true) {
         val up = waitForUpOrCancellation() ?: return
         // A press that travelled is a drag over the text, not a tap.
-        if ((up.position - pointer.position).getDistance() > slop) return
+        if ((up.position - pointer.position).length() > slop) return
         taps += 1
         lastPosition = up.position
         if (taps >= MAX_TAP_COUNT) break
@@ -362,7 +368,7 @@ private suspend fun AwaitPointerEventScope.layoutDrag(
 private const val MAX_TAP_COUNT = 3
 
 private fun distanceOf(pointers: List<PointerInputChange>): Float =
-    (pointers[0].position - pointers[1].position).getDistance()
+    (pointers[0].position - pointers[1].position).length()
 
 private fun midYOf(pointers: List<PointerInputChange>): Float =
     (pointers[0].position.y + pointers[1].position.y) / 2f
