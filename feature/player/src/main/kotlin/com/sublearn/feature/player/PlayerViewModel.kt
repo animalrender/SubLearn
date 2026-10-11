@@ -375,9 +375,9 @@ class PlayerViewModel(
 
     /** Adds or removes one key from a layer's ticked list, leaving the rest of the layer alone. */
     private fun SubtitleSettings.withKey(role: TrackRole, key: String, present: Boolean): SubtitleSettings {
-        val layer = subtitleLayer(role)
-        val keys = if (present) (layer.externalFileKeys + key).distinct() else layer.externalFileKeys - key
-        return updated(role, layer.copy(externalFileKeys = keys))
+        val current = layer(role)
+        val keys = if (present) (current.externalFileKeys + key).distinct() else current.externalFileKeys - key
+        return updated(role, current.copy(externalFileKeys = keys))
     }
 
     private fun LayerRole.toTrackRole(): TrackRole =
