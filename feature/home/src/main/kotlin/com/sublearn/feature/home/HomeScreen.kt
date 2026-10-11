@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -65,9 +66,13 @@ fun HomeScreen(
     viewModel: HomeViewModel,
 ) {
     val recent by viewModel.recent.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     var showUrlDialog by remember { mutableStateOf(false) }
     val videoPicker = rememberLauncherForActivityResult(OpenVideoContract()) { picked ->
-        picked?.let { onPlay(it.uri, MediaInfo.titleFromFileName(it.title)) }
+        picked?.let {
+            OpenVideoContract.persistReadPermission(context, it.uri)
+            onPlay(it.uri, MediaInfo.titleFromFileName(it.title))
+        }
     }
 
     Column(modifier = modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -111,7 +116,13 @@ fun HomeScreen(
                 items(recent, key = { it.uri }) { row ->
                     RecentCard(
                         row = row,
-                        onOpen = { onPlay(row.uri, row.title) },
+                        onOpen = {
+                            if (OpenVideoContract.hasPersistentReadPermission(context, row.uri)) {
+                                onPlay(row.uri, row.title)
+                            } else {
+                                videoPicker.launch(Unit)
+                            }
+                        },
                         onForget = { viewModel.forget(row.uri) },
                     )
                 }

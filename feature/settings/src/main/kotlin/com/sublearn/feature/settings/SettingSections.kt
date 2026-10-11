@@ -36,7 +36,6 @@ import com.sublearn.core.settings.LayerStackDirection
 import com.sublearn.core.settings.LearningMode
 import com.sublearn.core.settings.LevelProviderToken
 import com.sublearn.core.settings.OrientationLock
-import com.sublearn.core.settings.QuickActionColumn
 import com.sublearn.core.settings.QuickActionId
 import com.sublearn.core.settings.SubtitleHorizontalAnchor
 import com.sublearn.core.settings.SubtitleVerticalAnchor
@@ -204,6 +203,7 @@ fun PlayerSection(settings: AppSettings, viewModel: SettingsViewModel) {
 @Composable
 fun SubtitlesSection(settings: AppSettings, viewModel: SettingsViewModel) {
     val subtitles = settings.subtitles
+    val pickerContext = LocalContext.current
     TrackRole.entries.forEach { role ->
         val layer = subtitles.layer(role)
         SectionCard(stringResource(role.titleRes())) {
@@ -271,6 +271,7 @@ fun SubtitlesSection(settings: AppSettings, viewModel: SettingsViewModel) {
             val filePicker = rememberLauncherForActivityResult(OpenDocumentContract(arrayOf("text/*",
                 "application/octet-stream"))) { picked ->
                 if (picked != null) {
+                    OpenDocumentContract.persistReadPermission(pickerContext, picked.uri)
                     viewModel.updateLayer(role) { it.copy(externalFileKeys = (it.externalFileKeys + picked.uri).distinct()) }
                 }
             }

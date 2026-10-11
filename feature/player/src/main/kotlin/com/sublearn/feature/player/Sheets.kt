@@ -2,6 +2,8 @@ package com.sublearn.feature.player
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Box
@@ -22,10 +24,18 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,11 +43,15 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,8 +74,10 @@ import com.sublearn.core.player.TrackInfo
 import com.sublearn.core.player.TrackRef
 import com.sublearn.core.settings.AspectMode
 import com.sublearn.core.settings.DecoderMode
+import com.sublearn.core.settings.DockMode
 import com.sublearn.core.settings.FontSurface
 import com.sublearn.core.settings.FontSpec
+import com.sublearn.core.settings.QuickActionId
 import com.sublearn.core.settings.SubtitleLayerRole
 import com.sublearn.core.subtitles.TrackRole
 
@@ -78,31 +94,37 @@ private const val TRANSPARENCY_MAX_PERCENT = 100f
 /** Speed presets offered as chips under the speed slider. */
 private val SPEED_PRESETS = listOf(50, 75, 100, 125, 150)
 
-/** Hosts every bottom sheet the player offers; one place decides which one is open (PLY-3). */
+/** Hosts each independent player surface (audio and subtitle management never share a sheet). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SheetsHost(
     ui: PlayerUi,
     viewModel: PlayerViewModel,
     onDismiss: () -> Unit,
+    onAddSubtitle: (TrackRole) -> Unit,
+    onAddAudio: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (ui.sheet == Sheet.NONE) return
     ModalBottomSheet(onDismissRequest = onDismiss, modifier = modifier) {
         Column(
             modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = Dimens.cardMaxHeight)
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = Dimens.lg)
                 .padding(bottom = Dimens.xl),
             verticalArrangement = Arrangement.spacedBy(Dimens.sm),
         ) {
             when (ui.sheet) {
-                Sheet.TRACKS -> TracksSheet(ui, viewModel::selectTrack, viewModel::clearTrackOverride)
+                Sheet.AUDIO -> AudioSheet(ui, viewModel, onAddAudio)
+                Sheet.SUBTITLES -> SubtitleManagerSheet(ui, viewModel, onAddSubtitle)
                 Sheet.SPEED -> SpeedSheet(ui, viewModel::setSpeedPercent)
                 Sheet.ASPECT -> AspectSheet(ui, viewModel::setAspect, viewModel::setCustomAspect)
                 Sheet.DECODER -> DecoderSheet(ui, viewModel::setDecoder)
-                Sheet.LAYER_OPTIONS -> LayerOptionsSheet(ui, viewModel)
                 Sheet.TOOLS -> ToolsSheet(ui, viewModel)
                 Sheet.PLAYLIST -> PlaylistSheet(ui, viewModel)
+                Sheet.ACTIONS -> ActionLayoutSheet(ui, viewModel)
                 Sheet.NONE -> Unit
             }
         }
@@ -159,22 +181,50 @@ private fun ChoiceRow(
 }
 
 @Composable
-private fun TracksSheet(
-    ui: PlayerUi,
-    onSelect: (TrackRef) -> Unit,
-    onClear: (PlayerTrackType) -> Unit,
-) {
-    SheetTitle(stringResource(R.string.player_subtitle_tracks))
-    TrackGroup(stringResource(R.string.player_audio_tracks), ui.playback.audioTracks, onSelect, onClear)
-    TrackGroup(stringResource(R.string.player_subtitle_tracks), ui.playback.textTracks, onSelect, onClear)
-    if (ui.playback.audioTracks.isEmpty() && ui.playback.textTracks.isEmpty()) {
-        Text(stringResource(R.string.player_no_tracks), style = MaterialTheme.typography.bodySmall)
+private fun AudioSheet(ui: PlayerUi, viewModel: PlayerViewModel, onAddAudio: () -> Unit) {
+    SheetTitle(stringResource(R.string.player_audio_tracks))
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+        Icon(
+            imageVector = if (ui.playback.isMuted) Icons.Default.VolumeOff else Icons.Default.VolumeUp,
+            contentDescription = null,
+            tint = LocalSubLearnColors.current.controlActive,
+        )
+        Text(
+            stringResource(if (ui.playback.isMuted) R.string.player_audio_muted else R.string.player_audio_enabled),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f),
+        )
+        Switch(checked = !ui.playback.isMuted, onCheckedChange = { viewModel.setMuted(!it) })
     }
-    Text(
-        stringResource(R.string.subtitle_embedded_live),
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    ui.playback.externalAudioName?.let { name ->
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Text(
+                stringResource(R.string.player_external_audio, name),
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            IconButton(onClick = { viewModel.setExternalAudioTrack(null) }) {
+                Icon(Icons.Default.DeleteOutline, contentDescription = stringResource(R.string.player_remove_external_audio))
+            }
+        }
+    }
+    TextButton(onClick = onAddAudio) {
+        Icon(Icons.Default.Add, contentDescription = null)
+        Spacer(Modifier.size(Dimens.xs))
+        Text(stringResource(R.string.player_add_audio_file))
+    }
+    Text(stringResource(R.string.player_audio_volume), style = MaterialTheme.typography.labelLarge)
+    Slider(
+        value = if (ui.playback.isMuted) 0f else ui.playback.volumePercent.toFloat(),
+        onValueChange = { viewModel.setVolumePercent(it.toInt()) },
+        valueRange = 0f..100f,
     )
+    TrackGroup(stringResource(R.string.player_audio_tracks), ui.playback.audioTracks, viewModel::selectTrack, viewModel::clearTrackOverride)
+    if (ui.playback.audioTracks.isEmpty()) {
+        Text(stringResource(R.string.player_no_audio_tracks), style = MaterialTheme.typography.bodySmall)
+    }
 }
 
 @Composable
@@ -301,22 +351,82 @@ internal fun PlaylistRepeat.labelRes(): Int = when (this) {
     PlaylistRepeat.ALL -> R.string.player_repeat_all
 }
 
-/** Per-layer controls for delay, size, transparency and the file behind the layer (SUB-3). */
+/** Two symmetric tabs manage every active soft subtitle and external file (PLY-7). */
 @Composable
-private fun LayerOptionsSheet(ui: PlayerUi, viewModel: PlayerViewModel) {
+private fun SubtitleManagerSheet(
+    ui: PlayerUi,
+    viewModel: PlayerViewModel,
+    onAddSubtitle: (TrackRole) -> Unit,
+) {
     var role by remember { mutableStateOf(TrackRole.LEARNING) }
     val settings = ui.settings.subtitleLayer(role)
     val layer = ui.layer(role)
-    SheetTitle(stringResource(R.string.settings_category_subtitles))
-    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+    SheetTitle(stringResource(R.string.player_subtitle_tracks))
+    TabRow(selectedTabIndex = TrackRole.entries.indexOf(role)) {
         TrackRole.entries.forEach { entry ->
-            FilterChip(
+            Tab(
                 selected = role == entry,
                 onClick = { role = entry },
-                label = { Text(entry.title()) },
+                text = { Text(entry.title()) },
             )
         }
     }
+    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+        FilterChip(
+            selected = settings.visible,
+            onClick = { viewModel.toggleLayerVisible(role) },
+            label = { Text(stringResource(R.string.player_layer_visible)) },
+        )
+        FilterChip(
+            selected = settings.showInList,
+            onClick = { viewModel.toggleListFor(role) },
+            label = { Text(stringResource(R.string.subtitle_list)) },
+        )
+    }
+
+    Text(stringResource(R.string.subtitle_embedded_header), style = MaterialTheme.typography.labelLarge)
+    if (ui.playback.textTracks.isEmpty()) {
+        Text(stringResource(R.string.subtitle_embedded_none), style = MaterialTheme.typography.bodySmall)
+    } else {
+        ui.playback.textTracks.forEach { track ->
+            CheckboxRow(
+                checked = viewModel.isEmbeddedAssigned(track.ref, role),
+                label = track.displayLabel,
+                trailing = track.language,
+                onCheckedChange = { checked -> viewModel.assignEmbedded(track.ref, role, checked) },
+            )
+        }
+    }
+    Text(stringResource(R.string.subtitle_external_header), style = MaterialTheme.typography.labelLarge)
+    settings.externalFileKeys.forEach { key ->
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Checkbox(
+                checked = key !in settings.disabledExternalFileKeys,
+                onCheckedChange = { enabled -> viewModel.setExternalFileEnabled(role, key, enabled) },
+            )
+            Text(
+                text = layer.externalFileNames[key] ?: key.substringAfterLast('/').ifBlank { key },
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            IconButton(onClick = { viewModel.removeFile(role, key) }) {
+                Icon(Icons.Default.DeleteOutline, contentDescription = stringResource(R.string.subtitle_remove_file))
+            }
+        }
+    }
+    TextButton(onClick = { onAddSubtitle(role) }) {
+        Icon(Icons.Default.Add, contentDescription = null)
+        Spacer(Modifier.size(Dimens.xs))
+        Text(stringResource(R.string.subtitle_add_file))
+    }
+    Text(
+        stringResource(R.string.subtitle_embedded_live),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+
     Text(stringResource(R.string.subtitle_delay), style = MaterialTheme.typography.labelLarge)
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
         IconButton(onClick = { viewModel.setLayerDelay(role, -DELAY_STEP_MS) }) {
@@ -346,38 +456,118 @@ private fun LayerOptionsSheet(ui: PlayerUi, viewModel: PlayerViewModel) {
         onValueChange = { viewModel.setLayerTransparency(role, it.toInt()) },
         valueRange = 0f..TRANSPARENCY_MAX_PERCENT,
     )
-    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-        FilterChip(
-            selected = settings.visible,
-            onClick = { viewModel.toggleLayerVisible(role) },
-            label = { Text(stringResource(R.string.player_layer_visible)) },
-        )
-        FilterChip(
-            selected = settings.showInList,
-            onClick = { viewModel.toggleListFor(role) },
-            label = { Text(stringResource(R.string.subtitle_list)) },
-        )
-    }
     Text(
-        text = layer.fileName?.let { name -> "$name · ${layer.charsetName.orEmpty()}" } ?: stringResource(R.string.subtitle_list_empty),
+        text = layer.fileName ?: stringResource(R.string.subtitle_list_empty),
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
     )
-    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-        TextButton(onClick = { viewModel.setLayoutMode(true) }) {
-            Text(stringResource(R.string.subtitle_layout_mode))
-        }
-        layer.fileName?.let { name ->
-            TextButton(onClick = {
-                viewModel.removeFile(role, settings.externalFileKeys.firstOrNull() ?: name)
-            }) {
-                Text(stringResource(R.string.subtitle_remove_file))
-            }
-        }
+    TextButton(onClick = { viewModel.setLayoutMode(true) }) {
+        Text(stringResource(R.string.subtitle_layout_mode))
     }
     layer.warnings.forEach { warning ->
         Text(warning, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
     }
+}
+
+@Composable
+private fun CheckboxRow(
+    checked: Boolean,
+    label: String,
+    trailing: String?,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = Dimens.touchTarget)
+            .clickable(role = Role.Checkbox) { onCheckedChange(!checked) },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Checkbox(checked = checked, onCheckedChange = onCheckedChange)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        trailing?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = LocalSubLearnColors.current.controlIdle) }
+    }
+}
+
+/** Arrange every player action across the two toolbars, playback row, floating layer or hidden. */
+@Composable
+private fun ActionLayoutSheet(ui: PlayerUi, viewModel: PlayerViewModel) {
+    SheetTitle(stringResource(R.string.player_arrange_controls))
+    Text(stringResource(R.string.player_arrange_controls_hint), style = MaterialTheme.typography.bodySmall)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(stringResource(R.string.player_expanded_action_labels), modifier = Modifier.weight(1f))
+        Switch(
+            checked = ui.settings.quickActions.barExpanded,
+            onCheckedChange = { viewModel.toggleQuickActionBarExpanded() },
+        )
+    }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        QuickActionId.entries.forEach { id ->
+            key(id) {
+                val spec = ui.settings.quickActions.spec(id)
+                val dockActions = ui.settings.quickActions.visibleIn(spec.dock)
+                val dockOrder = dockActions.indexOfFirst { it.first == id }
+                var menuOpen by remember { mutableStateOf(false) }
+                Row(
+                    modifier = Modifier.fillMaxWidth().heightIn(min = Dimens.touchTarget),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(id.icon(), contentDescription = null, tint = LocalSubLearnColors.current.controlIdle)
+                    Text(
+                        stringResource(id.labelRes()),
+                        modifier = Modifier.weight(1f).padding(horizontal = Dimens.xs),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    IconButton(
+                        onClick = { viewModel.reorderQuickAction(id, spec.dock, -1) },
+                        enabled = dockOrder > 0 && spec.dock != DockMode.HIDDEN,
+                    ) {
+                        Icon(Icons.Default.KeyboardArrowUp, contentDescription = stringResource(R.string.settings_move_up))
+                    }
+                    IconButton(
+                        onClick = { viewModel.reorderQuickAction(id, spec.dock, 1) },
+                        enabled = spec.dock != DockMode.HIDDEN && dockOrder >= 0 && dockOrder < dockActions.lastIndex,
+                    ) {
+                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = stringResource(R.string.settings_move_down))
+                    }
+                    Box {
+                        TextButton(onClick = { menuOpen = true }) {
+                            Text(stringResource(spec.dock.labelRes()), maxLines = 1)
+                        }
+                        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                            DockMode.entries.forEach { dock ->
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(dock.labelRes())) },
+                                    onClick = {
+                                        menuOpen = false
+                                        viewModel.moveQuickAction(id, dock)
+                                    },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+internal fun DockMode.labelRes(): Int = when (this) {
+    DockMode.TOP -> R.string.quick_dock_top
+    DockMode.BAR -> R.string.quick_dock_second_row
+    DockMode.PLAYBACK -> R.string.quick_dock_playback
+    DockMode.FLOATING -> R.string.quick_dock_floating
+    DockMode.HIDDEN -> R.string.quick_dock_hidden
 }
 
 /** Batch tools over the loaded file (SUB-6): line breaks and block size, applied on demand. */

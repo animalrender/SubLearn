@@ -41,7 +41,7 @@ it:
 
 ```
 Media3 events ─▶ PlayerController.state: StateFlow<PlaybackState>
-                        │                              (position, duration, tracks, speed, error)
+                        │                              (position, duration, tracks, volume, speed, error)
                         ▼
         collect + subtitle documents (per layer) ─▶ publish() ─▶ PlayerUi (one immutable snapshot)
                         ▲                                     │
@@ -51,11 +51,12 @@ Media3 events ─▶ PlayerController.state: StateFlow<PlaybackState>
 ```
 
 `publish()` (in `PlayerViewModel`) is the single place that maps a playback tick into UI state: for
-each `TrackRole` it resolves the block at `position + layer.delayMs`, decides the layer's
-`LayerSource`, computes the visible text, and derives the shadowing and list state. Consequences:
+each `TrackRole` it resolves every enabled external document at `position + layer.delayMs`, associates
+selected embedded cues with the layer's checked track keys where Media3 provides enough information,
+computes keyed `SubtitleLineUi` rows, and derives the shadowing and list state. Consequences:
 
 - recomposition can never see a half-applied update, and a `PlayerUi` literal is a valid test fixture;
-- per-frame work is a map of two entries plus a binary search per layer — no allocation-heavy scanning;
+- per-frame work is two layer entries plus binary searches in their active documents — no allocation-heavy scan of every cue;
 - features that need lookahead (list, block stepping, batch tools) ask `canStepBySubtitle`, which is
   true only for a `LayerSource.FILE`.
 
@@ -81,27 +82,53 @@ This is documented in the UI (the layer's format badge) and in
 
 Auto-loading a sidecar file (`movie.mkv` + `movie.en.srt`) needs a directory grant: SAF per-file
 permissions do not let an app read a sibling. `SubtitleLayerSettings.sidecarTreeUri` stores the granted
-tree URI; without it the user picks the file and the choice is remembered per layer
-(`externalFileKeys`), which is also what survives process death.
+tree URI. File picking requests a persistable read grant; the player remembers several external file
+keys and per-file enabled state in each layer. `SubtitleSettings.rememberedMediaUri` prevents old track
+indices/keys from being applied to a different video. This is deliberately only the most-recent video's
+association for now; a complete per-video table is a known issue.
 
 ### Two layer sources, and what each can do
 
 | Source | Where the text comes from | List view | Seek by subtitle | Block repeat | Batch tools | Per-layer delay |
 | --- | --- | --- | --- | --- | --- | --- |
 | `FILE` | our own parser | yes | yes | yes | yes | yes |
-| `PLAYER_CUES` | live `Cue` callbacks from Media3 for an embedded track | no lookahead, so no | no | current block only | no | applied to our rendering only |
+| `PLAYER_CUES` | live `Cue` callbacks from selected Media3 soft tracks | no lookahead, so no | no | current block only | no | applied to our rendering only |
 
 That asymmetry is deliberate and visible: a panel that cannot work shows an explanation with a
 "pick a subtitle file" action instead of an empty list. Hiding the difference would be a lie to the
 user and a trap for the next contributor.
 
-## Rendering and hit testing (SUB-4, GEN-4)
+## Track selection, playback queues and rendering (PLY-7, PLY-8, PLY-9; SUB-4)
+
+`SubtitleManagerSheet` has separate Learning and Translation tabs. Both list all player-reported soft
+subtitle tracks with independent checkboxes; the ViewModel unions the checked `TrackRef`s for Media3's
+text renderer and routes tagged cues back to their assigned layer. Each tab can also hold multiple
+parsed external files; each file has an independent on/off and remove control while delay, style and
+placement remain layer-level. `SubtitleLayerStack` draws every current `SubtitleLineUi` in a role as one
+plate, with each line maintaining a stable source key and optional parsed block.
+
+Media3's `CueGroup` does not include source-track IDs. `Media3PlayerController` makes a best-effort
+association when there is one selected soft track or when one current cue corresponds to each selected
+track; ambiguous cues stay untagged and can appear in each assigned layer. This limitation is recorded
+in [KNOWN_ISSUES.md](KNOWN_ISSUES.md) and keeps the controller honest rather than inventing metadata.
+
+`PlayerController.setExternalAudioTrack` adds an audio-only `MediaSource` through `MergingMediaSource`
+for the currently selected video; its audio groups join normal Media3 audio selection, while player
+volume/mute remains separate from Android's system stream. A source is scoped to its media URI and is
+not silently carried into unrelated queue entries.
+
+Recent readable videos form the playlist in chronological order, capped at 40 while always retaining
+the explicitly opened item. `PlayerViewModel.recentPlaylist` omits other `content://` entries without a
+persisted read grant, and `PlayerController.setPlaylist` supplies previous/next transport navigation.
+Media3 transitions publish the new target/index and track groups together; the ViewModel saves the old
+position and clears subtitle assignments before applying defaults for the new item. A stale Home grant
+launches the SAF picker instead of opening an opaque IO failure. The playlist sheet is currently read-only.
 
 `SubtitleLayerStack` (`SubtitleOverlay.kt`) draws each layer as a plate. Its anchor picks a
 `BiasAlignment`, and the stored offset is mirrored for END and BOTTOM anchors, so a positive offset
 always means "further from the anchor edge". `PlayerViewModel.movedBy` uses the same rule, which keeps
-a drag and its rendering in step. Each layer renders one `Text` whose words carry the
-`SUBTITLE_WORD_TAG` string annotation, and `onTextLayout` keeps the `TextLayoutResult`.
+a drag and its rendering in step. Each rendered line carries the `SUBTITLE_WORD_TAG` annotation, and
+`PlayerHitRegistry` stores a map of line keys to `TextLayoutResult`s for accurate word/source hit-testing.
 
 Nothing in the overlay consumes pointer input. Each plate and text block reports its
 `LayoutCoordinates` (and the layout) to the screen's `PlayerHitRegistry`, which turns a position into
@@ -113,6 +140,11 @@ same string the parser saw.
 
 Multi-tap granularity (1 word / 2 line / 3 block) is recognised in `PlayerGestures.kt`, with the window
 from `LearningSettings.multiTapWindowMs`.
+
+The seek slider pauses playback at drag start and calls `PlayerViewModel.onScrubPreview(targetMs)` for
+every value change. `PlayerController.seekTo` publishes the preview position immediately, so `publish()`
+resolves file subtitles at the drag target before the user releases; `onScrubEnd` resumes only if playback
+was previously active. The right-side clock persists the total/remaining preference in player settings.
 
 ## Gesture priority
 
@@ -141,7 +173,8 @@ per-surface fonts. Storage is DataStore Preferences holding a single JSON docume
 `SCHEMA_VERSION` int; `SettingsRepository` exposes `current()`, `update {}`, `exportJson()`,
 `importJson(text, ImportMode)`, `reset()` and `exportPath()`.
 
-- Adding a field with a default needs **no** version bump: absent keys simply take the default.
+- Adding a field with a default needs **no** version bump: absent keys simply take the default. This pass adds
+  `PlayerSettings.showRemainingTime` and `SubtitleSettings.rememberedMediaUri` with defaults.
 - Renaming, removing or reshaping a field does: bump the version and write the upgrade in
   `DataStoreSettingsStorage` before decoding.
 - Import applies per section with `ImportMode.REPLACE|MERGE` and returns an `ImportReport` of applied

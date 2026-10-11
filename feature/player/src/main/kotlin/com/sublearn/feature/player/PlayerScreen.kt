@@ -43,7 +43,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,6 +70,7 @@ import com.sublearn.core.player.OpenDocumentContract
 import com.sublearn.core.settings.DecoderMode
 import com.sublearn.core.settings.GestureAction
 import com.sublearn.core.settings.OrientationLock
+import com.sublearn.core.subtitles.TrackRole
 
 /**
  * The player screen (PLY-1..7).
@@ -102,11 +105,20 @@ fun PlayerScreen(
     val viewRef = remember { arrayOfNulls<PlayerView>(1) }
     val currentOpenWords by rememberUpdatedState(onOpenWords)
     val currentOpenSettings by rememberUpdatedState(onOpenSettings)
+    var subtitlePickerRole by remember { mutableStateOf<TrackRole?>(null) }
+    val audioPicker = rememberLauncherForActivityResult(OpenDocumentContract(AUDIO_MIMES)) { picked ->
+        if (picked != null) {
+            OpenDocumentContract.persistReadPermission(context, picked.uri)
+            viewModel.setExternalAudioTrack(picked.uri, picked.name)
+        }
+    }
     val subtitlePicker = rememberLauncherForActivityResult(OpenDocumentContract(SUBTITLE_MIMES)) { picked ->
         if (picked != null) {
-            val role = SubtitleRoleGuess.guess(picked.name, ui.settings.languages.nativeLanguage).role
-            viewModel.loadFile(role, picked.uri, picked.name)
+            OpenDocumentContract.persistReadPermission(context, picked.uri)
+            val guessed = SubtitleRoleGuess.guess(picked.name, ui.settings.languages.nativeLanguage).role
+            viewModel.loadFile(subtitlePickerRole ?: guessed, picked.uri, picked.name)
         }
+        subtitlePickerRole = null
     }
 
     LaunchedEffect(start?.uri) {
@@ -203,8 +215,9 @@ fun PlayerScreen(
         ) { viewModel.toggleRotationLock() },
         PlayerMenuItem(R.string.subtitle_layout_mode, Icons.Default.Tune, checked = ui.layoutMode) { viewModel.setLayoutMode(true) },
         PlayerMenuItem(R.string.player_subtitle_options, Icons.Default.Subtitles, checked = false) {
-            viewModel.setSheet(Sheet.LAYER_OPTIONS)
+            viewModel.setSheet(Sheet.SUBTITLES)
         },
+        PlayerMenuItem(R.string.player_arrange_controls, Icons.Default.Tune, checked = false) { viewModel.setSheet(Sheet.ACTIONS) },
         PlayerMenuItem(R.string.subtitle_add_file, Icons.Default.Add, checked = false) { subtitlePicker.launch(SUBTITLE_MIMES) },
         PlayerMenuItem(R.string.menu_settings, Icons.Default.Settings, checked = false) { currentOpenSettings() },
     )
@@ -222,8 +235,9 @@ fun PlayerScreen(
         val regionHeight = if (listBelow) maxHeight * (1f - Dimens.listPortraitShare) else maxHeight
         val chromeShown = (ui.controlsVisible || ui.playback.isEnded || ui.playback.error != null) &&
             !ui.layoutMode && !ui.locked && !inPip
-        val dockShown = !inPip && !ui.layoutMode && !ui.locked &&
+        val persistentChromeShown = !inPip && !ui.layoutMode && !ui.locked &&
             (chromeShown || !ui.settings.quickActions.autoHideWithControls)
+        val dockShown = persistentChromeShown
 
         Box(
             modifier = (if (listBelow) {
@@ -260,7 +274,7 @@ fun PlayerScreen(
                     .playerGestures(gestureMode, registry, viewModel, tuning, readLevel),
             )
 
-            if (dockShown) {
+            ChromeVisibility(visible = dockShown, modifier = Modifier.fillMaxSize()) {
                 QuickActionDock(
                     ui = ui,
                     areaWidth = regionWidth,
@@ -275,47 +289,40 @@ fun PlayerScreen(
             }
 
             Box(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
-                ChromeVisibility(visible = chromeShown, modifier = Modifier.align(Alignment.TopCenter)) {
+                ChromeVisibility(visible = persistentChromeShown, modifier = Modifier.align(Alignment.TopCenter)) {
                     TopChrome(
                         ui = ui,
                         onBack = { handleBackFrom(ui, viewModel, onBack) },
-                        onSheet = viewModel::setSheet,
                         onMenuOpenChange = viewModel::setMenuOpen,
                         menuActions = menuActions,
+                        onQuickTap = viewModel::onQuickTap,
+                        onHoldStart = viewModel::onQuickHoldStart,
+                        onHoldEnd = viewModel::onQuickHoldEnd,
                         registry = registry,
                     )
                 }
 
-                ChromeVisibility(visible = chromeShown, modifier = Modifier.align(Alignment.Center)) {
-                    CenterCluster(
-                        playing = ui.playback.isPlaying,
-                        buffering = ui.playback.isBuffering,
-                        seekStepMs = ui.settings.player.seekStepMs,
-                        onTogglePlay = viewModel::togglePlay,
-                        onSeekBy = viewModel::seekBy,
-                        registry = registry,
-                    )
-                }
-
-                ChromeVisibility(visible = chromeShown, modifier = Modifier.align(Alignment.BottomCenter)) {
+                ChromeVisibility(visible = persistentChromeShown, modifier = Modifier.align(Alignment.BottomCenter)) {
                     BottomChrome(
                         ui = ui,
                         onScrubStart = viewModel::onScrubStart,
+                        onScrubPreview = viewModel::onScrubPreview,
                         onScrubEnd = viewModel::onScrubEnd,
+                        onTogglePlay = viewModel::togglePlay,
+                        onSeekBy = viewModel::seekBy,
+                        onPreviousVideo = viewModel::playPreviousVideo,
+                        onNextVideo = viewModel::playNextVideo,
                         onPreviousBlock = { viewModel.stepBlock(-1) },
                         onNextBlock = { viewModel.stepBlock(1) },
-                        onRepeatBlock = { viewModel.toggleRepeatBlock(autoRepeat = false) },
-                        onRepeatBlockHold = { viewModel.toggleRepeatBlock(autoRepeat = true) },
-                        onSpeed = { viewModel.setSheet(Sheet.SPEED) },
-                        onAspect = { viewModel.setSheet(Sheet.ASPECT) },
-                        onPlaylist = { viewModel.setSheet(Sheet.PLAYLIST) },
-                        onToggleList = viewModel::toggleList,
-                        onListLongPress = viewModel::toggleNoSpoiler,
+                        onToggleRemainingTime = viewModel::toggleRemainingTime,
+                        onQuickTap = viewModel::onQuickTap,
+                        onHoldStart = viewModel::onQuickHoldStart,
+                        onHoldEnd = viewModel::onQuickHoldEnd,
                         registry = registry,
                     )
                 }
 
-                val lockShown = if (ui.locked) ui.lockButtonVisible else chromeShown
+                val lockShown = if (ui.locked) ui.lockButtonVisible else persistentChromeShown
                 ChromeVisibility(
                     visible = lockShown,
                     modifier = Modifier.align(Alignment.CenterStart).padding(start = Dimens.playerEdgeInset),
@@ -425,6 +432,11 @@ fun PlayerScreen(
             ui = ui,
             viewModel = viewModel,
             onDismiss = { viewModel.setSheet(Sheet.NONE) },
+            onAddSubtitle = { role ->
+                subtitlePickerRole = role
+                subtitlePicker.launch(SUBTITLE_MIMES)
+            },
+            onAddAudio = { audioPicker.launch(AUDIO_MIMES) },
             modifier = Modifier.fillMaxSize(),
         )
     }
@@ -493,7 +505,7 @@ private fun orientationFor(lock: OrientationLock): Int = when (lock) {
     OrientationLock.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
     OrientationLock.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
     OrientationLock.REVERSE_LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
-    OrientationLock.SENSOR -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+    OrientationLock.SENSOR -> ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
 }
 
 // ---------------------------------------------------------------- window helpers
@@ -540,6 +552,7 @@ internal fun Activity.enterPipMode(aspectWidth: Int, aspectHeight: Int) {
 }
 
 private val SUBTITLE_MIMES = arrayOf("text/*", "application/octet-stream", "application/x-subrip")
+private val AUDIO_MIMES = arrayOf("audio/*", "application/octet-stream")
 
 /** Percent to fraction for the dim overlay. */
 private const val PERCENT = 100f

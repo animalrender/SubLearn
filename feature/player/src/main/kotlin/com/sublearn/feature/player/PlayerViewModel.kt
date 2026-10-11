@@ -1,6 +1,7 @@
 package com.sublearn.feature.player
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sublearn.core.ai.AiAnswer
@@ -24,6 +25,7 @@ import com.sublearn.core.settings.AiProviderToken
 import com.sublearn.core.settings.AppSettings
 import com.sublearn.core.settings.AspectMode
 import com.sublearn.core.settings.DecoderMode
+import com.sublearn.core.settings.DockMode
 import com.sublearn.core.settings.DoubleTapAction
 import com.sublearn.core.settings.GestureAction
 import com.sublearn.core.settings.GestureSlot
@@ -33,7 +35,9 @@ import com.sublearn.core.settings.QuickActionId
 import com.sublearn.core.settings.QuickActionSpec
 import com.sublearn.core.settings.SettingsRepository
 import com.sublearn.core.settings.SubtitleLayerSettings
+import com.sublearn.core.settings.SubtitleSettings
 import com.sublearn.core.settings.SubtitlePlacement
+import com.sublearn.core.subtitles.LoadedTrack
 import com.sublearn.core.subtitles.NormalizerConfig
 import com.sublearn.core.subtitles.ShadowingMath
 import com.sublearn.core.subtitles.ShadowingPauseConfig
@@ -54,8 +58,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.LinkedHashMap
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -100,8 +106,10 @@ class PlayerViewModel(
 
     val playback: StateFlow<PlaybackState> get() = controller.state
 
-    private var learningDoc: SubtitleDocument? = null
-    private var translationDoc: SubtitleDocument? = null
+    private val externalTracks = TrackRole.entries.associateWith { LinkedHashMap<String, LoadedTrack>() }
+    private val subtitleLoadTokens = mutableMapOf<Pair<TrackRole, String>, Long>()
+    private var nextSubtitleLoadToken = 0L
+    private var mediaGeneration = 0L
     private var plan: ShadowPlan? = null
     private var pendingAdvance: Job? = null
     private var aiJob: Job? = null
@@ -113,8 +121,11 @@ class PlayerViewModel(
     private var wordStateJob: Job? = null
     private var wordStateKey: List<String> = emptyList()
     private var openedTarget: MediaTarget? = null
-    private var muted = false
-    private var embeddedCueText: String? = null
+    private var embeddedCues: List<com.sublearn.core.player.EmbeddedCue> = emptyList()
+    private var lastTrackListSignature: String? = null
+    private var lastAppliedEmbeddedKeys: String? = null
+    private var pendingEmbeddedDefaultAssignment = false
+    private var scrubWasPlaying = false
     private var aiKeyPresent = false
     private var checkedKeyRef: String? = null
     private var wasPlaying = false
@@ -143,7 +154,7 @@ class PlayerViewModel(
         }
         viewModelScope.launch {
             controller.embeddedCues.collect { cues ->
-                embeddedCueText = cues.firstOrNull()?.text
+                embeddedCues = cues.filter { it.text.isNotBlank() }
                 publish()
             }
         }
@@ -168,16 +179,18 @@ class PlayerViewModel(
     /** Loads the media, restores the saved position and pulls in sidecar subtitle files. */
     fun open(uri: String, title: String, subtitleUris: List<PickedSubtitle> = emptyList()) {
         viewModelScope.launch {
-            val stillLoaded = openedTarget?.uri == uri && controller.state.value.target?.uri == uri
+            val currentState = controller.state.value
+            val stillLoaded = openedTarget?.uri == uri && currentState.target?.uri == uri && currentState.error == null
             if (stillLoaded) {
                 // Coming back to the video that is already playing: keep playback and the loaded layers.
                 subtitleUris.forEach { picked -> loadFile(picked.role, picked.uri, picked.name) }
-                // A file picked in Settings while this video stayed loaded fills an empty layer.
+                // Restore every remembered file-backed track, not just the last one in each layer.
                 TrackRole.entries.forEach { role ->
-                    val key = _ui.value.settings.subtitleLayer(role).externalFileKeys.lastOrNull()
-                    val doc = documentFor(role)
-                    if (key != null && doc == null && subtitleUris.none { it.role == role }) {
-                        loadFile(role, key, key.substringAfterLast('/'))
+                    val keys = _ui.value.settings.subtitleLayer(role).externalFileKeys
+                    keys.filterNot { it in externalTracks.getValue(role) }.forEach { key ->
+                        if (subtitleUris.none { it.role == role && it.uri == key }) {
+                            loadFile(role, key, key.substringAfterLast('/'))
+                        }
                     }
                 }
                 _ui.value = _ui.value.copy(opening = false)
@@ -185,12 +198,33 @@ class PlayerViewModel(
                 return@launch
             }
             _ui.value = _ui.value.copy(opening = true)
-            val settings = _ui.value.settings
-            // Layers and their remembered file keys belong to one video at a time.
-            TrackRole.entries.forEach { role ->
-                applyDocument(role, null, null, emptyList(), null)
-                persistLayerKeys(role) { emptyList() }
+            mediaGeneration += 1L
+            subtitleLoadTokens.clear()
+            val previousTargetUri = openedTarget?.uri
+            val previousSettings = _ui.value.settings
+            val restoreRememberedFiles = previousSettings.subtitles.rememberedMediaUri == null ||
+                previousSettings.subtitles.rememberedMediaUri == uri
+            val settings = if (restoreRememberedFiles) {
+                previousSettings.copy(subtitles = previousSettings.subtitles.copy(rememberedMediaUri = uri))
+            } else {
+                previousSettings.copy(subtitles = clearSubtitleSources(previousSettings.subtitles, uri))
             }
+            // Update the local snapshot before the controller can publish tracks for the new media.
+            _ui.value = _ui.value.copy(settings = settings)
+            if (!restoreRememberedFiles || previousTargetUri != uri) {
+                TrackRole.entries.forEach { role -> externalTracks.getValue(role).clear() }
+            }
+            settingsRepository.update { current ->
+                val subtitles = if (restoreRememberedFiles) {
+                    current.subtitles.copy(rememberedMediaUri = uri)
+                } else {
+                    clearSubtitleSources(current.subtitles, uri)
+                }
+                current.copy(subtitles = subtitles)
+            }
+            lastTrackListSignature = null
+            lastAppliedEmbeddedKeys = null
+            pendingEmbeddedDefaultAssignment = false
             val saved = if (settings.player.rememberPosition && settings.player.resumeOnOpen) {
                 runCatching { recentVideos.find(uri) }.getOrNull()
             } else {
@@ -199,15 +233,24 @@ class PlayerViewModel(
             val position = saved?.lastPositionMs?.takeIf { it > RESUME_THRESHOLD_MS && it < (saved.durationMs - 3_000L) } ?: 0L
             val target = MediaTarget(uri = uri, title = title, startPositionMs = position)
             openedTarget = target
-            controller.open(target)
+            controller.clearTrackOverride(PlayerTrackType.TEXT)
+            val playlist = recentPlaylist(target)
+            controller.setPlaylist(playlist, playlist.indexOfFirst { it.uri == uri }.coerceAtLeast(0))
             // The default speed and aspect are per session, so they are applied once per opened video.
             if (settings.player.defaultSpeedPercent != NORMAL_SPEED) controller.setSpeedPercent(settings.player.defaultSpeedPercent)
             controller.setAspect(settings.player.aspect, settings.player.customAspectWidth, settings.player.customAspectHeight)
             if (settings.subtitles.listPanelEnabled) setListOpen(true)
             _ui.value = _ui.value.copy(opening = false)
             subtitleUris.forEach { picked -> loadFile(picked.role, picked.uri, picked.name) }
-            if (subtitleUris.isEmpty() && settings.subtitles.autoLoadExternal) {
-                loadSidecars(uri, title)
+            if (subtitleUris.isEmpty()) {
+                if (restoreRememberedFiles) {
+                    TrackRole.entries.forEach { role ->
+                        settings.subtitleLayer(role).externalFileKeys.forEach { key ->
+                            loadFile(role, key, key.substringAfterLast('/'))
+                        }
+                    }
+                }
+                if (settings.subtitles.autoLoadExternal) loadSidecars(uri)
             }
             if (saved != null && position > 0L) {
                 message(application.getString(R.string.player_msg_resumed, clock(position)))
@@ -216,39 +259,139 @@ class PlayerViewModel(
         }
     }
 
+    private fun clearSubtitleSources(settings: SubtitleSettings, mediaUri: String): SubtitleSettings {
+        val cleared = TrackRole.entries.fold(settings) { acc, role ->
+            val layer = acc.layer(role).copy(
+                externalFileKeys = emptyList(),
+                disabledExternalFileKeys = emptyList(),
+                embeddedTrackIndexes = emptyList(),
+                embeddedTrackKeys = emptyList(),
+            )
+            acc.updated(role, layer)
+        }
+        return cleared.copy(rememberedMediaUri = mediaUri)
+    }
+
+    /** A queue transition changes media identity just like an explicit open; never reuse old tracks. */
+    private fun onPlaybackTargetChanged(target: MediaTarget) {
+        openedTarget = target
+        mediaGeneration += 1L
+        subtitleLoadTokens.clear()
+        externalTracks.values.forEach { it.clear() }
+        embeddedCues = emptyList()
+        lastTrackListSignature = null
+        lastAppliedEmbeddedKeys = null
+        pendingEmbeddedDefaultAssignment = false
+        wordStateKey = emptyList()
+        wordStateJob?.cancel()
+        pendingAdvance?.cancel()
+        plan = null
+        handledBlockId = null
+        popupJob?.cancel()
+        _ui.value = _ui.value.copy(
+            settings = _ui.value.settings.copy(
+                subtitles = clearSubtitleSources(_ui.value.settings.subtitles, target.uri),
+            ),
+            popup = null,
+            wordStates = emptyMap(),
+        )
+        controller.clearTrackOverride(PlayerTrackType.TEXT)
+        viewModelScope.launch {
+            settingsRepository.update { settings ->
+                settings.copy(subtitles = clearSubtitleSources(settings.subtitles, target.uri))
+            }
+            if (_ui.value.settings.subtitles.autoLoadExternal) loadSidecars(target.uri)
+        }
+    }
+
+    /**
+     * Recent videos form the queue used by the previous/next transport buttons. Unreadable SAF
+     * entries are omitted; the item explicitly opened by the user is always retained.
+     */
+    private suspend fun recentPlaylist(current: MediaTarget): List<MediaTarget> {
+        val recent = runCatching { recentVideos.observeRecent(limit = MAX_PLAYLIST_SIZE).first() }
+            .getOrDefault(emptyList())
+        val now = System.currentTimeMillis()
+        val ordered = recent
+            .filter { it.uri == current.uri || (it.isPlayable && canReadRecentUri(it.uri)) }
+            .map { row ->
+                val target = if (row.uri == current.uri) current else MediaTarget(row.uri, row.title)
+                row.lastOpenedAt to target
+            }
+            .toMutableList()
+        if (ordered.none { it.second.uri == current.uri }) ordered += now to current
+        val chronological = ordered.sortedWith(compareBy({ it.first }, { it.second.uri }))
+        if (chronological.size <= MAX_PLAYLIST_SIZE) return chronological.map { it.second }
+        val currentIndex = chronological.indexOfFirst { it.second.uri == current.uri }
+        val firstIndex = (currentIndex - (MAX_PLAYLIST_SIZE - 1)).coerceAtLeast(0)
+        return chronological.drop(firstIndex).take(MAX_PLAYLIST_SIZE).map { it.second }
+    }
+
+    private fun canReadRecentUri(value: String): Boolean = runCatching {
+        val uri = Uri.parse(value)
+        when (uri.scheme) {
+            "content" -> application.contentResolver.persistedUriPermissions.any {
+                it.uri == uri && it.isReadPermission
+            }
+            "http", "https" -> true
+            else -> false
+        }
+    }.getOrDefault(false)
+
     data class PickedSubtitle(val uri: String, val name: String, val role: TrackRole)
 
-    private suspend fun loadSidecars(videoUri: String, videoName: String) {
+    private suspend fun loadSidecars(videoUri: String) {
+        val generation = mediaGeneration
+        if (videoUri != openedTarget?.uri) return
         val tree = settingsRepository.current().subtitles.sidecarTreeUri
         val files = runCatching { fileSource.sidecars(videoUri, tree) }.getOrDefault(emptyList())
-        if (files.isEmpty()) return
+        if (generation != mediaGeneration || files.isEmpty()) return
         val nativeTag = _ui.value.settings.languages.nativeLanguage
         files.forEach { file ->
+            if (generation != mediaGeneration) return
             val guess = SubtitleRoleGuess.guess(file.name, nativeTag)
             loadFile(guess.role, file.key, file.name)
         }
     }
 
-    /** Parses a subtitle file and binds it to a layer (SUB-1). [normalizer] overrides the saved tool settings. */
+    /** Parses an additional subtitle source into a layer without replacing its existing sources. */
     fun loadFile(role: TrackRole, uri: String, name: String, normalizer: NormalizerConfig? = null) {
+        val loadKey = role to uri
+        val generation = mediaGeneration
+        val token = ++nextSubtitleLoadToken
+        subtitleLoadTokens[loadKey] = token
         viewModelScope.launch {
             val config = normalizer ?: _ui.value.settings.subtitles.normalizer
             val result = subtitles.load(SubtitleFile(key = uri, name = name), role, config)
             val loaded = result.getOrNull()
-            if (loaded != null) {
-                applyDocument(role, loaded.document, loaded.charsetName, loaded.warnings, name)
-                persistLayerKeys(role) { keys -> (keys + uri).distinct() }
-            } else {
+            if (loaded != null && generation == mediaGeneration && subtitleLoadTokens[loadKey] == token) {
+                settingsRepository.update { settings ->
+                    if (generation != mediaGeneration || subtitleLoadTokens[loadKey] != token) {
+                        settings
+                    } else {
+                        val layer = settings.subtitleLayer(role)
+                        settings.copy(
+                            subtitles = settings.subtitles.updated(
+                                role,
+                                layer.copy(
+                                    externalFileKeys = (layer.externalFileKeys + uri).distinct(),
+                                    disabledExternalFileKeys = layer.disabledExternalFileKeys - uri,
+                                ),
+                            ),
+                        )
+                    }
+                }
+                if (generation == mediaGeneration && subtitleLoadTokens[loadKey] == token) {
+                    externalTracks.getValue(role)[uri] = loaded
+                    publish()
+                }
+            } else if (generation == mediaGeneration && subtitleLoadTokens[loadKey] == token) {
                 message(result.errorOrNull()?.message)
             }
-            publish()
         }
     }
 
-    /**
-     * SUB-6: saves the batch-tool settings and reloads every attached file with them. The save and
-     * the reload run in one coroutine, so the reload can never read the settings from before the save.
-     */
+    /** SUB-6: reload every attached subtitle with the same normalizer, preserving multi-track layers. */
     fun applyNormalizer(config: NormalizerConfig) {
         viewModelScope.launch {
             settingsRepository.update { settings ->
@@ -257,7 +400,7 @@ class PlayerViewModel(
             val saved = settingsRepository.current()
             TrackRole.entries.forEach { role ->
                 saved.subtitleLayer(role).externalFileKeys.forEach { key ->
-                    loadFile(role, key, key.substringAfterLast('/'), config)
+                    loadFile(role, key, externalTracks.getValue(role)[key]?.track?.name ?: key.substringAfterLast('/'), config)
                 }
             }
             message(application.getString(R.string.subtitle_tools_applied))
@@ -265,46 +408,39 @@ class PlayerViewModel(
     }
 
     fun removeFile(role: TrackRole, uri: String) {
+        subtitleLoadTokens.remove(role to uri)
+        externalTracks.getValue(role).remove(uri)
         viewModelScope.launch {
-            applyDocument(role, null, null, emptyList(), null)
-            persistLayerKeys(role) { keys -> keys - uri }
+            settingsRepository.update { settings ->
+                val layer = settings.subtitleLayer(role)
+                settings.copy(
+                    subtitles = settings.subtitles.updated(
+                        role,
+                        layer.copy(
+                            externalFileKeys = layer.externalFileKeys - uri,
+                            disabledExternalFileKeys = layer.disabledExternalFileKeys - uri,
+                        ),
+                    ),
+                )
+            }
+            publish()
         }
     }
 
-    private fun applyDocument(
-        role: TrackRole,
-        document: SubtitleDocument?,
-        charset: String?,
-        warnings: List<String>,
-        fileName: String?,
-    ) {
-        when (role) {
-            TrackRole.LEARNING -> learningDoc = document
-            TrackRole.TRANSLATION -> translationDoc = document
-        }
-        handledBlockId = null
-        _ui.value = _ui.value.copy(
-            layers = _ui.value.layers + (role to _ui.value.layer(role).copy(
-                fileName = fileName,
-                charsetName = charset,
-                warnings = warnings,
-                source = if (document == null) LayerSource.NONE else LayerSource.FILE,
-            )),
-        )
-        publish()
-    }
-
-    private suspend fun persistLayerKeys(role: TrackRole, transform: (List<String>) -> List<String>) {
-        settingsRepository.update { settings ->
-            val layer = settings.subtitleLayer(role)
-            settings.copy(subtitles = settings.subtitles.updated(role, layer.copy(externalFileKeys = transform(layer.externalFileKeys))))
-        }
+    fun setExternalFileEnabled(role: TrackRole, uri: String, enabled: Boolean) = updateLayer(role) { layer ->
+        val disabled = if (enabled) layer.disabledExternalFileKeys - uri else (layer.disabledExternalFileKeys + uri).distinct()
+        layer.copy(disabledExternalFileKeys = disabled)
     }
 
     // ------------------------------------------------------------------ settings and layers
 
     private fun onSettings(settings: AppSettings) {
         refreshAiKey(settings)
+        if (TrackRole.entries.any { role ->
+                val layer = settings.subtitleLayer(role)
+                layer.embeddedTrackKeys.isNotEmpty() || layer.embeddedTrackIndexes.isNotEmpty()
+            }
+        ) pendingEmbeddedDefaultAssignment = false
         val current = _ui.value
         _ui.value = current.copy(
             settings = settings,
@@ -316,6 +452,7 @@ class PlayerViewModel(
             ),
             list = current.list.copy(noSpoiler = settings.subtitles.noSpoilerMode),
         )
+        syncEmbeddedTextTracks(settings)
         publish()
     }
 
@@ -347,15 +484,12 @@ class PlayerViewModel(
         autoHideJob?.cancel()
         _ui.value = _ui.value.copy(
             layoutMode = on,
-            controlsVisible = !on,
+            controlsVisible = true,
             sheet = if (on) Sheet.NONE else _ui.value.sheet,
             popup = if (on) null else _ui.value.popup,
             menuOpen = false,
         )
-        if (!on) {
-            _ui.value = _ui.value.copy(controlsVisible = true)
-            refreshAutoHide()
-        }
+        if (!on) refreshAutoHide()
     }
 
     /** Drag of one plate in layout mode: the move is kept as a draft and persisted at the end. */
@@ -372,21 +506,84 @@ class PlayerViewModel(
         updateLayer(role) { it.copy(placement = draft) }
     }
 
-    /** Assigns an embedded track to one layer; a track feeds exactly one layer at a time. */
-    fun assignEmbedded(ref: TrackRef, role: TrackRole) {
-        updateSettings { settings ->
-            TrackRole.entries.fold(settings) { acc, other ->
-                val layer = acc.subtitleLayer(other)
-                val kept = layer.embeddedTrackIndexes - ref.trackIndex
-                val next = if (other == role) (kept + ref.trackIndex).distinct() else kept
-                acc.copy(subtitles = acc.subtitles.updated(other, layer.copy(embeddedTrackIndexes = next)))
+    /** A soft subtitle can be independently checked in either layer. */
+    fun assignEmbedded(ref: TrackRef, role: TrackRole, enabled: Boolean) {
+        updateLayer(role) { layer ->
+            val legacyKeys = if (layer.embeddedTrackKeys.isEmpty()) {
+                playback.value.textTracks.filter { it.ref.trackIndex in layer.embeddedTrackIndexes }.map { it.ref.stableKey }
+            } else {
+                layer.embeddedTrackKeys
             }
+            val keys = if (enabled) (legacyKeys + ref.stableKey).distinct() else legacyKeys - ref.stableKey
+            layer.copy(embeddedTrackKeys = keys, embeddedTrackIndexes = emptyList())
         }
+    }
+
+    fun isEmbeddedAssigned(ref: TrackRef, role: TrackRole): Boolean {
+        val layer = _ui.value.settings.subtitleLayer(role)
+        return if (layer.embeddedTrackKeys.isNotEmpty()) {
+            ref.stableKey in layer.embeddedTrackKeys
+        } else {
+            ref.trackIndex in layer.embeddedTrackIndexes
+        }
+    }
+
+    private fun syncEmbeddedTextTracks(settings: AppSettings = _ui.value.settings) {
+        val selectedKeys = TrackRole.entries.flatMap { role ->
+            val layer = settings.subtitleLayer(role)
+            if (layer.embeddedTrackKeys.isNotEmpty()) {
+                layer.embeddedTrackKeys
+            } else {
+                controller.state.value.textTracks.filter { it.ref.trackIndex in layer.embeddedTrackIndexes }
+                    .map { it.ref.stableKey }
+            }
+        }.toSet()
+        val textTracks = controller.state.value.textTracks
+        if (textTracks.isEmpty() || (pendingEmbeddedDefaultAssignment && selectedKeys.isEmpty())) return
+        val signature = selectedKeys.sorted().joinToString("|")
+        if (signature == lastAppliedEmbeddedKeys) return
+        lastAppliedEmbeddedKeys = signature
+        val refs = textTracks.filter { it.ref.stableKey in selectedKeys }.map { it.ref }
+        controller.setSelectedTextTracks(refs)
+    }
+
+    private fun adoptDefaultEmbeddedTrack(state: PlaybackState): Boolean {
+        val signature = state.target?.uri + ":" + state.textTracks.joinToString("|") { it.ref.stableKey }
+        if (signature == lastTrackListSignature || state.textTracks.isEmpty()) return false
+        lastTrackListSignature = signature
+        val settings = _ui.value.settings
+        val hasAssignment = TrackRole.entries.any { role ->
+            val layer = settings.subtitleLayer(role)
+            layer.embeddedTrackKeys.isNotEmpty() || layer.embeddedTrackIndexes.isNotEmpty()
+        }
+        val selected = state.textTracks.filter { it.isSelected }
+        if (!hasAssignment && selected.isNotEmpty()) {
+            pendingEmbeddedDefaultAssignment = true
+            val roles = selected.groupBy { track ->
+                SubtitleRoleGuess.guess(track.displayLabel, settings.languages.nativeLanguage).role
+            }
+            updateSettings { original ->
+                roles.entries.fold(original) { acc, (role, tracks) ->
+                    val layer = acc.subtitleLayer(role)
+                    acc.copy(subtitles = acc.subtitles.updated(role, layer.copy(
+                        embeddedTrackKeys = (layer.embeddedTrackKeys + tracks.map { it.ref.stableKey }).distinct(),
+                    )))
+                }
+            }
+            return true
+        }
+        syncEmbeddedTextTracks(settings)
+        return false
     }
 
     // ------------------------------------------------------------------ position and chrome
 
     private fun onPosition(state: PlaybackState) {
+        state.target?.let { target ->
+            if (target.uri != openedTarget?.uri) onPlaybackTargetChanged(target)
+        }
+        val defaultAssignmentPending = adoptDefaultEmbeddedTrack(state)
+        if (!defaultAssignmentPending) syncEmbeddedTextTracks(_ui.value.settings)
         publish(state)
         runShadowPlan(state, _ui.value.settings)
         if (state.isPlaying != wasPlaying) {
@@ -494,7 +691,7 @@ class PlayerViewModel(
             GestureAction.LOCK -> toggleLock()
             GestureAction.NEXT_BLOCK -> stepBlock(1)
             GestureAction.PREVIOUS_BLOCK -> stepBlock(-1)
-            GestureAction.TOGGLE_MUTE -> setMuted(!muted)
+            GestureAction.TOGGLE_MUTE -> setMuted(!playback.value.isMuted)
         }
     }
 
@@ -616,12 +813,21 @@ class PlayerViewModel(
 
     fun onScrubStart() {
         autoHideJob?.cancel()
+        scrubWasPlaying = playback.value.isPlaying
+        if (scrubWasPlaying) controller.pause()
         _ui.value = _ui.value.copy(scrubbing = true, controlsVisible = true)
+    }
+
+    /** Seeking on each drag update lets the decoder and subtitle layers preview before release. */
+    fun onScrubPreview(targetMs: Long) {
+        if (_ui.value.scrubbing) controller.seekTo(targetMs.coerceAtLeast(0L))
     }
 
     fun onScrubEnd(targetMs: Long) {
         controller.seekTo(targetMs.coerceAtLeast(0L))
         _ui.value = _ui.value.copy(scrubbing = false)
+        if (scrubWasPlaying) controller.play()
+        scrubWasPlaying = false
         refreshAutoHide()
     }
 
@@ -672,9 +878,13 @@ class PlayerViewModel(
     /** PLY-5: pins the orientation to the video's own shape, or returns to automatic rotation. */
     fun toggleRotationLock() {
         val player = _ui.value.settings.player
-        val next = if (player.orientationLock == OrientationLock.AUTO) {
+        val next = if (player.orientationLock == OrientationLock.AUTO || player.orientationLock == OrientationLock.SENSOR) {
             val state = playback.value
-            val portrait = state.hasVideo && state.videoHeight > state.videoWidth
+            val portrait = if (state.videoRotationDegrees % 180 != 0) {
+                state.videoWidth > state.videoHeight
+            } else {
+                state.hasVideo && state.videoHeight > state.videoWidth
+            }
             if (portrait) OrientationLock.PORTRAIT else OrientationLock.LANDSCAPE
         } else {
             OrientationLock.AUTO
@@ -795,7 +1005,7 @@ class PlayerViewModel(
         publish()
     }
 
-    private fun primaryDocument(): SubtitleDocument? = learningDoc ?: translationDoc
+    private fun primaryDocument(): SubtitleDocument? = documentFor(TrackRole.LEARNING) ?: documentFor(TrackRole.TRANSLATION)
 
     /**
      * SHD-1: a tap repeats the block under the playhead once, and a hold runs the configured number
@@ -826,9 +1036,13 @@ class PlayerViewModel(
     // ------------------------------------------------------------------ seeking by subtitle
 
     fun stepBlock(delta: Int) {
-        val doc = primaryDocument() ?: return message(application.getString(R.string.player_msg_need_subtitle))
+        val preferredRole = _ui.value.list.role
+        val role = preferredRole.takeIf { documentFor(it) != null }
+            ?: TrackRole.entries.firstOrNull { documentFor(it) != null }
+            ?: return message(application.getString(R.string.player_msg_need_subtitle))
+        val doc = documentFor(role) ?: return
         val position = playback.value.positionMs
-        val layer = _ui.value.settings.subtitleLayer(_ui.value.list.role)
+        val layer = _ui.value.settings.subtitleLayer(role)
         val shifted = position + layer.delayMs
         val target = if (delta > 0) doc.nextBlock(shifted) else doc.previousBlock(shifted)
         if (target == null) {
@@ -851,10 +1065,14 @@ class PlayerViewModel(
      * A tap on the learning layer: one tap on a word translates that word, two taps the line and
      * three the block. Taps on the translation layer are read-only, so they never open a card.
      */
-    fun onSubtitleTap(role: TrackRole, taps: Int, word: String?) {
+    fun onSubtitleTap(role: TrackRole, taps: Int, word: String?, lineKey: String? = null) {
         if (role != TrackRole.LEARNING) return
         val layer = _ui.value.layer(role)
-        val block = layer.block ?: return message(application.getString(R.string.player_msg_no_block))
+        val block = if (lineKey != null) {
+            layer.lines.firstOrNull { it.key == lineKey }?.block
+        } else {
+            layer.block
+        } ?: return message(application.getString(R.string.player_msg_no_block))
         val lineText = lineAt(block, playback.value.positionMs + layer.delayMs)
         when {
             taps >= 3 -> showLinePopup(block.text, block, whole = true)
@@ -1004,7 +1222,9 @@ class PlayerViewModel(
      */
     private fun refreshWordStates(state: PlaybackState, settings: AppSettings) {
         if (settings.learning.mode == LearningMode.OFF || state.target == null) return
-        val block = learningDoc?.blockAt(state.positionMs + settings.subtitleLayer(TrackRole.LEARNING).delayMs) ?: return
+        val block = documentFor(TrackRole.LEARNING)?.blockAt(
+            state.positionMs + settings.subtitleLayer(TrackRole.LEARNING).delayMs,
+        ) ?: return
         val words = block.tokens.filter { it.isWord }.map { it.text.lowercase() }.distinct()
         if (words.isEmpty() || words == wordStateKey) return
         wordStateKey = words
@@ -1138,12 +1358,29 @@ class PlayerViewModel(
     }
 
     fun setMuted(value: Boolean) {
-        muted = value
         controller.setMuted(value)
         _ui.value = _ui.value.copy(muted = value)
     }
 
+    fun setExternalAudioTrack(uri: String?, displayName: String? = null) {
+        controller.setExternalAudioTrack(uri, displayName)
+    }
+
+    fun setVolumePercent(percent: Int) {
+        controller.setVolume(percent.coerceIn(0, 100))
+    }
+
+    fun toggleRemainingTime() {
+        updateSettings { settings ->
+            settings.copy(player = settings.player.copy(showRemainingTime = !settings.player.showRemainingTime))
+        }
+    }
+
     fun togglePlay() = controller.togglePlayPause()
+
+    fun playNextVideo() = controller.playNext()
+
+    fun playPreviousVideo() = controller.playPrevious()
 
     fun seekBy(deltaMs: Long) = controller.seekBy(deltaMs)
 
@@ -1156,6 +1393,40 @@ class PlayerViewModel(
         updateSettings { settings ->
             val spec = settings.quickActions.spec(id)
             settings.copy(quickActions = settings.quickActions.updated(id, transform(spec)))
+        }
+    }
+
+    fun moveQuickAction(id: QuickActionId, dock: DockMode) {
+        updateSettings { settings ->
+            val order = (settings.quickActions.visibleIn(dock).filter { it.first != id }.maxOfOrNull { it.second.order } ?: -1) + 1
+            settings.copy(quickActions = settings.quickActions.updated(id, settings.quickActions.spec(id).copy(dock = dock, order = order)))
+        }
+    }
+
+    fun reorderQuickAction(id: QuickActionId, dock: DockMode, delta: Int) {
+        if (delta == 0) return
+        updateSettings { settings ->
+            val row = settings.quickActions.visibleIn(dock).map { it.first }.toMutableList()
+            val from = row.indexOf(id)
+            if (from < 0) return@updateSettings settings
+            val to = (from + delta).coerceIn(0, row.lastIndex)
+            if (from == to) return@updateSettings settings
+            val moving = row.removeAt(from)
+            row.add(to, moving)
+            val updated = row.mapIndexed { index, action ->
+                action to settings.quickActions.spec(action).copy(order = index)
+            }.toMap()
+            settings.copy(quickActions = settings.quickActions.copy(
+                specs = settings.quickActions.specs + updated.mapKeys { it.key.key }.mapValues { it.value },
+            ))
+        }
+    }
+
+    fun reorderQuickAction(id: QuickActionId, delta: Int) = reorderQuickAction(id, DockMode.BAR, delta)
+
+    fun toggleQuickActionBarExpanded() {
+        updateSettings { settings ->
+            settings.copy(quickActions = settings.quickActions.copy(barExpanded = !settings.quickActions.barExpanded))
         }
     }
 
@@ -1180,13 +1451,14 @@ class PlayerViewModel(
             QuickActionId.PLAYLIST -> setSheet(Sheet.PLAYLIST)
             QuickActionId.ASPECT_RATIO -> setSheet(Sheet.ASPECT)
             QuickActionId.DECODER -> setSheet(Sheet.DECODER)
-            QuickActionId.AUDIO_TRACK -> setSheet(Sheet.TRACKS)
-            QuickActionId.SUBTITLE_TRACKS -> setSheet(Sheet.TRACKS)
+            QuickActionId.AUDIO_TRACK -> setSheet(Sheet.AUDIO)
+            QuickActionId.SUBTITLE_TRACKS -> setSheet(Sheet.SUBTITLES)
             QuickActionId.SUBTITLE_TOOLS -> setSheet(Sheet.TOOLS)
             QuickActionId.SPEED -> setSheet(Sheet.SPEED)
             QuickActionId.PICTURE_IN_PICTURE -> enterPip()
             QuickActionId.SHARE -> shareCurrent()
             QuickActionId.SETTINGS -> _intent.tryEmit(PlayerIntent.OpenSettings)
+            QuickActionId.TOGGLE_MUTE -> setMuted(!playback.value.isMuted)
         }
     }
 
@@ -1221,7 +1493,7 @@ class PlayerViewModel(
             message(application.getString(R.string.player_msg_no_ai_key))
             return
         }
-        val doc = learningDoc ?: return message(application.getString(R.string.player_msg_need_subtitle))
+        val doc = documentFor(TrackRole.LEARNING) ?: return message(application.getString(R.string.player_msg_need_subtitle))
         val block = doc.blockAt(playback.value.positionMs) ?: return message(application.getString(R.string.player_msg_no_block))
         val index = doc.indexOf(block.id)
         aiJob?.cancel()
@@ -1304,38 +1576,66 @@ class PlayerViewModel(
 
     // ------------------------------------------------------------------ publish and helpers
 
-    /** Recomputes both layers' current text and the shadowing anchors. The only place [PlayerUi] layers are built. */
+    /** Recomputes live lines, media tracks and the derived UI from one playback snapshot. */
     private fun publish(state: PlaybackState = controller.state.value) {
         val current = _ui.value
         val settings = current.settings
         val position = state.positionMs
-        val cueRole = cueTargetLayer(state, settings)
         val layers = TrackRole.entries.associateWith { role ->
-            val doc = documentFor(role)
-            val layer = settings.subtitleLayer(role)
-            val block = doc?.blockAt(position + layer.delayMs)
-            val usesCues = doc == null && role == cueRole
-            val text = when {
-                block != null -> block.text
-                usesCues -> embeddedCueText
-                else -> null
+            val layerSettings = settings.subtitleLayer(role)
+            val storedKeys = layerSettings.externalFileKeys
+            val activeTracks = storedKeys
+                .filterNot { it in layerSettings.disabledExternalFileKeys }
+                .mapNotNull { key -> externalTracks.getValue(role)[key]?.let { key to it } }
+            val externalLines = activeTracks.mapNotNull { (key, loaded) ->
+                loaded.document.blockAt(position + layerSettings.delayMs)?.let { block ->
+                    SubtitleLineUi(key = key, text = block.text, block = block)
+                }
             }
+            val assignedSelectedRefs = state.textTracks
+                .filter { it.isSelected && isEmbeddedTrackAssigned(settings, role, it.ref) }
+                .map { it.ref }
+                .toSet()
+            val embeddedSelected = assignedSelectedRefs.isNotEmpty()
+            val embeddedLines = if (embeddedSelected) {
+                embeddedCues.mapIndexedNotNull { index, cue ->
+                    if (cue.trackRef == null || cue.trackRef in assignedSelectedRefs) {
+                        SubtitleLineUi(key = "embedded:$role:$index", text = cue.text)
+                    } else {
+                        null
+                    }
+                }
+            } else {
+                emptyList()
+            }
+            val lines = externalLines + embeddedLines
             val source = when {
-                doc != null -> LayerSource.FILE
-                usesCues -> LayerSource.PLAYER_CUES
+                activeTracks.isNotEmpty() -> LayerSource.FILE
+                embeddedSelected -> LayerSource.PLAYER_CUES
                 else -> LayerSource.NONE
             }
+            val names = storedKeys.associateWith { key ->
+                externalTracks.getValue(role)[key]?.track?.name ?: key.substringAfterLast('/').ifBlank { key }
+            }
+            val block = externalLines.firstOrNull()?.block
+            val text = lines.takeIf { it.isNotEmpty() }?.joinToString("\n") { it.text }
             current.layer(role).copy(
                 block = block,
                 text = text,
                 source = source,
-                visible = layer.visible,
-                scalePercent = layer.scalePercent,
-                transparencyPercent = layer.transparencyPercent,
-                placement = current.layerDrafts[role] ?: layer.placement,
-                delayMs = layer.delayMs,
-                embeddedTrackIndexes = layer.embeddedTrackIndexes,
-                externalFileKeys = layer.externalFileKeys,
+                fileName = names.values.joinToString(" · ").ifBlank { null },
+                charsetName = activeTracks.joinToString(" · ") { it.second.charsetName }.ifBlank { null },
+                warnings = activeTracks.flatMap { it.second.warnings }.distinct(),
+                visible = layerSettings.visible,
+                scalePercent = layerSettings.scalePercent,
+                transparencyPercent = layerSettings.transparencyPercent,
+                placement = current.layerDrafts[role] ?: layerSettings.placement,
+                delayMs = layerSettings.delayMs,
+                embeddedTrackIndexes = layerSettings.embeddedTrackIndexes,
+                externalFileKeys = storedKeys,
+                disabledExternalFileKeys = layerSettings.disabledExternalFileKeys,
+                externalFileNames = names,
+                lines = lines,
             )
         }
         val listRole = current.list.role
@@ -1355,26 +1655,27 @@ class PlayerViewModel(
                 segmentLabel = plan?.let { application.getString(R.string.player_repeat_progress, it.completed + 1, it.repeatTotal) },
             ),
             ai = current.ai.copy(configured = aiConfigured(settings)),
-            muted = muted,
+            muted = state.isMuted,
         )
     }
 
-    /** The layer that receives the player's own cue text when it has no file (see KNOWN_ISSUES). */
-    private fun cueTargetLayer(state: PlaybackState, settings: AppSettings): TrackRole? {
-        val selectedIndex = state.textTracks.firstOrNull { it.isSelected }?.ref?.trackIndex
-        if (selectedIndex != null) {
-            TrackRole.entries.firstOrNull { role ->
-                settings.subtitleLayer(role).embeddedTrackIndexes.contains(selectedIndex) && documentFor(role) == null
-            }?.let { return it }
+    private fun isEmbeddedTrackAssigned(settings: AppSettings, role: TrackRole, ref: TrackRef): Boolean {
+        val layer = settings.subtitleLayer(role)
+        return if (layer.embeddedTrackKeys.isNotEmpty()) {
+            ref.stableKey in layer.embeddedTrackKeys
+        } else {
+            ref.trackIndex in layer.embeddedTrackIndexes
         }
-        val fileless = TrackRole.entries.filter { documentFor(it) == null && settings.subtitleLayer(it).visible }
-        return fileless.singleOrNull()
     }
 
-    private fun documentFor(role: TrackRole): SubtitleDocument? = when (role) {
-        TrackRole.LEARNING -> learningDoc
-        TrackRole.TRANSLATION -> translationDoc
+    private fun activeExternalDocuments(role: TrackRole): List<Pair<String, LoadedTrack>> {
+        val layer = _ui.value.settings.subtitleLayer(role)
+        return layer.externalFileKeys
+            .filterNot { it in layer.disabledExternalFileKeys }
+            .mapNotNull { key -> externalTracks.getValue(role)[key]?.let { key to it } }
     }
+
+    private fun documentFor(role: TrackRole): SubtitleDocument? = activeExternalDocuments(role).firstOrNull()?.second?.document
 
     /** A message that clears itself, so a stale hint never sits over the video. */
     fun message(text: String?) {
@@ -1395,7 +1696,7 @@ class PlayerViewModel(
         finishPlan()
         viewModelScope.launch {
             controller.flushPosition()
-            openedTarget?.let { target ->
+            playback.value.target?.let { target ->
                 recentVideos.touch(target.uri, target.title, playback.value.durationMs, playback.value.positionMs)
             }
         }
@@ -1440,6 +1741,7 @@ class PlayerViewModel(
         /** A full-height two-finger drag covers this many times the speed range. */
         private const val TWO_FINGER_FULL_HEIGHT_FACTOR = 2f
         private const val INTENT_BUFFER = 16
+        private const val MAX_PLAYLIST_SIZE = 40
         private const val DEFAULT_ASPECT_WIDTH = 16
         private const val DEFAULT_ASPECT_HEIGHT = 9
     }

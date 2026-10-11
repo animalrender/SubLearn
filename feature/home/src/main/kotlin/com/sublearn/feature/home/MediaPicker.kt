@@ -14,12 +14,31 @@ class OpenVideoContract : ActivityResultContract<Unit, PickedMedia?>() {
         addCategory(Intent.CATEGORY_OPENABLE)
         type = "*/*"
         putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("video/*", "application/x-mpegURL", "application/vnd.apple.mpegurl"))
-        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
     }
 
     override fun parseResult(resultCode: Int, intent: Intent?): PickedMedia? {
         val uri = intent?.data ?: return null
         return PickedMedia(uri.toString(), MediaInfo.displayName(uri) ?: uri.lastPathSegment ?: "video")
+    }
+
+    companion object {
+        /** Keeps a SAF video grant alive so Home can reopen its recent URI after process death. */
+        fun persistReadPermission(context: Context, uriValue: String) {
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    Uri.parse(uriValue),
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                )
+            }
+        }
+
+        /** A stale recent URI is sent back through the picker instead of surfacing an opaque IO error. */
+        fun hasPersistentReadPermission(context: Context, uriValue: String): Boolean {
+            val uri = Uri.parse(uriValue)
+            if (uri.scheme != "content") return uri.scheme == "http" || uri.scheme == "https"
+            return context.contentResolver.persistedUriPermissions.any { it.uri == uri && it.isReadPermission }
+        }
     }
 }
 

@@ -67,7 +67,6 @@ import com.sublearn.core.settings.LayerStackDirection
 import com.sublearn.core.settings.LearningMode
 import com.sublearn.core.settings.LevelProviderToken
 import com.sublearn.core.settings.OrientationLock
-import com.sublearn.core.settings.QuickActionColumn
 import com.sublearn.core.settings.QuickActionId
 import com.sublearn.core.settings.SubtitleHorizontalAnchor
 import com.sublearn.core.settings.SubtitleLayerRole

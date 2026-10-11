@@ -10,7 +10,7 @@ plugins {
 // the release build falls back to the debug key so that anyone can reproduce the build (REQ-6).
 val releaseKeystorePath: String? = System.getenv("SUBLEARN_KEYSTORE_PATH")?.takeIf { it.isNotBlank() }
 
-// 0.2.0 → 200. The code is derived from the name so that a release only ever edits one number, which
+// 0.2.1 → 201. The code is derived from the name so that a release only ever edits one number, which
 // is what lets `auto-release.yml` publish a version bump without touching the build file (D-28). A
 // pre-release suffix (0.3.0-rc1) maps to the code of the version it leads to.
 fun versionCodeOf(name: String): Int {
@@ -28,7 +28,7 @@ android {
         targetSdk = libs.versions.targetSdk.get().toInt()
         // The release workflows read this exact line to check a tag against the build, so keep it a
         // plain literal. SUBLEARN_VERSION_CODE overrides the derived code if one is ever dictated.
-        versionName = "0.2.0"
+        versionName = "0.2.1"
         versionCode = System.getenv("SUBLEARN_VERSION_CODE")?.toIntOrNull() ?: versionCodeOf(versionName!!)
         resourceConfigurations += listOf("en", "fa")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

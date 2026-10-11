@@ -8,9 +8,16 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 enum class DockMode {
+    /** Integrated into the main top toolbar. */
+    TOP,
+    /** The dedicated, horizontally scrollable second toolbar row. */
     BAR,
+    /** A draggable icon placed freely over the video. */
     FLOATING,
+    /** Not shown in the player. */
     HIDDEN,
+    /** In the bottom transport row beside play and subtitle stepping. */
+    PLAYBACK,
 }
 
 /** Stable ids; renaming one is a settings migration, so keep these strings stable. */
@@ -34,7 +41,7 @@ enum class QuickActionId(val key: String) {
     PICTURE_IN_PICTURE("pip"),
     SHARE("share"),
     SETTINGS("settings"),
-    ;
+    TOGGLE_MUTE("toggle_mute");
 
     companion object {
         fun fromKey(key: String): QuickActionId? = entries.firstOrNull { it.key == key }
@@ -70,6 +77,7 @@ data class QuickActionSpec(
             val bar = listOf(
                 QuickActionId.TOGGLE_LEARNING,
                 QuickActionId.TOGGLE_TRANSLATION,
+                QuickActionId.TOGGLE_MUTE,
                 QuickActionId.LAYOUT_MODE,
                 QuickActionId.REPEAT_BLOCK,
                 QuickActionId.STOP_AT_BLOCK_END,
@@ -93,22 +101,31 @@ data class QuickActionSpec(
     }
 }
 
-/** The whole quick-action dock: the Quick Actions column under the top bar plus floating buttons. */
+/** Quick-action docks shared by the main toolbar, second rail, playback row and floating layer. */
 @Serializable
 data class QuickActionSettings(
     val specs: Map<String, QuickActionSpec> = QuickActionSpec.defaults,
+    /** Legacy placement retained for settings compatibility; dock choice now lives in each action spec. */
     val column: QuickActionColumn = QuickActionColumn.TOP_LEFT,
+    /** Legacy setting; the player now uses one horizontal scroll rail rather than a grid. */
     val barIconsPerRow: Int = 8,
     val autoHideWithControls: Boolean = true,
+    /** Compact mode keeps the action rail to one line without labels. */
+    val barExpanded: Boolean = false,
 ) {
-    fun spec(id: QuickActionId): QuickActionSpec = specs[id.key] ?: QuickActionSpec()
+    fun spec(id: QuickActionId): QuickActionSpec {
+        specs[id.key]?.let { return it }
+        val default = QuickActionSpec.defaults[id.key] ?: return QuickActionSpec()
+        val nextOrder = specs.values.filter { it.dock == default.dock }.maxOfOrNull { it.order }?.plus(1)
+        return if (nextOrder == null) default else default.copy(order = maxOf(default.order, nextOrder))
+    }
 
     fun updated(id: QuickActionId, value: QuickActionSpec): QuickActionSettings = copy(specs = specs + (id.key to value))
 
     /** Actions shown in [mode], in display order. Nothing is visible in [DockMode.HIDDEN]. */
     fun visibleIn(mode: DockMode): List<Pair<QuickActionId, QuickActionSpec>> {
         if (mode == DockMode.HIDDEN) return emptyList()
-        return specs.mapNotNull { (key, spec) -> QuickActionId.fromKey(key)?.let { it to spec } }
+        return QuickActionId.entries.map { it to spec(it) }
             .filter { it.second.dock == mode }
             .sortedWith(compareBy({ it.second.order }, { it.first.name }))
     }

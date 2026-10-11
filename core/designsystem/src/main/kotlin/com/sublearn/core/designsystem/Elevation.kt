@@ -18,6 +18,9 @@ data class SubLearnColors(
     val subtitleBackdrop: Color,
     val cardBackdrop: Color,
     val strongBackdrop: Color,
+    /** Translucent turquoise prompt surface and its dark, high-contrast foreground. */
+    val promptBackdrop: Color,
+    val promptText: Color,
     val overlayOutline: Color,
     val controlIdle: Color,
     val controlActive: Color,

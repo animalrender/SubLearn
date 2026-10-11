@@ -85,7 +85,7 @@ the AI providers read them only at request time through `SecretStore`.
 
 **D-15 — String resources live only in `core:designsystem` (EN + FA).** A feature adding a string in
 its own module would be invisible to the other features and to the RTL audit; the single owner keeps
-`values-fa` provably in sync (446 keys each, checked by `tools/check_resources.py`).
+`values-fa` provably in sync (472 keys each, checked by `tools/check_resources.py`).
 
 **D-16 — Enum labels are exhaustive `when` in `feature/settings/Labels.kt`, no `else`.** Adding a
 `GestureAction` entry must break the build until it has a name; a silent default would ship an
@@ -104,6 +104,20 @@ still read-only and never sees a signing secret.
 **D-18 — RTL is decided per text run, not per app locale.** Subtitle layers and popups pass an
 explicit `TextDirection` derived from the content, because a Persian gloss inside an English card (and
 an English word inside a Persian subtitle) is the normal case, not an edge case.
+
+**D-29 — Three docked action zones, with the video centre kept clear.** The main toolbar is `DockMode.TOP`,
+the dedicated one-line scroll rail is `DockMode.BAR`, and the transport row is `DockMode.PLAYBACK`;
+`FLOATING` and `HIDDEN` remain explicit choices. The old `BAR` persisted value becomes the second
+row without a migration. Expanded mode labels docked actions, while compact and floating controls stay
+icon-only. Dock choice and ordering live in the player action manager rather than relying on drag-only
+discovery.
+
+**D-30 — Accessible Recent Videos are the playback queue; external audio is merged only for its video.**
+Previous/next video uses the recent list in chronological order and excludes `content://` entries with
+no persisted read grant (the current, explicitly opened item is always kept). An external audio source
+is merged through Media3 `MergingMediaSource` for the target it was added to; it does not silently
+replace the video's own audio or follow unrelated playlist items. The SAF picker persists grants and
+Home asks the user to reselect a recent item if its grant is stale.
 
 ## Scope discipline
 
@@ -153,10 +167,10 @@ text never consumes pointer input itself. The alternative, a pointer handler per
 overlapping-layer bugs that the rebuild removes; its cost is one more class to read, which the
 registry's KDoc explains.
 
-**D-26 — Play and pause are centred, not in the bottom row.** PLY-3 lists play/pause among the bottom
-controls. The rebuild puts replay, play/pause and forward in one centred cluster, as MX Player does, so
-the thumb reaches the main action without leaving the picture. The bottom row keeps the seek bar, the
-subtitle steps and the repeat block. This is a deliberate wording deviation from PLY-3.
+**D-26 — Superseded: play/pause used to sit in a centre cluster.** The 2026-10-11 transport redesign
+removed that cluster to meet PLY-3: play/pause, video navigation, subtitle-cue steps and arranged
+actions now share the distinct bottom playback row. See D-29 and the current player checklist; this
+entry records the old 0.2.0 layout only.
 
 **D-27 — The player owns its window effects and restores them on leave.** `PlayerScreen` hides the
 system bars for the whole screen (they return on swipe), sets the orientation from

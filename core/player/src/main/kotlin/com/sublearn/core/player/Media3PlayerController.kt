@@ -6,6 +6,7 @@ import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.Player
@@ -15,6 +16,7 @@ import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.ui.PlayerView
 import com.sublearn.core.common.SubLearnLogger
 import com.sublearn.core.settings.AspectMode
@@ -67,25 +69,57 @@ class Media3PlayerController(
     override val embeddedCues: Flow<List<EmbeddedCue>> = _embeddedCues
 
     private var player: ExoPlayer? = null
+    private var mediaSourceFactory: DefaultMediaSourceFactory? = null
     private var attachedView: PlayerView? = null
     private var ticker: Job? = null
     private var decoder: DecoderMode = initialDecoder
     private var aspect: AspectMode = AspectMode.FIT
     private var customAspect = 16 to 9
     private var muted = false
+    private var volumePercent = 100
+    private var lastNonZeroVolumePercent = 100
     private var speedPercent = 100
+    private var externalAudioUri: String? = null
+    private var externalAudioName: String? = null
+    private var externalAudioTargetUri: String? = null
     private var pendingTarget: MediaTarget? = null
     private var pendingPlaylist: List<MediaTarget> = emptyList()
     private var pendingIndex = 0
+    private var lastSavedPositionUri: String? = null
     private var lastSavedPositionMs = -1L
 
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) {
+            val mediaTransition = events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)
+            var targetChanged = false
+            if (mediaTransition) {
+                val previous = _state.value
+                val nextIndex = player.currentMediaItemIndex
+                val nextTarget = pendingPlaylist.getOrNull(nextIndex)
+                if (nextTarget != null && nextTarget.uri != previous.target?.uri) {
+                    previous.target?.uri?.let { uri -> savePosition(uri, previous.positionMs) }
+                    pendingIndex = nextIndex
+                    pendingTarget = nextTarget
+                    val externalForTarget = externalAudioName.takeIf { externalAudioTargetUri == nextTarget.uri }
+                    _state.value = previous.copy(
+                        target = nextTarget,
+                        playlistIndex = nextIndex,
+                        positionMs = player.currentPosition.coerceAtLeast(0L),
+                        durationMs = 0L,
+                        bufferedMs = 0L,
+                        isEnded = false,
+                        externalAudioName = externalForTarget,
+                    )
+                    _embeddedCues.value = emptyList()
+                    targetChanged = true
+                }
+            }
+            // Refresh target and track groups together before the ViewModel observes the new item.
+            if (targetChanged || events.contains(Player.EVENT_TRACKS_CHANGED)) publishTracks(player)
             publishSnapshot()
             if (events.containsAny(Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_IS_PLAYING_CHANGED)) {
                 if (player.isPlaying) startTicker() else stopTicker()
             }
-            if (events.contains(Player.EVENT_TRACKS_CHANGED)) publishTracks(player)
             if (events.contains(Player.EVENT_VIDEO_SIZE_CHANGED)) {
                 val size = player.videoSize
                 _state.value = _state.value.copy(
@@ -95,12 +129,21 @@ class Media3PlayerController(
                 )
             }
             if (events.contains(Player.EVENT_CUES)) {
-                // currentCues is a CueGroup whose list entries are nullable, so nothing here assumes otherwise.
-                _embeddedCues.value = player.currentCues.cues.orEmpty()
+                // CueGroup does not expose a source id. When one live cue per selected soft track is
+                // reported, retain that best-effort association; otherwise keep cues untagged.
+                val texts = player.currentCues.cues.orEmpty()
                     .mapNotNull { cue -> cue?.text?.toString()?.takeIf { it.isNotBlank() } }
-                    .map { EmbeddedCue(it) }
+                val selected = _state.value.textTracks.filter { it.isSelected }.map { it.ref }
+                val cues = if (selected.size == 1) {
+                    texts.map { EmbeddedCue(it, trackRef = selected.single()) }
+                } else if (selected.isNotEmpty() && selected.size == texts.size) {
+                    texts.zip(selected).map { (text, ref) -> EmbeddedCue(text, trackRef = ref) }
+                } else {
+                    texts.map { EmbeddedCue(it) }
+                }
+                _embeddedCues.value = cues
             }
-            if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)) flushPositionNow()
+            if (mediaTransition && !targetChanged) flushPositionNow()
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -146,16 +189,18 @@ class Media3PlayerController(
             .setUserAgent(USER_AGENT)
             .setAllowCrossProtocolRedirects(true)
         val dataSourceFactory = DefaultDataSource.Factory(context, http)
+        val sourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
+        mediaSourceFactory = sourceFactory
         val built = ExoPlayer.Builder(context)
             .setRenderersFactory(renderers)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
+            .setMediaSourceFactory(sourceFactory)
             .setAudioAttributes(AudioAttributes.DEFAULT, /* handleAudioFocus = */ true)
             .setHandleAudioBecomingNoisy(true)
             .setSeekBackIncrementMs(seekBackMs)
             .setSeekForwardIncrementMs(seekForwardMs)
             .build()
         built.addListener(listener)
-        built.volume = if (muted) 0f else 1f
+        built.volume = if (muted) 0f else volumePercent / VOLUME_PERCENT
         built.playbackParameters = built.playbackParameters.withSpeed(speedPercent / 100f)
         player = built
         attachedView?.let { view ->
@@ -189,6 +234,12 @@ class Media3PlayerController(
     // ---------------------------------------------------------------- media
 
     override suspend fun open(target: MediaTarget) {
+        if (externalAudioTargetUri != null && externalAudioTargetUri != target.uri) {
+            externalAudioUri = null
+            externalAudioName = null
+            externalAudioTargetUri = null
+            _state.value = _state.value.copy(externalAudioName = null)
+        }
         pendingTarget = target
         pendingPlaylist = listOf(target)
         pendingIndex = 0
@@ -197,6 +248,11 @@ class Media3PlayerController(
 
     override suspend fun setPlaylist(targets: List<MediaTarget>, startIndex: Int) {
         require(targets.isNotEmpty()) { "a playlist needs at least one item" }
+        if (externalAudioTargetUri != null && targets.none { it.uri == externalAudioTargetUri }) {
+            externalAudioUri = null
+            externalAudioName = null
+            externalAudioTargetUri = null
+        }
         pendingPlaylist = targets
         pendingIndex = startIndex.coerceIn(0, targets.lastIndex)
         pendingTarget = targets[pendingIndex]
@@ -205,8 +261,22 @@ class Media3PlayerController(
 
     private fun applyPlaylist(startPositionMs: Long) {
         val exo = player ?: return
-        val items = pendingPlaylist.map { it.toMediaItem() }
-        exo.setMediaItems(items, pendingIndex, startPositionMs.coerceAtLeast(0L))
+        val factory = mediaSourceFactory ?: return
+        val sources = pendingPlaylist.map { target ->
+            val video = factory.createMediaSource(target.toMediaItem())
+            val audioUri = externalAudioUri.takeIf { externalAudioTargetUri == target.uri }
+            if (audioUri == null) {
+                video
+            } else {
+                val audioItem = MediaItem.Builder()
+                    .setUri(Uri.parse(audioUri))
+                    .setMediaId("external-audio:$audioUri")
+                    .setMediaMetadata(MediaMetadata.Builder().setTitle(externalAudioName.orEmpty()).build())
+                    .build()
+                MergingMediaSource(video, factory.createMediaSource(audioItem))
+            }
+        }
+        exo.setMediaSources(sources, pendingIndex, startPositionMs.coerceAtLeast(0L))
         exo.prepare()
         _state.value = _state.value.copy(
             target = pendingTarget,
@@ -217,6 +287,7 @@ class Media3PlayerController(
             durationMs = 0L,
             bufferedMs = 0L,
             isEnded = false,
+            externalAudioName = externalAudioName.takeIf { externalAudioTargetUri == pendingTarget?.uri },
         )
         publishTracks(exo)
     }
@@ -274,12 +345,7 @@ class Media3PlayerController(
 
     override fun playNext() {
         val exo = player ?: return
-        if (exo.hasNextMediaItem()) {
-            exo.seekToNextMediaItem()
-            pendingIndex = exo.currentMediaItemIndex
-            _state.value = _state.value.copy(playlistIndex = pendingIndex, target = pendingPlaylist.getOrNull(pendingIndex))
-            flushPositionNow()
-        }
+        if (exo.hasNextMediaItem()) exo.seekToNextMediaItem()
     }
 
     override fun playPrevious() {
@@ -289,11 +355,7 @@ class Media3PlayerController(
             exo.seekTo(0L)
             return
         }
-        if (exo.hasPreviousMediaItem()) {
-            exo.seekToPreviousMediaItem()
-            pendingIndex = exo.currentMediaItemIndex
-            _state.value = _state.value.copy(playlistIndex = pendingIndex, target = pendingPlaylist.getOrNull(pendingIndex))
-        }
+        if (exo.hasPreviousMediaItem()) exo.seekToPreviousMediaItem()
     }
 
     override fun setRepeat(repeat: PlaylistRepeat) {
@@ -348,6 +410,10 @@ class Media3PlayerController(
     }
 
     override fun selectTrack(ref: TrackRef) {
+        if (ref.type == PlayerTrackType.TEXT) {
+            setSelectedTextTracks(listOf(ref))
+            return
+        }
         val exo = player ?: return
         val group = exo.currentTracks.groups.getOrNull(ref.groupId) ?: return
         exo.trackSelectionParameters = exo.trackSelectionParameters.buildUpon()
@@ -356,10 +422,31 @@ class Media3PlayerController(
         publishTracks(exo)
     }
 
+    override fun setSelectedTextTracks(refs: List<TrackRef>) {
+        val exo = player ?: return
+        val builder = exo.trackSelectionParameters.buildUpon()
+            .clearOverridesOfType(C.TRACK_TYPE_TEXT)
+            .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, refs.isEmpty())
+        refs.filter { it.type == PlayerTrackType.TEXT }
+            .groupBy { it.groupId }
+            .forEach { (groupId, selected) ->
+                val group = exo.currentTracks.groups.getOrNull(groupId) ?: return@forEach
+                if (group.type != C.TRACK_TYPE_TEXT) return@forEach
+                val indexes = selected.map { it.trackIndex }.distinct().filter { it in 0 until group.length }
+                if (indexes.isNotEmpty()) {
+                    builder.addOverride(TrackSelectionOverride(group.getMediaTrackGroup(), indexes))
+                }
+            }
+        exo.trackSelectionParameters = builder.build()
+        publishTracks(exo)
+    }
+
     override fun clearTrackOverride(type: PlayerTrackType) {
         val exo = player ?: return
+        val mediaType = trackTypeOf(type)
         exo.trackSelectionParameters = exo.trackSelectionParameters.buildUpon()
-            .clearOverridesOfType(trackTypeOf(type))
+            .clearOverridesOfType(mediaType)
+            .setTrackTypeDisabled(mediaType, false)
             .build()
         publishTracks(exo)
     }
@@ -378,7 +465,34 @@ class Media3PlayerController(
 
     override fun setMuted(muted: Boolean) {
         this.muted = muted
-        player?.volume = if (muted) 0f else 1f
+        if (!muted && volumePercent == 0) volumePercent = lastNonZeroVolumePercent
+        player?.volume = if (muted) 0f else volumePercent / VOLUME_PERCENT
+        _state.value = _state.value.copy(volumePercent = volumePercent, isMuted = muted)
+    }
+
+    override fun setExternalAudioTrack(uri: String?, displayName: String?) {
+        val targetUri = _state.value.target?.uri ?: return
+        val exo = player ?: return
+        val position = exo.currentPosition.coerceAtLeast(0L)
+        val wasPlaying = exo.isPlaying
+        externalAudioUri = uri
+        externalAudioName = if (uri == null) null else displayName?.takeIf { it.isNotBlank() } ?: uri.substringAfterLast('/')
+        externalAudioTargetUri = if (uri == null) null else targetUri
+        _state.value = _state.value.copy(externalAudioName = externalAudioName)
+        applyPlaylist(position)
+        if (wasPlaying) player?.playWhenReady = true
+    }
+
+    override fun setVolume(percent: Int) {
+        volumePercent = percent.coerceIn(0, VOLUME_PERCENT_INT)
+        if (volumePercent > 0) {
+            lastNonZeroVolumePercent = volumePercent
+            muted = false
+        } else {
+            muted = true
+        }
+        player?.volume = if (muted) 0f else volumePercent / VOLUME_PERCENT
+        _state.value = _state.value.copy(volumePercent = volumePercent, isMuted = muted)
     }
 
     // ---------------------------------------------------------------- internals
@@ -417,6 +531,8 @@ class Media3PlayerController(
             bufferedMs = exo.bufferedPosition.coerceAtLeast(0L),
             isLive = exo.isCurrentMediaItemLive,
             speedPercent = (exo.playbackParameters.speed * 100).toInt(),
+            volumePercent = volumePercent,
+            isMuted = muted || volumePercent == 0,
             repeat = when (exo.repeatMode) {
                 Player.REPEAT_MODE_ONE -> PlaylistRepeat.ONE
                 Player.REPEAT_MODE_ALL -> PlaylistRepeat.ALL
@@ -473,20 +589,28 @@ class Media3PlayerController(
         _events.tryEmit(PlayerEvent.TracksChanged(audio.size, text.size))
     }
 
+    private fun savePosition(uri: String, positionMs: Long) {
+        if (positionMs <= 0L) return
+        lastSavedPositionUri = uri
+        lastSavedPositionMs = positionMs
+        scope.launch { positionSink?.save(uri, positionMs) }
+    }
+
     private fun flushPositionNow() {
         val exo = player ?: return
-        val position = exo.currentPosition
-        if (position <= 0) return
-        lastSavedPositionMs = position
         val uri = _state.value.target?.uri ?: return
-        scope.launch { positionSink?.save(uri, position) }
+        savePosition(uri, exo.currentPosition.coerceAtLeast(0L))
     }
 
     override suspend fun flushPosition() {
         val exo = player ?: return
         val uri = _state.value.target?.uri ?: return
         val position = exo.currentPosition.coerceAtLeast(0L)
-        if (position > 0 && position != lastSavedPositionMs) positionSink?.save(uri, position)
+        if (position > 0 && (uri != lastSavedPositionUri || position != lastSavedPositionMs)) {
+            positionSink?.save(uri, position)
+            lastSavedPositionUri = uri
+            lastSavedPositionMs = position
+        }
     }
 
     override fun release() {
@@ -507,6 +631,8 @@ class Media3PlayerController(
         const val PROGRESS_TICK_MS = 120L
         const val MIN_SPEED_PERCENT = 25
         const val MAX_SPEED_PERCENT = 400
+        const val VOLUME_PERCENT = 100f
+        const val VOLUME_PERCENT_INT = 100
         const val USER_AGENT = "SubLearn/1.0 (+https://github.com/animalrender/SubLearn) Media3"
     }
 }

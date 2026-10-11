@@ -26,7 +26,7 @@ class OpenDocumentContract(private val mimeTypes: Array<String> = arrayOf("*/*")
             addCategory(Intent.CATEGORY_OPENABLE)
             type = input.firstOrNull() ?: "*/*"
             if (input.size > 1) putExtra(Intent.EXTRA_MIME_TYPES, input)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
         }
 
     override fun parseResult(resultCode: Int, intent: Intent?): PickedFile? {
@@ -35,13 +35,25 @@ class OpenDocumentContract(private val mimeTypes: Array<String> = arrayOf("*/*")
     }
 
     private fun displayName(uri: Uri): String? = uri.lastPathSegment?.substringAfterLast('/')
+
+    companion object {
+        /** Persist the document grant before its URI is remembered for the next player session. */
+        fun persistReadPermission(context: Context, uriValue: String) {
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    Uri.parse(uriValue),
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                )
+            }
+        }
+    }
 }
 
 /** A whole folder, so subtitles next to a video can be found automatically (SUB-2). */
 class OpenTreeContract : ActivityResultContract<Unit, String?>() {
     override fun createIntent(context: Context, input: Unit): Intent =
         Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
         }
 
     /**

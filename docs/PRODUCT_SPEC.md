@@ -2,8 +2,9 @@
 
 The English, ID-numbered copy of the requirements the project was commissioned with, kept verbatim in
 meaning so that `docs/CHECKLIST.md` can point at an ID for every claim of completion. Scope words:
-**NOW** = real, implemented, tested and polished in the shipped paths. **LATER** = designed for (module,
-interface, stub, flag, disabled entry) but not implemented.
+**NOW** = required shipped scope; this label alone does not claim implementation or verification.
+**LATER** = designed for (module, interface, stub, flag, disabled entry) but not implemented. Check
+`docs/CHECKLIST.md` and `docs/KNOWN_ISSUES.md` for actual implementation and verification status.
 
 ## General
 
@@ -28,29 +29,47 @@ interface, stub, flag, disabled entry) but not implemented.
 
 ## Player (MX-Player-like; local files and URL/streams)
 
-- **PLY-1** Top bar without background: back + file title (left), audio, subtitle, decoder SW/HW/HW+,
-  More (…) with MX-like items including PiP. Quick Actions column under the top bar, top-left.
-- **PLY-2** All controls overlay the video, auto-hide after 3 s idle, single tap shows them.
-- **PLY-3** Center: play/pause + repeat-current-subtitle-block. Bottom: seekbar (buffer indicator,
-  elapsed left / total right); right under it previous / play-pause / next (subtitle blocks). Corners:
-  lock; Subtitle List View, playlist, aspect ratio and other MX-like modes.
+- **PLY-1** Top bar without a solid background: back + file title (left), More (…) with MX-like items
+  including PiP. Audio, subtitle and decoder actions remain quick actions rather than fixed controls.
+  Quick actions can be docked in the top toolbar,
+  one horizontally scrollable second toolbar row, the bottom playback row, or floated over/hidden.
+  The manager supports reordering and docking; expanded docked rows show labels, compact and floating
+  actions do not. Overflow cues reveal more actions without letting a row spill off-screen.
+- **PLY-2** Controls overlay the video and auto-hide after 3 s idle; a single tap shows them. Top and
+  bottom chrome, including the second toolbar, fade in/out through the reduce-motion-aware motion tokens.
+- **PLY-3** Keep the picture centre clear of transport buttons. Bottom: a thin seek line with buffer
+  progress and a small thumb; elapsed time at the left, total or remaining time at the right on the same
+  line (tap the right clock to toggle). Dragging previews the video frame and subtitles before release.
+  One distinct, horizontally scrollable action row below it contains play/pause, previous/next video,
+  previous/next subtitle cue and user-arranged playback actions. No transport controls float over the
+  centre unless the user explicitly docks/floats an action there. The lock remains at the edge.
 - **PLY-4** Gestures: left vertical swipe = brightness; right vertical = volume; horizontal = seek;
   double tap anywhere except buttons/subtitle text = pause (setting can switch it to seek); two-finger
   swipe up = playback speed shortcut. All remappable.
-- **PLY-5** Landscape/portrait + rotation lock.
+- **PLY-5** Manual portrait/landscape/reverse-landscape orientation and automatic full-sensor rotation.
 - **PLY-6** Subtitle List View (toggle in options): landscape = right-side panel (like YouTube
   comments); portrait = below the player; current-line highlight, auto-scroll, tap-to-seek, search.
   Long-press on its toggle = no-spoiler mode (upcoming blocks hidden).
 - **PLY-7** Two independent subtitle layers: Learning (primary) and Translation (secondary). Subtitle
-  options have one tab per layer; each layer accepts multiple tracks (SRT, embedded soft, external)
-  with MX-like options per layer.
+  management has a dedicated tab per layer. Every embedded soft-subtitle track appears in both tabs
+  with a checkbox, so multiple tracks may be assigned to either layer independently; each tab also
+  supports multiple external files, with per-source enable/remove controls and MX-like layer options.
+  Audio management stays in its own surface.
+- **PLY-8** Recent Videos must reopen through a valid persistent SAF read grant; a stale grant returns
+  the user to the picker instead of exposing Media3's opaque `ERROR_CODE_IO_UNSPECIFIED`. The previous/
+  next video transport navigates the readable recent-video queue.
+- **PLY-9** Audio remains separate from subtitle management: select embedded audio tracks, add/remove an
+  external audio file, set player volume, and mute/unmute independently of system volume.
+- **PLY-10** Player prompts/status messages, including missing AI/API setup prompts, use the app's
+  translucent turquoise surface with high-contrast dark text.
 
 ## Subtitle controls
 
 - **SUB-1** Two toggle buttons (learning, translation), in Quick Actions by default: tap = toggle
   visibility; hold = temporarily invert until release. Size, transparency and position configurable per
   button.
-- **SUB-2** Buttons are dockable: in a bar, free-floating, or disabled/hidden.
+- **SUB-2** Buttons are dockable in the top toolbar, the second toolbar row, or playback row; they may
+  also free-float over video or be disabled/hidden. Each docked row is a single horizontal scroll area.
 - **SUB-3** Quick action "Layout mode": adjust height/position of each layer separately. Subtitle text
   has no gestures except translation, so adjustment never conflicts.
 - **SUB-4** Tap on learning subtitle: 1 tap = translate word, 2 = line, 3 = block. While a translation
@@ -101,8 +120,9 @@ interface, stub, flag, disabled entry) but not implemented.
 
 ## Scope boundary
 
-NOW = everything above, fully implemented, real, tested, polished (UI and logic), with no demo data in
-shipped paths.
+NOW = the active product requirements above. Completion is only claimed when the corresponding
+checklist row and its CI/device verification are green; assigning an item to NOW is not evidence that
+it is already implemented or tested.
 
 LATER (do not implement; module + interface + `NotImplemented` stub + feature flag + disabled
 "Coming soon" entry + a section in [EXTENSION_POINTS.md](EXTENSION_POINTS.md)): YouTube section;

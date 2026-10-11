@@ -4,13 +4,39 @@ All notable changes to SubLearn are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses semantic versioning.
 Unreleased work lands on phase branches; `main` only ever contains merged, CI-green phases.
 
-[Unreleased]: https://github.com/animalrender/SubLearn/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/animalrender/SubLearn/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/animalrender/SubLearn/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/animalrender/SubLearn/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/animalrender/SubLearn/releases/tag/v0.1.0
 
 ## [Unreleased]
 
 Nothing yet.
+
+## [0.2.1] - 2026-10-11
+
+### Player
+
+- Changed: moved play/pause, previous/next video and subtitle-cue navigation into a distinct,
+  horizontally scrollable bottom transport row; the video centre is no longer covered by a control
+  cluster. The bottom seek line now places elapsed and total/remaining time on one row, makes the right
+  clock toggle total versus remaining, and previews seeks while dragging.
+- Added: top-toolbar, second-row and playback-row quick-action docks, a dock/ordering manager, expanded
+  labels, scroll cues, safer floating bounds, and reduce-motion-aware fades for the chrome.
+- Added: Learning/Translation subtitle tabs with per-track checkboxes, simultaneous external subtitle
+  files, enable/remove controls, a separate audio surface with embedded-track selection, external
+  audio-file merging, player volume and mute.
+- Fixed: persist SAF read grants for video/subtitle/audio documents; Recent Videos routes stale local
+  grants through the picker. Previous/next video actions use the accessible recent-video queue.
+- Changed: player status and layout prompts use a translucent turquoise surface and dark foreground;
+  sensor orientation now follows the full device sensor rather than landscape-only.
+
+### Settings, design and verification
+
+- Added: remaining-time preference and current-media subtitle association, plus EN/FA labels for the
+  new controls and surfaces (472 keys in each locale).
+- Bumped `versionName` to `0.2.1` (`versionCode` derives as `201`). Static repository checks pass;
+  Android compilation, tests, and the device pass are pending CI/hardware access.
 
 ## [0.2.0] - 2026-10-11
 

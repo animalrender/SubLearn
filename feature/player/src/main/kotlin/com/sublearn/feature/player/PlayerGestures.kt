@@ -72,10 +72,13 @@ internal class PlayerHitRegistry {
         subtitles.getOrPut(role) { SubtitleSurface() }.plate = coordinates
     }
 
-    fun putSubtitleText(role: TrackRole, coordinates: LayoutCoordinates, layout: TextLayoutResult?) {
+    fun putSubtitleText(role: TrackRole, lineKey: String, coordinates: LayoutCoordinates, layout: TextLayoutResult?) {
         val entry = subtitles.getOrPut(role) { SubtitleSurface() }
-        entry.text = coordinates
-        entry.layout = layout
+        entry.texts[lineKey] = SubtitleTextSurface(coordinates, layout)
+    }
+
+    fun forgetSubtitleText(role: TrackRole, lineKey: String) {
+        subtitles[role]?.texts?.remove(lineKey)
     }
 
     fun forgetSubtitle(role: TrackRole) {
@@ -96,14 +99,19 @@ internal class PlayerHitRegistry {
     fun subtitleAt(position: Offset): TrackRole? =
         subtitles.entries.firstOrNull { local(it.value.plate)?.contains(position) == true }?.key
 
-    /** The word under [position] in the layer's text, or null when the tap landed between words. */
-    fun wordAt(role: TrackRole, position: Offset): String? {
+    /** Source line and word under [position], if the tap landed on a rendered text line. */
+    fun subtitleTextAt(role: TrackRole, position: Offset): SubtitleTextHit? {
         val entry = subtitles[role] ?: return null
-        val bounds = local(entry.text) ?: return null
-        val layout = entry.layout ?: return null
-        if (!bounds.contains(position)) return null
-        val offset = layout.getOffsetForPosition(position - bounds.topLeft)
-        return layout.layoutInput.text.getStringAnnotations(SUBTITLE_WORD_TAG, offset, offset).firstOrNull()?.item
+        entry.texts.forEach { (key, text) ->
+            val bounds = local(text.coordinates) ?: return@forEach
+            val layout = text.layout ?: return@forEach
+            if (!bounds.contains(position)) return@forEach
+            val offset = layout.getOffsetForPosition(position - bounds.topLeft)
+            val word = layout.layoutInput.text.getStringAnnotations(SUBTITLE_WORD_TAG, offset, offset)
+                .firstOrNull()?.item
+            return SubtitleTextHit(key, word)
+        }
+        return null
     }
 
     private fun local(coordinates: LayoutCoordinates?): Rect? {
@@ -114,10 +122,13 @@ internal class PlayerHitRegistry {
 
     private class SubtitleSurface {
         var plate: LayoutCoordinates? = null
-        var text: LayoutCoordinates? = null
-        var layout: TextLayoutResult? = null
+        val texts = LinkedHashMap<String, SubtitleTextSurface>()
     }
 }
+
+internal data class SubtitleTextHit(val lineKey: String, val word: String?)
+
+private data class SubtitleTextSurface(val coordinates: LayoutCoordinates, val layout: TextLayoutResult?)
 
 /** Registers a chrome element as a region the surface must ignore. Removed when the element leaves. */
 @Composable
@@ -342,8 +353,8 @@ private suspend fun AwaitPointerEventScope.subtitleTaps(
         if (registry.subtitleAt(next.position) != role) break
         pointer = next
     }
-    val word = if (taps == 1) registry.wordAt(role, lastPosition) else null
-    viewModel.onSubtitleTap(role, taps, word)
+    val hit = if (taps == 1) registry.subtitleTextAt(role, lastPosition) else null
+    viewModel.onSubtitleTap(role, taps, hit?.word, hit?.lineKey)
 }
 
 /** Layout mode: the plate follows the finger in dp, and the position is persisted when the finger lifts. */

@@ -162,7 +162,9 @@ fun DictionaryPreference.labelRes(): Int = when (this) {
 }
 
 fun DockMode.labelRes(): Int = when (this) {
+    DockMode.TOP -> R.string.quick_dock_top
     DockMode.BAR -> R.string.settings_dock_bar
+    DockMode.PLAYBACK -> R.string.quick_dock_playback
     DockMode.FLOATING -> R.string.settings_dock_floating
     DockMode.HIDDEN -> R.string.settings_dock_hidden
 }

@@ -18,8 +18,13 @@ of the settings, string and font layers does not assume either: see [docs/ARCHIT
 
 ## What works today
 
-- **Local files and streams** through Media3 (ExoPlayer): seek, speed, PiP, playlist, audio and
-  embedded subtitle tracks, background-safe playback while you navigate the app.
+- **Local files and streams** through Media3 (ExoPlayer): seek, speed, PiP, readable recent-video
+  navigation, embedded subtitle tracks, and background-safe playback while you navigate the app.
+- **Player controls**: transparent top toolbar, a dockable single-row action rail, and bottom-only
+  transport; arrange actions across the top, second row, playback row or floating layer. Dragging the
+  seek line previews the video and subtitles before release, and orientation can follow the sensor.
+- **Separate audio management**: choose embedded audio, attach an external audio file, adjust player
+  volume and mute without changing the system volume.
 - **Two subtitle layers** (learning + translation), each accepting several SRT / WebVTT / ASS tracks,
   with per-layer delay, scale, transparency, anchor, stacking order and charset detection
   (UTF-8, UTF-16, Windows-1256 for Persian). A subtitle file named like the video is offered
@@ -82,7 +87,7 @@ system Gradle needed).
 
 Release builds use the debug key unless `SUBLEARN_KEYSTORE_PATH`, `SUBLEARN_KEYSTORE_PASSWORD`,
 `SUBLEARN_KEY_ALIAS` and `SUBLEARN_KEY_PASSWORD` are set in the environment. `versionCode` is derived
-from `versionName` (`0.2.0` → `200`), so a release only changes one number; `SUBLEARN_VERSION_CODE`
+from `versionName` (`0.2.1` → `201`), so a release only changes one number; `SUBLEARN_VERSION_CODE`
 overrides it.
 
 Publishing is automatic (`.github/workflows/auto-release.yml`, see `docs/DECISIONS.md` D-28): a

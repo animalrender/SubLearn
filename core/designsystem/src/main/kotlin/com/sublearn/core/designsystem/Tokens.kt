@@ -13,6 +13,9 @@ object Palette {
     const val SCRIM_PLAYER = 0xB3000000L
     const val BACKDROP = 0xCC101418L
     const val BACKDROP_STRONG = 0xF20D1116L
+    /** Translucent aqua reserved for actionable player prompts, with a dark foreground. */
+    const val PROMPT_TURQUOISE = 0xD966DCCBL
+    const val PROMPT_TEXT = 0xFF07211DL
     const val OUTLINE_SUBTITLE = 0xE6000000L
 
     const val DARK_SURFACE = 0xFF0C1014L
@@ -84,7 +87,7 @@ object Dimens {
     val inlineIcon = 18.dp
     val pillHeight = 32.dp
     val topBarHeight = 56.dp
-    val quickColumnTop = 64.dp
+    val secondActionRailTop = 64.dp
     val bottomChromeReserve = 128.dp
     val snackbarBottom = 148.dp
     val cardMaxWidth = 520.dp

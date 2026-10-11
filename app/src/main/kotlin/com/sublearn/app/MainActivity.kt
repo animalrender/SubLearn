@@ -39,9 +39,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        intent?.data?.let { uri ->
-            pendingIntent.value = StartupRequest(uri.toString(), uri.lastPathSegment?.substringAfterLast('/') ?: "video")
-        }
+        intent?.let(::startupRequest)?.let { pendingIntent.value = it }
         setContent {
             SubLearnApp(
                 settingsRepository = settingsRepository,
@@ -57,9 +55,23 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        intent.data?.let { uri ->
-            pendingIntent.value = StartupRequest(uri.toString(), uri.lastPathSegment?.substringAfterLast('/') ?: "video")
+        startupRequest(intent)?.let { pendingIntent.value = it }
+    }
+
+
+    private fun startupRequest(intent: android.content.Intent): StartupRequest? {
+        val uri = intent.data
+            ?: intent.getParcelableExtra<android.net.Uri>(android.content.Intent.EXTRA_STREAM)
+            ?: intent.clipData?.getItemAt(0)?.uri
+            ?: return null
+        if (intent.flags and android.content.Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION != 0 &&
+            intent.flags and android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION != 0
+        ) {
+            runCatching {
+                contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
         }
+        return StartupRequest(uri.toString(), uri.lastPathSegment?.substringAfterLast('/') ?: "video")
     }
 
     override fun onUserLeaveHint() {

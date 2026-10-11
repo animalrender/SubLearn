@@ -11,7 +11,9 @@ TODO comment; each entry has a route to being fixed.
    a kotlinc 2.0.21 harness during the 2026-10-09 review (122 tests, 1 skipped); everything that touches
    `android.*`, Media3, Room or Compose was reviewed by hand and compiled by CI. The CI job publishes
    the first Gradle errors as the "Gradle failure report" check run (`tools/ci_failure_report.py`) so
-   an agent that cannot download logs can read them through the API. The first green CI run is
+   an agent that cannot download logs can read them through the API. The current
+   `arena/96924659-sublearn` player pass has static-check results only; its Android compile and tests
+   are pending. The first green CI run is
    37854997366 on `arena/956a666c-sublearn` (2026-10-09); review that commit range carefully, that
    is where mechanical mistakes live.
 2. **The four static checkers are not a type checker.** `tools/check_sources.py` (brace balance, 140
@@ -72,12 +74,11 @@ TODO comment; each entry has a route to being fixed.
 16. **The About section's "feedback" row is a no-op.** There is no destination yet, so the row does
     nothing. Floating quick actions drag since the 2026-10-10 rebuild (`detectDragGestures` writes the
     stored fractions). Route: a feedback URL once one exists.
-17. **One file per layer (PLY-7 is partial).** A layer shows either one subtitle file or the player's
-    embedded track; loading a second file into the same layer replaces the first. The remembered
-    `externalFileKeys` belong to the video that is currently open: they are cleared when another video
-    opens, and a file added under Settings → Subtitles is loaded when the player comes back to the same
-    video (or by Subtitle tools → Apply). Route: a per-video subtitle table in Room keyed by the
-    media URI, then real stacking order inside a layer.
+17. **Subtitle selections are remembered for only the most recently opened video.** The current layer
+    settings support several external files and embedded-track assignments, and opening a different
+    video clears the prior video's references to avoid applying unrelated track indices. There is not
+    yet a Room table keyed by media URI, so returning later to an older video does not restore its own
+    set. Route: move per-media source assignments into a Room table keyed by the media URI.
 18. **ML Kit model download progress is coarse.** `RemoteModelManager.download` only reports
     start/success/failure, so the Settings → Translation row shows an indeterminate bar while the
     model downloads. Route: none in the public ML Kit API; revisit if a progress callback appears.
@@ -85,10 +86,20 @@ TODO comment; each entry has a route to being fixed.
     auto-repeat count once. The chrome button has no release callback, so the setting is not
     temporarily inverted as SHD-2 describes. Route: a release callback on `ChromeIconButton`, and a
     ViewModel pair `beginRepeatHold` and `endRepeatHold`.
-20. **The playlist sheet is read-only.** It shows the entries and the repeat mode, but tapping an entry
-    does not jump to it, because `PlayerController` has no call to play an index. Route:
-    `PlayerController.playIndex(index)` in `core:player`, and a row tap in `Sheets.kt`.
+20. **The playlist sheet is read-only.** The player now builds a bounded queue from readable recent
+    videos, so previous/next transport works, but tapping a playlist row does not jump to it because
+    `PlayerController` has no `playIndex(index)`. Route: add that interface method and row selection in
+    `Sheets.kt`.
 21. **The rebuilt player has not run on a device or an emulator.** Picture-in-picture, rotation, the
     immersive bars and word hit testing on real glyph layouts were reviewed by hand and by the static
-    checkers. Route: the manual checklist in the 2026-10-10 entry of PROGRESS.md, and the
-    `PlayerPopupsSmokeTest` run on a device.
+    checkers. Route: the 2026-10-11 checklist in PROGRESS.md and `PlayerPopupsSmokeTest` on a device.
+22. **Media3 cannot identify the originating soft track for every live cue.** `CueGroup` returns text
+    cues without a track reference. When exactly one track is selected or active-cue count matches the
+    selected soft-track count, the controller associates them by order; otherwise cues stay untagged and
+    are shown in each layer assigned an embedded track. Independent embedded assignment is therefore
+    only best-effort for ambiguous multi-track subtitles (PLY-7). Route: find a Media3 renderer callback
+    with stable source metadata or parse/expose per-track cues without leaking the built-in subtitle view.
+23. **External audio merging has not been exercised on device.** `MergingMediaSource` is used to combine
+    an external audio source with its selected video; it is intentionally attached only to that video.
+    Different stream lengths, provider MIME metadata and unusual codec containers may need device-level
+    handling. Route: exercise common MP3/AAC/FLAC + video pairs after CI, then document unsupported formats.

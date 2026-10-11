@@ -38,7 +38,10 @@ enum class PlayerTrackType {
 }
 
 /** Identifies one track inside the current media item. */
-data class TrackRef(val groupId: Int, val trackIndex: Int, val type: PlayerTrackType)
+data class TrackRef(val groupId: Int, val trackIndex: Int, val type: PlayerTrackType) {
+    /** A stable settings key that avoids collisions between Media3 track groups. */
+    val stableKey: String get() = "${type.name}:$groupId:$trackIndex"
+}
 
 data class TrackInfo(
     val ref: TrackRef,
@@ -53,7 +56,12 @@ data class TrackInfo(
 }
 
 /** Cues the player renders for an embedded track; SubLearn shows them in its own layers. */
-data class EmbeddedCue(val text: String, val isFromPlayer: Boolean = true)
+data class EmbeddedCue(
+    val text: String,
+    val isFromPlayer: Boolean = true,
+    /** Best-effort source when Media3 reports one live cue per selected soft track. */
+    val trackRef: TrackRef? = null,
+)
 
 /** Repeat behaviour of the playlist, mirroring Media3 so the UI can stay declarative. */
 enum class PlaylistRepeat { OFF, ONE, ALL }
@@ -81,6 +89,10 @@ data class PlaybackState(
     val audioTracks: List<TrackInfo> = emptyList(),
     val textTracks: List<TrackInfo> = emptyList(),
     val audioSessionId: Int = 0,
+    val volumePercent: Int = 100,
+    val isMuted: Boolean = false,
+    /** Display name of the external audio file merged into the current video, if any. */
+    val externalAudioName: String? = null,
     val repeat: PlaylistRepeat = PlaylistRepeat.OFF,
     val error: String? = null,
     val isEnded: Boolean = false,
