@@ -22,9 +22,9 @@ object PatternCompiler {
         return tokens.mapNotNull { token ->
             when {
                 token.isBlank() -> null
-                token == "POSS" -> PatternElement.Possessive
-                token == "REFL" -> PatternElement.Reflexive
-                token == "{NP}" -> PatternElement.NounPhrase
+                token == "poss" -> PatternElement.Possessive
+                token == "refl" -> PatternElement.Reflexive
+                token == "{np}" -> PatternElement.NounPhrase
                 token == "be" || token == "am" || token == "is" || token == "are" ||
                     token == "was" || token == "were" || token == "been" -> PatternElement.BeVerb
                 else -> PatternElement.Literal(token)

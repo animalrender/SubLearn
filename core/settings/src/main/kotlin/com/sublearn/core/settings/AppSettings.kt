@@ -405,8 +405,6 @@ data class LanguageSettings(
     val followSystemLocale: Boolean = true,
 )
 
-/** Root of the typed settings tree. Bump [schemaVersion] whenever a migration is needed. */
-@Serializable
 /** Smart learning settings: phrase detection, accuracy profiles, and analysis control (MWE-*). */
 @Serializable
 data class SmartLearningSettings(
@@ -431,6 +429,8 @@ enum class AccuracyProfileToken {
     CUSTOM,
 }
 
+/** Root of the typed settings tree. Bump [schemaVersion] whenever a migration is needed. */
+@Serializable
 data class AppSettings(
     val schemaVersion: Int = SCHEMA_VERSION,
     val appearance: AppearanceSettings = AppearanceSettings(),
