@@ -322,6 +322,7 @@ private fun FloatingAction(
     val spec = ui.settings.quickActions.spec(id)
     val density = LocalDensity.current.density
     val shown = Offset(spec.xFraction, spec.yFraction)
+    var menuOpen by remember(id) { mutableStateOf(false) }
     val currentMove by rememberUpdatedState(onMove)
     val arrange = ui.layoutMode
     val menuSlop = with(LocalDensity.current) { Dimens.touchTarget.toPx() } * MENU_SLOP_SHARE
