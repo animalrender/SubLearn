@@ -41,7 +41,7 @@ enum class QuickActionId(val key: String) {
     PICTURE_IN_PICTURE("pip"),
     SHARE("share"),
     SETTINGS("settings"),
-    TOGGLE_MUTE("toggle_mute"),
+    TOGGLE_MUTE("toggle_mute");
 
     companion object {
         fun fromKey(key: String): QuickActionId? = entries.firstOrNull { it.key == key }
