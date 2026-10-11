@@ -85,7 +85,7 @@ the AI providers read them only at request time through `SecretStore`.
 
 **D-15 — String resources live only in `core:designsystem` (EN + FA).** A feature adding a string in
 its own module would be invisible to the other features and to the RTL audit; the single owner keeps
-`values-fa` provably in sync (446 keys each, checked by `tools/check_resources.py`).
+`values-fa` provably in sync (483 keys each, checked by `tools/check_resources.py`).
 
 **D-16 — Enum labels are exhaustive `when` in `feature/settings/Labels.kt`, no `else`.** Adding a
 `GestureAction` entry must break the build until it has a name; a silent default would ship an
