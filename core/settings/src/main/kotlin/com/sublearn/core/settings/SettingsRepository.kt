@@ -248,9 +248,10 @@ object Sections {
     const val WORD_STYLES = "wordStyles"
     const val LANGUAGES = "languages"
     const val ABOUT = "about"
+    const val SMART_LEARNING = "smartLearning"
     val ALL = listOf(
         APPEARANCE, LANGUAGES, PLAYER, SUBTITLES, FONTS, QUICK_ACTIONS, GESTURES, SHADOWING,
-        LEARNING, WORD_STYLES, AI, TRANSLATION, DICTIONARY, LEVEL, ABOUT,
+        LEARNING, WORD_STYLES, AI, TRANSLATION, DICTIONARY, LEVEL, ABOUT, SMART_LEARNING,
     )
 }
 
@@ -283,6 +284,7 @@ private fun mergeSections(current: AppSettings, incoming: AppSettings, present: 
         translation = pick(Sections.TRANSLATION, incoming.translation, current.translation),
         dictionary = pick(Sections.DICTIONARY, incoming.dictionary, current.dictionary),
         level = pick(Sections.LEVEL, incoming.level, current.level),
+        smartLearning = pick(Sections.SMART_LEARNING, incoming.smartLearning, current.smartLearning),
     )
 }
 

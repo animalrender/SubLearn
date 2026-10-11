@@ -1,0 +1,190 @@
+{
+  "version": 1,
+  "updatedAt": "2026-10-11T00:00:00Z",
+  "entries": [
+    {
+      "id": "lexicon-en-fa-v2",
+      "kind": "LEXICON",
+      "nameEn": "English-Persian Lexicon",
+      "nameFa": "لغت‌نامه انگلیسی-فارسی",
+      "version": "2.0.0",
+      "sizeBytes": 0,
+      "sha256": null,
+      "license": {
+        "spdx": "Proprietary",
+        "url": "",
+        "requiresAcceptance": false
+      },
+      "source": {
+        "host": "github.com",
+        "url": ""
+      },
+      "runtime": "NONE",
+      "minRamMb": 0,
+      "profile": "BASIC",
+      "verified": false,
+      "notes": "Awaiting owner to provide hosting URL (REQ-10). Import from file only until then."
+    },
+    {
+      "id": "pos-opennlp-ud",
+      "kind": "POS_TAGGER",
+      "nameEn": "POS Tagger (OpenNLP/UD)",
+      "nameFa": "برچسب‌زن نقش دستوری",
+      "version": "1.0.0",
+      "sizeBytes": 10000000,
+      "sha256": null,
+      "license": {
+        "spdx": "Apache-2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0",
+        "requiresAcceptance": false
+      },
+      "source": {
+        "host": "opennlp.sourceforge.net",
+        "url": ""
+      },
+      "runtime": "NONE",
+      "minRamMb": 64,
+      "profile": "LIGHT",
+      "verified": false,
+      "notes": "Awaiting verification of exact model file and URL (REQ-12)."
+    },
+    {
+      "id": "emb-potion-base-8m",
+      "kind": "EMBEDDER_STATIC",
+      "nameEn": "Static Embeddings (Potion 8M)",
+      "nameFa": "وکتور کلمه ایستا",
+      "version": "1.0.0",
+      "sizeBytes": 30000000,
+      "sha256": null,
+      "license": {
+        "spdx": "MIT",
+        "url": "https://opensource.org/licenses/MIT",
+        "requiresAcceptance": false
+      },
+      "source": {
+        "host": "huggingface.co",
+        "url": "https://huggingface.co/minishlab/potion-base-8M"
+      },
+      "runtime": "NONE",
+      "minRamMb": 128,
+      "profile": "BALANCED",
+      "verified": false,
+      "notes": "Awaiting verification (REQ-12)."
+    },
+    {
+      "id": "emb-minilm-l6-int8",
+      "kind": "EMBEDDER_ONNX",
+      "nameEn": "Sentence Embeddings (MiniLM INT8)",
+      "nameFa": "وکتور جمله کوچک",
+      "version": "1.0.0",
+      "sizeBytes": 25000000,
+      "sha256": null,
+      "license": {
+        "spdx": "Apache-2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0",
+        "requiresAcceptance": false
+      },
+      "source": {
+        "host": "huggingface.co",
+        "url": ""
+      },
+      "runtime": "ONNX",
+      "minRamMb": 256,
+      "profile": "PRECISE",
+      "verified": false,
+      "notes": "Awaiting verification of quantized ONNX file (REQ-12)."
+    },
+    {
+      "id": "wsd-distilbert-int8",
+      "kind": "WSD_ONNX",
+      "nameEn": "Context Embeddings (DistilBERT INT8)",
+      "nameFa": "وکتور متنی دقیق",
+      "version": "1.0.0",
+      "sizeBytes": 65000000,
+      "sha256": null,
+      "license": {
+        "spdx": "Apache-2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0",
+        "requiresAcceptance": false
+      },
+      "source": {
+        "host": "huggingface.co",
+        "url": ""
+      },
+      "runtime": "ONNX",
+      "minRamMb": 512,
+      "profile": "ADVANCED",
+      "verified": false,
+      "notes": "Awaiting verification (REQ-12)."
+    },
+    {
+      "id": "llm-smollm2-360m",
+      "kind": "LLM",
+      "nameEn": "Small LLM (SmolLM2 360M)",
+      "nameFa": "مدل زبانی کوچک",
+      "version": "1.0.0",
+      "sizeBytes": 360000000,
+      "sha256": null,
+      "license": {
+        "spdx": "Apache-2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0",
+        "requiresAcceptance": false
+      },
+      "source": {
+        "host": "huggingface.co",
+        "url": ""
+      },
+      "runtime": "LITERT",
+      "minRamMb": 1024,
+      "profile": "SMART",
+      "verified": false,
+      "notes": "Awaiting runtime compatibility verification (REQ-12). Experimental."
+    },
+    {
+      "id": "llm-qwen25-05b",
+      "kind": "LLM",
+      "nameEn": "Small LLM (Qwen2.5 0.5B)",
+      "nameFa": "مدل زبانی کوچک (کیوان)",
+      "version": "1.0.0",
+      "sizeBytes": 500000000,
+      "sha256": null,
+      "license": {
+        "spdx": "Apache-2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0",
+        "requiresAcceptance": false
+      },
+      "source": {
+        "host": "huggingface.co",
+        "url": ""
+      },
+      "runtime": "LITERT",
+      "minRamMb": 1536,
+      "profile": "SMART",
+      "verified": false,
+      "notes": "Awaiting runtime compatibility verification (REQ-12). Experimental."
+    },
+    {
+      "id": "llm-gemma3-270m",
+      "kind": "LLM",
+      "nameEn": "Small LLM (Gemma 3 270M)",
+      "nameFa": "مدل زبانی کوچک (جمّا)",
+      "version": "1.0.0",
+      "sizeBytes": 270000000,
+      "sha256": null,
+      "license": {
+        "spdx": "Gemma",
+        "url": "https://ai.google.dev/gemma/terms",
+        "requiresAcceptance": true
+      },
+      "source": {
+        "host": "huggingface.co",
+        "url": ""
+      },
+      "runtime": "LITERT",
+      "minRamMb": 1024,
+      "profile": "SMART",
+      "verified": false,
+      "notes": "Requires explicit Gemma terms acceptance. Awaiting verification (REQ-12). Experimental."
+    }
+  ]
+}

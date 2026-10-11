@@ -85,7 +85,11 @@ core:player         PlayerController interface + Media3 impl + FakePlayerControl
 core:translate      ML Kit wrapper, model download state, cache
 core:ai             AiProvider interface (Gemini/OpenAI/Anthropic/custom), prompt builder, answer parser
 core:security       Keystore-backed SecretStore
-core:lexicon        WordLevelSource, FrequencyListImporter
+core:lexicon        WordLevelSource, FrequencyListImporter, LexiconV2 types
+core:nlp            pure Kotlin: PhraseSpan, Lemmatiser, PatternCompiler, PhraseDetector, SenseRanker
+core:models         ModelCatalog, ModelKind, download/verify interfaces
+core:nlp-onnx       ONNX Runtime wrapper, WordPiece tokenizer (Android)
+core:nlp-llm        LLM adapter for on-device selection (Android)
 core:data           Room database: My Words, recent videos, translation cache
 feature:*           Compose screens + view models; a feature never depends on another feature
 ```

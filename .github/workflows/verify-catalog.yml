@@ -1,0 +1,61 @@
+name: Verify Model Catalog
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify catalog entries against source hosts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: '3.12'
+
+      - name: Run catalog verification
+        run: |
+          python3 tools/verify_catalog.py \
+            --catalog docs/catalog/catalog-v1.json \
+            --output-dir verification-output
+
+      - name: Upload verification report
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: catalog-verification-report
+          path: |
+            verification-output/catalog_verification_report.json
+            verification-output/catalog-v1.verified.json
+          retention-days: 30
+
+      - name: Summary
+        run: |
+          echo "## Catalog Verification Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          python3 -c "
+          import json
+          with open('verification-output/catalog_verification_report.json') as f:
+              r = json.load(f)
+          print(f'| Metric | Value |')
+          print(f'| --- | --- |')
+          print(f'| Total entries | {r[\"total_entries\"]} |')
+          print(f'| Verified | {r[\"verified\"]} |')
+          print(f'| Unverified | {r[\"unverified\"]} |')
+          print()
+          print('### Per-entry results')
+          print('| ID | Kind | Verified | Status |')
+          print('| --- | --- | --- | --- |')
+          for item in r['results']:
+              mark = '✅' if item['verified'] else '❌'
+              print(f'| {item[\"id\"]} | {item[\"kind\"]} | {mark} | {item[\"status\"]} |')
+          " >> "$GITHUB_STEP_SUMMARY"

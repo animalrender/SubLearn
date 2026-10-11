@@ -48,36 +48,95 @@ format may be reproduced here — the importer below defines *our own* format.
 3. UI: Settings → Dictionary gains "Import a dictionary file" (already scaffolded through
    `OpenDocumentContract`), showing entry count, language pair, and a "remove import" action.
 
-**Documented import schema (v1, ours)** — a single table, case-insensitive `key`, no foreign keys:
+**Documented import schema (v2, ours)** — normalised tables with separate entries for words and
+multi-word expressions. The v1 single-table format is also accepted for backward compatibility.
 
 ```sql
-CREATE TABLE entry (
-  id INTEGER PRIMARY KEY,
-  key TEXT NOT NULL,            -- headword, lower-case, no trailing punctuation
-  headword TEXT NOT NULL,
-  pos TEXT,                     -- noun / verb / … (used by the card grouping, optional)
-  sense TEXT NOT NULL,          -- one meaning, already human readable
-  example TEXT,                 -- optional usage sentence
-  synonyms TEXT,                -- ' | ' separated
-  antonyms TEXT,                -- ' | ' separated
-  phrasal TEXT,                 -- ' | ' separated
-  collocations TEXT,            -- ' | ' separated
-  idioms TEXT,                  -- ' | ' separated
-  word_family TEXT,             -- ' | ' separated
-  cefr TEXT,                    -- A1|A2|B1|B2|C1|C2 or NULL
-  categories TEXT,              -- ' | ' separated topic labels
-  us_ipa TEXT,
-  uk_ipa TEXT,
-  lang TEXT NOT NULL            -- BCP-47 of the *definition* language
+-- Metadata
+CREATE TABLE meta (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
 );
-CREATE INDEX entry_key ON entry (key);
-CREATE VIRTUAL TABLE entry_fts USING fts4(key, synonyms, idioms, content=entry);
+-- Required keys: format_version, source_lang, gloss_lang, entry_count, built_at, builder_version
+
+-- Inflected form → lemma mapping (went → go, gave → give)
+CREATE TABLE lemma_form (
+  form TEXT NOT NULL,
+  lemma TEXT NOT NULL,
+  pos TEXT,
+  PRIMARY KEY (form, pos)
+);
+CREATE INDEX idx_lemma_form ON lemma_form(form);
+
+-- Main entry: word, phrasal verb, idiom or collocation
+CREATE TABLE entry (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  key TEXT NOT NULL,            -- lookup key, lower-case, no trailing punctuation
+  headword TEXT NOT NULL,       -- display form
+  kind TEXT NOT NULL CHECK (kind IN ('WORD', 'PHRASAL', 'IDIOM', 'COLLOCATION')),
+  pos TEXT,                     -- normalised POS tag (NOUN, VERB, ADJ, ...)
+  cefr TEXT,                    -- A1|A2|B1|B2|C1|C2 or NULL
+  register TEXT                 -- formal/informal/slang or NULL
+);
+CREATE INDEX idx_entry_key ON entry(key);
+
+-- One row per meaning/sense
+CREATE TABLE sense (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  entry_id INTEGER NOT NULL REFERENCES entry(id),
+  position INTEGER NOT NULL DEFAULT 0,
+  pos TEXT,
+  gloss_fa TEXT,                -- Persian meaning
+  gloss_en TEXT,                -- English gloss (optional)
+  domain TEXT,                  -- medical/legal/... (optional)
+  register TEXT,
+  is_primary INTEGER NOT NULL DEFAULT 1
+);
+CREATE INDEX idx_sense_entry ON sense(entry_id);
+
+-- Example sentences
+CREATE TABLE example (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  sense_id INTEGER NOT NULL REFERENCES sense(id),
+  en TEXT,
+  fa TEXT
+);
+
+-- Pattern for multi-word matching
+CREATE TABLE pattern (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  entry_id INTEGER NOT NULL REFERENCES entry(id),
+  pattern TEXT NOT NULL,        -- e.g. "POSS mind BE made up" or "get off"
+  anchor_lemma TEXT NOT NULL,   -- rarest content word for indexing
+  separable INTEGER NOT NULL DEFAULT 0,
+  min_tokens INTEGER NOT NULL DEFAULT 2,
+  max_tokens INTEGER NOT NULL DEFAULT 8
+);
+CREATE INDEX idx_pattern_anchor ON pattern(anchor_lemma);
+CREATE INDEX idx_pattern_entry ON pattern(entry_id);
+
+-- Relations: synonym, antonym, word family
+CREATE TABLE relation (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  entry_id INTEGER NOT NULL REFERENCES entry(id),
+  kind TEXT NOT NULL CHECK (kind IN ('SYNONYM', 'ANTONYM', 'WORD_FAMILY')),
+  target TEXT NOT NULL
+);
+CREATE INDEX idx_relation_entry ON relation(entry_id);
+
+-- Full-text search
+CREATE VIRTUAL TABLE entry_fts USING fts4(key, headword);
 ```
 
-One row per sense is required (senses group by `key` on read, in `id` order). The importer validates
-the header, rejects a file whose `lang` disagrees with `DictionarySettings`, reports the row count and
-any skipped rows as warnings, and never mutates the user's file. A CSV with the same column names is an
-accepted input format too, because that is what people can actually produce.
+One row per sense is required (senses group by `entry_id` on read, in `position` order). The importer
+validates the header and `format_version`, rejects a file whose `source_lang`/`gloss_lang` disagrees
+with `LanguageSettings`, reports the row count and any skipped rows as warnings, and never mutates
+the user's file. The v1 single-table format is also accepted (one row per sense, `key` is the
+headword); the importer detects v1 by the absence of the `meta` table and maps it to v2 internally.
+
+**Pattern syntax**: literal words are matched after lemmatisation. Special tokens: `POSS` (any
+possessive), `REFL` (any reflexive), `{NP}` (noun-phrase slot, 1-3 tokens). Parenthesized parts
+like `(or thin)` and `(all)` are optional.
 
 **Verification**: unit-test the importer against a fixture *generated by the test* (never a committed
 database), assert `lookup("reluctant")` returns one entry with its senses ordered, assert a corrupt file

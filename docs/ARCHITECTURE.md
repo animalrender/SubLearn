@@ -15,9 +15,12 @@ add something. The requirement IDs referenced here are in
                     └────────────┴───────┬──────────────┴────────────┘
                                          │  (api / implementation)
    core:common ← core:subtitles ← core:settings ← core:data ← core:lexicon
-        ↑              ↑                ↑             ↑
-   core:security   core:translate    core:ai     core:player
-                          └────────────┴───── core:designsystem
+        ↑              ↑                ↑             ↑            ↑
+   core:security   core:translate    core:ai     core:player   core:nlp (pure Kotlin)
+                          └────────────┴───── core:designsystem  ↑
+                                                     core:models ─┘
+                                                     core:nlp-onnx (Android, ONNX)
+                                                     core:nlp-llm  (Android, LLM)
 ```
 
 Rules that are enforced by review and by `tools/check_deps.py`:
