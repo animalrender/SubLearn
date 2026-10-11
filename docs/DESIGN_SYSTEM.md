@@ -16,8 +16,11 @@ size, duration or type scale; `tools/check_sources.py` plus review keep that hon
 | `xs / sm / md / lg / xl / xxl / huge` | 4 / 8 / 12 / 16 / 24 / 32 / 48 dp | spacing scale; `lg` is the default screen gutter |
 | `radiusSm / radiusMd / radiusLg / radiusPill` | 8 / 14 / 22 / 999 dp | cards use `radiusMd`, subtitle backdrop uses the per-font corner radius, chips use `radiusPill` |
 | `touchTarget` | 44 dp | every tappable thing is at least this; the 40 dp icon button sits inside a 44 dp hit box |
-| `iconButton / iconButtonLarge` | 40 / 52 dp | chrome vs. center play |
+| `iconButton / iconButtonLarge` | 40 / 52 dp | chrome and lock affordance |
 | `playerEdgeInset` | 12 dp | keeps chrome out of the system gesture areas |
+| `topBarHeight / secondActionRailTop / bottomChromeReserve` | 56 / 64 / 128 dp | reserves a stable slot for the top bar, second action rail and floating controls |
+| `seekbarTrack / seekbarThumb` | 4 / 14 dp | thin bottom timeline and thumb token |
+| `dockGap` | 4 dp | spacing in the one-line action rails |
 | `subtitleBottomSafe` | 24 dp | floor under the lowest subtitle layer |
 | `listPanelMinWidth` | 260 dp | the subtitle list never squeezes below this in landscape |
 | `cardElevation` | 6 dp | one elevation step for floating cards, `tonalElevation` rather than shadow |
@@ -26,6 +29,19 @@ size, duration or type scale; `tools/check_sources.py` plus review keep that hon
 `Palette` holds the raw ARGB constants (scrims, backdrops, dark/light surfaces) — they exist only to
 build `ColorScheme` and `SubLearnColors`; a component reads `LocalSubLearnColors.current`, never
 `Palette`.
+
+## Player transport and action docks
+
+- The main `TopChrome` hosts actions docked in `DockMode.TOP`; `DockMode.BAR` is a separate, single-line
+  horizontally scrollable rail below it; `DockMode.PLAYBACK` joins the bottom transport row. Every rail
+  reports an overflow arrow when content continues off-screen; rows never wrap or spill past the viewport.
+- The seek timeline and elapsed / total-or-remaining clocks share one row. The row below is the only
+  playback-action row; it always has play/pause, previous/next video and previous/next subtitle actions,
+  followed by user-arranged controls. The picture centre is reserved for the video and subtitle plates.
+- Expanded docked actions include a short label; compact and floating actions are icon-only. Floating
+  buttons clamp their stored fractions to keep the full touch target inside the video bounds.
+- `ChromeVisibility` uses `Motion.controlsEnter/controlsExit`, so top, bottom and second-row chrome all
+  fade consistently and respect the app's reduce-motion preference.
 
 ## Motion — `Motion.kt`
 
@@ -63,8 +79,9 @@ helpers is a bug.
 - `MaterialTheme.colorScheme` is built from those, and the app-specific roles live in
   **`SubLearnColors`**: `playerScrim` (the gradient under the chrome), `subtitleBackdrop`, `subtitleText` (always light, because the backdrop is always dark), `letterbox`
   (black around the picture in both themes),
-  `cardBackdrop`, `strongBackdrop` (popups over bright snow scenes), `overlayOutline`,
-  `controlIdle`, `controlActive`, `controlDisabled`, `listCurrentRow`, `listHoverRow`,
+  `cardBackdrop`, `strongBackdrop` (chrome over bright scenes), `promptBackdrop` and `promptText`
+  (translucent turquoise player prompts with a dark foreground), `overlayOutline`, `controlIdle`,
+  `controlActive`, `controlDisabled`, `listCurrentRow`, `listHoverRow`,
   `levelBadgeBackgroundAlpha`.
 
 The rule for new roles: if the value depends on being legible *over arbitrary video*, it goes in
@@ -109,6 +126,7 @@ New shared components go here with a KDoc line stating which spec ID they serve.
 4. Direction comes from content (`TextDirection`), and RTL layouts are mirrored by using `start`/`end`
    rather than `left`/`right` — the CI lint config plus review enforce this.
 5. Motion respects `LocalReduceMotion`; nothing flashes faster than 3 Hz.
-6. Contrast: chrome text over video always sits on `playerScrim` or a `SubtitleBackdrop`.
+6. Contrast: chrome text over video sits on `playerScrim`; subtitle text uses `SubtitleBackdrop`; player
+   prompts use the turquoise `promptBackdrop` plus dark `promptText` so they remain readable in both themes.
 7. Long-press alternatives exist for every hold-to-invert behaviour (SUB-1), announced by
    `tooltip`/`semantics` so it is discoverable without a manual.

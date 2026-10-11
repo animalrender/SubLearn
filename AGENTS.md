@@ -94,7 +94,7 @@ Rules that keep those boundaries:
 
 - A feature depends on `core:*` only. Shared UI code goes to `core:designsystem`, shared logic to the
   owning `core:*` module.
-- Only `core:designsystem` owns `strings.xml` (`values/` + `values-fa/`, 446 keys, kept in sync by
+- Only `core:designsystem` owns `strings.xml` (`values/` + `values-fa/`, 472 keys, kept in sync by
   hand and by CI review). Features import `com.sublearn.core.designsystem.R`.
 - `core:settings` and `core:subtitles`/`core:lexicon`/`core:common` have **no Compose dependency**;
   keep them JVM-testable.
@@ -135,7 +135,7 @@ Rules that keep those boundaries:
 
 1. Plan 3–6 lines (what changes, which files, how it is verified).
 2. Implement.
-3. Run the three static checks; grep the symbols you assumed.
+3. Run all four documented static checks and `git diff --check`; grep the symbols you assumed.
 4. Push, `gh run watch`, fix until green.
 5. Verify against `docs/CHECKLIST.md` on the real code path (not a preview harness), then update
    `docs/PROGRESS.md`, `docs/KNOWN_ISSUES.md` and the spec ID status.

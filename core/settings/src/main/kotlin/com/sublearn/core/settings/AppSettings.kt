@@ -80,10 +80,14 @@ data class SubtitleLayerSettings(
     val scalePercent: Int = 100,
     val transparencyPercent: Int = 0,
     val placement: SubtitlePlacement = SubtitlePlacement(),
-    /** Media3 track indexes shown in this layer; empty means "auto-pick by language". */
+    /** Legacy Media3 track indexes retained when reading settings exported by older builds. */
     val embeddedTrackIndexes: List<Int> = emptyList(),
+    /** Stable Media3 group/track keys selected for this layer; the same track may feed both layers. */
+    val embeddedTrackKeys: List<String> = emptyList(),
     /** External subtitle file keys (SubtitleFile.key) attached to this layer. */
     val externalFileKeys: List<String> = emptyList(),
+    /** Attached files that remain in the manager but are not currently rendered. */
+    val disabledExternalFileKeys: List<String> = emptyList(),
     /** Order in which the layer's tracks are stacked when several are enabled. */
     val stackDirection: LayerStackDirection = LayerStackDirection.BELOW,
     val showInList: Boolean = true,
@@ -110,6 +114,8 @@ data class SubtitleSettings(
     val sidecarTreeUri: String? = null,
     val showLanguageBadge: Boolean = false,
     val maxLinesPerLayer: Int = 3,
+    /** The source whose remembered external/embedded tracks are held in [layers]. */
+    val rememberedMediaUri: String? = null,
 ) {
     fun layer(role: TrackRole): SubtitleLayerSettings =
         layers[if (role == TrackRole.LEARNING) LayerRole.LEARNING else LayerRole.TRANSLATION] ?: SubtitleLayerSettings()
@@ -175,6 +181,8 @@ data class PlayerSettings(
     val volumeUsesDeviceStream: Boolean = true,
     val subtitleSafeMarginDp: Float = 0f,
     val lockGesturesWhenLocked: Boolean = true,
+    /** True shows the remaining duration as a negative clock at the seekbar's right edge. */
+    val showRemainingTime: Boolean = false,
 )
 
 @Serializable

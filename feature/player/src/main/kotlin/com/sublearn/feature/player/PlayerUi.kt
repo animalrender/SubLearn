@@ -91,13 +91,14 @@ sealed interface GestureHud {
 /** Sheets opened from the chrome or the quick actions; one enum keeps the back handling simple. */
 enum class Sheet {
     NONE,
-    TRACKS,
+    AUDIO,
+    SUBTITLES,
     SPEED,
     ASPECT,
     DECODER,
-    LAYER_OPTIONS,
     TOOLS,
     PLAYLIST,
+    ACTIONS,
 }
 
 /** Where a layer's text comes from. It decides which features are possible at all. */
@@ -131,10 +132,22 @@ data class LayerUi(
     val delayMs: Long = 0L,
     val embeddedTrackIndexes: List<Int> = emptyList(),
     val externalFileKeys: List<String> = emptyList(),
+    val disabledExternalFileKeys: List<String> = emptyList(),
+    val externalFileNames: Map<String, String> = emptyMap(),
+    /** Simultaneous lines from every enabled file-backed or embedded track in this layer. */
+    val lines: List<SubtitleLineUi> = emptyList(),
 ) {
     /** PLY-6 / SUB-6 need our own blocks, which only a parsed file gives us. */
     val canStepBySubtitle: Boolean get() = source == LayerSource.FILE
 }
+
+/** One subtitle source's live cue, keeping word taps attached to the correct source block. */
+@Immutable
+data class SubtitleLineUi(
+    val key: String,
+    val text: String,
+    val block: SubtitleBlock? = null,
+)
 
 @Immutable
 data class ShadowUi(

@@ -29,6 +29,8 @@ class FakePlayerController(
     val calls: MutableList<String> = mutableListOf()
     var attachedViews: Int = 0
         private set
+    private var externalAudioTargetUri: String? = null
+    private var externalAudioName: String? = null
 
     override fun attachView(view: PlayerView) {
         attachedViews++
@@ -42,6 +44,7 @@ class FakePlayerController(
 
     override suspend fun open(target: MediaTarget) {
         calls += "open:${target.uri}"
+        if (externalAudioTargetUri != target.uri) clearExternalAudio()
         _state.value = _state.value.copy(
             target = target,
             playlist = listOf(target),
@@ -49,16 +52,20 @@ class FakePlayerController(
             positionMs = target.startPositionMs,
             error = null,
             isPlaying = true,
+            externalAudioName = externalAudioName,
         )
     }
 
     override suspend fun setPlaylist(targets: List<MediaTarget>, startIndex: Int) {
         calls += "setPlaylist:${targets.size}@$startIndex"
+        if (externalAudioTargetUri != null && targets.none { it.uri == externalAudioTargetUri }) clearExternalAudio()
+        val target = targets.getOrNull(startIndex)
         _state.value = _state.value.copy(
             playlist = targets,
             playlistIndex = startIndex,
-            target = targets.getOrNull(startIndex),
-            positionMs = targets.getOrNull(startIndex)?.startPositionMs ?: 0L,
+            target = target,
+            positionMs = target?.startPositionMs ?: 0L,
+            externalAudioName = externalAudioName.takeIf { externalAudioTargetUri == target?.uri },
         )
     }
 
@@ -85,7 +92,13 @@ class FakePlayerController(
         val next = _state.value.playlistIndex + 1
         if (next < _state.value.playlist.size) {
             calls += "playNext:$next"
-            _state.value = _state.value.copy(playlistIndex = next, target = _state.value.playlist[next], positionMs = 0L)
+            val target = _state.value.playlist[next]
+            _state.value = _state.value.copy(
+                playlistIndex = next,
+                target = target,
+                positionMs = 0L,
+                externalAudioName = externalAudioName.takeIf { externalAudioTargetUri == target.uri },
+            )
         }
     }
 
@@ -93,7 +106,13 @@ class FakePlayerController(
         val previous = _state.value.playlistIndex - 1
         if (previous >= 0) {
             calls += "playPrevious:$previous"
-            _state.value = _state.value.copy(playlistIndex = previous, target = _state.value.playlist[previous], positionMs = 0L)
+            val target = _state.value.playlist[previous]
+            _state.value = _state.value.copy(
+                playlistIndex = previous,
+                target = target,
+                positionMs = 0L,
+                externalAudioName = externalAudioName.takeIf { externalAudioTargetUri == target.uri },
+            )
         }
     }
 
@@ -124,14 +143,27 @@ class FakePlayerController(
 
     override fun selectTrack(ref: TrackRef) {
         calls += "selectTrack:${ref.groupId}/${ref.trackIndex}"
+        if (ref.type == PlayerTrackType.TEXT) {
+            setSelectedTextTracks(listOf(ref))
+        } else {
+            _state.value = _state.value.copy(audioTracks = _state.value.audioTracks.map { it.copy(isSelected = it.ref == ref) })
+        }
+    }
+
+    override fun setSelectedTextTracks(refs: List<TrackRef>) {
+        calls += "textTracksSelected:${refs.joinToString { it.stableKey }}"
         _state.value = _state.value.copy(
-            audioTracks = _state.value.audioTracks.map { it.copy(isSelected = it.ref == ref) },
-            textTracks = _state.value.textTracks.map { it.copy(isSelected = it.ref == ref) },
+            textTracks = _state.value.textTracks.map { it.copy(isSelected = it.ref in refs) },
         )
     }
 
     override fun clearTrackOverride(type: PlayerTrackType) {
         calls += "clearTrackOverride:$type"
+        if (type == PlayerTrackType.TEXT) {
+            _state.value = _state.value.copy(textTracks = _state.value.textTracks.map { it.copy(isSelected = it.isDefault) })
+        } else {
+            _state.value = _state.value.copy(audioTracks = _state.value.audioTracks.map { it.copy(isSelected = it.isDefault) })
+        }
     }
 
     override fun setTextTracksEnabled(enabled: Boolean) {
@@ -145,6 +177,27 @@ class FakePlayerController(
 
     override fun setMuted(muted: Boolean) {
         calls += "mute:$muted"
+        val volume = if (!muted && _state.value.volumePercent == 0) DEFAULT_VOLUME_PERCENT else _state.value.volumePercent
+        _state.value = _state.value.copy(volumePercent = volume, isMuted = muted)
+    }
+
+    override fun setVolume(percent: Int) {
+        val volume = percent.coerceIn(0, 100)
+        calls += "volume:$volume"
+        _state.value = _state.value.copy(volumePercent = volume, isMuted = volume == 0)
+    }
+
+    override fun setExternalAudioTrack(uri: String?, displayName: String?) {
+        calls += "externalAudio:${uri ?: "clear"}"
+        externalAudioTargetUri = if (uri == null) null else _state.value.target?.uri
+        externalAudioName = if (uri == null) null else displayName ?: uri.substringAfterLast('/')
+        _state.value = _state.value.copy(externalAudioName = externalAudioName)
+    }
+
+    private fun clearExternalAudio() {
+        externalAudioTargetUri = null
+        externalAudioName = null
+        _state.value = _state.value.copy(externalAudioName = null)
     }
 
     override suspend fun flushPosition() {
@@ -186,4 +239,8 @@ class FakePlayerController(
     }
 
     fun lastCall(): String? = calls.lastOrNull()
+
+    private companion object {
+        const val DEFAULT_VOLUME_PERCENT = 100
+    }
 }

@@ -3,12 +3,15 @@ package com.sublearn.feature.player
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.BiasAlignment
@@ -67,9 +70,11 @@ internal fun SubtitleLayerStack(
     Box(modifier = modifier.fillMaxSize()) {
         roles.forEach { role ->
             val layer = ui.layer(role)
-            val text = layer.text
-            if (layer.visible && !text.isNullOrBlank()) {
-                SubtitlePlate(role = role, text = text, ui = ui, registry = registry)
+            val lines = layer.lines.ifEmpty {
+                layer.text?.takeIf { it.isNotBlank() }?.let { listOf(SubtitleLineUi("current", it, layer.block)) }.orEmpty()
+            }
+            if (layer.visible && lines.isNotEmpty()) {
+                SubtitlePlate(role = role, lines = lines, ui = ui, registry = registry)
             }
         }
     }
@@ -82,7 +87,7 @@ internal fun SubtitleLayerStack(
 @Composable
 private fun BoxScope.SubtitlePlate(
     role: TrackRole,
-    text: String,
+    lines: List<SubtitleLineUi>,
     ui: PlayerUi,
     registry: PlayerHitRegistry,
 ) {
@@ -95,10 +100,7 @@ private fun BoxScope.SubtitlePlate(
     val spec = settings.fontFor(surface, if (isLearning) SubtitleLayerRole.LEARNING else SubtitleLayerRole.NATIVE)
     val scale = LocalAppFontScale.current * (layer.scalePercent / PERCENT)
     val style = remember(spec, scale) { spec.toTextStyle(scale) }
-    val annotated = remember(text, ui.wordStates, settings.wordStyles) {
-        styleWords(text, ui.wordStates, settings.wordStyles)
-    }
-    val refs = remember(role) { PlateRefs() }
+    val activeKeys = lines.map { it.key }
     DisposableEffect(role, registry) {
         onDispose { registry.forgetSubtitle(role) }
     }
@@ -107,38 +109,47 @@ private fun BoxScope.SubtitlePlate(
     } else {
         Modifier
     }
+    DisposableEffect(role, activeKeys, registry) {
+        onDispose { activeKeys.forEach { registry.forgetSubtitleText(role, it) } }
+    }
     SubtitleBackdrop(
         modifier = placed(placement)
             .then(outline)
-            .onGloballyPositioned { coordinates ->
-                refs.plate = coordinates
-                registry.putSubtitlePlate(role, coordinates)
-            },
+            .onGloballyPositioned { coordinates -> registry.putSubtitlePlate(role, coordinates) },
         alpha = (1f - layer.transparencyPercent / PERCENT).coerceIn(0f, 1f),
         colorArgb = spec.backgroundColorArgb,
         cornerRadiusDp = spec.cornerRadiusDp,
     ) {
-        Text(
-            text = annotated,
-            style = style.copy(textAlign = placement.textAlign()),
-            color = spec.colorArgb?.let { Color(it) } ?: colors.subtitleText,
-            maxLines = settings.subtitles.maxLinesPerLayer,
-            onTextLayout = { layout: TextLayoutResult ->
-                refs.layout = layout
-                refs.text?.let { registry.putSubtitleText(role, it, layout) }
-            },
-            modifier = Modifier.onGloballyPositioned { coordinates: LayoutCoordinates ->
-                refs.text = coordinates
-                refs.layout?.let { registry.putSubtitleText(role, coordinates, it) }
-            },
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.xs)) {
+            lines.forEach { line ->
+                key(line.key) {
+                    val annotated = remember(line.text, ui.wordStates, settings.wordStyles) {
+                        styleWords(line.text, ui.wordStates, settings.wordStyles)
+                    }
+                    val refs = remember { SubtitleTextRefs() }
+                    Text(
+                        text = annotated,
+                        style = style.copy(textAlign = placement.textAlign()),
+                        color = spec.colorArgb?.let { Color(it) } ?: colors.subtitleText,
+                        maxLines = settings.subtitles.maxLinesPerLayer,
+                        onTextLayout = { measured ->
+                            refs.layout = measured
+                            refs.coordinates?.let { registry.putSubtitleText(role, line.key, it, measured) }
+                        },
+                        modifier = Modifier.onGloballyPositioned { coordinates ->
+                            refs.coordinates = coordinates
+                            refs.layout?.let { registry.putSubtitleText(role, line.key, coordinates, it) }
+                        },
+                    )
+                }
+            }
+        }
     }
 }
 
-/** The last coordinates and text layout reported for one plate, kept so either can arrive first. */
-private class PlateRefs {
-    var plate: LayoutCoordinates? = null
-    var text: LayoutCoordinates? = null
+/** The text measurement and coordinates can arrive in either order during layout. */
+private class SubtitleTextRefs {
+    var coordinates: LayoutCoordinates? = null
     var layout: TextLayoutResult? = null
 }
 

@@ -2,6 +2,58 @@
 
 Always answers: what was the goal, what is done, what remains, how to test it. Newest entry on top.
 
+## 2026-10-11 — player transport, multi-source tracks and recovery (v0.2.1 work)
+
+**Goal.** Finish the requested player pass end-to-end: separate subtitle/audio management, resilient
+Recent Videos, sensor/manual orientation, translucent readable prompts, flexible one-line action docks,
+bottom-only transport, live scrub preview, and matching product/design documentation.
+
+**Implemented (not yet compiled on this branch)**
+- Replaced the centre transport cluster with a bottom row containing play/pause, previous/next video,
+  previous/next subtitle cue, seek steps and user-arranged actions. The seek row now keeps elapsed and
+  total/remaining time beside the seek line; tapping the right clock toggles the display, and every drag
+  update seeks while playback is paused so video frames and subtitle layers preview in place.
+- Added TOP / BAR (second row) / PLAYBACK / FLOATING / HIDDEN quick-action locations, reorder/dock UI,
+  expanded labels for docked actions, single-line horizontal scrolling, overflow arrows and bounded
+  floating positions. Top and bottom chrome use the existing reduce-motion-aware fade/slide motion.
+- Reworked subtitle management into Learning and Translation tabs with checkboxes for every embedded
+  soft track and multiple external file keys per layer. Each file can be disabled or removed. Audio has a
+  separate sheet with embedded selection, external audio merge, player-volume slider and mute toggle.
+- Added Media3 external-audio source merging, SAF persistable grants for video/subtitle/audio pickers,
+  Home's stale-grant fallback picker, and an accessible chronological recent-video playback queue.
+- Mapped manual orientation options and full-sensor orientation; added turquoise/dark-text semantic prompt
+  colors for player messages and layout hints. Added `rememberedMediaUri` and `showRemainingTime` defaults.
+- Bumped the package version to `0.2.1` / derived code `201`; updated the product contract, checklist,
+  architecture, design-system, decisions, known issues and changelog. The new EN/FA resource count is
+  472 each.
+
+**Checks run**
+- `python3 tools/check_sources.py core app feature tools`: 118 files, 0 problems.
+- `python3 tools/check_symbols.py`: 0 unresolved imports.
+- `python3 tools/check_deps.py`: 16 modules, 0 missing dependencies.
+- `python3 tools/check_resources.py core app feature`: 15 resource files, 0 problems.
+- `git diff --check`: clean. Android compile/unit/instrumented tests have not been run; repository guidance
+  says this sandbox has no JVM or Android SDK. CI is still required.
+
+**Remains / honest limitations**
+- CI must type-check Media3/Compose and run `assembleDebug`, `assembleRelease`, tests and lint; no code
+  here should be called build-verified yet. No device/emulator pass has been done.
+- Media3's `CueGroup` does not expose source track IDs. The controller associates cues when one selected
+  soft track (or a one-cue-per-track match) makes that safe; ambiguous multiple-track cues are marked
+  untagged and may appear in every layer assigned an embedded track. KNOWN_ISSUES 22 records the gap.
+- The accessible previous/next queue is drawn from the most recent 40 videos with readable grants; the
+  playlist sheet remains read-only. Subtitle source references currently remember the most recently
+  opened video, not a full per-video table.
+
+**How to test on device after CI is green**
+1. Open a recent video, revoke its SAF grant, tap it again and verify the picker replaces the opaque IO error.
+2. Add an external audio file, select embedded/external tracks, mute/unmute and remove the attachment.
+3. In both subtitle tabs, check multiple soft tracks and external files, disable/remove one, then scrub and
+   verify the picture and each active line update before release.
+4. Arrange actions into all three docked zones; expand/collapse, scroll to the end, float/drag one, hide one.
+5. Verify no buttons appear over the picture centre; tap the right clock; test sensor, portrait, landscape
+   and reverse-landscape; inspect prompt contrast in dark/light themes and with reduce motion enabled.
+
 ## 2026-10-11 — releases publish themselves after CI is green
 
 **Goal.** Stop releasing by hand. A change that passes every check should end up as installable APKs
@@ -100,8 +152,8 @@ hard-coded colours and sizes.
 - Subtitle tools could reload files with the previous settings (a race). `applyNormalizer` fixes it.
 - Player messages and quick-action labels were English literals. They are resources now.
 
-**Deviations from the spec wording** (recorded in DECISIONS D-26 and KNOWN_ISSUES 19–20)
-- Play and pause sit in the centre cluster, not the bottom row.
+**Deviations at v0.2.0** (recorded in DECISIONS D-26 and KNOWN_ISSUES 19–20)
+- Play and pause sat in the centre cluster, not the bottom row; **superseded by the v0.2.1 PLY-3 redesign** above.
 - The repeat-block hold runs the auto-repeat count but does not invert the setting until release.
 - In portrait the subtitle list takes the lower 45 % of the screen and the picture keeps the rest.
 - Playlist rows are read-only.

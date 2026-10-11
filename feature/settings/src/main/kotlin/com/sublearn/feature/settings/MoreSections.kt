@@ -43,7 +43,6 @@ import com.sublearn.core.settings.FontWeightToken
 import com.sublearn.core.settings.ImportMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import com.sublearn.core.settings.QuickActionColumn
 import com.sublearn.core.settings.QuickActionId
 import com.sublearn.core.settings.SubtitleLayerRole
 import com.sublearn.core.settings.TextDecorationToken
@@ -469,20 +468,6 @@ fun QuickActionsSection(settings: AppSettings, viewModel: SettingsViewModel) {
             stringResource(R.string.settings_quick_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        ChoiceRow(
-            title = stringResource(R.string.settings_quick_column),
-            options = QuickActionColumn.entries,
-            selected = quick.column,
-            label = { stringResource(it.labelRes()) },
-            onSelect = { value -> viewModel.update { it.copy(quickActions = it.quickActions.copy(column = value)) } },
-        )
-        SliderRow(
-            title = stringResource(R.string.settings_icons_per_row),
-            value = quick.barIconsPerRow.toFloat(),
-            range = 4f..12f,
-            valueLabel = quick.barIconsPerRow.toString(),
-            onValueChange = { value -> viewModel.update { it.copy(quickActions = it.quickActions.copy(barIconsPerRow = value.toInt())) } },
         )
         SwitchRow(
             title = stringResource(R.string.settings_auto_hide_with_controls),

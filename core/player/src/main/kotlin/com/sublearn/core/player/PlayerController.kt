@@ -56,6 +56,9 @@ interface PlayerController {
 
     fun selectTrack(ref: TrackRef)
 
+    /** Selects several soft-subtitle tracks, without restricting audio track selection. */
+    fun setSelectedTextTracks(refs: List<TrackRef>)
+
     fun clearTrackOverride(type: PlayerTrackType)
 
     fun setTextTracksEnabled(enabled: Boolean)
@@ -64,6 +67,12 @@ interface PlayerController {
     fun setWakeMode(keepScreenOn: Boolean)
 
     fun setMuted(muted: Boolean)
+
+    /** Sets the player's own output volume, independently of the device media volume. */
+    fun setVolume(percent: Int)
+
+    /** Merge an external audio file with the currently opened video; null clears the attachment. */
+    fun setExternalAudioTrack(uri: String?, displayName: String? = null)
 
     /** Persist the current position; called on pause, on leaving and on process-death signals. */
     suspend fun flushPosition()
