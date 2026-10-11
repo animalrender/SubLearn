@@ -15,9 +15,11 @@ import kotlinx.coroutines.withContext
 /**
  * Reads a file the user picked through the Storage Access Framework.
  *
- * SubLearn never asks for a storage permission: the picked URI is the grant. The grant is kept for
- * the current session only (persistable permissions are Phase 1 work), which is why a layer's file
- * has to be re-picked after a reinstall rather than silently disappearing.
+ * SubLearn never asks for a storage permission: the picked URI *is* the grant, and every picker in
+ * the app takes the persistable form of it (`UriGrants.persistRead`, PLY-12), so an attached file
+ * keeps working after a restart. What is still outside our control is the file itself — a moved or
+ * deleted document fails here, and the caller reports which file it was rather than dropping it
+ * silently.
  */
 class SafSubtitleFileSource(private val context: Context) : SubtitleFileSource {
     override suspend fun read(file: SubtitleFile): ByteArray = withContext(Dispatchers.IO) {
