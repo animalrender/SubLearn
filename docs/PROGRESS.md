@@ -1,3 +1,52 @@
+## 2026-10-11 — phase 10 (Lexicon pack) started
+
+**Goal.** Build the foundation for offline phrase detection: the lexicon v2 format, the converter
+tool, the NLP engine module, the model catalog, and the dictionary management UI.
+
+**Implemented (not yet compiled on this branch)**
+
+- **Lexicon converter** (`tools/lexicon_builder/`): Python script that reads `fastdic_plain.sqlite`
+  and produces `sublearn-lexicon-en-fa-v2.sqlite` + `build_report.json`. Includes one-click
+  `.bat` (Windows) and `.sh` (macOS/Linux) scripts and a Persian README. Tested against
+  `dictionaryproject/docs/sample.sqlite`: 1,404 entries, 2,715 senses, 1,214 examples, 437
+  patterns, 1,138 lemma forms.
+- **core:nlp module** (pure Kotlin, no Android): `PhraseSpan`, `PhraseKind` (PHRASAL/IDIOM/
+  COLLOCATION), `NlpConfig`, `Lemmatiser`, `PatternCompiler`, `DeterministicPhraseDetector`,
+  `CrossBlockBridge`, `PriorSenseRanker`, and all interfaces (`PhraseDetector`, `PosTagger`,
+  `SenseRanker`, `LexiconAccess`).
+- **core:models module** (Android): `ModelCatalogEntry`, `ModelKind`, `AccuracyProfile`,
+  `ModelRuntime`, `LicenseInfo`, `SourceInfo`, `ModelCatalog`.
+- **core:nlp-onnx module** (Android, skeleton): ONNX Runtime wrapper placeholder for phase 14.
+- **core:nlp-llm module** (Android, skeleton): LLM adapter placeholder for phase 15.
+- **Model catalog** (`docs/catalog/catalog-v1.json`): 8 entries (1 lexicon + 7 models), all with
+  `verified: false` pending source verification (REQ-12).
+- **LexiconV2 types** in `core:lexicon`: `LexiconV2Entry`, `LexiconV2Sense`, `LexiconV2Example`,
+  `LexiconV2Pattern`, `LexiconV2Relation`, `LemmaFormEntry`, `LexiconV2Meta`.
+- **Documentation**: PHASES.md updated with phases 10-16, DECISIONS.md added D-31 through D-42,
+  AGENT_REQUESTS.md added REQ-10 through REQ-13, ARCHITECTURE.md module graph updated, AGENTS.md
+  module map updated.
+
+**Checks run**
+- `python3 tools/check_sources.py core app feature tools`: 132 files, 0 problems.
+- `python3 tools/check_symbols.py`: 0 unresolved imports.
+- `python3 tools/check_deps.py`: 18 modules, 0 missing dependencies.
+- `python3 tools/check_resources.py core app feature`: 15 resource files, 0 problems.
+- Lexicon converter tested against sample.sqlite: correct output.
+- Android compile/unit/instrumented tests have not been run; repository guidance says this sandbox
+  has no JVM or Android SDK. CI is still required.
+
+**Remains / honest limitations**
+- CI must type-check Kotlin and run `assembleDebug`, `assembleRelease`, tests and lint; no code
+  here should be called build-verified yet.
+- The `core:nlp`, `core:models`, `core:nlp-onnx`, `core:nlp-llm` modules need Koin DI registration
+  in `app/di/`.
+- The `DictionaryProvider` stub needs to be replaced with `ImportedDictionaryProvider` backed by
+  the v2 SQLite.
+- Room migration 1→2 for My Words (phraseType, lemma, lexiconEntryId, surfaceParts) not yet done.
+- Settings for Smart Learning section not yet added.
+- The lexicon pack hosting URL is not yet provided (REQ-10).
+- All catalog entries are `verified: false` (REQ-12).
+
 # Progress
 
 Always answers: what was the goal, what is done, what remains, how to test it. Newest entry on top.

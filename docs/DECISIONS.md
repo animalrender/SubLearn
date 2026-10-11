@@ -201,3 +201,57 @@ double release. Two consequences worth remembering: `workflow_run` only ever run
 file on the default branch, so changes to the pipeline take effect after they are merged; and
 `versionCode` is derived from `versionName` in `app/build.gradle.kts` so that a release bumps one
 number only.
+
+**D-31 — Phrase analysis runs on SubtitleBlock, not on individual cues.** `BlockBuilder` already merges
+broken cues into one `SubtitleBlock` (mergeGapMs=700, maxBlockDurationMs=7000, maxBlockChars=84). The
+phrase detector therefore operates on blocks, and a cross-block bridge handles expressions that span
+two adjacent blocks (section 6.6 of the owner's brief).
+
+**D-32 — One pass at subtitle-load time, cached in Room.** Phrase analysis is not per-frame. It runs
+once when the learning subtitle layer opens, results are written to a `phrase_span` table keyed by
+`(sourceKey, blockId, startChar, endChar, analyzerVersion)`, and playback only reads from the cache.
+Analysis runs on `Dispatchers.Default` or `WorkManager`, prioritises blocks near the current playhead
+and is cancellable.
+
+**D-33 — Lexicon + lemmatiser + deterministic matcher first, models only refine.** The base engine
+works without any downloaded model. Models only add POS tagging, sense ranking and literal-vs-idiomatic
+disambiguation. No model ever produces free-form Persian translation.
+
+**D-34 — Precision over recall.** A wrong underline is worse than a missing one. The default
+confidence threshold for visible underlines is 0.75; below that the match appears only as a
+"possible" row in the touch card.
+
+**D-35 — Lexicon pack is a user-supplied file, never committed.** The format is SubLearn's own
+(`sublearn-lexicon-en-fa-v2.sqlite`); a Python converter in `tools/lexicon_builder/` builds it from
+the owner's database. The pack is imported through the Model Manager (phase 11) or by direct file
+pick. No database or derived file is committed (D-2 still applies).
+
+**D-36 — No statistical collocation table or new model training in v1.** Collocations come only from
+those already present in the lexicon database. A future v2 may add a frequency table but that is a
+separate phase and decision.
+
+**D-37 — Model weights are never in the APK or the repo.** A JSON catalog lists models with their
+source URLs, SHA-256 and licenses; the Model Manager downloads them on demand from the original host.
+The default catalog URL points at `docs/catalog/catalog-v1.json` in this repo (raw GitHub URL), and
+the user can override it in Settings.
+
+**D-38 — Translation fallback is official ML Kit only.** When a word or sense is not in the lexicon,
+`core:translate` translates it and labels the result as "machine translation" (D-2, REQ-1). No other
+translation service is wired.
+
+**D-39 — ProudVocab is a visual reference only.** The card design, colors and badge shapes are
+re-implemented from scratch in Compose using the project's own `Tokens.kt`, `Motion.kt` and
+`LocalSubLearnColors`. No CSS or JS is ported.
+
+**D-40 — `WordVisualState.PHRASE` is replaced by three exhaustive states.** `PHRASAL`, `IDIOM` and
+`COLLOCATION` replace the single `PHRASE` value so that every `when` in the codebase becomes
+exhaustive at compile time. The old `phrases` WordStyleSetting migrates by copying its value to all
+three new states.
+
+**D-41 — A new `core:nlp` module is pure Kotlin (no Android).** It owns the Span model, lemmatiser,
+pattern compiler, matcher and sense-ranking interfaces. It is JVM-testable with plain `kotlinc` and
+has no Compose, Room or Android dependencies.
+
+**D-42 — ONNX Runtime is isolated in `core:nlp-onnx`.** The ONNX dependency and its ABI-specific
+native libraries live in a separate module so the APK size impact is measurable and the module can
+be dropped entirely. `core:nlp-llm` is similarly isolated for the experimental LLM adapter.

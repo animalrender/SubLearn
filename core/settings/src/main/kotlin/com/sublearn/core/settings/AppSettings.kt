@@ -308,8 +308,12 @@ enum class DetailsOpenTrigger { ICON, LONG_PRESS, DOUBLE_TAP }
 @Serializable
 data class WordStyleSettings(
     val byPartOfSpeech: Map<String, WordStyle> = emptyMap(),
-    val myWords: WordStyle = WordStyle(colorArgb = 0xFF7BE3A1, decoration = TextDecorationToken.UNDERLINE, bold = true),
-    val phrases: WordStyle = WordStyle(colorArgb = 0xFF8FC8FF, decoration = TextDecorationToken.DOTTED_UNDERLINE),
+    val myWords: WordStyle = WordStyle(colorArgb = 0xFF10B981, decoration = TextDecorationToken.DASHED_UNDERLINE, bold = false),
+    val phrases: WordStyle = WordStyle(colorArgb = 0xFF8FC8FF, decoration = TextDecorationToken.DASHED_UNDERLINE),
+    val phrasalVerbs: WordStyle = WordStyle(colorArgb = 0xFFC084FC, decoration = TextDecorationToken.DASHED_UNDERLINE, bold = true),
+    val idioms: WordStyle = WordStyle(colorArgb = 0xFFFB923C, decoration = TextDecorationToken.DASHED_UNDERLINE, bold = true),
+    val collocations: WordStyle = WordStyle(colorArgb = 0xFF38BDF8, decoration = TextDecorationToken.DASHED_UNDERLINE, bold = true),
+    val savedPhrasesKeepTypeColor: Boolean = false,
     val unknownAboveLevel: WordStyle = WordStyle(colorArgb = 0xFFFFD98A, decoration = TextDecorationToken.NONE, bold = true),
     val enabled: Boolean = true,
 )
@@ -403,6 +407,30 @@ data class LanguageSettings(
 
 /** Root of the typed settings tree. Bump [schemaVersion] whenever a migration is needed. */
 @Serializable
+/** Smart learning settings: phrase detection, accuracy profiles, and analysis control (MWE-*). */
+@Serializable
+data class SmartLearningSettings(
+    val phrasalVerbsEnabled: Boolean = true,
+    val idiomsEnabled: Boolean = true,
+    val collocationsEnabled: Boolean = true,
+    val crossBlockBridgeEnabled: Boolean = true,
+    val confidenceThreshold: Float = 0.75f,
+    val showPossibleMatches: Boolean = true,
+    val accuracyProfile: AccuracyProfileToken = AccuracyProfileToken.BASIC,
+    val analyzeDuringBatterySaver: Boolean = false,
+)
+
+@Serializable
+enum class AccuracyProfileToken {
+    BASIC,
+    LIGHT,
+    BALANCED,
+    PRECISE,
+    ADVANCED,
+    SMART_EXPERIMENTAL,
+    CUSTOM,
+}
+
 data class AppSettings(
     val schemaVersion: Int = SCHEMA_VERSION,
     val appearance: AppearanceSettings = AppearanceSettings(),
@@ -419,6 +447,7 @@ data class AppSettings(
     val translation: TranslationSettings = TranslationSettings(),
     val dictionary: DictionarySettings = DictionarySettings(),
     val level: LevelSettings = LevelSettings(),
+    val smartLearning: SmartLearningSettings = SmartLearningSettings(),
 ) {
     val fontRegistry: FontRegistry get() = FontRegistry(fonts)
 

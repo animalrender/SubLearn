@@ -135,3 +135,51 @@ blocking, the workaround used in the meantime is stated too.
   collocations, idioms, word family, CEFR, categories) with a schema that a user can actually produce.
 - **Next step**: owner confirms; then the importer, its fixtures and the Settings UI land together.
 - **Severity**: low.
+
+---
+
+### REQ-10 — Lexicon pack hosting URL
+- **Phase/task**: 10 (Lexicon pack).
+- **Needed**: the URL where the owner will host `sublearn-lexicon-en-fa-v2.sqlite` after running the
+  converter. The Model Manager catalog will point at this URL as the default download source.
+- **Workaround**: until the URL is provided, the catalog entry for the lexicon only shows "Import from
+  file / paste link". No placeholder URL is invented.
+- **Next step**: owner uploads the file (e.g. to a GitHub Release on their own repo) and provides the
+  URL.
+
+### REQ-11 — Confirm dictionary data licensing on the record
+- **Phase/task**: 10 (Lexicon pack), extends REQ-2.
+- **Needed**: the owner stated they hold the rights to use and distribute the database. This must be
+  recorded in `THIRD_PARTY_NOTICES.md` so downstream users know the data is not derived from a
+  third-party source without permission.
+- **Workaround**: `THIRD_PARTY_NOTICES.md` records the statement; no data file is committed.
+- **Next step**: owner confirms; the notice is already drafted.
+
+### REQ-12 — Verify catalog entries for models
+- **Phase/task**: 11 (Model manager).
+- **Needed**: for each model in the catalog, the sandbox cannot reach Hugging Face, GitHub model
+  repos or CDN hosts to verify file size, SHA-256 or license. Entries are written with
+  `verified: false` and only visible in debug builds until verified.
+- **Workaround**: unverified entries carry a clear label in the UI and a log in this file.
+- **Next step**: owner or a future agent with network access verifies each entry.
+
+### REQ-13 — A real video + subtitle for manual testing
+- **Phase/task**: 12–16 (phrase detection, popup card, profiles).
+- **Needed**: a short video with an English SRT file that contains phrasal verbs, idioms and
+  collocations, for manual testing of the underline and popup card.
+- **Workaround**: the synthetic eval set in `tools/eval/` is used for automated testing; manual
+  testing waits for the owner's video.
+- **Next step**: owner provides a video + subtitle pair.
+
+### REQ-12.1 — Run the catalog verification workflow
+- **Phase/task**: 11 (Model manager).
+- **Needed**: the agent sandbox cannot reach model hosting sites (Hugging Face, etc.) to verify
+  catalog entries. A GitHub Actions workflow `verify-catalog.yml` has been created that runs on
+  GitHub's servers where network access is available.
+- **How to run**: Go to Actions → "Verify Model Catalog" → "Run workflow". The workflow fetches
+  each catalog entry's URL, checks size and license, and produces two artifacts:
+  - `catalog_verification_report.json` — summary of what was verified and what wasn't
+  - `catalog-v1.verified.json` — the catalog with updated `verified` flags
+- **Next step**: download the artifacts and share the report with the agent so it can update
+  the catalog entries that were verified.
+- **Severity**: medium (needed before models can be shown as available in release builds).

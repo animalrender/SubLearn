@@ -223,4 +223,4 @@ data class SubtitleListRow(
  * KNOWN and MARKED both come from My Words; ABOVE_LEVEL from the word level provider; PHRASE needs
  * the offline analyser and is therefore never produced yet (LATER, see EXTENSION_POINTS).
  */
-enum class WordVisualState { NONE, KNOWN, MARKED, ABOVE_LEVEL, PHRASE }
+enum class WordVisualState { NONE, KNOWN, MARKED, ABOVE_LEVEL, PHRASAL, IDIOM, COLLOCATION }

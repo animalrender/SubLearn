@@ -43,3 +43,13 @@ assets/models/
 # Scratch
 __pycache__/
 *.log
+
+# Lexicon builder output (never commit the built database)
+tools/lexicon_builder/output/
+sublearn-lexicon-*.sqlite
+build_report.json
+
+# Model files (never commit)
+assets/models/
+*.onnx
+*.safetensors

@@ -81,3 +81,41 @@ Per Apache-2.0 §4 the notices above are sufficient for redistribution; each `co
 keeps its own copyright header line, and nothing else is required. If a later phase vendors source
 code (rather than depending on an artifact), add a `NOTICE` file entry naming the project, its license
 and the upstream commit, and list the files it applies to.
+
+---
+
+## Lucide Icons (bookmark icon in popup card)
+
+The bookmark icon paths used in the popup card (`M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z`
+and the filled variant) are derived from the [Lucide](https://lucide.dev/) icon set, licensed under
+the ISC License:
+
+```
+ISC License
+
+Copyright (c) 2020, Lucide Contributors
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+```
+
+## Dictionary Data (lexicon pack)
+
+The English-Persian lexicon pack (`sublearn-lexicon-en-fa-v2.sqlite`) is built by
+`tools/lexicon_builder/build_lexicon.py` from the project owner's own database. The owner has
+stated they hold the rights to use and distribute this data. The database is **never committed** to
+this repository (enforced by `.gitignore` and CI hygiene guard). The owner provides the pack as a
+separate download; the app imports it through the Model Manager or a file picker.
+
+The converter reads the source schema (table structure, POS codes) documented in
+`melonityhub/dictionaryproject/fastdic_desktop/fd_data.py` but does **not** copy any data, code or
+`.bipe` files from that repository. The output format is SubLearn's own v2 schema.

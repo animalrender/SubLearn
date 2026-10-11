@@ -208,7 +208,9 @@ internal fun styleWords(
                 when (wordStates[span.text.lowercase()]) {
                     WordVisualState.MARKED -> styles.myWords
                     WordVisualState.ABOVE_LEVEL -> styles.unknownAboveLevel
-                    WordVisualState.PHRASE -> styles.phrases
+                    WordVisualState.PHRASAL -> styles.phrasalVerbs
+                    WordVisualState.IDIOM -> styles.idioms
+                    WordVisualState.COLLOCATION -> styles.collocations
                     WordVisualState.KNOWN, WordVisualState.NONE, null -> null
                 }
             } else {

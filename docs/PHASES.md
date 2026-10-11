@@ -17,7 +17,13 @@ phase: the listed deliverables exist on the real code path, CI is green, `docs/C
 | 7 | AI button | Providers, settings, prompt editor, context builder, loading ring and pause/resume contract | AI-1..4 | in review |
 | 8 | Subtitle tools | Batch line-break removal, max-char split, search, no-spoiler mode | SUB-6, SUB-7, PLY-6 | in review |
 | 9 | Hardening | Animation and accessibility polish, performance pass, process-death restore, test gaps, README screenshots, `v0.1.0` tag | GEN-4..6, accessibility | in progress — review fixes and the `v0.1.0` release pipeline landed 2026-10-09 (`release.yml`, ABI splits); device pass, screenshots and test gaps remain |
-| 10+ | LATER, in order | (a) offline dictionary import + lookup, (b) My Words quiz, (c) update checker via GitHub Releases. One at a time, never breaking NOW; stop after (c) | LATER set | not started |
+| 10 | Lexicon pack | converter tool, lexicon v2 schema, importer, DictionaryProvider real, LexiconLevelProvider, OFFLINE_DICTIONARY flag flip, dictionary section + Dictionary tab, Room migration 1→2 for My Words (phraseType, lemma, lexiconEntryId, surfaceParts) | MWE-1..7, DCT-1..5 | in progress |
+| 11 | Model manager | core:models, catalog, download/resume/verify, custom add, Models & Data page, ModelRuntimeGuard | MDL-1..6 | not started |
+| 12 | NLP engine | core:nlp, lemmatizer, matcher, cross-block bridge, Room cache, PHRASAL/IDIOM/COLLOCATION states, dashed underline | MWE-8..15 | not started |
+| 13 | Popup + settings | new card (word-first then phrase), bookmark buttons, green My Words rule, My Words completion, Smart Learning settings | MWE-16..25 | not started |
+| 14 | Light-to-precise profiles | POS tagger, Model2Vec, MiniLM ONNX, sense ranking, ML Kit fallback | MWE-26..30 | not started |
+| 15 | Advanced + smart | DistilBERT, LLM adapter, speed test, auto fallback | MWE-31..35 | not started |
+| 16 | Hardening | final eval, docs, screenshots, version + CHANGELOG | — | not started |
 
 ## Notes on the split actually used
 
