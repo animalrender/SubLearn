@@ -574,7 +574,7 @@ private fun QuickActionRail(
         }
         if (scroll.value > 0) {
             Icon(
-                imageVector = androidx.compose.material.icons.automirrored.filled.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(R.string.player_more_actions_left),
                 tint = colors.controlIdle,
                 modifier = Modifier.align(Alignment.CenterStart).size(Dimens.inlineIcon),
