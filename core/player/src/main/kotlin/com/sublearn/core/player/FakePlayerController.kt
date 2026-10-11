@@ -143,6 +143,11 @@ class FakePlayerController(
         calls += "wake:$keepScreenOn"
     }
 
+    override fun setAudioTracksEnabled(enabled: Boolean) {
+        calls += "audioTracks:$enabled"
+        _state.value = _state.value.copy(audioTracksEnabled = enabled)
+    }
+
     override fun setMuted(muted: Boolean) {
         calls += "mute:$muted"
         _state.value = _state.value.copy(volumePercent = if (muted) 0 else _state.value.volumePercent)

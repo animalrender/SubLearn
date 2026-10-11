@@ -281,9 +281,9 @@ private fun BarAction(
             ui = ui,
             id = id,
             spec = spec,
-            // PLY-11: labels belong to the expanded bar. A floating button never carries one, because
-            // it is a picture overlay first and a button second.
-            labelShown = expanded || spec.showLabel,
+            // PLY-11: labels belong to the expanded bar, and to it only. A floating button never
+            // carries one, because it is a picture overlay first and a button second.
+            labelShown = expanded && spec.showLabel,
             interactive = !arrange,
             onTapAction = { onTap(id) },
             onHoldStart = onHoldStart,
@@ -321,9 +321,7 @@ private fun FloatingAction(
 ) {
     val spec = ui.settings.quickActions.spec(id)
     val density = LocalDensity.current.density
-    var draft by remember(id) { mutableStateOf<Offset?>(null) }
-    var menuOpen by remember(id) { mutableStateOf(false) }
-    val shown = draft ?: Offset(spec.xFraction, spec.yFraction)
+    val shown = Offset(spec.xFraction, spec.yFraction)
     val currentMove by rememberUpdatedState(onMove)
     val arrange = ui.layoutMode
     val menuSlop = with(LocalDensity.current) { Dimens.touchTarget.toPx() } * MENU_SLOP_SHARE
@@ -338,15 +336,16 @@ private fun FloatingAction(
                     onMove = { total ->
                         val widthPx = areaWidth.value.coerceAtLeast(1f) * density
                         val heightPx = areaHeight.value.coerceAtLeast(1f) * density
-                        val moved = Offset(
+                        currentMove(
+                            id,
                             (spec.xFraction + total.x / widthPx).coerceIn(0f, 1f),
                             (spec.yFraction + total.y / heightPx).coerceIn(0f, 1f),
                         )
-                        draft = moved
-                        currentMove(id, moved.x, moved.y)
-                        draft = null
                     },
                     menuSlop = menuSlop,
+                    // A floating button has no row underneath it to scroll, so it follows the finger
+                    // straight away instead of asking for a long press first.
+                    directDrag = true,
                 )
             },
     ) {
@@ -484,18 +483,22 @@ private fun DockModeMenu(
  * A press that lifts before the long-press timeout, or a hold that never moves, asks for the
  * docking menu. A hold followed by movement reports the total drift, and movement before the
  * timeout is left to the row underneath, so scrolling the bar still works while arranging.
+ *
+ * [directDrag] is for the buttons that have no row underneath them: a floating button follows the
+ * finger from the first movement instead of asking the user to hold it first.
  */
 private suspend fun PointerInputScope.arrangeGesture(
     onMenu: () -> Unit,
     onMove: (Offset) -> Unit,
     menuSlop: Float,
+    directDrag: Boolean = false,
 ) {
     awaitEachGesture {
         val down = awaitFirstDown(requireUnconsumed = false)
         down.consume()
         val startedAt = System.nanoTime()
         var drift = Offset.Zero
-        var dragging = false
+        var dragging = directDrag
         var leftToTheRow = false
         while (true) {
             val elapsedMs = (System.nanoTime() - startedAt) / NANOS_PER_MS

@@ -55,7 +55,12 @@ data class QuickActionSpec(
     val xFraction: Float = 0f,
     val yFraction: Float = 0f,
     val iconTintArgb: Long? = null,
-    val showLabel: Boolean = false,
+    /**
+     * PLY-11: whether this button's name is drawn under its icon while the bar is expanded. Labels
+     * never appear while the bar is collapsed or while the button floats over the picture, so this
+     * is a per-button opt-out of the expanded state, not a second way to show a label.
+     */
+    val showLabel: Boolean = true,
 ) {
     init {
         require(sizeDp >= 24f && sizeDp <= 96f) { "quick action size must be between 24dp and 96dp" }

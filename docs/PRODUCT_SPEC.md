@@ -67,7 +67,9 @@ interface, stub, flag, disabled entry) but not implemented.
 - **PLY-12** A recently opened file stays playable: the read grant is taken when the file is picked,
   Home checks the URI before it navigates, and a file that moved is re-picked and replaces its entry
   instead of failing inside the decoder with `ERROR_CODE_IO_UNSPECIFIED`.
-- **PLY-13** Audio is its own section: the tracks inside the video, the volume and mute of the player,
+- **PLY-13** Audio is its own section: the tracks inside the video (ticking one chooses it, unticking
+  the ticked one turns the video's own audio off without stopping the picture), the volume and mute of
+  the player,
   and one audio file the user adds to play with the video (removable).
 - **PLY-14** While the seek line is dragged, the picture and the subtitles follow the finger; playback
   pauses for the drag and resumes when it ends.

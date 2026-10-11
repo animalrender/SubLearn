@@ -51,8 +51,9 @@ layers, audio as its own section, rotation that follows the phone, and recent vi
 - Added: a file added to a layer is remembered per video (`SubtitleSettings.attachmentsByVideo`) and
   restored on the next open, including the tick state; a file that cannot be read any more is dropped
   instead of failing on every open.
-- Added: audio is its own sheet — the audio tracks inside the video, the volume and mute of the player,
-  and one audio file the user adds to play with the video, merged into the same timeline by
+- Added: audio is its own sheet — the audio tracks inside the video (each tickable, and unticking the
+  ticked one turns the video's own audio off without stopping the picture), the volume and mute of the
+  player, and one audio file the user adds to play with the video, merged into the same timeline by
   `Media3PlayerController` and removable again (PLY-13).
 - Added: the top bar has a rotation button: tap for a quarter turn, hold for the direction list
   (automatic, portrait, landscape, reverse landscape, follow the sensor). `OrientationLock.SENSOR` now
@@ -73,8 +74,8 @@ layers, audio as its own section, rotation that follows the phone, and recent vi
   icons-per-row slider is gone, because the bar is one scrollable row now.
 - Changed: the quick-action list in Settings shows the same names as the player (`QuickActionId.labelRes()`)
   instead of raw ids such as `toggle_learning`.
-- Changed: translation and UI strings — 482 keys in EN and FA each (`player_subtitle_manager`,
-  `player_audio_manager`, `player_rotate`, `home_recent_locate`, `settings_quick_bar_hint`, …).
+- Changed: translation and UI strings — 483 keys in EN and FA each (`player_subtitle_manager`,
+  `player_audio_manager`, `player_rotate`, `home_recent_locate`, `player_audio_off`, `settings_quick_bar_hint`, …).
 
 ## [0.2.0] - 2026-10-11
 

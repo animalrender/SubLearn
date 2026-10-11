@@ -411,7 +411,7 @@ fun PlayerScreen(
                     } else {
                         null
                     },
-                    onRetry = { start?.let { viewModel.open(it.uri, it.title, it.subtitles) } },
+                    onRetry = viewModel::retryOpen,
                     onSwitchDecoder = { viewModel.setDecoder(DecoderMode.SOFTWARE) },
                     modifier = Modifier.align(Alignment.Center),
                 )

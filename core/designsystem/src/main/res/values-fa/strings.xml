@@ -458,6 +458,7 @@
     <string name="player_audio_external_note">صدای اضافه‌شده فقط با ویدیوی باز پخش می‌شود و باید قالبی رایج داشته باشد (M4A، MP3، AAC).</string>
     <string name="player_audio_remove_external">حذف صدای اضافه‌شده</string>
     <string name="player_audio_no_tracks">این ویدیو ترک صوتی ندارد.</string>
+    <string name="player_audio_off">صدای خاموش (بدون ترک)</string>
     <string name="player_mute">بی‌صدا</string>
     <string name="player_unmute">بازگرداندن صدا</string>
     <string name="player_msg_audio_added">فایل صدا اضافه شد</string>

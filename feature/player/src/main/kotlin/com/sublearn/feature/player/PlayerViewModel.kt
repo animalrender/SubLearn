@@ -241,6 +241,21 @@ class PlayerViewModel(
 
     data class PickedSubtitle(val uri: String, val name: String, val role: TrackRole)
 
+    /**
+     * PLY-12: the error card's "try again". Re-opening the same target is what a retry means after a
+     * decoder failure, and it is the same call the open path uses, so a recovered file keeps its
+     * position and its layers.
+     */
+    fun retryOpen() {
+        val target = openedTarget ?: return
+        viewModelScope.launch {
+            _ui.value = _ui.value.copy(opening = true)
+            controller.open(target)
+            _ui.value = _ui.value.copy(opening = false)
+            publish()
+        }
+    }
+
     private suspend fun loadSidecars(videoUri: String, videoName: String) {
         val tree = settingsRepository.current().subtitles.sidecarTreeUri
         val files = runCatching { fileSource.sidecars(videoUri, tree) }.getOrDefault(emptyList())
@@ -1247,7 +1262,12 @@ class PlayerViewModel(
 
     fun setRepeat(repeat: PlaylistRepeat) = controller.setRepeat(repeat)
 
-    fun selectTrack(ref: TrackRef) = controller.selectTrack(ref)
+    /** Asking for one track is also asking for that kind of sound back (PLY-13). */
+    fun selectTrack(ref: TrackRef) {
+        if (!_ui.value.playback.audioTracksEnabled) controller.setAudioTracksEnabled(true)
+        controller.selectTrack(ref)
+        publish()
+    }
 
     fun clearTrackOverride(type: PlayerTrackType) = controller.clearTrackOverride(type)
 
@@ -1309,6 +1329,12 @@ class PlayerViewModel(
     }
 
     fun toggleMute() = setMuted(!muted)
+
+    /** PLY-13: the audio sheet's "no track" — the video keeps playing, silently. */
+    fun setAudioEnabled(enabled: Boolean) {
+        controller.setAudioTracksEnabled(enabled)
+        publish()
+    }
 
     fun setVolume(percent: Int) {
         controller.setVolume(percent.coerceIn(0, 100))

@@ -127,9 +127,16 @@ Player chrome built on these tokens (each one documented where it lives):
   playlist has more than one item, because a button that cannot go anywhere is worse than no button.
 - **Action bar (PLY-11):** one `horizontalScroll` row with an optional label column under each icon,
   a leading expand/collapse handle and a trailing arrow that appears only while the row can still
-  scroll. Labels are on when `QuickActionSettings.barExpanded` is set, and always on in layout mode.
+  scroll. Labels follow `QuickActionSettings.barExpanded` (and layout mode turns it on), and a button
+  that floats over the picture never carries one, whatever its own `showLabel` says.
 - **Layout mode (SUB-3):** chrome stays visible, and while it is on a button's own tap/hold handling
-  is off so that a hold-and-drag can undock it into the floating layer.
+  is off so that one custom gesture can own the button: tap or hold opens the docking menu, hold and
+  drag (or drag straight away, for a floating button) moves it. Movement before the long press still
+  scrolls the row.
+- **Subtitle manager (PLY-8) and audio sheet (PLY-13):** both are lists of tick rows — checkbox, name,
+  one quiet detail line — because every entry in them is something the user switches on or off. The
+  selected state of a one-of-many list (the audio tracks, the aspect modes) is the same row with the
+  accent check instead of the box.
 
 New shared components go here with a KDoc line stating which spec ID they serve. Anything that needs
 `AppSettings` receives the value, not a repository.

@@ -85,6 +85,8 @@ data class PlaybackState(
     val volumePercent: Int = 100,
     /** Audio file playing alongside the video, when the user added one (PLY-13). */
     val externalAudioUri: String? = null,
+    /** False while the user has disabled the video's own audio tracks (PLY-13). */
+    val audioTracksEnabled: Boolean = true,
     val repeat: PlaylistRepeat = PlaylistRepeat.OFF,
     val error: String? = null,
     val isEnded: Boolean = false,

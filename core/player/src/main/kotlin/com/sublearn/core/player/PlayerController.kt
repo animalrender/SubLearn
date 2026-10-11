@@ -63,6 +63,12 @@ interface PlayerController {
     /** Sets the volume/brightness-style dim on the surface; the overlay handles its own dimming. */
     fun setWakeMode(keepScreenOn: Boolean)
 
+    /**
+     * Turn every audio track off, or back on (PLY-13). Disabling keeps the video running in silence
+     * and is not the same state as muting: the track is still selected, only its output is gone.
+     */
+    fun setAudioTracksEnabled(enabled: Boolean)
+
     fun setMuted(muted: Boolean)
 
     /** Media volume as a percentage of the stream, 0..100; muting remembers this value. */

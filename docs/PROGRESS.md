@@ -37,12 +37,14 @@ with a dot, elapsed left / total right, click to swap to time left, live scrub p
   `HomeViewModel.requestOpen` asks `MediaAccess.isReadable` before navigating. A stale entry opens a
   dialog that re-picks the file and moves the entry — and its saved position — to the new URI
   (`relink`). The player's error card explains an IO error and offers re-picking the file too.
+- `AudioSheet` ticks a track to choose it and unticking it turns the video's own audio off
+  (`PlayerController.setAudioTracksEnabled`), which is the sheet's "disable" next to mute.
 - Settings: `settings_show_remaining` (Player) and `settings_action_bar_labels` (Quick actions) switches;
   the icons-per-row slider is gone; the per-action list shows real names via `QuickActionId.labelRes()`.
 - `core:designsystem`: `controlIdle` is light in both themes (chrome ink, D-32) and sheets and the
   subtitle list panel use Material ink; the tokens added in the first pass (`seekLine`, `seekDot`,
   `seekDotActive`, `hairline`, `transportGap`, `actionBarLabelWidth`, `bottomChromeReserve`) are all in
-  use now. 482 EN + 482 FA strings.
+  use now. 483 EN + 483 FA strings.
 - Docs: `PRODUCT_SPEC.md` gained PLY-8…PLY-14 and a rewritten PLY-1/3/5; `CHECKLIST.md` gained rows for
   PLY-8…PLY-14 and PLY-7 moved from partial to real; `DECISIONS.md` gained D-29…D-32; `DESIGN_SYSTEM.md`
   documents the seek/transport/action-bar rules and the three colour rules; `KNOWN_ISSUES.md` 16/17/20/21

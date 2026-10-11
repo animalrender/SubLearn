@@ -395,6 +395,15 @@ class Media3PlayerController(
         player?.setWakeMode(if (keepScreenOn) C.WAKE_MODE_NETWORK else C.WAKE_MODE_LOCAL)
     }
 
+    override fun setAudioTracksEnabled(enabled: Boolean) {
+        val exo = player ?: return
+        exo.trackSelectionParameters = exo.trackSelectionParameters.buildUpon()
+            .setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, !enabled)
+            .build()
+        _state.value = _state.value.copy(audioTracksEnabled = enabled)
+        publishTracks(exo)
+    }
+
     override fun setMuted(muted: Boolean) {
         this.muted = muted
         player?.volume = playbackVolume()

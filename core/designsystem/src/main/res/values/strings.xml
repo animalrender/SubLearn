@@ -475,6 +475,7 @@
     <string name="player_audio_external_note">Added audio plays with the open video only and has to be a common format (M4A, MP3, AAC).</string>
     <string name="player_audio_remove_external">Remove the added audio</string>
     <string name="player_audio_no_tracks">This video carries no audio track.</string>
+    <string name="player_audio_off">Audio off (no track)</string>
     <string name="player_mute">Mute</string>
     <string name="player_unmute">Unmute</string>
     <string name="player_msg_audio_added">Audio file attached</string>

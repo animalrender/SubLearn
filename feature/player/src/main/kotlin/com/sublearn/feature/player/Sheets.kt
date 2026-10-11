@@ -402,18 +402,29 @@ private fun AudioSheet(ui: PlayerUi, viewModel: PlayerViewModel, onAddAudio: () 
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     } else {
+        // Ticking a track chooses it; unticking the ticked one is the sheet's "disable audio",
+        // because a player can only ever have one audio track selected at a time.
         ui.playback.audioTracks.forEach { track ->
-            ChoiceRow(
+            TickRow(
+                checked = track.isSelected && ui.playback.audioTracksEnabled,
+                onCheckedChange = { on ->
+                    if (on) viewModel.selectTrack(track.ref) else viewModel.setAudioEnabled(false)
+                },
                 label = track.displayLabel,
-                selected = track.isSelected,
-                onClick = { viewModel.selectTrack(track.ref) },
-                trailing = track.language,
+                detail = track.language,
             )
         }
         TextButton(onClick = { viewModel.clearTrackOverride(PlayerTrackType.AUDIO) }) {
             Text(stringResource(R.string.player_track_auto))
         }
     }
+    // The switch that turns the video's own sound off completely (PLY-13), next to the list of the
+    // tracks it applies to.
+    TickRow(
+        checked = !ui.playback.audioTracksEnabled,
+        onCheckedChange = { off -> viewModel.setAudioEnabled(!off) },
+        label = stringResource(R.string.player_audio_off),
+    )
     SheetHeading(
         text = stringResource(R.string.player_audio_add),
         note = stringResource(R.string.player_audio_external_note),
