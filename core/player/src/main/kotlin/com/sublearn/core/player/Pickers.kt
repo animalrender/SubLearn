@@ -4,6 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContract
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
 
 /**
  * A document the user picked through the Storage Access Framework.
@@ -65,4 +68,54 @@ class OpenTreeContract : ActivityResultContract<Unit, String?>() {
             }
         }
     }
+}
+
+/**
+ * Whether a media URI can still be opened (PLY-12).
+ *
+ * A URI the user picked through the Storage Access Framework is readable for the session, and only
+ * until the device restarts unless the app took a persistable permission. Home has to be able to ask
+ * before it navigates, otherwise a stale entry fails inside the decoder as
+ * `ERROR_CODE_IO_UNSPECIFIED`, which tells the user nothing.
+ */
+interface MediaAccess {
+    suspend fun isReadable(uri: String): Boolean
+}
+
+class AndroidMediaAccess(private val context: Context) : MediaAccess {
+    override suspend fun isReadable(uri: String): Boolean = withContext(Dispatchers.IO) {
+        when {
+            uri.startsWith("file://") -> runCatching { File(Uri.parse(uri).path.orEmpty()).canRead() }.getOrDefault(false)
+            uri.startsWith("content://") -> runCatching {
+                context.contentResolver.openFileDescriptor(Uri.parse(uri), "r")?.use { true } ?: false
+            }.getOrDefault(false)
+            // A stream is the network's problem, never the filesystem's; the player reports its own errors.
+            else -> true
+        }
+    }
+}
+
+/**
+ * Persistable SAF grants.
+ *
+ * `ACTION_OPEN_DOCUMENT` hands back a URI whose read permission only lives until the next restart
+ * unless it is persisted here. Without this call every recent-video row breaks after a reboot with
+ * a source error, which is exactly the bug PLY-12 fixes. The call is safe to repeat and never
+ * throws out of the caller: a provider that does not offer persistable grants (a share intent, for
+ * example) simply cannot be persisted, and the caller falls back to re-picking the file.
+ */
+object UriGrants {
+    /** Returns true when the grant is now durable. */
+    fun persistRead(context: Context, uri: String): Boolean = runCatching {
+        context.contentResolver.takePersistableUriPermission(
+            Uri.parse(uri),
+            Intent.FLAG_GRANT_READ_URI_PERMISSION,
+        )
+        true
+    }.getOrDefault(false)
+
+    /** True when this URI was already persisted, so Home can tell "moved" from "never granted". */
+    fun isPersisted(context: Context, uri: String): Boolean = runCatching {
+        context.contentResolver.persistedUriPermissions.any { it.isReadPermission && it.uri.toString() == uri }
+    }.getOrDefault(false)
 }

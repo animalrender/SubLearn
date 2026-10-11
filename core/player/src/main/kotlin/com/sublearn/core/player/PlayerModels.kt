@@ -81,6 +81,10 @@ data class PlaybackState(
     val audioTracks: List<TrackInfo> = emptyList(),
     val textTracks: List<TrackInfo> = emptyList(),
     val audioSessionId: Int = 0,
+    /** Media volume in percent; 0 while muted, restored when unmuted. */
+    val volumePercent: Int = 100,
+    /** Audio file playing alongside the video, when the user added one (PLY-13). */
+    val externalAudioUri: String? = null,
     val repeat: PlaylistRepeat = PlaylistRepeat.OFF,
     val error: String? = null,
     val isEnded: Boolean = false,

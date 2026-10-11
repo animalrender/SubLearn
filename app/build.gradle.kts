@@ -28,7 +28,7 @@ android {
         targetSdk = libs.versions.targetSdk.get().toInt()
         // The release workflows read this exact line to check a tag against the build, so keep it a
         // plain literal. SUBLEARN_VERSION_CODE overrides the derived code if one is ever dictated.
-        versionName = "0.2.0"
+        versionName = "0.3.0"
         versionCode = System.getenv("SUBLEARN_VERSION_CODE")?.toIntOrNull() ?: versionCodeOf(versionName!!)
         resourceConfigurations += listOf("en", "fa")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

@@ -145,6 +145,17 @@ class FakePlayerController(
 
     override fun setMuted(muted: Boolean) {
         calls += "mute:$muted"
+        _state.value = _state.value.copy(volumePercent = if (muted) 0 else _state.value.volumePercent)
+    }
+
+    override fun setVolume(percent: Int) {
+        calls += "volume:$percent"
+        _state.value = _state.value.copy(volumePercent = percent.coerceIn(0, 100))
+    }
+
+    override fun setExternalAudio(uri: String?) {
+        calls += "externalAudio:${uri ?: "none"}"
+        _state.value = _state.value.copy(externalAudioUri = uri)
     }
 
     override suspend fun flushPosition() {

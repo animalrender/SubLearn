@@ -19,16 +19,31 @@ data class SubLearnColors(
     val cardBackdrop: Color,
     val strongBackdrop: Color,
     val overlayOutline: Color,
+    /**
+     * Idle chrome tint (icons, labels, the time labels). It is light in both themes because the
+     * chrome only ever draws on the video or on its scrim, never on a Material surface.
+     */
     val controlIdle: Color,
     val controlActive: Color,
     val controlDisabled: Color,
     val listCurrentRow: Color,
     val listHoverRow: Color,
     val levelBadgeBackgroundAlpha: Float,
+    /**
+     * The translucent accent plate behind status messages, hints and in-player notices (GEN-1).
+     * The chrome is dark in both themes, so a plain [strongBackdrop] card made black text
+     * unreadable; these two roles are the only ones a message may use.
+     */
+    val infoSurface: Color,
+    /** Ink on [infoSurface]; dark in both themes because the accent plate is always light. */
+    val infoText: Color,
 )
 
 /** Alpha used for a CEFR badge so the tint matches both themes. */
 const val BADGE_ALPHA = 0.20f
+
+/** Alpha of an accent status message: solid enough to read over video, still see-through. */
+const val INFO_SURFACE_ALPHA = 0.88f
 
 fun CefrLevel.badgeColorArgb(): Long = when (this) {
     CefrLevel.A1 -> Palette.levelColor("A1")

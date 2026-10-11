@@ -2,6 +2,70 @@
 
 Always answers: what was the goal, what is done, what remains, how to test it. Newest entry on top.
 
+## 2026-10-11 — MX-style chrome, a subtitle manager for two layers, audio on its own, and recents that play
+
+**Goal.** The user's list, in their words: the subtitle section must manage both layers with two tabs and
+accept several files per layer; embedded soft subtitles must be tickable in both tabs; audio must be its
+own section; rotation must offer lock/direction *and* follow the phone; a recent video must not fail with
+`ERROR_CODE_IO_UNSPECIFIED`; messages must stop being black-on-black; the player should look like MX
+Player (bottom play area, top toolbar, scrollable action bar with undockable buttons, hairline seek line
+with a dot, elapsed left / total right, click to swap to time left, live scrub preview, fade in/out).
+
+**Done**
+- `feature/player/ActionBar.kt` (new): the action bar — one `horizontalScroll` row under the top bar or
+  above the transport row, labels under the icons while expanded (or while arranging), a leading
+  expand/collapse handle, a trailing "more" arrow that appears only while the row can still scroll, and
+  a three-way dock menu per button. Buttons can be dragged out of the bar while arranging.
+- `Controls.kt` rewritten: `BottomChrome` is a seek row plus one transport row. The seek row is a
+  hand-drawn hairline (`Canvas`) with a buffered range, an accent fill and an 8→12 dp dot; both time
+  labels tap to swap to the time left. `TransportRow` holds the seek steps, the previous/next block
+  steps, play/pause (with the buffering spinner inside it), repeat, speed, aspect, playlist (only with a
+  playlist of more than one item) and the subtitle list. `CenterCluster` is gone (D-29). `Snackbarish`
+  and `LayoutModeBanner` moved to `infoSurface`/`infoText`.
+- `Sheets.kt`: `SubtitleManagerSheet` (a `TabRow` per layer, file rows with a tick and a remove button,
+  embedded tracks tickable per layer, per-layer delay/size/transparency/list options) and `AudioSheet`
+  (embedded audio tracks, volume, mute, one added audio file). The old combined `TracksSheet` and
+  `LayerOptionsSheet` are gone; `SheetsHost` takes the two picker callbacks.
+- `PlayerViewModel.kt`: it now owns a list of files per layer (`layerFiles`), each with its own document
+  and tick; `attachFile/setFileEnabled/removeFile/toggleEmbeddedTrack`; attachments are remembered per
+  video and restored on open, and a file that cannot be read is dropped from the remembered set.
+  Live scrub (`onScrubStart/Update/End` at `PREVIEW_SEEK_INTERVAL_MS`) pauses, preview-seeks and
+  publishes the subtitles at the dragged moment. New: `setVolume`, `toggleMute`, `setExternalAudio`
+  (checked with `MediaAccess` first), `playNext/playPrevious`, `rotateQuarterTurn`, `setOrientationLock`,
+  `toggleRemainingTime`, `setActionBarExpanded`, `setDockMode`.
+- `feature/home`: picking a video or re-picking one persists its read grant (`UriGrants.persistRead`), and
+  `HomeViewModel.requestOpen` asks `MediaAccess.isReadable` before navigating. A stale entry opens a
+  dialog that re-picks the file and moves the entry — and its saved position — to the new URI
+  (`relink`). The player's error card explains an IO error and offers re-picking the file too.
+- Settings: `settings_show_remaining` (Player) and `settings_action_bar_labels` (Quick actions) switches;
+  the icons-per-row slider is gone; the per-action list shows real names via `QuickActionId.labelRes()`.
+- `core:designsystem`: `controlIdle` is light in both themes (chrome ink, D-32) and sheets and the
+  subtitle list panel use Material ink; the tokens added in the first pass (`seekLine`, `seekDot`,
+  `seekDotActive`, `hairline`, `transportGap`, `actionBarLabelWidth`, `bottomChromeReserve`) are all in
+  use now. 482 EN + 482 FA strings.
+- Docs: `PRODUCT_SPEC.md` gained PLY-8…PLY-14 and a rewritten PLY-1/3/5; `CHECKLIST.md` gained rows for
+  PLY-8…PLY-14 and PLY-7 moved from partial to real; `DECISIONS.md` gained D-29…D-32; `DESIGN_SYSTEM.md`
+  documents the seek/transport/action-bar rules and the three colour rules; `KNOWN_ISSUES.md` 16/17/20/21
+  updated; `CHANGELOG.md` `## [0.3.0]`; `versionName = "0.3.0"`.
+
+**Remains**
+- The on-device pass (KNOWN_ISSUES 21): the arrange gesture, the live scrub, the sensor-follow rotation and
+  the merged audio file have all been reviewed by reading and by the static checkers only.
+- A real playlist: nothing builds one yet, so the playlist sheet stays read-only and the transport row
+  keeps its playlist buttons hidden (KNOWN_ISSUES 20).
+- Room tables for per-video subtitle attachments and audio choice instead of the settings blob
+  (KNOWN_ISSUES 17).
+
+**How to test**
+- `python3 tools/check_sources.py core app feature tools`, `check_symbols.py`, `check_deps.py`,
+  `check_resources.py core app feature` — all clean locally; the compile itself is CI's job.
+- On a device: add two subtitle files to the learning layer and one to the translation layer, tick an
+  embedded track in both tabs, untick and re-tick a file, close and reopen the video and confirm every
+  tick came back; drag the seek line and watch the picture and the subtitle follow; tap the time label
+  twice; press play/pause in the bottom row; rotate the phone with "Follow the sensor"; long-press-drag a
+  bar button in layout mode onto the picture and re-dock it; add an audio file and remove it; open a
+  recent video after a reboot.
+
 ## 2026-10-11 — releases publish themselves after CI is green
 
 **Goal.** Stop releasing by hand. A change that passes every check should end up as installable APKs

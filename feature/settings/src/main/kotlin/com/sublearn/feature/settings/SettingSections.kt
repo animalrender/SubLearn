@@ -117,6 +117,11 @@ fun PlayerSection(settings: AppSettings, viewModel: SettingsViewModel) {
             suffix = "%",
             onChange = { value -> viewModel.update { it.copy(player = it.player.copy(defaultSpeedPercent = value)) } },
         )
+        SwitchRow(
+            title = stringResource(R.string.settings_show_remaining),
+            value = player.showRemainingTime,
+            onChange = { value -> viewModel.update { it.copy(player = it.player.copy(showRemainingTime = value)) } },
+        )
         StepperRow(
             title = stringResource(R.string.settings_speed_step),
             value = player.speedStepPercent,

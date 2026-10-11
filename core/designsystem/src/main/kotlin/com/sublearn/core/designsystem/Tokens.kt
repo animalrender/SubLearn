@@ -98,6 +98,18 @@ object Dimens {
     val hudCircle = 72.dp
     val hudPadding = 24.dp
     val dockGap = 4.dp
+
+    // PLY-10 seek line, PLY-11 action bar and the transport row of PLY-3.
+    /** The seek line is a hairline: 3 dp, with a dot instead of a Material thumb. */
+    val seekLine = 3.dp
+    val seekDot = 8.dp
+    val seekDotActive = 12.dp
+    /** The one-pixel separators between the groups of the transport row. */
+    val hairline = 1.dp
+    /** A label under an action-bar icon may not stretch the row, so it gets a fixed column. */
+    val actionBarLabelWidth = 76.dp
+    /** Gap between the transport buttons, tighter than [dockGap] so more of them fit. */
+    val transportGap = 2.dp
 }
 
 /** Minimal dp/span so this module does not need to import foundation everywhere. */

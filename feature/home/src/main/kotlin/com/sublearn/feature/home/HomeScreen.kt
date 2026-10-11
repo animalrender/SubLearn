@@ -36,6 +36,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,12 +44,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sublearn.core.designsystem.R
+import com.sublearn.core.player.UriGrants
 
 /**
  * Home: the entry point for local video (GEN / APP entry).
@@ -65,9 +68,25 @@ fun HomeScreen(
     viewModel: HomeViewModel,
 ) {
     val recent by viewModel.recent.collectAsStateWithLifecycle()
+    val unavailable by viewModel.unavailable.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     var showUrlDialog by remember { mutableStateOf(false) }
     val videoPicker = rememberLauncherForActivityResult(OpenVideoContract()) { picked ->
-        picked?.let { onPlay(it.uri, MediaInfo.titleFromFileName(it.title)) }
+        picked?.let {
+            // Keeps the grant alive across a restart, so the entry in the list keeps working (PLY-12).
+            UriGrants.persistRead(context, it.uri)
+            onPlay(it.uri, MediaInfo.titleFromFileName(it.title))
+        }
+    }
+    // Re-picking a video whose grant has expired: the entry is moved to the new URI, not duplicated.
+    val relinkPicker = rememberLauncherForActivityResult(OpenVideoContract()) { picked ->
+        picked?.let {
+            UriGrants.persistRead(context, it.uri)
+            viewModel.relink(it.uri, it.title)
+        }
+    }
+    LaunchedEffect(viewModel) {
+        viewModel.openRequests.collect { request -> onPlay(request.uri, request.title) }
     }
 
     Column(modifier = modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -111,7 +130,7 @@ fun HomeScreen(
                 items(recent, key = { it.uri }) { row ->
                     RecentCard(
                         row = row,
-                        onOpen = { onPlay(row.uri, row.title) },
+                        onOpen = { viewModel.requestOpen(row) },
                         onForget = { viewModel.forget(row.uri) },
                     )
                 }
@@ -125,6 +144,31 @@ fun HomeScreen(
             onOpen = {
                 showUrlDialog = false
                 onOpenUrl(it)
+            },
+        )
+    }
+
+    unavailable?.let { row ->
+        AlertDialog(
+            onDismissRequest = viewModel::dismissUnavailable,
+            title = { Text(stringResource(R.string.home_recent_unavailable)) },
+            text = {
+                Column {
+                    Text(row.title, style = MaterialTheme.typography.titleSmall)
+                    Spacer(Modifier.size(8.dp))
+                    Text(stringResource(R.string.home_recent_locate_body), style = MaterialTheme.typography.bodySmall)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.dismissUnavailable()
+                    relinkPicker.launch(Unit)
+                }) {
+                    Text(stringResource(R.string.home_recent_locate))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::dismissUnavailable) { Text(stringResource(R.string.action_cancel)) }
             },
         )
     }

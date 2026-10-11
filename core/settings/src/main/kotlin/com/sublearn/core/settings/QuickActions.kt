@@ -34,6 +34,7 @@ enum class QuickActionId(val key: String) {
     PICTURE_IN_PICTURE("pip"),
     SHARE("share"),
     SETTINGS("settings"),
+    ROTATE("rotate"),
     ;
 
     companion object {
@@ -86,6 +87,7 @@ data class QuickActionSpec(
                 QuickActionId.PICTURE_IN_PICTURE,
                 QuickActionId.SHARE,
                 QuickActionId.SETTINGS,
+                QuickActionId.ROTATE,
             )
             bar.forEachIndexed { index, id -> put(id.key, QuickActionSpec(dock = DockMode.BAR, order = index)) }
         }
@@ -93,12 +95,18 @@ data class QuickActionSpec(
     }
 }
 
-/** The whole quick-action dock: the Quick Actions column under the top bar plus floating buttons. */
+/**
+ * The action bar (PLY-11): the second toolbar row plus the floating buttons.
+ *
+ * [barExpanded] is the "labels under the icons" state; [column] still says which corner the bar is
+ * docked to, but the bar itself is one horizontally scrollable row, so TOP_* means "under the top
+ * bar" and BOTTOM_* means "above the bottom controls", each aligned to its side.
+ */
 @Serializable
 data class QuickActionSettings(
     val specs: Map<String, QuickActionSpec> = QuickActionSpec.defaults,
     val column: QuickActionColumn = QuickActionColumn.TOP_LEFT,
-    val barIconsPerRow: Int = 8,
+    val barExpanded: Boolean = false,
     val autoHideWithControls: Boolean = true,
 ) {
     fun spec(id: QuickActionId): QuickActionSpec = specs[id.key] ?: QuickActionSpec()

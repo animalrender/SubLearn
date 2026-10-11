@@ -1,13 +1,16 @@
 package com.sublearn.feature.player
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,8 +19,6 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -25,7 +26,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AspectRatio
@@ -47,6 +47,8 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Replay10
 import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.ScreenRotation
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.SkipNext
@@ -55,17 +57,13 @@ import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material.icons.filled.Subtitles
-import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -79,26 +77,36 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.sublearn.core.designsystem.Dimens
 import com.sublearn.core.designsystem.LocalReduceMotion
 import com.sublearn.core.designsystem.LocalSubLearnColors
 import com.sublearn.core.designsystem.Motion
 import com.sublearn.core.designsystem.R
 import com.sublearn.core.settings.DecoderMode
-import com.sublearn.core.settings.DockMode
-import com.sublearn.core.settings.QuickActionColumn
+import com.sublearn.core.settings.OrientationLock
 import com.sublearn.core.settings.QuickActionId
 import com.sublearn.core.subtitles.TrackRole
+
+/**
+ * The player chrome (PLY-1, PLY-3, PLY-11), MX-style: a toolbar that can disappear, one seek line
+ * that is a line and not a slider, one transport row, and the action bar in [ActionBar].
+ *
+ * Every piece fades in and out through [ChromeVisibility], so the picture is never boxed in by a
+ * panel that cannot leave. Sizes come from [Dimens] and colours from [LocalSubLearnColors]; nothing
+ * here invents a value.
+ */
 
 /**
  * Fades and slides the chrome in and out. Timing and the reduce-motion variant come from
@@ -123,7 +131,6 @@ internal fun ChromeVisibility(
  * A 44 dp target around one icon. Only a few controls have a second meaning on long press, so
  * [onLongClick] is optional and the default is a plain tap.
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun ChromeIconButton(
     icon: ImageVector,
@@ -171,8 +178,8 @@ private fun chromeBrush(towardsBottom: Boolean): Brush {
 }
 
 /**
- * PLY-1: back and the title on the left; audio, subtitles, the decoder and More on the right.
- * The bar has no solid background, only the fading scrim.
+ * PLY-1: back and the title on the left; audio, subtitles, rotation, the decoder and More on the
+ * right. Audio and subtitles open their own sheets (PLY-8, PLY-13), never one combined list.
  */
 @Composable
 internal fun TopChrome(
@@ -180,6 +187,8 @@ internal fun TopChrome(
     onBack: () -> Unit,
     onSheet: (Sheet) -> Unit,
     onMenuOpenChange: (Boolean) -> Unit,
+    onOrientationLock: (OrientationLock) -> Unit,
+    onRotateQuarterTurn: () -> Unit,
     menuActions: List<PlayerMenuItem>,
     registry: PlayerHitRegistry,
     modifier: Modifier = Modifier,
@@ -218,13 +227,19 @@ internal fun TopChrome(
         }
         ChromeIconButton(
             icon = Icons.Default.GraphicEq,
-            contentDescription = stringResource(R.string.player_audio_tracks),
-            onClick = { onSheet(Sheet.TRACKS) },
+            contentDescription = stringResource(R.string.player_audio_manager),
+            onClick = { onSheet(Sheet.AUDIO) },
+            selected = ui.muted,
         )
         ChromeIconButton(
             icon = Icons.Default.ClosedCaption,
-            contentDescription = stringResource(R.string.player_subtitle_tracks),
-            onClick = { onSheet(Sheet.TRACKS) },
+            contentDescription = stringResource(R.string.player_subtitle_manager),
+            onClick = { onSheet(Sheet.SUBTITLES) },
+        )
+        RotationMenu(
+            lock = ui.settings.player.orientationLock,
+            onSelect = onOrientationLock,
+            onRotate = onRotateQuarterTurn,
         )
         TextButton(onClick = { onSheet(Sheet.DECODER) }, modifier = Modifier.height(Dimens.touchTarget)) {
             Text(
@@ -263,6 +278,44 @@ internal fun TopChrome(
     }
 }
 
+/**
+ * PLY-5: the rotation button. Tapping it turns the picture a quarter turn; holding it opens the
+ * direction list, which is where the sensor option lives next to the fixed ones.
+ */
+@Composable
+private fun RotationMenu(
+    lock: OrientationLock,
+    onSelect: (OrientationLock) -> Unit,
+    onRotate: () -> Unit,
+) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        ChromeIconButton(
+            icon = Icons.Default.ScreenRotation,
+            contentDescription = stringResource(R.string.player_rotate),
+            onClick = onRotate,
+            onLongClick = { open = true },
+            selected = lock != OrientationLock.AUTO,
+        )
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            OrientationLock.entries.forEach { entry ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(entry.playerLabelRes())) },
+                    leadingIcon = if (entry == lock) {
+                        { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(Dimens.inlineIcon)) }
+                    } else {
+                        null
+                    },
+                    onClick = {
+                        open = false
+                        onSelect(entry)
+                    },
+                )
+            }
+        }
+    }
+}
+
 /** One row of the overflow menu. Built by the screen so the menu lists every action in one place. */
 data class PlayerMenuItem(
     val label: Int,
@@ -271,67 +324,24 @@ data class PlayerMenuItem(
     val onClick: () -> Unit,
 )
 
-/** PLY-3 centre: replay, play or pause, and forward, centred over the picture. */
-@Composable
-internal fun CenterCluster(
-    playing: Boolean,
-    buffering: Boolean,
-    seekStepMs: Long,
-    onTogglePlay: () -> Unit,
-    onSeekBy: (Long) -> Unit,
-    registry: PlayerHitRegistry,
-    modifier: Modifier = Modifier,
-) {
-    val colors = LocalSubLearnColors.current
-    Row(
-        modifier = modifier.blocksGestures(registry),
-        horizontalArrangement = Arrangement.spacedBy(Dimens.xxl),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        ChromeIconButton(
-            icon = Icons.Default.Replay10,
-            contentDescription = stringResource(R.string.player_seek_backward),
-            onClick = { onSeekBy(-seekStepMs) },
-        )
-        Surface(
-            onClick = onTogglePlay,
-            modifier = Modifier.size(Dimens.huge),
-            shape = CircleShape,
-            color = colors.strongBackdrop,
-        ) {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                if (buffering) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(Dimens.huge),
-                        strokeWidth = Dimens.spinnerStroke,
-                        color = colors.controlActive,
-                    )
-                }
-                Icon(
-                    imageVector = if (playing) Icons.Default.Pause else Icons.Default.PlayArrow,
-                    contentDescription = stringResource(if (playing) R.string.player_pause else R.string.player_play),
-                    tint = colors.controlActive,
-                    modifier = Modifier.size(Dimens.iconButtonLarge),
-                )
-            }
-        }
-        ChromeIconButton(
-            icon = Icons.Default.Forward10,
-            contentDescription = stringResource(R.string.player_seek_forward),
-            onClick = { onSeekBy(seekStepMs) },
-        )
-    }
-}
-
 /**
- * PLY-3 bottom: the seekbar with elapsed on the left and total on the right, then the subtitle
- * transport (previous, repeat this block, next), and speed, aspect, playlist and the list.
+ * PLY-3 bottom, in two rows and never more: the seek line with the two time labels on it, and the
+ * transport row.
+ *
+ * The time labels swap between elapsed/total and elapsed/time-left (PLY-10) when either of them is
+ * tapped, so the row never grows a third label.
  */
 @Composable
 internal fun BottomChrome(
     ui: PlayerUi,
-    onScrubStart: () -> Unit,
+    onScrubStart: (Long) -> Unit,
+    onScrubUpdate: (Long) -> Unit,
     onScrubEnd: (Long) -> Unit,
+    onToggleRemainingTime: () -> Unit,
+    onPlayPause: () -> Unit,
+    onSeekBy: (Long) -> Unit,
+    onPreviousVideo: () -> Unit,
+    onNextVideo: () -> Unit,
     onPreviousBlock: () -> Unit,
     onNextBlock: () -> Unit,
     onRepeatBlock: () -> Unit,
@@ -346,7 +356,6 @@ internal fun BottomChrome(
 ) {
     val colors = LocalSubLearnColors.current
     val state = ui.playback
-    val live = state.isLive || state.durationMs <= 0L
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -355,71 +364,372 @@ internal fun BottomChrome(
             .windowInsetsPadding(WindowInsets.displayCutout)
             .padding(horizontal = Dimens.playerEdgeInset),
     ) {
-        SeekBar(
+        SeekRow(
             positionMs = state.positionMs,
             durationMs = state.durationMs,
-            progress = state.progressFraction,
-            buffered = state.bufferedFraction,
-            live = live,
+            bufferedFraction = state.bufferedFraction,
+            live = state.isLive || state.durationMs <= 0L,
+            remaining = ui.settings.player.showRemainingTime,
+            onToggleRemainingTime = onToggleRemainingTime,
             onScrubStart = onScrubStart,
+            onScrubUpdate = onScrubUpdate,
             onScrubEnd = onScrubEnd,
         )
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            ui.shadowing.segmentLabel?.let { label ->
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colors.controlActive,
-                    modifier = Modifier.padding(start = Dimens.xs),
-                )
-            }
-            Spacer(Modifier.weight(1f))
-            ChromeIconButton(
-                icon = Icons.Default.SkipPrevious,
-                contentDescription = stringResource(R.string.player_previous_subtitle),
-                onClick = onPreviousBlock,
-                enabled = ui.canStepBySubtitle,
+        ui.shadowing.segmentLabel?.let { label ->
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.controlActive,
+                modifier = Modifier.padding(start = Dimens.xs),
             )
-            ChromeIconButton(
-                icon = Icons.Default.Repeat,
-                contentDescription = stringResource(R.string.player_repeat_subtitle),
-                onClick = onRepeatBlock,
-                onLongClick = onRepeatBlockHold,
-                selected = ui.shadowing.active,
-                enabled = ui.canStepBySubtitle,
+        }
+        TransportRow(
+            ui = ui,
+            onPlayPause = onPlayPause,
+            onSeekBy = onSeekBy,
+            onPreviousVideo = onPreviousVideo,
+            onNextVideo = onNextVideo,
+            onPreviousBlock = onPreviousBlock,
+            onNextBlock = onNextBlock,
+            onRepeatBlock = onRepeatBlock,
+            onRepeatBlockHold = onRepeatBlockHold,
+            onSpeed = onSpeed,
+            onAspect = onAspect,
+            onPlaylist = onPlaylist,
+            onToggleList = onToggleList,
+            onListLongPress = onListLongPress,
+        )
+    }
+}
+
+/**
+ * PLY-10: elapsed on the left, total (or time left) on the right, and one hairline between them.
+ * The line is drawn by hand: a Material slider would bring a thumb, a halo and a second row with it.
+ */
+@Composable
+private fun SeekRow(
+    positionMs: Long,
+    durationMs: Long,
+    bufferedFraction: Float,
+    live: Boolean,
+    remaining: Boolean,
+    onToggleRemainingTime: () -> Unit,
+    onScrubStart: (Long) -> Unit,
+    onScrubUpdate: (Long) -> Unit,
+    onScrubEnd: (Long) -> Unit,
+) {
+    var draft by remember { mutableFloatStateOf(NOT_SCRUBBING) }
+    val scrubbing = draft >= 0f
+    val fraction = if (scrubbing) draft else if (durationMs > 0L) {
+        (positionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
+    } else {
+        0f
+    }
+    val elapsedMs = if (scrubbing) (fraction * durationMs).toLong() else positionMs
+    val tailMs = if (remaining) (durationMs - elapsedMs).coerceAtLeast(0L) else durationMs
+    val timeLabelToggle = stringResource(R.string.player_time_remaining)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        TimeLabel(
+            text = clock(elapsedMs),
+            onClickLabel = timeLabelToggle,
+            onClick = onToggleRemainingTime,
+            modifier = Modifier.padding(start = Dimens.xs),
+        )
+        SeekLine(
+            fraction = fraction,
+            bufferedFraction = bufferedFraction,
+            scrubbing = scrubbing,
+            live = live,
+            onFractionChange = { next ->
+                if (draft < 0f) onScrubStart((next * durationMs).toLong())
+                draft = next
+                onScrubUpdate((next * durationMs).toLong())
+            },
+            onFractionEnd = { next ->
+                onScrubEnd((next * durationMs).toLong())
+                draft = NOT_SCRUBBING
+            },
+            modifier = Modifier.weight(1f).padding(horizontal = Dimens.sm),
+        )
+        TimeLabel(
+            text = if (live) stringResource(R.string.player_live) else clock(tailMs),
+            onClickLabel = timeLabelToggle,
+            onClick = onToggleRemainingTime,
+            modifier = Modifier.padding(end = Dimens.xs),
+        )
+    }
+}
+
+/**
+ * One time label. Tapping either of them swaps the right-hand end between total and time left, and
+ * the accessibility label says what the tap will do.
+ */
+@Composable
+private fun TimeLabel(
+    text: String,
+    onClickLabel: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .widthIn(min = Dimens.iconButtonLarge)
+            .clickable(role = Role.Button, onClickLabel = onClickLabel, onClick = onClick)
+            .padding(vertical = Dimens.sm),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = LocalSubLearnColors.current.controlActive,
+            maxLines = 1,
+        )
+    }
+}
+
+/**
+ * The seek line: a 3 dp track, the buffered range behind it, a filled part up to the playhead and an
+ * 8 dp dot (12 dp while dragging). Touching anywhere on it starts a scrub, moving it keeps the
+ * picture with the finger (PLY-14) and lifting it commits.
+ */
+@Composable
+private fun SeekLine(
+    fraction: Float,
+    bufferedFraction: Float,
+    scrubbing: Boolean,
+    live: Boolean,
+    onFractionChange: (Float) -> Unit,
+    onFractionEnd: (Float) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = LocalSubLearnColors.current
+    val density = LocalDensity.current
+    var widthPx by remember { mutableFloatStateOf(0f) }
+    val currentChange by rememberUpdatedState(onFractionChange)
+    val currentEnd by rememberUpdatedState(onFractionEnd)
+    Canvas(
+        modifier = modifier
+            .height(Dimens.touchTarget)
+            .onSizeChanged { size -> widthPx = size.width.toFloat() }
+            .pointerInput(live) {
+                if (live) return@pointerInput
+                // The width is read when the finger arrives, not when the modifier is built: the
+                // first composition happens before the first layout pass, so it would still be zero.
+                fun at(x: Float): Float = (x / widthPx.coerceAtLeast(1f)).coerceIn(0f, 1f)
+                awaitEachGesture {
+                    val down = awaitFirstDown()
+                    down.consume()
+                    var target = at(down.position.x)
+                    currentChange(target)
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                        if (!change.pressed) {
+                            target = at(change.position.x)
+                            change.consume()
+                            break
+                        }
+                        val next = at(change.position.x)
+                        if (next != target) {
+                            target = next
+                            currentChange(target)
+                        }
+                        change.consume()
+                    }
+                    currentEnd(target)
+                }
+            },
+    ) {
+        val trackHeight = with(density) { Dimens.seekLine.toPx() }
+        val dotRadius = with(density) { (if (scrubbing) Dimens.seekDotActive else Dimens.seekDot).toPx() } / 2f
+        val centerY = size.height / 2f
+        val lineWidth = size.width
+        val radius = CornerRadius(trackHeight / 2f, trackHeight / 2f)
+        drawRoundRect(
+            color = colors.controlDisabled,
+            topLeft = Offset(0f, centerY - trackHeight / 2f),
+            size = androidx.compose.ui.geometry.Size(lineWidth, trackHeight),
+            cornerRadius = radius,
+        )
+        if (bufferedFraction > 0f) {
+            drawRoundRect(
+                color = colors.controlIdle.copy(alpha = BUFFERED_ALPHA),
+                topLeft = Offset(0f, centerY - trackHeight / 2f),
+                size = androidx.compose.ui.geometry.Size(lineWidth * bufferedFraction.coerceIn(0f, 1f), trackHeight),
+                cornerRadius = radius,
             )
-            ChromeIconButton(
-                icon = Icons.Default.SkipNext,
-                contentDescription = stringResource(R.string.player_next_subtitle),
-                onClick = onNextBlock,
-                enabled = ui.canStepBySubtitle,
+        }
+        if (fraction > 0f) {
+            drawRoundRect(
+                color = colors.controlActive,
+                topLeft = Offset(0f, centerY - trackHeight / 2f),
+                size = androidx.compose.ui.geometry.Size(lineWidth * fraction.coerceIn(0f, 1f), trackHeight),
+                cornerRadius = radius,
             )
-            Spacer(Modifier.weight(1f))
-            TextButton(onClick = onSpeed, modifier = Modifier.height(Dimens.touchTarget)) {
-                Text(
-                    text = stringResource(R.string.player_speed_value, state.speedPercent),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = if (state.speedPercent != NORMAL_SPEED_PERCENT) colors.controlActive else colors.controlIdle,
-                )
-            }
-            ChromeIconButton(
-                icon = Icons.Default.AspectRatio,
-                contentDescription = stringResource(R.string.player_aspect),
-                onClick = onAspect,
-            )
-            if (state.playlist.size > 1) {
+        }
+        drawCircle(
+            color = colors.controlActive,
+            radius = dotRadius,
+            center = Offset(lineWidth * fraction.coerceIn(0f, 1f), centerY),
+        )
+    }
+}
+
+/**
+ * PLY-3: the transport row. It is a single row, so it only scrolls when the buttons genuinely do
+ * not fit; when they do, the group stays centred and the row does not move at all.
+ *
+ * previous/next video appear only when a playlist has more than one item, because a button that
+ * cannot go anywhere is worse than no button; the cue step and the 10 s steps are always there.
+ */
+@Composable
+private fun TransportRow(
+    ui: PlayerUi,
+    onPlayPause: () -> Unit,
+    onSeekBy: (Long) -> Unit,
+    onPreviousVideo: () -> Unit,
+    onNextVideo: () -> Unit,
+    onPreviousBlock: () -> Unit,
+    onNextBlock: () -> Unit,
+    onRepeatBlock: () -> Unit,
+    onRepeatBlockHold: () -> Unit,
+    onSpeed: () -> Unit,
+    onAspect: () -> Unit,
+    onPlaylist: () -> Unit,
+    onToggleList: () -> Unit,
+    onListLongPress: () -> Unit,
+) {
+    val colors = LocalSubLearnColors.current
+    val state = ui.playback
+    val step = ui.settings.player.seekStepMs
+    val inPlaylist = state.playlist.size > 1
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val scroll = rememberScrollState()
+        val viewport = maxWidth
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(scroll),
+        ) {
+            Row(
+                modifier = Modifier.widthIn(min = viewport),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (inPlaylist) {
+                    ChromeIconButton(
+                        icon = Icons.Default.SkipPrevious,
+                        contentDescription = stringResource(R.string.player_previous_video),
+                        onClick = onPreviousVideo,
+                    )
+                }
                 ChromeIconButton(
-                    icon = Icons.Default.PlaylistPlay,
-                    contentDescription = stringResource(R.string.player_playlist),
-                    onClick = onPlaylist,
+                    icon = Icons.Default.Replay10,
+                    contentDescription = stringResource(R.string.player_seek_backward),
+                    onClick = { onSeekBy(-step) },
+                    enabled = !state.isLive,
+                )
+                ChromeIconButton(
+                    icon = Icons.Default.SkipPrevious,
+                    contentDescription = stringResource(R.string.player_previous_subtitle),
+                    onClick = onPreviousBlock,
+                    enabled = ui.canStepBySubtitle,
+                )
+                PlayPauseButton(
+                    playing = state.isPlaying,
+                    buffering = state.isBuffering,
+                    onClick = onPlayPause,
+                )
+                ChromeIconButton(
+                    icon = Icons.Default.SkipNext,
+                    contentDescription = stringResource(R.string.player_next_subtitle),
+                    onClick = onNextBlock,
+                    enabled = ui.canStepBySubtitle,
+                )
+                ChromeIconButton(
+                    icon = Icons.Default.Forward10,
+                    contentDescription = stringResource(R.string.player_seek_forward),
+                    onClick = { onSeekBy(step) },
+                    enabled = !state.isLive,
+                )
+                if (inPlaylist) {
+                    ChromeIconButton(
+                        icon = Icons.Default.SkipNext,
+                        contentDescription = stringResource(R.string.player_next_video),
+                        onClick = onNextVideo,
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = Dimens.sm)
+                        .size(width = Dimens.hairline, height = Dimens.xl)
+                        .background(colors.controlDisabled),
+                )
+                ChromeIconButton(
+                    icon = Icons.Default.Repeat,
+                    contentDescription = stringResource(R.string.player_repeat_subtitle),
+                    onClick = onRepeatBlock,
+                    onLongClick = onRepeatBlockHold,
+                    selected = ui.shadowing.active,
+                    enabled = ui.canStepBySubtitle,
+                )
+                TextButton(onClick = onSpeed, modifier = Modifier.height(Dimens.touchTarget)) {
+                    Text(
+                        text = stringResource(R.string.player_speed_value, state.speedPercent),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = if (state.speedPercent != NORMAL_SPEED_PERCENT) colors.controlActive else colors.controlIdle,
+                    )
+                }
+                ChromeIconButton(
+                    icon = Icons.Default.AspectRatio,
+                    contentDescription = stringResource(R.string.player_aspect),
+                    onClick = onAspect,
+                )
+                if (state.playlist.size > 1) {
+                    ChromeIconButton(
+                        icon = Icons.Default.PlaylistPlay,
+                        contentDescription = stringResource(R.string.player_playlist),
+                        onClick = onPlaylist,
+                    )
+                }
+                ChromeIconButton(
+                    icon = Icons.Default.List,
+                    contentDescription = stringResource(R.string.subtitle_list),
+                    onClick = onToggleList,
+                    selected = ui.list.open,
+                    onLongClick = onListLongPress,
                 )
             }
-            ChromeIconButton(
-                icon = Icons.Default.List,
-                contentDescription = stringResource(R.string.subtitle_list),
-                onClick = onToggleList,
-                selected = ui.list.open,
-                onLongClick = onListLongPress,
+        }
+    }
+}
+
+/** The one round button of the row: play, or pause, with the buffering spinner inside it. */
+@Composable
+private fun PlayPauseButton(playing: Boolean, buffering: Boolean, onClick: () -> Unit) {
+    val colors = LocalSubLearnColors.current
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.size(Dimens.iconButtonLarge),
+        shape = CircleShape,
+        color = colors.strongBackdrop,
+    ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+            if (buffering) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(Dimens.iconButtonLarge),
+                    strokeWidth = Dimens.spinnerStroke,
+                    color = colors.controlActive,
+                )
+            }
+            Icon(
+                imageVector = if (playing) Icons.Default.Pause else Icons.Default.PlayArrow,
+                contentDescription = stringResource(if (playing) R.string.player_pause else R.string.player_play),
+                tint = colors.controlActive,
+                modifier = Modifier.size(Dimens.xl),
             )
         }
     }
@@ -428,72 +738,11 @@ internal fun BottomChrome(
 /** The speed the chip reads as "normal" (no highlight). */
 private const val NORMAL_SPEED_PERCENT = 100
 
-/** Marks "not dragging" in the seekbar's fraction state. */
+/** Marks "not dragging" in the seek row's fraction state. */
 private const val NOT_SCRUBBING = -1f
 
-/**
- * A slider over the buffered range. The buffer is drawn underneath in the disabled colour; the
- * elapsed label follows the thumb while the user drags, so it never shows a stale position.
- */
-@Composable
-private fun SeekBar(
-    positionMs: Long,
-    durationMs: Long,
-    progress: Float,
-    buffered: Float,
-    live: Boolean,
-    onScrubStart: () -> Unit,
-    onScrubEnd: (Long) -> Unit,
-) {
-    val colors = LocalSubLearnColors.current
-    var scrub by remember { mutableFloatStateOf(NOT_SCRUBBING) }
-    val scrubbing = scrub >= 0f
-    val shown = (if (scrubbing) scrub else progress).coerceIn(0f, 1f)
-    val elapsedMs = if (scrubbing) (scrub * durationMs).toLong() else positionMs
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Box(modifier = Modifier.fillMaxWidth().height(Dimens.touchTarget), contentAlignment = Alignment.Center) {
-            LinearProgressIndicator(
-                progress = { buffered.coerceIn(0f, 1f) },
-                modifier = Modifier.fillMaxWidth().height(Dimens.seekbarTrack),
-                color = colors.controlDisabled,
-                trackColor = colors.controlDisabled.copy(alpha = 0f),
-            )
-            Slider(
-                value = shown,
-                onValueChange = { next ->
-                    if (!scrubbing) onScrubStart()
-                    scrub = next.coerceIn(0f, 1f)
-                },
-                onValueChangeFinished = {
-                    if (scrubbing) onScrubEnd((scrub * durationMs).toLong())
-                    scrub = NOT_SCRUBBING
-                },
-                enabled = !live,
-                modifier = Modifier.fillMaxWidth(),
-                colors = SliderDefaults.colors(
-                    thumbColor = colors.controlActive,
-                    activeTrackColor = colors.controlActive,
-                    inactiveTrackColor = colors.controlDisabled.copy(alpha = 0f),
-                ),
-            )
-        }
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = clock(elapsedMs),
-                style = MaterialTheme.typography.labelLarge,
-                color = colors.controlActive,
-                modifier = Modifier.padding(start = Dimens.xs),
-            )
-            Spacer(Modifier.weight(1f))
-            Text(
-                text = if (live) stringResource(R.string.player_live) else clock(durationMs),
-                style = MaterialTheme.typography.labelLarge,
-                color = colors.controlIdle,
-                modifier = Modifier.padding(end = Dimens.xs),
-            )
-        }
-    }
-}
+/** The buffered range is a hint, not a value, so it stays quiet under the playhead. */
+private const val BUFFERED_ALPHA = 0.35f
 
 /** PLY-1 corner lock. While locked it shows the unlock icon; the screen decides when it is visible. */
 @Composable
@@ -516,207 +765,16 @@ internal fun LockButton(
     }
 }
 
-/**
- * The quick action dock (PLY-1 top-left by default). Bar actions are laid out in rows of
- * `barIconsPerRow` in the chosen corner. Floating actions sit where the user last dropped them.
- */
-@Composable
-internal fun QuickActionDock(
-    ui: PlayerUi,
-    areaWidth: Dp,
-    areaHeight: Dp,
-    onTap: (QuickActionId) -> Unit,
-    onHoldStart: (QuickActionId) -> Unit,
-    onHoldEnd: (QuickActionId) -> Unit,
-    onMoveFloating: (QuickActionId, Float, Float) -> Unit,
-    registry: PlayerHitRegistry,
-    modifier: Modifier = Modifier,
-) {
-    val settings = ui.settings.quickActions
-    val bar = settings.visibleIn(DockMode.BAR).map { it.first }
-    val floating = settings.visibleIn(DockMode.FLOATING).map { it.first }
-    val topAligned = settings.column == QuickActionColumn.TOP_LEFT || settings.column == QuickActionColumn.TOP_RIGHT
-    val alignment = when (settings.column) {
-        QuickActionColumn.TOP_LEFT -> Alignment.TopStart
-        QuickActionColumn.TOP_RIGHT -> Alignment.TopEnd
-        QuickActionColumn.BOTTOM_LEFT -> Alignment.BottomStart
-        QuickActionColumn.BOTTOM_RIGHT -> Alignment.BottomEnd
-    }
-    Box(modifier = modifier.fillMaxSize()) {
-        if (bar.isNotEmpty()) {
-            Column(
-                modifier = Modifier
-                    .align(alignment)
-                    .then(
-                        if (topAligned) {
-                            Modifier.padding(top = Dimens.quickColumnTop)
-                        } else {
-                            Modifier.padding(bottom = Dimens.bottomChromeReserve)
-                        },
-                    )
-                    .padding(horizontal = Dimens.playerEdgeInset)
-                    .heightIn(max = areaHeight * DOCK_HEIGHT_SHARE)
-                    .verticalScroll(rememberScrollState())
-                    .blocksGestures(registry),
-                verticalArrangement = Arrangement.spacedBy(Dimens.dockGap),
-            ) {
-                bar.chunked(settings.barIconsPerRow.coerceAtLeast(1)).forEach { row ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.dockGap)) {
-                        row.forEach { id ->
-                            QuickActionButton(ui, id, onTap, onHoldStart, onHoldEnd)
-                        }
-                    }
-                }
-            }
-        }
-        floating.forEach { id ->
-            FloatingQuickAction(
-                ui = ui,
-                id = id,
-                areaWidth = areaWidth,
-                areaHeight = areaHeight,
-                onTap = onTap,
-                onHoldStart = onHoldStart,
-                onHoldEnd = onHoldEnd,
-                onMove = onMoveFloating,
-                registry = registry,
-            )
-        }
-    }
-}
-
-/** The dock never takes more than half the picture height, so it cannot cover the centre cluster. */
-private const val DOCK_HEIGHT_SHARE = 0.5f
-
-/** Holding these inverts the toggle until release; holding REPEAT_BLOCK runs the auto-repeat count. */
-private val HOLDABLE = setOf(
-    QuickActionId.TOGGLE_LEARNING,
-    QuickActionId.TOGGLE_TRANSLATION,
-    QuickActionId.STOP_AT_BLOCK_END,
-    QuickActionId.REPEAT_BLOCK,
-)
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun QuickActionButton(
-    ui: PlayerUi,
-    id: QuickActionId,
-    onTap: (QuickActionId) -> Unit,
-    onHoldStart: (QuickActionId) -> Unit,
-    onHoldEnd: (QuickActionId) -> Unit,
-) {
-    val colors = LocalSubLearnColors.current
-    val selected = quickSelected(ui, id)
-    val label = stringResource(id.labelRes())
-    val currentTap by rememberUpdatedState(onTap)
-    val currentStart by rememberUpdatedState(onHoldStart)
-    val currentEnd by rememberUpdatedState(onHoldEnd)
-    Surface(
-        modifier = Modifier
-            .size(Dimens.touchTarget)
-            .pointerInput(id) {
-                var held = false
-                detectTapGestures(
-                    onTap = { currentTap(id) },
-                    onLongPress = {
-                        if (id in HOLDABLE) {
-                            held = true
-                            currentStart(id)
-                        }
-                    },
-                    onPress = {
-                        tryAwaitRelease()
-                        if (held) {
-                            held = false
-                            currentEnd(id)
-                        }
-                    },
-                )
-            },
-        shape = CircleShape,
-        color = colors.strongBackdrop,
-    ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            Icon(
-                imageVector = id.icon(),
-                contentDescription = label,
-                tint = if (selected) colors.controlActive else colors.controlIdle,
-            )
-        }
-    }
-}
-
-/**
- * A floating quick action. The drag is absolute: the start fraction is captured when the drag
- * begins and each event moves from it, so a dropped button lands where the finger is.
- */
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun FloatingQuickAction(
-    ui: PlayerUi,
-    id: QuickActionId,
-    areaWidth: Dp,
-    areaHeight: Dp,
-    onTap: (QuickActionId) -> Unit,
-    onHoldStart: (QuickActionId) -> Unit,
-    onHoldEnd: (QuickActionId) -> Unit,
-    onMove: (QuickActionId, Float, Float) -> Unit,
-    registry: PlayerHitRegistry,
-) {
-    val spec = ui.settings.quickActions.spec(id)
-    val density = LocalDensity.current.density
-    var draft by remember(id) { mutableStateOf<Offset?>(null) }
-    val shown = draft ?: Offset(spec.xFraction, spec.yFraction)
-    val currentMove by rememberUpdatedState(onMove)
-    Box(
-        modifier = Modifier
-            .offset(x = areaWidth * shown.x.coerceIn(0f, 1f), y = areaHeight * shown.y.coerceIn(0f, 1f))
-            .blocksGestures(registry)
-            .pointerInput(id, areaWidth, areaHeight) {
-                detectDragGestures(
-                    onDragStart = { draft = Offset(spec.xFraction, spec.yFraction) },
-                    onDrag = { change, drag ->
-                        change.consume()
-                        val base = draft ?: Offset(spec.xFraction, spec.yFraction)
-                        val widthPx = areaWidth.value.coerceAtLeast(1f) * density
-                        val heightPx = areaHeight.value.coerceAtLeast(1f) * density
-                        draft = Offset(
-                            (base.x + drag.x / widthPx).coerceIn(0f, 1f),
-                            (base.y + drag.y / heightPx).coerceIn(0f, 1f),
-                        )
-                    },
-                    onDragEnd = {
-                        draft?.let { currentMove(id, it.x, it.y) }
-                        draft = null
-                    },
-                    onDragCancel = { draft = null },
-                )
-            },
-    ) {
-        QuickActionButton(ui, id, onTap, onHoldStart, onHoldEnd)
-    }
-}
-
-/** Whether a quick action currently reads as "on", so its icon takes the active tint. */
-private fun quickSelected(ui: PlayerUi, id: QuickActionId): Boolean = when (id) {
-    QuickActionId.TOGGLE_LEARNING -> ui.layer(TrackRole.LEARNING).visible
-    QuickActionId.TOGGLE_TRANSLATION -> ui.layer(TrackRole.TRANSLATION).visible
-    QuickActionId.REPEAT_BLOCK -> ui.shadowing.active
-    QuickActionId.STOP_AT_BLOCK_END -> ui.shadowing.stopAtEnd
-    QuickActionId.LAYOUT_MODE -> ui.layoutMode
-    QuickActionId.SUBTITLE_LIST -> ui.list.open
-    else -> false
-}
-
-/** Shown during a layout drag: the one instruction the user needs, and a way out. */
+/** Shown during an arrangement: the one instruction the user needs, and a way out. */
 @Composable
 internal fun LayoutModeBanner(hint: String, onDone: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = LocalSubLearnColors.current
     Surface(
         modifier = modifier
             .widthIn(max = Dimens.bannerMaxWidth)
             .padding(horizontal = Dimens.lg),
         shape = RoundedCornerShape(Dimens.radiusMd),
-        color = LocalSubLearnColors.current.strongBackdrop,
+        color = colors.infoSurface,
     ) {
         Row(
             modifier = Modifier.padding(start = Dimens.lg, end = Dimens.xs),
@@ -725,33 +783,54 @@ internal fun LayoutModeBanner(hint: String, onDone: () -> Unit, modifier: Modifi
             Text(
                 text = hint,
                 style = MaterialTheme.typography.bodyMedium,
+                color = colors.infoText,
                 modifier = Modifier.weight(1f),
             )
             TextButton(onClick = onDone, modifier = Modifier.height(Dimens.touchTarget)) {
-                Text(stringResource(R.string.action_ok))
+                Text(stringResource(R.string.action_ok), color = colors.infoText)
             }
         }
     }
 }
 
-/** A short status line; tapping it dismisses it early. The timing lives in the ViewModel. */
+/**
+ * A short status line; tapping it dismisses it early. The timing lives in the ViewModel.
+ *
+ * It sits on [com.sublearn.core.designsystem.SubLearnColors.infoSurface] with
+ * [com.sublearn.core.designsystem.SubLearnColors.infoText] ink, because the chrome underneath is
+ * dark in both themes and the theme's own on-surface colour is not (GEN-1).
+ */
 @Composable
 internal fun Snackbarish(text: String, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = LocalSubLearnColors.current
     Surface(
         modifier = modifier
             .widthIn(max = Dimens.bannerMaxWidth)
             .padding(horizontal = Dimens.lg)
             .clip(RoundedCornerShape(Dimens.radiusMd))
             .combinedClickable(onClick = onDismiss),
-        color = LocalSubLearnColors.current.strongBackdrop,
+        color = colors.infoSurface,
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
+            color = colors.infoText,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = Dimens.lg, vertical = Dimens.sm),
         )
     }
+}
+
+/** Whether a quick action currently reads as "on", so its icon takes the active tint. */
+internal fun quickSelected(ui: PlayerUi, id: QuickActionId): Boolean = when (id) {
+    QuickActionId.TOGGLE_LEARNING -> ui.layer(TrackRole.LEARNING).visible
+    QuickActionId.TOGGLE_TRANSLATION -> ui.layer(TrackRole.TRANSLATION).visible
+    QuickActionId.REPEAT_BLOCK -> ui.shadowing.active
+    QuickActionId.STOP_AT_BLOCK_END -> ui.shadowing.stopAtEnd
+    QuickActionId.LAYOUT_MODE -> ui.layoutMode
+    QuickActionId.SUBTITLE_LIST -> ui.list.open
+    QuickActionId.ROTATE -> ui.settings.player.orientationLock != OrientationLock.AUTO
+    else -> false
 }
 
 /** Icon for each quick action. The mapping is one-to-one so a new id cannot ship without an icon. */
@@ -774,6 +853,7 @@ internal fun QuickActionId.icon(): ImageVector = when (this) {
     QuickActionId.PICTURE_IN_PICTURE -> Icons.Default.PictureInPictureAlt
     QuickActionId.SHARE -> Icons.Default.Share
     QuickActionId.SETTINGS -> Icons.Default.Settings
+    QuickActionId.ROTATE -> Icons.Default.ScreenRotation
 }
 
 /** Accessible name for each quick action. */
@@ -789,13 +869,27 @@ internal fun QuickActionId.labelRes(): Int = when (this) {
     QuickActionId.PLAYLIST -> R.string.player_playlist
     QuickActionId.ASPECT_RATIO -> R.string.player_aspect
     QuickActionId.DECODER -> R.string.player_decoder
-    QuickActionId.AUDIO_TRACK -> R.string.player_audio_tracks
-    QuickActionId.SUBTITLE_TRACKS -> R.string.player_subtitle_tracks
+    QuickActionId.AUDIO_TRACK -> R.string.player_audio_manager
+    QuickActionId.SUBTITLE_TRACKS -> R.string.player_subtitle_manager
     QuickActionId.SUBTITLE_TOOLS -> R.string.subtitle_tools
     QuickActionId.SPEED -> R.string.player_speed
     QuickActionId.PICTURE_IN_PICTURE -> R.string.player_pip
     QuickActionId.SHARE -> R.string.player_share
     QuickActionId.SETTINGS -> R.string.menu_settings
+    QuickActionId.ROTATE -> R.string.player_rotate
+}
+
+/**
+ * Names of the orientation choices, in the player. `feature:settings` has its own mapping for the
+ * settings screen; a feature may not depend on another feature, so the strings are referenced here
+ * directly instead of sharing a function.
+ */
+internal fun OrientationLock.playerLabelRes(): Int = when (this) {
+    OrientationLock.AUTO -> R.string.settings_orientation_auto
+    OrientationLock.PORTRAIT -> R.string.settings_orientation_portrait
+    OrientationLock.LANDSCAPE -> R.string.settings_orientation_landscape
+    OrientationLock.REVERSE_LANDSCAPE -> R.string.settings_orientation_reverse_landscape
+    OrientationLock.SENSOR -> R.string.settings_orientation_sensor
 }
 
 /** The short names the top bar shows. They are product names (SW, HW, HW+), not translatable words. */

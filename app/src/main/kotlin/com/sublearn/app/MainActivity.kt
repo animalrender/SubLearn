@@ -40,6 +40,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         intent?.data?.let { uri ->
+            // The grant that came with the intent only lasts for this task; keeping it is what makes
+            // the entry in Home work again after a restart (PLY-12).
+            com.sublearn.core.player.UriGrants.persistRead(this, uri.toString())
             pendingIntent.value = StartupRequest(uri.toString(), uri.lastPathSegment?.substringAfterLast('/') ?: "video")
         }
         setContent {
@@ -58,6 +61,7 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         intent.data?.let { uri ->
+            com.sublearn.core.player.UriGrants.persistRead(this, uri.toString())
             pendingIntent.value = StartupRequest(uri.toString(), uri.lastPathSegment?.substringAfterLast('/') ?: "video")
         }
     }

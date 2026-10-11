@@ -1,11 +1,12 @@
 package com.sublearn.feature.player
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -19,11 +20,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -33,12 +38,15 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,12 +64,10 @@ import com.sublearn.core.designsystem.R
 import com.sublearn.core.designsystem.toTextStyle
 import com.sublearn.core.player.PlayerTrackType
 import com.sublearn.core.player.PlaylistRepeat
-import com.sublearn.core.player.TrackInfo
-import com.sublearn.core.player.TrackRef
 import com.sublearn.core.settings.AspectMode
 import com.sublearn.core.settings.DecoderMode
-import com.sublearn.core.settings.FontSurface
 import com.sublearn.core.settings.FontSpec
+import com.sublearn.core.settings.FontSurface
 import com.sublearn.core.settings.SubtitleLayerRole
 import com.sublearn.core.subtitles.TrackRole
 
@@ -75,15 +81,25 @@ private const val SIZE_MAX_PERCENT = 220f
 /** Subtitle transparency range, in percent. */
 private const val TRANSPARENCY_MAX_PERCENT = 100f
 
+/** Volume slider range, in percent. */
+private const val VOLUME_MAX_PERCENT = 100f
+
 /** Speed presets offered as chips under the speed slider. */
 private val SPEED_PRESETS = listOf(50, 75, 100, 125, 150)
 
-/** Hosts every bottom sheet the player offers; one place decides which one is open (PLY-3). */
+/**
+ * Hosts every bottom sheet the player offers; one place decides which one is open (PLY-3).
+ *
+ * The two sheets that manage a resource (the subtitle layers and the audio) live in this file as
+ * well, and the screen passes in the two pickers because only a screen can hold a launcher.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SheetsHost(
     ui: PlayerUi,
     viewModel: PlayerViewModel,
+    onAddSubtitle: (TrackRole) -> Unit,
+    onAddAudio: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -96,11 +112,11 @@ fun SheetsHost(
             verticalArrangement = Arrangement.spacedBy(Dimens.sm),
         ) {
             when (ui.sheet) {
-                Sheet.TRACKS -> TracksSheet(ui, viewModel::selectTrack, viewModel::clearTrackOverride)
+                Sheet.SUBTITLES -> SubtitleManagerSheet(ui, viewModel, onAddSubtitle)
+                Sheet.AUDIO -> AudioSheet(ui, viewModel, onAddAudio)
                 Sheet.SPEED -> SpeedSheet(ui, viewModel::setSpeedPercent)
                 Sheet.ASPECT -> AspectSheet(ui, viewModel::setAspect, viewModel::setCustomAspect)
                 Sheet.DECODER -> DecoderSheet(ui, viewModel::setDecoder)
-                Sheet.LAYER_OPTIONS -> LayerOptionsSheet(ui, viewModel)
                 Sheet.TOOLS -> ToolsSheet(ui, viewModel)
                 Sheet.PLAYLIST -> PlaylistSheet(ui, viewModel)
                 Sheet.NONE -> Unit
@@ -112,6 +128,21 @@ fun SheetsHost(
 @Composable
 private fun SheetTitle(text: String) {
     Text(text, style = MaterialTheme.typography.titleMedium)
+}
+
+/** A heading with its explanation, used inside the sheets that manage a list of things. */
+@Composable
+private fun SheetHeading(text: String, note: String? = null) {
+    Column(modifier = Modifier.padding(top = Dimens.sm)) {
+        Text(text, style = MaterialTheme.typography.labelLarge)
+        note?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }
 
 /**
@@ -153,53 +184,270 @@ private fun ChoiceRow(
             overflow = TextOverflow.Ellipsis,
         )
         trailing?.let {
-            Text(it, style = MaterialTheme.typography.labelSmall, color = colors.controlIdle)
+            Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
 
+/** One tickable row: a checkbox, a name, and whatever the row wants to show next to it. */
 @Composable
-private fun TracksSheet(
-    ui: PlayerUi,
-    onSelect: (TrackRef) -> Unit,
-    onClear: (PlayerTrackType) -> Unit,
+private fun TickRow(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    detail: String? = null,
+    trailing: @Composable (() -> Unit)? = null,
 ) {
-    SheetTitle(stringResource(R.string.player_subtitle_tracks))
-    TrackGroup(stringResource(R.string.player_audio_tracks), ui.playback.audioTracks, onSelect, onClear)
-    TrackGroup(stringResource(R.string.player_subtitle_tracks), ui.playback.textTracks, onSelect, onClear)
-    if (ui.playback.audioTracks.isEmpty() && ui.playback.textTracks.isEmpty()) {
-        Text(stringResource(R.string.player_no_tracks), style = MaterialTheme.typography.bodySmall)
+    val colors = LocalSubLearnColors.current
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = Dimens.touchTarget)
+            .toggleable(value = checked, role = Role.Checkbox, onValueChange = onCheckedChange),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Checkbox(checked = checked, onCheckedChange = null)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            detail?.let {
+                Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        trailing?.invoke()
     }
-    Text(
-        stringResource(R.string.subtitle_embedded_live),
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
 }
 
+// ---------------------------------------------------------------- subtitles (PLY-8, SUB-3)
+
+/**
+ * The subtitle manager: one tab per layer, and inside a tab everything that layer shows.
+ *
+ * Each tab lists the files the user attached to *that* layer (any number of them, each with its own
+ * tick), the subtitle tracks that are inside the video (tickable in both tabs, because the same
+ * track may feed the learning and the translation layer), and the layer's own options. Tracks that
+ * are not ticked anywhere are turned off in the player, so "no subtitle" is a state the user can
+ * actually reach.
+ */
 @Composable
-private fun TrackGroup(
-    title: String,
-    tracks: List<TrackInfo>,
-    onSelect: (TrackRef) -> Unit,
-    onClear: (PlayerTrackType) -> Unit,
+private fun SubtitleManagerSheet(
+    ui: PlayerUi,
+    viewModel: PlayerViewModel,
+    onAddSubtitle: (TrackRole) -> Unit,
 ) {
-    if (tracks.isEmpty()) return
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(title, style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
-        TextButton(onClick = { onClear(tracks.first().ref.type) }) {
+    var tabIndex by remember { mutableIntStateOf(0) }
+    val role = TrackRole.entries[tabIndex.coerceIn(0, TrackRole.entries.lastIndex)]
+    val layer = ui.layer(role)
+    val settings = ui.settings.subtitleLayer(role)
+    SheetTitle(stringResource(R.string.player_subtitle_manager))
+    TabRow(selectedTabIndex = tabIndex) {
+        TrackRole.entries.forEachIndexed { index, entry ->
+            Tab(
+                selected = index == tabIndex,
+                onClick = { tabIndex = index },
+                text = { Text(entry.title()) },
+            )
+        }
+    }
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+        TextButton(onClick = { onAddSubtitle(role) }) {
+            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(Dimens.inlineIcon))
+            Spacer(Modifier.size(Dimens.xs))
+            Text(stringResource(R.string.subtitle_manager_add))
+        }
+        FilterChip(
+            selected = settings.visible,
+            onClick = { viewModel.toggleLayerVisible(role) },
+            label = { Text(stringResource(R.string.player_layer_visible)) },
+        )
+        FilterChip(
+            selected = settings.showInList,
+            onClick = { viewModel.toggleListFor(role) },
+            label = { Text(stringResource(R.string.subtitle_list)) },
+        )
+    }
+
+    SheetHeading(
+        text = stringResource(R.string.subtitle_manager_files),
+        note = if (layer.files.size > 1) stringResource(R.string.subtitle_manager_multiple_note) else null,
+    )
+    if (layer.files.isEmpty()) {
+        Text(
+            stringResource(R.string.subtitle_manager_empty),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    } else {
+        layer.files.forEach { file ->
+            TickRow(
+                checked = file.enabled,
+                onCheckedChange = { enabled -> viewModel.setFileEnabled(role, file.key, enabled) },
+                label = file.name,
+                detail = file.charsetName,
+                trailing = {
+                    IconButton(onClick = { viewModel.removeFile(role, file.key) }) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = stringResource(R.string.subtitle_remove_file),
+                            modifier = Modifier.size(Dimens.inlineIcon),
+                        )
+                    }
+                },
+            )
+        }
+    }
+    layer.warnings.forEach { warning ->
+        Text(warning, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
+    }
+
+    SheetHeading(
+        text = stringResource(R.string.subtitle_manager_embedded),
+        note = stringResource(R.string.subtitle_manager_embedded_note),
+    )
+    if (ui.playback.textTracks.isEmpty()) {
+        Text(
+            stringResource(R.string.subtitle_manager_no_embedded),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    } else {
+        ui.playback.textTracks.forEach { track ->
+            TickRow(
+                checked = track.ref.trackIndex in settings.embeddedTrackIndexes,
+                onCheckedChange = { viewModel.toggleEmbeddedTrack(role, track.ref.trackIndex) },
+                label = track.displayLabel,
+                detail = track.language,
+            )
+        }
+    }
+
+    SheetHeading(stringResource(R.string.subtitle_manager_options))
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+        IconButton(onClick = { viewModel.setLayerDelay(role, -DELAY_STEP_MS) }) {
+            Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.subtitle_delay_earlier))
+        }
+        Text(
+            stringResource(R.string.subtitle_delay_value, settings.delayMs),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f),
+        )
+        IconButton(onClick = { viewModel.setLayerDelay(role, DELAY_STEP_MS) }) {
+            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.subtitle_delay_later))
+        }
+        TextButton(onClick = { viewModel.updateLayer(role) { it.copy(delayMs = 0L) } }) {
+            Text(stringResource(R.string.action_reset))
+        }
+    }
+    Text(stringResource(R.string.subtitle_size), style = MaterialTheme.typography.labelLarge)
+    Slider(
+        value = settings.scalePercent.toFloat(),
+        onValueChange = { viewModel.setLayerScale(role, it.toInt()) },
+        valueRange = SIZE_MIN_PERCENT..SIZE_MAX_PERCENT,
+    )
+    Text(stringResource(R.string.subtitle_transparency), style = MaterialTheme.typography.labelLarge)
+    Slider(
+        value = settings.transparencyPercent.toFloat(),
+        onValueChange = { viewModel.setLayerTransparency(role, it.toInt()) },
+        valueRange = 0f..TRANSPARENCY_MAX_PERCENT,
+    )
+    TextButton(onClick = { viewModel.setLayoutMode(true) }) {
+        Text(stringResource(R.string.subtitle_layout_mode))
+    }
+}
+
+// ---------------------------------------------------------------- audio (PLY-13)
+
+/**
+ * The audio sheet. Audio is its own section on purpose (PLY-13): the tracks that are inside the
+ * video, the volume and mute of the player, and one audio file the user added to play with it.
+ */
+@Composable
+private fun AudioSheet(ui: PlayerUi, viewModel: PlayerViewModel, onAddAudio: () -> Unit) {
+    SheetTitle(stringResource(R.string.player_audio_manager))
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+        Icon(
+            imageVector = if (ui.muted) Icons.Default.VolumeOff else Icons.Default.VolumeUp,
+            contentDescription = null,
+            tint = LocalSubLearnColors.current.controlActive,
+        )
+        Slider(
+            value = ui.playback.volumePercent.toFloat(),
+            onValueChange = { viewModel.setVolume(it.toInt()) },
+            valueRange = 0f..VOLUME_MAX_PERCENT,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = ui.playback.volumePercent.toString(),
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.widthIn(min = Dimens.iconButton),
+        )
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+        FilterChip(
+            selected = ui.muted,
+            onClick = { viewModel.toggleMute() },
+            label = { Text(stringResource(if (ui.muted) R.string.player_unmute else R.string.player_mute)) },
+        )
+    }
+    SheetHeading(stringResource(R.string.player_audio_tracks))
+    if (ui.playback.audioTracks.isEmpty()) {
+        Text(
+            stringResource(R.string.player_audio_no_tracks),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    } else {
+        ui.playback.audioTracks.forEach { track ->
+            ChoiceRow(
+                label = track.displayLabel,
+                selected = track.isSelected,
+                onClick = { viewModel.selectTrack(track.ref) },
+                trailing = track.language,
+            )
+        }
+        TextButton(onClick = { viewModel.clearTrackOverride(PlayerTrackType.AUDIO) }) {
             Text(stringResource(R.string.player_track_auto))
         }
     }
-    tracks.forEach { track ->
-        ChoiceRow(
-            label = track.displayLabel,
-            selected = track.isSelected,
-            onClick = { onSelect(track.ref) },
-            trailing = track.language,
-        )
+    SheetHeading(
+        text = stringResource(R.string.player_audio_add),
+        note = stringResource(R.string.player_audio_external_note),
+    )
+    val external = ui.playback.externalAudioUri
+    if (external != null) {
+        Row(
+            modifier = Modifier.fillMaxWidth().heightIn(min = Dimens.touchTarget),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = externalName(external),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            TextButton(onClick = { viewModel.setExternalAudio(null) }) {
+                Text(stringResource(R.string.player_audio_remove_external))
+            }
+        }
+    }
+    TextButton(onClick = onAddAudio) {
+        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(Dimens.inlineIcon))
+        Spacer(Modifier.size(Dimens.xs))
+        Text(stringResource(R.string.player_audio_add))
     }
 }
+
+/** The last path segment of an audio URI, which is the closest thing to a file name it has. */
+private fun externalName(uri: String): String =
+    Uri.parse(uri).lastPathSegment?.substringAfterLast('/') ?: uri
+
+// ---------------------------------------------------------------- speed, aspect, decoder
 
 @Composable
 private fun SpeedSheet(ui: PlayerUi, onSet: (Int) -> Unit) {
@@ -299,85 +547,6 @@ internal fun PlaylistRepeat.labelRes(): Int = when (this) {
     PlaylistRepeat.OFF -> R.string.player_repeat_off
     PlaylistRepeat.ONE -> R.string.player_repeat_one
     PlaylistRepeat.ALL -> R.string.player_repeat_all
-}
-
-/** Per-layer controls for delay, size, transparency and the file behind the layer (SUB-3). */
-@Composable
-private fun LayerOptionsSheet(ui: PlayerUi, viewModel: PlayerViewModel) {
-    var role by remember { mutableStateOf(TrackRole.LEARNING) }
-    val settings = ui.settings.subtitleLayer(role)
-    val layer = ui.layer(role)
-    SheetTitle(stringResource(R.string.settings_category_subtitles))
-    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-        TrackRole.entries.forEach { entry ->
-            FilterChip(
-                selected = role == entry,
-                onClick = { role = entry },
-                label = { Text(entry.title()) },
-            )
-        }
-    }
-    Text(stringResource(R.string.subtitle_delay), style = MaterialTheme.typography.labelLarge)
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-        IconButton(onClick = { viewModel.setLayerDelay(role, -DELAY_STEP_MS) }) {
-            Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.subtitle_delay_earlier))
-        }
-        Text(
-            stringResource(R.string.subtitle_delay_value, settings.delayMs),
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f),
-        )
-        IconButton(onClick = { viewModel.setLayerDelay(role, DELAY_STEP_MS) }) {
-            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.subtitle_delay_later))
-        }
-        TextButton(onClick = { viewModel.updateLayer(role) { it.copy(delayMs = 0L) } }) {
-            Text(stringResource(R.string.action_reset))
-        }
-    }
-    Text(stringResource(R.string.subtitle_size), style = MaterialTheme.typography.labelLarge)
-    Slider(
-        value = settings.scalePercent.toFloat(),
-        onValueChange = { viewModel.setLayerScale(role, it.toInt()) },
-        valueRange = SIZE_MIN_PERCENT..SIZE_MAX_PERCENT,
-    )
-    Text(stringResource(R.string.subtitle_transparency), style = MaterialTheme.typography.labelLarge)
-    Slider(
-        value = settings.transparencyPercent.toFloat(),
-        onValueChange = { viewModel.setLayerTransparency(role, it.toInt()) },
-        valueRange = 0f..TRANSPARENCY_MAX_PERCENT,
-    )
-    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-        FilterChip(
-            selected = settings.visible,
-            onClick = { viewModel.toggleLayerVisible(role) },
-            label = { Text(stringResource(R.string.player_layer_visible)) },
-        )
-        FilterChip(
-            selected = settings.showInList,
-            onClick = { viewModel.toggleListFor(role) },
-            label = { Text(stringResource(R.string.subtitle_list)) },
-        )
-    }
-    Text(
-        text = layer.fileName?.let { name -> "$name · ${layer.charsetName.orEmpty()}" } ?: stringResource(R.string.subtitle_list_empty),
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-        TextButton(onClick = { viewModel.setLayoutMode(true) }) {
-            Text(stringResource(R.string.subtitle_layout_mode))
-        }
-        layer.fileName?.let { name ->
-            TextButton(onClick = {
-                viewModel.removeFile(role, settings.externalFileKeys.firstOrNull() ?: name)
-            }) {
-                Text(stringResource(R.string.subtitle_remove_file))
-            }
-        }
-    }
-    layer.warnings.forEach { warning ->
-        Text(warning, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary)
-    }
 }
 
 /** Batch tools over the loaded file (SUB-6): line breaks and block size, applied on demand. */
@@ -598,19 +767,25 @@ private fun ListRow(
         Text(
             "${row.index + 1}",
             style = MaterialTheme.typography.labelSmall,
-            color = colors.controlIdle,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.size(Dimens.sm))
         Text(
             text = if (hidden) "•".repeat(minOf(HIDDEN_DOTS, row.text.length)) else row.text,
             style = style,
-            color = if (current) colors.controlActive else colors.controlIdle,
+            // The panel is a Material surface, so the ink comes from the theme and only the current
+            // row takes the accent (which follows the user's choice in both themes).
+            color = if (current) colors.controlActive else MaterialTheme.colorScheme.onSurface,
             maxLines = if (hidden) 1 else MAX_LIST_LINES,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
         )
         Spacer(Modifier.size(Dimens.sm))
-        Text(clock(row.startMs), style = MaterialTheme.typography.labelSmall, color = colors.controlIdle)
+        Text(
+            text = clock(row.startMs),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

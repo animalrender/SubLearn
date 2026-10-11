@@ -124,6 +124,10 @@ object SettingsMigrator {
     private val steps: List<Pair<Int, (JsonObject) -> JsonObject>> = listOf(
         2 to { it },
         3 to { it },
+        // v4 reshaped the action bar (one scrolling row with labels) and added per-video subtitle
+        // attachments. Decoding ignores the removed field and defaults the new ones, so the step is
+        // the identity transform; keeping it here is what makes "no step is ever skipped" true.
+        4 to { it },
     )
 
     fun pendingSteps(from: Int): List<Int> = steps.filter { it.first > from }.map { it.first }

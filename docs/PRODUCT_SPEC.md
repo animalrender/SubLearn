@@ -28,22 +28,49 @@ interface, stub, flag, disabled entry) but not implemented.
 
 ## Player (MX-Player-like; local files and URL/streams)
 
-- **PLY-1** Top bar without background: back + file title (left), audio, subtitle, decoder SW/HW/HW+,
-  More (…) with MX-like items including PiP. Quick Actions column under the top bar, top-left.
+- **PLY-1** Top bar without background: back + file title (left), audio, subtitle, rotate, decoder
+  SW/HW/HW+, More (…) with MX-like items including PiP. The action bar is one scrollable row, docked
+  under the top bar or above the transport row (PLY-11).
 - **PLY-2** All controls overlay the video, auto-hide after 3 s idle, single tap shows them.
-- **PLY-3** Center: play/pause + repeat-current-subtitle-block. Bottom: seekbar (buffer indicator,
-  elapsed left / total right); right under it previous / play-pause / next (subtitle blocks). Corners:
-  lock; Subtitle List View, playlist, aspect ratio and other MX-like modes.
+- **PLY-3** Bottom, in two rows and never more. The seek row is a single line: elapsed on the left,
+  the buffered range and the playhead dot on it, total (or time left) on the right. Under it one
+  transport row — seek steps, previous/next subtitle block, play/pause, repeat block and the room the
+  further buttons need — which scrolls only when the buttons do not fit. The centre of the picture
+  stays empty; it belongs to the floating buttons of PLY-11. Corners: lock; Subtitle List View,
+  playlist, aspect ratio and other MX-like modes.
 - **PLY-4** Gestures: left vertical swipe = brightness; right vertical = volume; horizontal = seek;
   double tap anywhere except buttons/subtitle text = pause (setting can switch it to seek); two-finger
   swipe up = playback speed shortcut. All remappable.
-- **PLY-5** Landscape/portrait + rotation lock.
+- **PLY-5** Landscape/portrait + rotation lock, and the player follows the phone's physical
+  orientation when that is what the user chose (`SENSOR`, the "Follow the sensor" entry). Rotate turns
+  the picture a quarter turn; holding the button opens the direction list.
 - **PLY-6** Subtitle List View (toggle in options): landscape = right-side panel (like YouTube
   comments); portrait = below the player; current-line highlight, auto-scroll, tap-to-seek, search.
   Long-press on its toggle = no-spoiler mode (upcoming blocks hidden).
 - **PLY-7** Two independent subtitle layers: Learning (primary) and Translation (secondary). Subtitle
   options have one tab per layer; each layer accepts multiple tracks (SRT, embedded soft, external)
   with MX-like options per layer.
+
+### Player — phase 3 follow-up (user request, 2026-10-11)
+
+- **PLY-8** Subtitle manager: one tab per layer; inside a tab the attached files (any number, each
+  tickable and removable), the subtitle tracks that live in the video (tickable, and the same track may
+  feed both layers), and the layer's own options. A file added to a layer is remembered per video.
+- **PLY-9** Rotation button: tap = quarter turn, hold = direction list (automatic, portrait, landscape,
+  reverse landscape, follow the sensor).
+- **PLY-10** Time labels: elapsed bottom-left, total bottom-right, one tap on either of them swaps the
+  right-hand end to the time left and back.
+- **PLY-11** Action bar: one horizontally scrollable row, labels under the icons only while the bar is
+  expanded (or while arranging), an arrow hinting that the row continues, and every button dockable in
+  the bar, floating, or hidden. Layout mode exposes the top toolbar, the transport row and the action
+  bar so this can be arranged without leaving the player.
+- **PLY-12** A recently opened file stays playable: the read grant is taken when the file is picked,
+  Home checks the URI before it navigates, and a file that moved is re-picked and replaces its entry
+  instead of failing inside the decoder with `ERROR_CODE_IO_UNSPECIFIED`.
+- **PLY-13** Audio is its own section: the tracks inside the video, the volume and mute of the player,
+  and one audio file the user adds to play with the video (removable).
+- **PLY-14** While the seek line is dragged, the picture and the subtitles follow the finger; playback
+  pauses for the drag and resumes when it ends.
 
 ## Subtitle controls
 

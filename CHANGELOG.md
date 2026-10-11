@@ -4,13 +4,77 @@ All notable changes to SubLearn are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses semantic versioning.
 Unreleased work lands on phase branches; `main` only ever contains merged, CI-green phases.
 
-[Unreleased]: https://github.com/animalrender/SubLearn/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/animalrender/SubLearn/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/animalrender/SubLearn/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/animalrender/SubLearn/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/animalrender/SubLearn/releases/tag/v0.1.0
 
 ## [Unreleased]
 
 Nothing yet.
+
+## [0.3.0] - 2026-10-11
+
+The player rebuild's second pass: MX-style chrome, a subtitle manager that can actually manage two
+layers, audio as its own section, rotation that follows the phone, and recent videos that keep playing.
+
+### Player chrome (PLY-3, PLY-10, PLY-11, PLY-14)
+
+- Changed: the seek bar is a hand-drawn hairline with a dot — elapsed on the left, total on the right,
+  and one tap on either label swaps the right-hand end to the time left and back (PLY-10). No Material
+  slider, no second row of labels.
+- Changed: play/pause moved out of the centre into the transport row, next to the seek steps, the
+  previous/next subtitle block buttons and the repeat tool (PLY-3, D-29 supersedes D-26). The row is one
+  row and only scrolls when the buttons do not fit; the playlist buttons appear only for a playlist with
+  more than one item.
+- Added: `ActionBar.kt` — one horizontally scrollable action row with optional labels under the icons,
+  a leading expand/collapse handle and a trailing arrow while the row can still scroll (PLY-11). Every
+  button can be docked in the bar, floated over the video, or hidden, by dragging it in layout mode or
+  from the menu a tap opens while arranging.
+- Changed: layout mode keeps the top toolbar, the transport row and the action bar on screen, so the
+  player can be arranged with everything visible (SUB-3).
+- Added: dragging the seek line moves the picture *and* the subtitles with the finger (PLY-14): playback
+  pauses for the drag, seeks at most five times a second, and resumes where it left off on release.
+- Changed: status messages (`Snackbarish`) and the layout-mode banner use the accent `infoSurface` plate
+  with `infoText` ink, and the chrome's idle ink is light in both themes — the black-on-black message
+  and the dark-on-dark icons in the light theme are gone (GEN-1, D-32).
+
+### Subtitles and audio (PLY-7, PLY-8, PLY-13)
+
+- Added: the subtitle manager is one sheet with a tab per layer. Each tab lists every file attached to
+  that layer (any number, each with its own tick and a remove button), the subtitle tracks inside the
+  video (tickable, and the same track may feed both layers), and the layer's delay, size, transparency
+  and list options.
+- Added: `SubtitleMerge` in `core:subtitles` merges the enabled files of a layer into one document and
+  answers "what text is on screen at this moment"; the list panel and block stepping use the merged
+  document (PLY-6 stays real with several files).
+- Added: a file added to a layer is remembered per video (`SubtitleSettings.attachmentsByVideo`) and
+  restored on the next open, including the tick state; a file that cannot be read any more is dropped
+  instead of failing on every open.
+- Added: audio is its own sheet — the audio tracks inside the video, the volume and mute of the player,
+  and one audio file the user adds to play with the video, merged into the same timeline by
+  `Media3PlayerController` and removable again (PLY-13).
+- Added: the top bar has a rotation button: tap for a quarter turn, hold for the direction list
+  (automatic, portrait, landscape, reverse landscape, follow the sensor). `OrientationLock.SENSOR` now
+  really follows the phone (PLY-5, PLY-9).
+
+### Recent videos (PLY-12)
+
+- Fixed: opening a recent video no longer fails with `ERROR_CODE_IO_UNSPECIFIED` after a restart. Every
+  picker takes the persistable read grant, Home checks the URI with `MediaAccess` before it navigates,
+  and a file that moved opens a "choose the file again" dialog that relinks the entry (keeping its saved
+  position) instead of throwing the decoder's error at the user. The player's error card also offers
+  re-picking the file and says what an IO error means.
+
+### Settings
+
+- Added: `settings_show_remaining` (Settings → Player) for the countdown time label, and
+  `settings_action_bar_labels` (Settings → Quick actions) for the action bar's labels; the
+  icons-per-row slider is gone, because the bar is one scrollable row now.
+- Changed: the quick-action list in Settings shows the same names as the player (`QuickActionId.labelRes()`)
+  instead of raw ids such as `toggle_learning`.
+- Changed: translation and UI strings — 482 keys in EN and FA each (`player_subtitle_manager`,
+  `player_audio_manager`, `player_rotate`, `home_recent_locate`, `settings_quick_bar_hint`, …).
 
 ## [0.2.0] - 2026-10-11
 

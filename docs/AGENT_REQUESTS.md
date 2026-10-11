@@ -112,6 +112,11 @@ blocking, the workaround used in the meantime is stated too.
   Robolectric/Compose unit tests (real font measurement is missing, so hit testing cannot be trusted
   there).
 - **Next step**: owner runs `.github/workflows/instrumented.yml`, or supplies screenshots/notes.
+  The 2026-10-11 chrome needs these checks in particular: the hand-drawn seek line while dragging (dot
+  size, live preview of picture and subtitle, the tap that swaps to the time left), the action-bar
+  arrange gesture (tap for the dock menu, hold-and-drag to undock, the row still scrolling), labels under
+  the icons, the transport row not scrolling when everything fits, "Follow the sensor" rotation, and an
+  added audio file merging with the video on a real decoder.
 - **Severity**: medium (GEN-1/GEN-4 claims cannot be honestly closed without it).
 
 ### REQ-8 — Confirm the branch strategy after the workspace reset

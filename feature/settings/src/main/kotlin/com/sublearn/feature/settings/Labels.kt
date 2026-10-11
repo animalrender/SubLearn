@@ -17,6 +17,7 @@ import com.sublearn.core.settings.LayerStackDirection
 import com.sublearn.core.settings.LevelProviderToken
 import com.sublearn.core.settings.OrientationLock
 import com.sublearn.core.settings.QuickActionColumn
+import com.sublearn.core.settings.QuickActionId
 import com.sublearn.core.settings.SubtitleHorizontalAnchor
 import com.sublearn.core.settings.SubtitleVerticalAnchor
 import com.sublearn.core.settings.ThemeMode
@@ -165,6 +166,28 @@ fun DockMode.labelRes(): Int = when (this) {
     DockMode.BAR -> R.string.settings_dock_bar
     DockMode.FLOATING -> R.string.settings_dock_floating
     DockMode.HIDDEN -> R.string.settings_dock_hidden
+}
+
+fun QuickActionId.labelRes(): Int = when (this) {
+    QuickActionId.TOGGLE_LEARNING -> R.string.subtitle_layer_learning
+    QuickActionId.TOGGLE_TRANSLATION -> R.string.subtitle_layer_translation
+    QuickActionId.REPEAT_BLOCK -> R.string.player_repeat_subtitle
+    QuickActionId.STOP_AT_BLOCK_END -> R.string.player_stop_at_end
+    QuickActionId.LAYOUT_MODE -> R.string.subtitle_layout_mode
+    QuickActionId.SUBTITLE_LIST -> R.string.subtitle_list
+    QuickActionId.AI_EXPLAIN -> R.string.ai_explain
+    QuickActionId.MY_WORDS -> R.string.words_title
+    QuickActionId.PLAYLIST -> R.string.player_playlist
+    QuickActionId.ASPECT_RATIO -> R.string.player_aspect
+    QuickActionId.DECODER -> R.string.player_decoder
+    QuickActionId.AUDIO_TRACK -> R.string.player_audio_manager
+    QuickActionId.SUBTITLE_TRACKS -> R.string.player_subtitle_manager
+    QuickActionId.SUBTITLE_TOOLS -> R.string.subtitle_tools
+    QuickActionId.SPEED -> R.string.player_speed
+    QuickActionId.PICTURE_IN_PICTURE -> R.string.player_pip
+    QuickActionId.SHARE -> R.string.player_share
+    QuickActionId.SETTINGS -> R.string.menu_settings
+    QuickActionId.ROTATE -> R.string.player_rotate
 }
 
 fun QuickActionColumn.labelRes(): Int = when (this) {

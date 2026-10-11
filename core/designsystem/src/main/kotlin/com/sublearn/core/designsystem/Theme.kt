@@ -88,7 +88,7 @@ fun SubLearnTheme(
 
     val menuSpec = remember(settings) { settings.fontFor(FontSurface.APP_MENUS, SubtitleLayerRole.LEARNING) }
     val typography = remember(menuSpec) { buildAppTypography(menuSpec) }
-    val semantic = remember(scheme, dark, amoled) { semanticColors(dark, amoled) }
+    val semantic = remember(scheme, dark, amoled, accent) { semanticColors(dark, amoled, accent) }
 
     CompositionLocals(
         scheme = scheme,
@@ -123,7 +123,7 @@ private fun accentColor(token: AccentToken, dark: Boolean): Color {
     return Color(if (dark) pair.dark else pair.light)
 }
 
-private fun semanticColors(dark: Boolean, amoled: Boolean): SubLearnColors = SubLearnColors(
+private fun semanticColors(dark: Boolean, amoled: Boolean, accent: Color): SubLearnColors = SubLearnColors(
     playerScrim = Color(if (dark) Palette.SCRIM_PLAYER else Palette.SCRIM_SOFT),
     subtitleBackdrop = Color(if (amoled) Palette.BACKDROP_STRONG else Palette.BACKDROP),
     subtitleText = Color(0xFFF5F8FAL),
@@ -131,12 +131,19 @@ private fun semanticColors(dark: Boolean, amoled: Boolean): SubLearnColors = Sub
     cardBackdrop = Color(if (dark) Palette.BACKDROP else Palette.LIGHT_SURFACE),
     strongBackdrop = Color(Palette.BACKDROP_STRONG),
     overlayOutline = Color(Palette.OUTLINE_SUBTITLE),
-    controlIdle = if (dark) Color(0xFFE8EEF2L) else Color(0xFF14181DL),
-    controlActive = Color(Palette.accent("TEAL").let { if (dark) it.dark else it.light }),
+    // The player chrome is drawn on the video (or on the letterbox), never on a Material surface,
+    // so its ink is light in both themes; a theme-following value made the idle icons and the HUD
+    // unreadable over a dark scrim in the light theme (GEN-1).
+    controlIdle = Color(0xFFE8EEF2L),
+    // The chrome follows the chosen accent; TEAL is the default, so nothing moves for a user who
+    // never changed it, and the player stops being the one screen that ignores the accent setting.
+    controlActive = accent,
     controlDisabled = Color(0x669FB0BFL),
     listCurrentRow = if (dark) Color(0x24FFFFFFL) else Color(0x14000000L),
     listHoverRow = if (dark) Color(0x14FFFFFFL) else Color(0x0A000000L),
     levelBadgeBackgroundAlpha = BADGE_ALPHA,
+    infoSurface = accent.copy(alpha = INFO_SURFACE_ALPHA),
+    infoText = Color(Palette.DARK_BACKGROUND),
 )
 
 /**
@@ -168,7 +175,7 @@ private fun buildAppTypography(spec: com.sublearn.core.settings.FontSpec): Typog
 }
 
 val LocalSubLearnColors: ProvidableCompositionLocal<SubLearnColors> = compositionLocalOf {
-    semanticColors(dark = true, amoled = false)
+    semanticColors(dark = true, amoled = false, accent = Color(Palette.accent("TEAL").dark))
 }
 val LocalReduceMotion: ProvidableCompositionLocal<Boolean> = compositionLocalOf { false }
 val LocalAppFontScale: ProvidableCompositionLocal<Float> = compositionLocalOf { 1f }

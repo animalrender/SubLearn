@@ -70,14 +70,16 @@ TODO comment; each entry has a route to being fixed.
     UI state and resolved in the composable, so the strings move into `core:designsystem` without the
     view models touching `Context`.
 16. **The About section's "feedback" row is a no-op.** There is no destination yet, so the row does
-    nothing. Floating quick actions drag since the 2026-10-10 rebuild (`detectDragGestures` writes the
-    stored fractions). Route: a feedback URL once one exists.
-17. **One file per layer (PLY-7 is partial).** A layer shows either one subtitle file or the player's
-    embedded track; loading a second file into the same layer replaces the first. The remembered
-    `externalFileKeys` belong to the video that is currently open: they are cleared when another video
-    opens, and a file added under Settings → Subtitles is loaded when the player comes back to the same
-    video (or by Subtitle tools → Apply). Route: a per-video subtitle table in Room keyed by the
-    media URI, then real stacking order inside a layer.
+    nothing. Floating quick actions drag since the 2026-10-10 rebuild and can be undocked, re-docked or
+    hidden from layout mode since the 2026-10-11 one (`arrangeGesture` + `DockModeMenu`). Route: a
+    feedback URL once one exists.
+17. **Attached files live in settings, not in a video-keyed table.** PLY-7 is real now: a layer holds
+    any number of files (`PlayerViewModel.layerFiles`), each with its own tick, and `SubtitleMerge`
+    stacks them. What is still coarse is *where they are remembered*: `SubtitleSettings.attachmentsByVideo`
+    is one serialized map inside the settings JSON, keyed by media URI, so a very long history grows the
+    settings blob and a file that disappears is only noticed when it fails to load. Route: a per-video
+    subtitle table in Room next to `recent_videos`, written from the same `attachFile/removeFile`
+    calls.
 18. **ML Kit model download progress is coarse.** `RemoteModelManager.download` only reports
     start/success/failure, so the Settings → Translation row shows an indeterminate bar while the
     model downloads. Route: none in the public ML Kit API; revisit if a progress callback appears.
@@ -85,10 +87,14 @@ TODO comment; each entry has a route to being fixed.
     auto-repeat count once. The chrome button has no release callback, so the setting is not
     temporarily inverted as SHD-2 describes. Route: a release callback on `ChromeIconButton`, and a
     ViewModel pair `beginRepeatHold` and `endRepeatHold`.
-20. **The playlist sheet is read-only.** It shows the entries and the repeat mode, but tapping an entry
-    does not jump to it, because `PlayerController` has no call to play an index. Route:
-    `PlayerController.playIndex(index)` in `core:player`, and a row tap in `Sheets.kt`.
+20. **The playlist is read-only and single-item.** It shows the entries and the repeat mode, but tapping
+    an entry does not jump to it, because `PlayerController` has no call to play an index, and nothing in
+    the app ever builds a multi-item playlist (`open()` always sets a one-item list). That is also why the
+    transport row hides its previous/next video buttons unless the playlist has more than one item
+    (D-29). Route: `PlayerController.playIndex(index)` in `core:player`, a row tap in `Sheets.kt`, and a
+    way to enqueue the next file.
 21. **The rebuilt player has not run on a device or an emulator.** Picture-in-picture, rotation, the
     immersive bars and word hit testing on real glyph layouts were reviewed by hand and by the static
-    checkers. Route: the manual checklist in the 2026-10-10 entry of PROGRESS.md, and the
-    `PlayerPopupsSmokeTest` run on a device.
+    checkers, and the 2026-10-11 chrome (hand-drawn seek line, live scrub preview, scrollable action bar
+    with its arrange gesture, sensor-follow rotation) is in the same state. Route: the manual checklist
+    in the 2026-10-11 entry of PROGRESS.md, and the `PlayerPopupsSmokeTest` run on a device.

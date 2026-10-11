@@ -11,6 +11,13 @@ enum class ThemeMode { SYSTEM, LIGHT, DARK, AMOLED }
 @Serializable
 enum class AccentToken { TEAL, INDIGO, AMBER, ROSE, FOREST, VIOLET, SKY }
 
+/**
+ * How the player's orientation is decided (PLY-5, PLY-9).
+ *
+ * [AUTO] leaves it to the system, which is the device's own auto-rotate choice; [SENSOR] follows the
+ * device's physical orientation even when the system auto-rotate switch is off, which is the "the
+ * player notices that I turned the phone" behaviour; the rest pin one direction.
+ */
 @Serializable
 enum class OrientationLock { AUTO, PORTRAIT, LANDSCAPE, REVERSE_LANDSCAPE, SENSOR }
 
@@ -80,15 +87,31 @@ data class SubtitleLayerSettings(
     val scalePercent: Int = 100,
     val transparencyPercent: Int = 0,
     val placement: SubtitlePlacement = SubtitlePlacement(),
-    /** Media3 track indexes shown in this layer; empty means "auto-pick by language". */
+    /**
+     * Media3 track indexes ticked for this layer in the subtitle manager. Several may be remembered
+     * (PLY-8) but the player decodes one text track at a time, so only the first existing one is
+     * rendered; the sheet says so where it matters.
+     */
     val embeddedTrackIndexes: List<Int> = emptyList(),
-    /** External subtitle file keys (SubtitleFile.key) attached to this layer. */
+    /**
+     * External subtitle file keys (SubtitleFile.key) currently switched on for this layer. Any
+     * number may be listed at once; the layer shows every block that covers the moment, in order.
+     */
     val externalFileKeys: List<String> = emptyList(),
     /** Order in which the layer's tracks are stacked when several are enabled. */
     val stackDirection: LayerStackDirection = LayerStackDirection.BELOW,
     val showInList: Boolean = true,
     /** Keep the raw `\N` line breaks of ASS/SRT files instead of joining them. */
     val keepOriginalLineBreaks: Boolean = false,
+)
+
+/** One external subtitle file the user attached to a video, with the layer it belongs to (PLY-8). */
+@Serializable
+data class AttachedSubtitleFile(
+    /** SAF key, i.e. `SubtitleFile.key`; opaque here so `core:settings` stays Android-free. */
+    val key: String,
+    val name: String,
+    val role: LayerRole = LayerRole.LEARNING,
 )
 
 @Serializable
@@ -110,7 +133,28 @@ data class SubtitleSettings(
     val sidecarTreeUri: String? = null,
     val showLanguageBadge: Boolean = false,
     val maxLinesPerLayer: Int = 3,
+    /**
+     * Files the user attached to a video, keyed by the video's URI, so re-opening a video restores
+     * its layers instead of asking for the same files again (PLY-8). Bounded by
+     * [MAX_ATTACHMENT_VIDEOS] so a long history cannot grow the settings document without limit.
+     */
+    val attachmentsByVideo: Map<String, List<AttachedSubtitleFile>> = emptyMap(),
 ) {
+    /** Files remembered for one video, in the order they were added. */
+    fun attachments(videoUri: String?): List<AttachedSubtitleFile> =
+        videoUri?.let { attachmentsByVideo[it] }.orEmpty()
+
+    /** Replaces the attachments of one video and drops the oldest videos past the bound. */
+    fun withAttachments(videoUri: String, files: List<AttachedSubtitleFile>): SubtitleSettings {
+        val next = if (files.isEmpty()) attachmentsByVideo - videoUri else attachmentsByVideo + (videoUri to files)
+        val bounded = if (next.size <= MAX_ATTACHMENT_VIDEOS) {
+            next
+        } else {
+            next.entries.drop(next.size - MAX_ATTACHMENT_VIDEOS).associate { it.key to it.value }
+        }
+        return copy(attachmentsByVideo = bounded)
+    }
+
     fun layer(role: TrackRole): SubtitleLayerSettings =
         layers[if (role == TrackRole.LEARNING) LayerRole.LEARNING else LayerRole.TRANSLATION] ?: SubtitleLayerSettings()
 
@@ -118,6 +162,9 @@ data class SubtitleSettings(
         copy(layers = layers + ((if (role == TrackRole.LEARNING) LayerRole.LEARNING else LayerRole.TRANSLATION) to value))
 
     companion object {
+        /** How many videos keep their remembered subtitle files. */
+        const val MAX_ATTACHMENT_VIDEOS = 20
+
         fun defaultLayers(): Map<LayerRole, SubtitleLayerSettings> = mapOf(
             LayerRole.LEARNING to SubtitleLayerSettings(
                 visible = true,
@@ -175,6 +222,8 @@ data class PlayerSettings(
     val volumeUsesDeviceStream: Boolean = true,
     val subtitleSafeMarginDp: Float = 0f,
     val lockGesturesWhenLocked: Boolean = true,
+    /** The right-hand time label counts the time left instead of the total (PLY-10). */
+    val showRemainingTime: Boolean = false,
 )
 
 @Serializable
@@ -420,7 +469,7 @@ data class AppSettings(
     fun subtitleLayer(role: TrackRole): SubtitleLayerSettings = subtitles.layer(role)
 
     companion object {
-        const val SCHEMA_VERSION = 3
+        const val SCHEMA_VERSION = 4
 
         val DEFAULT = AppSettings()
     }

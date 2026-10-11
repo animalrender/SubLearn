@@ -65,6 +65,16 @@ interface PlayerController {
 
     fun setMuted(muted: Boolean)
 
+    /** Media volume as a percentage of the stream, 0..100; muting remembers this value. */
+    fun setVolume(percent: Int)
+
+    /**
+     * Plays an external audio file together with the current video (PLY-13), or clears it with
+     * `null`. Merging two sources needs them to share one timeline, so this applies to the video
+     * that is open rather than to a playlist.
+     */
+    fun setExternalAudio(uri: String?)
+
     /** Persist the current position; called on pause, on leaving and on process-death signals. */
     suspend fun flushPosition()
 

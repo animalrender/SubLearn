@@ -466,7 +466,7 @@ fun QuickActionsSection(settings: AppSettings, viewModel: SettingsViewModel) {
     val quick = settings.quickActions
     SectionCard(stringResource(R.string.settings_category_quick_actions)) {
         Text(
-            stringResource(R.string.settings_quick_hint),
+            stringResource(R.string.settings_quick_bar_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -477,12 +477,10 @@ fun QuickActionsSection(settings: AppSettings, viewModel: SettingsViewModel) {
             label = { stringResource(it.labelRes()) },
             onSelect = { value -> viewModel.update { it.copy(quickActions = it.quickActions.copy(column = value)) } },
         )
-        SliderRow(
-            title = stringResource(R.string.settings_icons_per_row),
-            value = quick.barIconsPerRow.toFloat(),
-            range = 4f..12f,
-            valueLabel = quick.barIconsPerRow.toString(),
-            onValueChange = { value -> viewModel.update { it.copy(quickActions = it.quickActions.copy(barIconsPerRow = value.toInt())) } },
+        SwitchRow(
+            title = stringResource(R.string.settings_action_bar_labels),
+            value = quick.barExpanded,
+            onChange = { value -> viewModel.update { it.copy(quickActions = it.quickActions.copy(barExpanded = value)) } },
         )
         SwitchRow(
             title = stringResource(R.string.settings_auto_hide_with_controls),
@@ -491,10 +489,15 @@ fun QuickActionsSection(settings: AppSettings, viewModel: SettingsViewModel) {
         )
     }
     SectionCard(stringResource(R.string.settings_dock_mode)) {
+        Text(
+            stringResource(R.string.settings_quick_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         QuickActionId.entries.forEach { id ->
             val spec = quick.spec(id)
             Column(Modifier.fillMaxWidth().padding(vertical = Dimens.xs)) {
-                Text(id.key.replace('_', ' '), style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(id.labelRes()), style = MaterialTheme.typography.bodyLarge)
                 ChoiceRow(
                     title = stringResource(R.string.settings_dock_mode),
                     options = DockMode.entries,

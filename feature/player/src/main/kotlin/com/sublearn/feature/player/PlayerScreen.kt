@@ -27,7 +27,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.PictureInPictureAlt
 import androidx.compose.material.icons.filled.ScreenRotation
 import androidx.compose.material.icons.filled.Settings
@@ -43,8 +43,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
@@ -65,9 +67,11 @@ import com.sublearn.core.designsystem.LocalReduceMotion
 import com.sublearn.core.designsystem.LocalSubLearnColors
 import com.sublearn.core.designsystem.R
 import com.sublearn.core.player.OpenDocumentContract
+import com.sublearn.core.player.UriGrants
 import com.sublearn.core.settings.DecoderMode
 import com.sublearn.core.settings.GestureAction
 import com.sublearn.core.settings.OrientationLock
+import com.sublearn.core.subtitles.TrackRole
 
 /**
  * The player screen (PLY-1..7).
@@ -102,10 +106,27 @@ fun PlayerScreen(
     val viewRef = remember { arrayOfNulls<PlayerView>(1) }
     val currentOpenWords by rememberUpdatedState(onOpenWords)
     val currentOpenSettings by rememberUpdatedState(onOpenSettings)
+    // The sheet decides which layer a file is added to, so the launcher remembers the request.
+    var subtitleRole by remember { mutableStateOf<TrackRole?>(null) }
     val subtitlePicker = rememberLauncherForActivityResult(OpenDocumentContract(SUBTITLE_MIMES)) { picked ->
+        val role = subtitleRole
+        subtitleRole = null
+        if (picked != null && role != null) {
+            // A remembered attachment is only useful if the grant outlives the session (PLY-12).
+            UriGrants.persistRead(context, picked.uri)
+            viewModel.attachFile(role, picked.uri, picked.name)
+        }
+    }
+    val audioPicker = rememberLauncherForActivityResult(OpenDocumentContract(AUDIO_MIMES)) { picked ->
         if (picked != null) {
-            val role = SubtitleRoleGuess.guess(picked.name, ui.settings.languages.nativeLanguage).role
-            viewModel.loadFile(role, picked.uri, picked.name)
+            UriGrants.persistRead(context, picked.uri)
+            viewModel.setExternalAudio(picked.uri)
+        }
+    }
+    val videoPicker = rememberLauncherForActivityResult(OpenDocumentContract(VIDEO_MIMES)) { picked ->
+        if (picked != null) {
+            UriGrants.persistRead(context, picked.uri)
+            viewModel.open(picked.uri, picked.name)
         }
     }
 
@@ -201,11 +222,15 @@ fun PlayerScreen(
             icon = Icons.Default.ScreenRotation,
             checked = rotationLocked,
         ) { viewModel.toggleRotationLock() },
-        PlayerMenuItem(R.string.subtitle_layout_mode, Icons.Default.Tune, checked = ui.layoutMode) { viewModel.setLayoutMode(true) },
-        PlayerMenuItem(R.string.player_subtitle_options, Icons.Default.Subtitles, checked = false) {
-            viewModel.setSheet(Sheet.LAYER_OPTIONS)
+        PlayerMenuItem(R.string.player_subtitle_manager, Icons.Default.Subtitles, checked = false) {
+            viewModel.setSheet(Sheet.SUBTITLES)
         },
-        PlayerMenuItem(R.string.subtitle_add_file, Icons.Default.Add, checked = false) { subtitlePicker.launch(SUBTITLE_MIMES) },
+        PlayerMenuItem(R.string.player_audio_manager, Icons.Default.GraphicEq, checked = false) {
+            viewModel.setSheet(Sheet.AUDIO)
+        },
+        PlayerMenuItem(R.string.subtitle_layout_mode, Icons.Default.Tune, checked = ui.layoutMode) {
+            viewModel.setLayoutMode(true)
+        },
         PlayerMenuItem(R.string.menu_settings, Icons.Default.Settings, checked = false) { currentOpenSettings() },
     )
 
@@ -220,9 +245,13 @@ fun PlayerScreen(
         val listBelow = ui.list.open && !landscape && !inPip
         val regionWidth = maxWidth
         val regionHeight = if (listBelow) maxHeight * (1f - Dimens.listPortraitShare) else maxHeight
+        // Arranging (SUB-3) keeps every bar on screen: the toolbar, the transport row and the action
+        // bar are exactly what the user is arranging, so hiding them would make the mode blind.
         val chromeShown = (ui.controlsVisible || ui.playback.isEnded || ui.playback.error != null) &&
-            !ui.layoutMode && !ui.locked && !inPip
-        val dockShown = !inPip && !ui.layoutMode && !ui.locked &&
+            !ui.locked && !inPip
+        // The action bar is shown with the chrome, when it opted out of auto-hide, and always while
+        // arranging (SUB-3, PLY-11): the buttons are half of what the user came to arrange.
+        val dockShown = !inPip && !ui.locked &&
             (chromeShown || !ui.settings.quickActions.autoHideWithControls)
 
         Box(
@@ -260,8 +289,10 @@ fun PlayerScreen(
                     .playerGestures(gestureMode, registry, viewModel, tuning, readLevel),
             )
 
-            if (dockShown) {
-                QuickActionDock(
+            // The bar fades in and out with the rest of the chrome (PLY-2) instead of appearing and
+            // disappearing between two frames.
+            ChromeVisibility(visible = dockShown, modifier = Modifier.fillMaxSize()) {
+                ActionBarLayer(
                     ui = ui,
                     areaWidth = regionWidth,
                     areaHeight = regionHeight,
@@ -269,6 +300,8 @@ fun PlayerScreen(
                     onHoldStart = viewModel::onQuickHoldStart,
                     onHoldEnd = viewModel::onQuickHoldEnd,
                     onMoveFloating = viewModel::moveQuickAction,
+                    onDockChange = viewModel::setDockMode,
+                    onToggleExpanded = { viewModel.setActionBarExpanded(!ui.actionBarExpanded) },
                     registry = registry,
                     modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing),
                 )
@@ -281,18 +314,9 @@ fun PlayerScreen(
                         onBack = { handleBackFrom(ui, viewModel, onBack) },
                         onSheet = viewModel::setSheet,
                         onMenuOpenChange = viewModel::setMenuOpen,
+                        onOrientationLock = viewModel::setOrientationLock,
+                        onRotateQuarterTurn = viewModel::rotateQuarterTurn,
                         menuActions = menuActions,
-                        registry = registry,
-                    )
-                }
-
-                ChromeVisibility(visible = chromeShown, modifier = Modifier.align(Alignment.Center)) {
-                    CenterCluster(
-                        playing = ui.playback.isPlaying,
-                        buffering = ui.playback.isBuffering,
-                        seekStepMs = ui.settings.player.seekStepMs,
-                        onTogglePlay = viewModel::togglePlay,
-                        onSeekBy = viewModel::seekBy,
                         registry = registry,
                     )
                 }
@@ -301,7 +325,13 @@ fun PlayerScreen(
                     BottomChrome(
                         ui = ui,
                         onScrubStart = viewModel::onScrubStart,
+                        onScrubUpdate = viewModel::onScrubUpdate,
                         onScrubEnd = viewModel::onScrubEnd,
+                        onToggleRemainingTime = viewModel::toggleRemainingTime,
+                        onPlayPause = viewModel::togglePlay,
+                        onSeekBy = viewModel::seekBy,
+                        onPreviousVideo = viewModel::playPrevious,
+                        onNextVideo = viewModel::playNext,
                         onPreviousBlock = { viewModel.stepBlock(-1) },
                         onNextBlock = { viewModel.stepBlock(1) },
                         onRepeatBlock = { viewModel.toggleRepeatBlock(autoRepeat = false) },
@@ -325,9 +355,13 @@ fun PlayerScreen(
 
                 if (ui.layoutMode) {
                     LayoutModeBanner(
-                        hint = stringResource(R.string.subtitle_layout_hint),
+                        hint = stringResource(R.string.subtitle_layout_arrange_hint),
                         onDone = { viewModel.setLayoutMode(false) },
-                        modifier = Modifier.align(Alignment.TopCenter).padding(top = Dimens.xl),
+                        // Below the toolbar and below the action bar row, so the hint never covers
+                        // the buttons it is talking about.
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = Dimens.quickColumnTop + Dimens.touchTarget),
                     )
                 }
             }
@@ -369,6 +403,14 @@ fun PlayerScreen(
             ui.playback.error?.let { error ->
                 ErrorCard(
                     error = error,
+                    hint = stringResource(R.string.player_error_io_hint),
+                    // A stream has no file to pick again; a local file does, and re-picking is the
+                    // only thing that can restore a grant the system has already dropped (PLY-12).
+                    onPickAgain = if (ui.playback.target?.isStream != true) {
+                        ({ videoPicker.launch(VIDEO_MIMES) })
+                    } else {
+                        null
+                    },
                     onRetry = { start?.let { viewModel.open(it.uri, it.title, it.subtitles) } },
                     onSwitchDecoder = { viewModel.setDecoder(DecoderMode.SOFTWARE) },
                     modifier = Modifier.align(Alignment.Center),
@@ -424,6 +466,11 @@ fun PlayerScreen(
         SheetsHost(
             ui = ui,
             viewModel = viewModel,
+            onAddSubtitle = { role ->
+                subtitleRole = role
+                subtitlePicker.launch(SUBTITLE_MIMES)
+            },
+            onAddAudio = { audioPicker.launch(AUDIO_MIMES) },
             onDismiss = { viewModel.setSheet(Sheet.NONE) },
             modifier = Modifier.fillMaxSize(),
         )
@@ -447,7 +494,14 @@ private fun handleBackFrom(ui: PlayerUi, viewModel: PlayerViewModel, onBack: () 
 data class PlayerStart(val uri: String, val title: String, val subtitles: List<PlayerViewModel.PickedSubtitle> = emptyList())
 
 @Composable
-private fun ErrorCard(error: String, onRetry: () -> Unit, onSwitchDecoder: () -> Unit, modifier: Modifier = Modifier) {
+private fun ErrorCard(
+    error: String,
+    hint: String,
+    onPickAgain: (() -> Unit)?,
+    onRetry: () -> Unit,
+    onSwitchDecoder: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Surface(
         modifier = modifier.padding(Dimens.lg),
         shape = RoundedCornerShape(Dimens.radiusLg),
@@ -456,7 +510,12 @@ private fun ErrorCard(error: String, onRetry: () -> Unit, onSwitchDecoder: () ->
         Column(Modifier.padding(Dimens.lg)) {
             Text(stringResource(R.string.player_error, error), color = MaterialTheme.colorScheme.onErrorContainer)
             Spacer(Modifier.size(Dimens.sm))
+            Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer)
+            Spacer(Modifier.size(Dimens.sm))
             Row(horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+                onPickAgain?.let { pick ->
+                    TextButton(onClick = pick) { Text(stringResource(R.string.player_pick_file_again)) }
+                }
                 TextButton(onClick = onRetry) { Text(stringResource(R.string.action_apply)) }
                 TextButton(onClick = onSwitchDecoder) { Text(stringResource(R.string.player_decoder_software)) }
             }
@@ -488,12 +547,20 @@ private fun Context.currentVolumeFraction(): Float {
     return manager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat() / max
 }
 
+/**
+ * PLY-5: the orientation lock, mapped onto the window.
+ *
+ * AUTO follows the system's own rotation setting, SENSOR ignores that setting and follows the
+ * physical orientation (which is what "turn the phone and the picture follows" means when auto
+ * rotate is switched off), and LANDSCAPE accepts both landscape directions so a phone held the
+ * other way round is not upside down.
+ */
 private fun orientationFor(lock: OrientationLock): Int = when (lock) {
     OrientationLock.AUTO -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     OrientationLock.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-    OrientationLock.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+    OrientationLock.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
     OrientationLock.REVERSE_LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
-    OrientationLock.SENSOR -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+    OrientationLock.SENSOR -> ActivityInfo.SCREEN_ORIENTATION_SENSOR
 }
 
 // ---------------------------------------------------------------- window helpers
@@ -540,6 +607,12 @@ internal fun Activity.enterPipMode(aspectWidth: Int, aspectHeight: Int) {
 }
 
 private val SUBTITLE_MIMES = arrayOf("text/*", "application/octet-stream", "application/x-subrip")
+
+/** Audio files that can be merged with a video; the picker filters to them. */
+private val AUDIO_MIMES = arrayOf("audio/*", "application/ogg", "application/octet-stream")
+
+/** Re-picking a video whose grant expired: the same filter Home's picker uses. */
+private val VIDEO_MIMES = arrayOf("video/*", "application/x-mpegURL", "application/vnd.apple.mpegurl")
 
 /** Percent to fraction for the dim overlay. */
 private const val PERCENT = 100f

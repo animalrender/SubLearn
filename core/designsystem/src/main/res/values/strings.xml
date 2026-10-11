@@ -283,7 +283,7 @@
     <string name="settings_orientation_portrait">Portrait</string>
     <string name="settings_orientation_landscape">Landscape</string>
     <string name="settings_orientation_reverse_landscape">Reverse landscape</string>
-    <string name="settings_orientation_sensor">Sensor landscape</string>
+    <string name="settings_orientation_sensor">Follow the sensor</string>
     <string name="settings_double_tap_none">Nothing</string>
     <string name="settings_swipe_seek">Seconds for a full-width swipe</string>
     <string name="settings_default_speed">Default speed</string>
@@ -350,7 +350,6 @@
     <string name="settings_dock_hidden">Hidden</string>
     <string name="settings_dock_mode">Where it lives</string>
     <string name="settings_auto_hide_with_controls">Hide with the controls</string>
-    <string name="settings_icons_per_row">Icons per row</string>
     <string name="settings_font_preview">The quick brown fox jumps over the lazy dog</string>
     <string name="settings_font_preview_rtl">نیم‌فاصله فارسی را زیبا می‌کند</string>
     <string name="settings_font_pick_file">Use a font file</string>
@@ -456,9 +455,49 @@
     <string name="player_seconds_short">%1$d s</string>
     <string name="player_seconds_signed">%1$s%2$d s</string>
     <string name="player_share">Share</string>
-    <string name="player_subtitle_options">Subtitle options</string>
     <string name="settings_long_press_speed">Long-press speed</string>
     <string name="subtitle_delay_earlier">Show earlier</string>
     <string name="subtitle_delay_later">Show later</string>
     <string name="subtitle_tools_applied">Subtitle tools applied</string>
+    <!-- Player revision, 2026-10-11: the subtitle and audio managers, the action bar and the
+         status messages (PLY-8..PLY-13, SUB-8). EN and FA are kept in sync by hand. -->
+    <string name="player_subtitle_manager">Subtitles</string>
+    <string name="subtitle_manager_add">Add a subtitle file</string>
+    <string name="subtitle_manager_files">Files in this layer</string>
+    <string name="subtitle_manager_embedded">Subtitle tracks in the video</string>
+    <string name="subtitle_manager_empty">No subtitle file is attached to this layer yet.</string>
+    <string name="subtitle_manager_no_embedded">This video carries no subtitle track.</string>
+    <string name="subtitle_manager_embedded_note">The player decodes one embedded track at a time; the first ticked track is the one you see.</string>
+    <string name="subtitle_manager_options">Layer options</string>
+    <string name="subtitle_manager_multiple_note">Every ticked file is shown; when two files cover the same moment, both lines appear.</string>
+    <string name="player_audio_manager">Audio</string>
+    <string name="player_audio_add">Add an audio file</string>
+    <string name="player_audio_external_note">Added audio plays with the open video only and has to be a common format (M4A, MP3, AAC).</string>
+    <string name="player_audio_remove_external">Remove the added audio</string>
+    <string name="player_audio_no_tracks">This video carries no audio track.</string>
+    <string name="player_mute">Mute</string>
+    <string name="player_unmute">Unmute</string>
+    <string name="player_msg_audio_added">Audio file attached</string>
+    <string name="player_msg_audio_failed">That file could not be opened as audio</string>
+    <string name="player_action_bar_labels_on">Show labels</string>
+    <string name="player_action_bar_labels_off">Hide labels</string>
+    <string name="player_action_bar_more">More buttons</string>
+    <string name="player_action_dock_bar">Dock to the toolbar</string>
+    <string name="player_action_dock_float">Undock and float</string>
+    <string name="player_action_dock_hide">Hide this button</string>
+    <string name="subtitle_layout_arrange_hint">Drag a button to undock it; tap a floating button to dock it again.</string>
+    <string name="player_rotate">Rotate</string>
+    <string name="player_msg_rotation_mode">Orientation: %1$s</string>
+    <string name="player_error_io_hint">The file could not be opened. It may have moved, or the permission may have expired.</string>
+    <string name="player_pick_file_again">Pick the file again</string>
+    <string name="player_time_remaining">Time left</string>
+    <string name="home_recent_unavailable">This file is no longer accessible</string>
+    <string name="home_recent_locate">Choose the file again</string>
+    <string name="home_recent_locate_body">After a restart or a move, the file has to be handed to SubLearn again.</string>
+    <string name="settings_show_remaining">Time label counts down</string>
+    <string name="settings_action_bar_labels">Action bar labels</string>
+    <string name="settings_quick_bar_hint">One scrollable row: labels appear under the icons when the labels are on, and every button can be docked, floated or hidden from layout mode.</string>
+    <string name="player_previous_video">Previous video</string>
+    <string name="player_next_video">Next video</string>
 </resources>
+

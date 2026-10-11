@@ -15,6 +15,7 @@ import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.ui.PlayerView
 import com.sublearn.core.common.SubLearnLogger
 import com.sublearn.core.settings.AspectMode
@@ -73,6 +74,8 @@ class Media3PlayerController(
     private var aspect: AspectMode = AspectMode.FIT
     private var customAspect = 16 to 9
     private var muted = false
+    private var volumePercent = 100
+    private var externalAudioUri: String? = null
     private var speedPercent = 100
     private var pendingTarget: MediaTarget? = null
     private var pendingPlaylist: List<MediaTarget> = emptyList()
@@ -119,6 +122,15 @@ class Media3PlayerController(
         }
     }
 
+    /**
+     * One factory serves both the player and the merge in [setExternalAudio]; building it per call
+     * would drop the cross-protocol redirect handling the HTTP source needs.
+     */
+    private val httpDataSourceFactory = DefaultHttpDataSource.Factory()
+        .setUserAgent(USER_AGENT)
+        .setAllowCrossProtocolRedirects(true)
+    private val mediaSourceFactory = DefaultMediaSourceFactory(DefaultDataSource.Factory(context, httpDataSourceFactory))
+
     init {
         buildPlayer()
     }
@@ -142,20 +154,16 @@ class Media3PlayerController(
                 candidates.filter { it.softwareOnly }.ifEmpty { candidates }
             }
         }
-        val http = DefaultHttpDataSource.Factory()
-            .setUserAgent(USER_AGENT)
-            .setAllowCrossProtocolRedirects(true)
-        val dataSourceFactory = DefaultDataSource.Factory(context, http)
         val built = ExoPlayer.Builder(context)
             .setRenderersFactory(renderers)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
+            .setMediaSourceFactory(mediaSourceFactory)
             .setAudioAttributes(AudioAttributes.DEFAULT, /* handleAudioFocus = */ true)
             .setHandleAudioBecomingNoisy(true)
             .setSeekBackIncrementMs(seekBackMs)
             .setSeekForwardIncrementMs(seekForwardMs)
             .build()
         built.addListener(listener)
-        built.volume = if (muted) 0f else 1f
+        built.volume = playbackVolume()
         built.playbackParameters = built.playbackParameters.withSpeed(speedPercent / 100f)
         player = built
         attachedView?.let { view ->
@@ -205,13 +213,24 @@ class Media3PlayerController(
 
     private fun applyPlaylist(startPositionMs: Long) {
         val exo = player ?: return
-        val items = pendingPlaylist.map { it.toMediaItem() }
-        exo.setMediaItems(items, pendingIndex, startPositionMs.coerceAtLeast(0L))
+        val current = pendingPlaylist.getOrNull(pendingIndex)
+        val audio = externalAudioUri
+        if (audio != null && current != null && !current.isStream) {
+            // PLY-13: the video and the added audio run as one merged timeline. The media source
+            // factory builds each side, so an MP4 video plus an M4A dub needs no muxing.
+            val videoSource = mediaSourceFactory.createMediaSource(current.toMediaItem())
+            val audioSource = mediaSourceFactory.createMediaSource(MediaItem.fromUri(Uri.parse(audio)))
+            exo.setMediaSource(MergingMediaSource(false, false, videoSource, audioSource), startPositionMs.coerceAtLeast(0L))
+        } else {
+            val items = pendingPlaylist.map { it.toMediaItem() }
+            exo.setMediaItems(items, pendingIndex, startPositionMs.coerceAtLeast(0L))
+        }
         exo.prepare()
         _state.value = _state.value.copy(
             target = pendingTarget,
             playlist = pendingPlaylist,
             playlistIndex = pendingIndex,
+            externalAudioUri = externalAudioUri,
             error = null,
             positionMs = startPositionMs,
             durationMs = 0L,
@@ -378,8 +397,30 @@ class Media3PlayerController(
 
     override fun setMuted(muted: Boolean) {
         this.muted = muted
-        player?.volume = if (muted) 0f else 1f
+        player?.volume = playbackVolume()
+        _state.value = _state.value.copy(volumePercent = if (muted) 0 else volumePercent)
     }
+
+    override fun setVolume(percent: Int) {
+        volumePercent = percent.coerceIn(0, 100)
+        if (volumePercent > 0) muted = false
+        player?.volume = playbackVolume()
+        _state.value = _state.value.copy(volumePercent = if (muted) 0 else volumePercent)
+    }
+
+    override fun setExternalAudio(uri: String?) {
+        val next = uri?.takeIf { it.isNotBlank() }
+        if (next == externalAudioUri) return
+        externalAudioUri = next
+        val resumeAt = player?.currentPosition ?: 0L
+        val wasPlaying = player?.isPlaying == true
+        applyPlaylist(resumeAt)
+        if (wasPlaying) player?.playWhenReady = true
+        _state.value = _state.value.copy(externalAudioUri = next)
+    }
+
+    /** Volume to hand to the player: muting wins over the stored percentage. */
+    private fun playbackVolume(): Float = if (muted) 0f else volumePercent / PERCENT
 
     // ---------------------------------------------------------------- internals
 
@@ -503,6 +544,7 @@ class Media3PlayerController(
     }
 
     private companion object {
+        const val PERCENT = 100f
         const val TAG = "Player"
         const val PROGRESS_TICK_MS = 120L
         const val MIN_SPEED_PERCENT = 25

@@ -22,6 +22,11 @@ size, duration or type scale; `tools/check_sources.py` plus review keep that hon
 | `listPanelMinWidth` | 260 dp | the subtitle list never squeezes below this in landscape |
 | `cardElevation` | 6 dp | one elevation step for floating cards, `tonalElevation` rather than shadow |
 | `strokeWidth` | 1.5 dp | outlines on the backdrop and on selected quick actions |
+| `seekLine / seekDot / seekDotActive` | 3 / 8 / 12 dp | the seek line (PLY-10): a hairline track with a dot, not a Material slider |
+| `hairline` | 1 dp | the separator between the transport groups |
+| `transportGap` | 2 dp | gap between transport buttons, tighter than `dockGap` so more of them fit |
+| `actionBarLabelWidth` | 76 dp | the fixed column of a label under an action-bar icon, so one long name cannot stretch the row |
+| `bottomChromeReserve` | 128 dp | how far a bottom-aligned action bar clears the transport row |
 
 `Palette` holds the raw ARGB constants (scrims, backdrops, dark/light surfaces) — they exist only to
 build `ColorScheme` and `SubLearnColors`; a component reads `LocalSubLearnColors.current`, never
@@ -65,7 +70,20 @@ helpers is a bug.
   (black around the picture in both themes),
   `cardBackdrop`, `strongBackdrop` (popups over bright snow scenes), `overlayOutline`,
   `controlIdle`, `controlActive`, `controlDisabled`, `listCurrentRow`, `listHoverRow`,
-  `levelBadgeBackgroundAlpha`.
+  `levelBadgeBackgroundAlpha`, `infoSurface` and `infoText`.
+
+Three of those have a rule attached, because they are the ones that get misused:
+
+- `controlIdle` is **light in both themes**. The player chrome only ever draws on the video or on its
+  scrim, never on a Material surface, and a theme-following value put dark ink on a dark scrim in the
+  light theme (GEN-1). A sheet that lives on a Material surface uses
+  `MaterialTheme.colorScheme.onSurface` / `onSurfaceVariant` instead.
+- `controlActive` follows the user's accent, so the player stops being the one screen that ignores
+  Settings → Appearance.
+- `infoSurface` (`accent` at `INFO_SURFACE_ALPHA = 0.88f`) with `infoText` (`DARK_BACKGROUND`, a dark
+  ink that always reads on the accent plate) is the only pair a status message, hint or in-player
+  notice may use. `strongBackdrop` + the theme's own on-surface colour was unreadable in one of the
+  two themes, which is what the pair exists to prevent.
 
 The rule for new roles: if the value depends on being legible *over arbitrary video*, it goes in
 `SubLearnColors`, not into `colorScheme`, because Material roles are not designed for that case.
@@ -97,6 +115,21 @@ so the system font-size setting and the in-app scale compose instead of fighting
 | `BadgePill` | CEFR level, format, status chips; background alpha from `levelBadgeBackgroundAlpha` (`BADGE_ALPHA = 0.20f`) |
 | `LevelBadge` | level only; takes the CEFR name as stored on a word so no lookup is needed at draw time |
 | `Motion`, `Dimens`, `Palette`, `SubLearnColors` | the token objects themselves |
+
+Player chrome built on these tokens (each one documented where it lives):
+
+- **Seek row (PLY-10):** one row of `elapsed · hairline · total-or-remaining`. Both time labels are
+  `controlActive` and tap to swap the right-hand end (`PlayerSettings.showRemainingTime`); the line is
+  drawn by hand so no slider thumb, halo or second row appears. The dot grows from `seekDot` to
+  `seekDotActive` while dragging.
+- **Transport row (PLY-3):** one row, centred, `horizontalScroll` only when the buttons genuinely do
+  not fit. Seek steps and cue steps are always present; the two playlist buttons appear only when the
+  playlist has more than one item, because a button that cannot go anywhere is worse than no button.
+- **Action bar (PLY-11):** one `horizontalScroll` row with an optional label column under each icon,
+  a leading expand/collapse handle and a trailing arrow that appears only while the row can still
+  scroll. Labels are on when `QuickActionSettings.barExpanded` is set, and always on in layout mode.
+- **Layout mode (SUB-3):** chrome stays visible, and while it is on a button's own tap/hold handling
+  is off so that a hold-and-drag can undock it into the floating layer.
 
 New shared components go here with a KDoc line stating which spec ID they serve. Anything that needs
 `AppSettings` receives the value, not a repository.

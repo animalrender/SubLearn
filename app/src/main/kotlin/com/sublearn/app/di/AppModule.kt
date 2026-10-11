@@ -16,7 +16,9 @@ import com.sublearn.core.data.SubLearnDatabase
 import com.sublearn.core.lexicon.FrequencyListImporter
 import com.sublearn.core.lexicon.TextResourceReader
 import com.sublearn.core.lexicon.WordLevelSource
+import com.sublearn.core.player.AndroidMediaAccess
 import com.sublearn.core.player.Media3PlayerController
+import com.sublearn.core.player.MediaAccess
 import com.sublearn.core.player.PlayerController
 import com.sublearn.core.player.PositionSink
 import com.sublearn.core.security.SecretStore
@@ -115,6 +117,9 @@ private fun coreModule(): Module = module {
         )
     }
 
+    // Whether a stored URI can still be opened; Home asks before it navigates (PLY-12).
+    single<MediaAccess> { AndroidMediaAccess(androidContext()) }
+
     // player: one instance for the process, so navigating away never stops playback
     single<PlayerController> {
         val settings: SettingsRepository = get()
@@ -133,7 +138,7 @@ private fun coreModule(): Module = module {
 }
 
 private fun featureModule(): Module = module {
-    viewModel { HomeViewModel(get()) }
+    viewModel { HomeViewModel(get(), get()) }
     viewModel { WordsViewModel(get(), get(), get()) }
     viewModel { LearnViewModel(get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), androidContext()) }
@@ -150,6 +155,7 @@ private fun featureModule(): Module = module {
             wordLevels = get(),
             ai = get(),
             secrets = get(),
+            mediaAccess = get(),
         )
     }
 }

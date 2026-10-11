@@ -187,3 +187,39 @@ double release. Two consequences worth remembering: `workflow_run` only ever run
 file on the default branch, so changes to the pipeline take effect after they are merged; and
 `versionCode` is derived from `versionName` in `app/build.gradle.kts` so that a release bumps one
 number only.
+
+**D-29 — Play/pause moves into the transport row; the centre stays empty (supersedes D-26).** The user
+asked for the MX layout directly: "play/pause in the bottom row together with previous/next buttons and
+the cue steps, nothing in the centre unless it is a docked or floating button". `CenterCluster` is
+therefore gone, and the transport row carries seek steps, cue steps, play/pause (a 52 dp circle with the
+buffering spinner inside it) and the repeat tool, with speed, aspect, playlist and the subtitle list
+after a hairline. The two playlist buttons only exist while the playlist has more than one item, because
+`PlayerController` can only ever be given one item today (KNOWN_ISSUES 20) and a button that cannot go
+anywhere is worse than no button. The centre of the picture is now owned by the floating layer of
+PLY-11, which is also what "nothing in the centre unless docked/floating" asks for.
+
+**D-30 — Arranging owns the finger; a button does not fight it.** While layout mode is on, a bar or
+floating button turns its own pointer handling off (`ActionButtonBody(interactive = false)`) and one
+custom gesture (`arrangeGesture`, ActionBar.kt) takes over: it consumes the down, waits out the
+long-press timeout, and then either reports a total drift (move/undock) or opens the docking menu.
+An earlier version used `detectTapGestures` on the button plus `detectDragGestures` on the parent,
+which cannot work: `detectTapGestures` consumes every down, and both `awaitTouchSlopOrCancellation` and
+`awaitLongPressOrCancellation` cancel on a consumed change, so the drag never started. Movement before
+the timeout is deliberately not consumed, which is what keeps the row scrollable while arranging.
+
+**D-31 — A stored URI is a promise the app keeps.** `ACTION_OPEN_DOCUMENT` hands back a URI whose read
+grant dies with the process unless it is taken persistably, which is why every picker in the app calls
+`UriGrants.persistRead` (Home, the player's subtitle picker, the audio picker, the re-pick and the
+intent that started the app). The grant is still not a guarantee — the file can move, be deleted, or
+live on a volume that is not mounted — so Home asks `MediaAccess.isReadable` before it navigates and,
+when the answer is no, offers to pick the file again and moves the entry (and its saved position) to the
+new URI. Failing inside the decoder with `ERROR_CODE_IO_UNSPECIFIED` tells the user nothing; this turns
+the same event into one dialog with an action.
+
+**D-32 — Chrome ink is light; sheet ink is Material.** The player's chrome draws on the video or on its
+scrim in both themes, so `SubLearnColors.controlIdle` is light in both (it used to follow the theme,
+which made the resolution label, the time labels and the whole gesture HUD dark-on-dark in the light
+theme). Anything drawn on a Material surface — every sheet, the subtitle list panel — uses
+`colorScheme.onSurface` / `onSurfaceVariant` and only takes the accent for the selected state. The same
+reasoning is why status messages moved to `infoSurface` + `infoText`: a translucent plate in the user's
+accent, with a dark ink that is legible on it in both themes.

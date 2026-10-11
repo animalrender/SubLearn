@@ -39,8 +39,15 @@ data class PlayerUi(
     val sheet: Sheet = Sheet.NONE,
     /** The overflow menu is open; the chrome must not hide underneath it. */
     val menuOpen: Boolean = false,
-    /** The user is dragging the seekbar; the chrome must not hide and the time label follows the thumb. */
+    /** The user is dragging the seek line; the chrome must not hide and the picture follows the drag. */
     val scrubbing: Boolean = false,
+    /**
+     * The moment the picture and the subtitles show while the seek line is being dragged (PLY-14).
+     * Null whenever the playhead is the truth.
+     */
+    val scrubPositionMs: Long? = null,
+    /** PLY-11: whether the action bar draws a label under each icon. */
+    val actionBarExpanded: Boolean = false,
     /** Feedback for the current gesture (brightness, volume, seek, speed, double tap). */
     val hud: GestureHud? = null,
     /** Long-press fast forward is active. */
@@ -70,6 +77,21 @@ data class PlayerUi(
     val canStepBySubtitle: Boolean get() = layers.values.any { it.canStepBySubtitle }
 }
 
+/**
+ * One row of the subtitle manager: a file the user attached to a layer.
+ *
+ * [enabled] means the file is parsed and rendered; an unticked file stays in the list so the tick
+ * can be put back without picking the document again.
+ */
+@Immutable
+data class LayerFileUi(
+    val key: String,
+    val name: String,
+    val enabled: Boolean,
+    val charsetName: String? = null,
+    val warnings: List<String> = emptyList(),
+)
+
 /** One gesture's feedback. The composable only draws; the ViewModel decides the numbers. */
 sealed interface GestureHud {
     /** Brightness 0..1 of the window, shown as a vertical level on the left. */
@@ -88,14 +110,18 @@ sealed interface GestureHud {
     data class DoubleTap(val forward: Boolean, val seconds: Int) : GestureHud
 }
 
-/** Sheets opened from the chrome or the quick actions; one enum keeps the back handling simple. */
+/** Sheets opened from the chrome or the action bar; one enum keeps the back handling simple. */
 enum class Sheet {
     NONE,
-    TRACKS,
+
+    /** PLY-8: one tab per layer, with the files and the embedded tracks ticked in each. */
+    SUBTITLES,
+
+    /** PLY-13: audio tracks, volume, mute and an added audio file. */
+    AUDIO,
     SPEED,
     ASPECT,
     DECODER,
-    LAYER_OPTIONS,
     TOOLS,
     PLAYLIST,
 }
@@ -131,6 +157,10 @@ data class LayerUi(
     val delayMs: Long = 0L,
     val embeddedTrackIndexes: List<Int> = emptyList(),
     val externalFileKeys: List<String> = emptyList(),
+    /** PLY-8: every file attached to this layer, ticked or not. */
+    val files: List<LayerFileUi> = emptyList(),
+    /** PLY-13: the audio file playing with the video, when the user added one. */
+    val externalAudioUri: String? = null,
 ) {
     /** PLY-6 / SUB-6 need our own blocks, which only a parsed file gives us. */
     val canStepBySubtitle: Boolean get() = source == LayerSource.FILE

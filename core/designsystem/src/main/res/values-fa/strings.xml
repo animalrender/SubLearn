@@ -267,7 +267,7 @@
     <string name="settings_orientation_portrait">عمودی</string>
     <string name="settings_orientation_landscape">افقی</string>
     <string name="settings_orientation_reverse_landscape">افقی برعکس</string>
-    <string name="settings_orientation_sensor">افقی با سنسور</string>
+    <string name="settings_orientation_sensor">پیروی از سنسور</string>
     <string name="settings_double_tap_none">هیچ</string>
     <string name="settings_swipe_seek">ثانیه برای یک کشیدن کامل</string>
     <string name="settings_default_speed">سرعت پیش‌فرض</string>
@@ -334,7 +334,6 @@
     <string name="settings_dock_hidden">پنهان</string>
     <string name="settings_dock_mode">کجا باشد</string>
     <string name="settings_auto_hide_with_controls">با کنترل‌ها پنهان شود</string>
-    <string name="settings_icons_per_row">شمایل در هر ردیف</string>
     <string name="settings_font_preview">نمونه‌ی قلم برای متن انگلیسی</string>
     <string name="settings_font_preview_rtl">نیم‌فاصله فارسی را زیبا می‌کند</string>
     <string name="settings_font_pick_file">استفاده از فایل قلم</string>
@@ -440,9 +439,48 @@
     <string name="player_seconds_short">%1$d ثانیه</string>
     <string name="player_seconds_signed">%1$s%2$d ثانیه</string>
     <string name="player_share">اشتراک‌گذاری</string>
-    <string name="player_subtitle_options">گزینه‌های زیرنویس</string>
     <string name="settings_long_press_speed">سرعت نگه‌داشتن انگشت</string>
     <string name="subtitle_delay_earlier">زودتر نشان بده</string>
     <string name="subtitle_delay_later">دیرتر نشان بده</string>
     <string name="subtitle_tools_applied">ابزارهای زیرنویس اعمال شد</string>
+    <!-- بازبینی پخش‌کننده، ۲۰۲۶-۱۰-۱۱: مدیریت زیرنویس و صدا، نوار دکمه‌ها و پیام‌ها. -->
+    <string name="player_subtitle_manager">زیرنویس‌ها</string>
+    <string name="subtitle_manager_add">افزودن فایل زیرنویس</string>
+    <string name="subtitle_manager_files">فایل‌های این لایه</string>
+    <string name="subtitle_manager_embedded">زیرنویس‌های داخل ویدیو</string>
+    <string name="subtitle_manager_empty">هنوز فایل زیرنویسی به این لایه اضافه نشده است.</string>
+    <string name="subtitle_manager_no_embedded">این ویدیو زیرنویس داخلی ندارد.</string>
+    <string name="subtitle_manager_embedded_note">پخش‌کننده هر بار یک زیرنویس داخلی را رمزگشایی می‌کند؛ اولین زیرنویس تیک‌خورده نمایش داده می‌شود.</string>
+    <string name="subtitle_manager_options">تنظیمات لایه</string>
+    <string name="subtitle_manager_multiple_note">هر فایل تیک‌خورده نمایش داده می‌شود؛ اگر دو فایل هم‌زمان باشند، هر دو خط دیده می‌شود.</string>
+    <string name="player_audio_manager">صدا</string>
+    <string name="player_audio_add">افزودن فایل صدا</string>
+    <string name="player_audio_external_note">صدای اضافه‌شده فقط با ویدیوی باز پخش می‌شود و باید قالبی رایج داشته باشد (M4A، MP3، AAC).</string>
+    <string name="player_audio_remove_external">حذف صدای اضافه‌شده</string>
+    <string name="player_audio_no_tracks">این ویدیو ترک صوتی ندارد.</string>
+    <string name="player_mute">بی‌صدا</string>
+    <string name="player_unmute">بازگرداندن صدا</string>
+    <string name="player_msg_audio_added">فایل صدا اضافه شد</string>
+    <string name="player_msg_audio_failed">این فایل به‌عنوان صدا باز نشد</string>
+    <string name="player_action_bar_labels_on">نمایش برچسب‌ها</string>
+    <string name="player_action_bar_labels_off">پنهان کردن برچسب‌ها</string>
+    <string name="player_action_bar_more">دکمه‌های بیشتر</string>
+    <string name="player_action_dock_bar">چسباندن به نوار ابزار</string>
+    <string name="player_action_dock_float">جدا کردن و شناور کردن</string>
+    <string name="player_action_dock_hide">پنهان کردن این دکمه</string>
+    <string name="subtitle_layout_arrange_hint">برای جدا کردن دکمه آن را بکشید؛ برای چسباندن دوباره روی دکمه‌ی شناور بزنید.</string>
+    <string name="player_rotate">چرخش</string>
+    <string name="player_msg_rotation_mode">جهت صفحه: %1$s</string>
+    <string name="player_error_io_hint">فایل باز نشد؛ ممکن است جابه‌جا شده باشد یا دسترسی منقضی شده باشد.</string>
+    <string name="player_pick_file_again">انتخاب دوباره‌ی فایل</string>
+    <string name="player_time_remaining">زمان باقی‌مانده</string>
+    <string name="home_recent_unavailable">این فایل دیگر در دسترس نیست</string>
+    <string name="home_recent_locate">انتخاب دوباره‌ی فایل</string>
+    <string name="home_recent_locate_body">پس از راه‌اندازی مجدد یا جابه‌جایی، باید فایل را دوباره به SubLearn بدهید.</string>
+    <string name="settings_show_remaining">برچسب زمان معکوس بشمارد</string>
+    <string name="settings_action_bar_labels">برچسب‌های نوار دکمه‌ها</string>
+    <string name="settings_quick_bar_hint">یک ردیف افقی قابل‌اسکرول: با روشن بودن برچسب‌ها، نام هر دکمه زیر آن می‌آید و هر دکمه را می‌توان در حالت چیدمان چسباند، شناور کرد یا پنهان کرد.</string>
+    <string name="player_previous_video">ویدیوی قبلی</string>
+    <string name="player_next_video">ویدیوی بعدی</string>
 </resources>
+
