@@ -419,6 +419,7 @@ fun DictionaryScreen(
                 )
             }
         } else {
+            val phonetic = currentEntry.pronunciationUs ?: currentEntry.pronunciationUk
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
@@ -426,11 +427,11 @@ fun DictionaryScreen(
                 Column(Modifier.padding(Dimens.lg), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = currentEntry.word,
+                            text = currentEntry.headword,
                             style = MaterialTheme.typography.headlineSmall,
                             modifier = Modifier.weight(1f),
                         )
-                        currentEntry.phonetic?.takeIf { it.isNotBlank() }?.let { ipa ->
+                        phonetic?.takeIf { it.isNotBlank() }?.let { ipa ->
                             Text(
                                 text = if (ipa.startsWith("/")) ipa else "/$ipa/",
                                 style = MaterialTheme.typography.bodyMedium,
@@ -443,18 +444,19 @@ fun DictionaryScreen(
                         }
                     }
 
-                    currentEntry.senses.forEach { (pos, meanings) ->
-                        Column(verticalArrangement = Arrangement.spacedBy(Dimens.xxs)) {
-                            Text(
-                                text = pos,
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                            Text(
-                                text = meanings.joinToString("، "),
-                                style = MaterialTheme.typography.bodyLarge,
-                            )
-                        }
+                    currentEntry.pos?.takeIf { it.isNotBlank() }?.let { posTag ->
+                        Text(
+                            text = posTag,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+
+                    if (currentEntry.meanings.isNotEmpty()) {
+                        Text(
+                            text = currentEntry.meanings.joinToString("، "),
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
                     }
 
                     if (currentEntry.synonyms.isNotEmpty()) {
@@ -468,8 +470,15 @@ fun DictionaryScreen(
                     if (currentEntry.examples.isNotEmpty()) {
                         HorizontalDivider()
                         Text(stringResource(R.string.popup_examples_title), style = MaterialTheme.typography.labelMedium)
-                        currentEntry.examples.take(4).forEach { ex ->
-                            Text("• $ex", style = MaterialTheme.typography.bodySmall)
+                        currentEntry.examples.take(4).forEach { (enEx, faEx) ->
+                            Text("• $enEx", style = MaterialTheme.typography.bodySmall)
+                            if (faEx.isNotBlank()) {
+                                Text(
+                                    text = "  $faEx",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
                     }
                 }

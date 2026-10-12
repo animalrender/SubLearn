@@ -370,7 +370,7 @@ private fun PhraseTypeChip(phraseType: String, tint: Color) {
         "PHRASAL" -> R.string.popup_phrase_kind_phrasal
         "IDIOM" -> R.string.popup_phrase_kind_idiom
         "COLLOCATION" -> R.string.popup_phrase_kind_collocation
-        else -> R.string.words_phrases
+        else -> R.string.words_filter_phrases
     }
     Text(
         text = stringResource(labelRes),
@@ -410,8 +410,8 @@ private fun StatusChip(status: WordStatus, onClick: () -> Unit) {
 
 private fun WordFilter.labelRes(): Int = when (this) {
     WordFilter.ALL -> R.string.words_filter_all
-    WordFilter.WORDS -> R.string.words_single
-    WordFilter.PHRASES -> R.string.words_phrases
+    WordFilter.WORDS -> R.string.words_filter_words
+    WordFilter.PHRASES -> R.string.words_filter_phrases
     WordFilter.PHRASAL -> R.string.words_filter_phrasal
     WordFilter.IDIOM -> R.string.words_filter_idioms
     WordFilter.COLLOCATION -> R.string.words_filter_collocations

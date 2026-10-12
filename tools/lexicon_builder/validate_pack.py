@@ -213,16 +213,23 @@ def validate_pack(db_path: str, require_full_counts: bool = False) -> tuple[bool
 
 def main():
     parser = argparse.ArgumentParser(description="Validate a SubLearn v2 lexicon pack")
-    parser.add_argument("db_path", help="Path to the .sqlite pack")
+    parser.add_argument("db_path", nargs="?", help="Path to the .sqlite pack")
+    parser.add_argument("--pack", help="Path to the .sqlite pack (optional alias for db_path)")
+    parser.add_argument("--direction", default=None, help="Pack direction (en-fa or fa-en)")
+    parser.add_argument("--max-size-mb", type=float, default=110.0, help="Maximum uncompressed size in MB")
     parser.add_argument("--full", action="store_true", help="Enforce full-DB row count bounds")
     args = parser.parse_args()
 
-    ok, errors = validate_pack(args.db_path, require_full_counts=args.full)
+    target_path = args.pack or args.db_path
+    if not target_path:
+        parser.error("Must provide db_path or --pack")
+
+    ok, errors = validate_pack(target_path, require_full_counts=args.full)
     if ok:
-        print(f"VALIDATION PASSED: {args.db_path}")
+        print(f"VALIDATION PASSED: {target_path}")
         sys.exit(0)
     else:
-        print(f"VALIDATION FAILED ({len(errors)} errors) for {args.db_path}:", file=sys.stderr)
+        print(f"VALIDATION FAILED ({len(errors)} errors) for {target_path}:", file=sys.stderr)
         for err in errors:
             print(f"  - {err}", file=sys.stderr)
         sys.exit(1)

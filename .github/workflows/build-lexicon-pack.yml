@@ -81,11 +81,11 @@ jobs:
           SUMMARY_FILE="$RUNNER_TEMP/pack-summary.md"
           {
             echo "## Lexicon Pack v2 Build Report"
-            echo "### EN -> FA Pack (`sublearn-lexicon-en-fa-v2.sqlite`)"
+            echo '### EN -> FA Pack (`sublearn-lexicon-en-fa-v2.sqlite`)'
             echo '```json'
             cat "$RUNNER_TEMP/report-en-fa.json" || true
             echo '```'
-            echo "### FA -> EN Pack (`sublearn-dict-fa-en-v1.sqlite`)"
+            echo '### FA -> EN Pack (`sublearn-dict-fa-en-v1.sqlite`)'
             echo '```json'
             cat "$RUNNER_TEMP/report-fa-en.json" || true
             echo '```'

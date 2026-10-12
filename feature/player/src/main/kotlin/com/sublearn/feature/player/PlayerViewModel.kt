@@ -1175,7 +1175,7 @@ class PlayerViewModel(
                 val lexSenses = lexEntry?.let { lexiconAccessProvider()?.senses(it.id).orEmpty() }.orEmpty()
                 val lexExamples = lexSenses.firstOrNull()?.let { lexiconAccessProvider()?.examples(it.senseId).orEmpty() }.orEmpty()
                 val phraseGloss = orchPhrase?.primaryTranslation
-                    ?: lexSenses.map { it.faGloss }.distinct().take(4).joinToString("، ").takeIf { it.isNotBlank() }
+                    ?: lexSenses.map { it.glossFa }.distinct().take(4).joinToString("، ").takeIf { it.isNotBlank() }
                     ?: runCatching { translation.translate(section.headword).getOrNull() }.getOrNull()
                 section.copy(
                     translation = phraseGloss,

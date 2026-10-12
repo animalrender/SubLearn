@@ -136,13 +136,14 @@ private fun coreModule(): Module = module {
                 val full = lexicon.lookupFullEntry(q)
                 full?.let {
                     PackGlossaryResult(
-                        headword = it.word,
-                        lemma = it.word.lowercase(),
+                        headword = it.headword,
+                        lemma = it.headword.lowercase(),
                         cefr = it.cefr?.name,
-                        phonetic = it.phonetic,
-                        primaryGloss = it.senses.values.flatten().firstOrNull().orEmpty(),
-                        posGlosses = it.senses.map { (pos, list) -> pos to list },
-                        examples = it.examples.map { ex -> ex to "" },
+                        phonetic = it.pronunciationUs ?: it.pronunciationUk,
+                        primaryGloss = it.meanings.firstOrNull().orEmpty(),
+                        posGlosses = if (it.meanings.isNotEmpty()) listOf(it.pos to it.meanings) else emptyList(),
+                        examples = it.examples,
+                        lexiconEntryId = it.entryId,
                     )
                 }
             },
@@ -153,13 +154,14 @@ private fun coreModule(): Module = module {
                 val full = lexicon.lookupLegacyV1(q)
                 full?.let {
                     PackGlossaryResult(
-                        headword = it.word,
-                        lemma = it.word.lowercase(),
+                        headword = it.headword,
+                        lemma = it.headword.lowercase(),
                         cefr = it.cefr?.name,
-                        phonetic = it.phonetic,
-                        primaryGloss = it.senses.values.flatten().firstOrNull().orEmpty(),
-                        posGlosses = it.senses.map { (pos, list) -> pos to list },
-                        examples = it.examples.map { ex -> ex to "" },
+                        phonetic = it.pronunciationUs ?: it.pronunciationUk,
+                        primaryGloss = it.meanings.firstOrNull().orEmpty(),
+                        posGlosses = if (it.meanings.isNotEmpty()) listOf(it.pos to it.meanings) else emptyList(),
+                        examples = it.examples,
+                        lexiconEntryId = it.entryId,
                     )
                 }
             },

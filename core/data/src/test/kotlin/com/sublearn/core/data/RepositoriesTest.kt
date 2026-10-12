@@ -140,6 +140,6 @@ class RepositoriesTest {
         assertTrue(executed.any { it.contains("ADD COLUMN `sourceCueEndMs`") })
         assertTrue(executed.any { it.contains("ADD COLUMN `sourceKind`") })
         assertTrue(executed.any { it.contains("CREATE TABLE IF NOT EXISTS `installed_packs`") })
-        assertTrue(executed.any { it.contains("CREATE TABLE IF NOT EXISTS `phrase_span_cache`") })
+        assertTrue(executed.any { it.contains("CREATE TABLE IF NOT EXISTS `phrase_span`") })
     }
 }

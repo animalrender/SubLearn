@@ -154,17 +154,15 @@ class LearnViewModel(
         val dl = downloader ?: return
         viewModelScope.launch {
             val res = dl.download(entry)
-            res.fold(
-                onSuccess = { downloadedFile ->
-                    if (entry.kind == ModelKind.LEXICON || entry.kind == ModelKind.DICT_FA_EN) {
-                        packImporter?.importFile(downloadedFile)
-                    }
-                    _statusMessage.value = "Downloaded ${entry.nameEn}"
-                },
-                onFailure = { err ->
-                    _statusMessage.value = err.message
-                },
-            )
+            val downloadedFile = res.getOrNull()
+            if (downloadedFile != null) {
+                if (entry.kind == ModelKind.LEXICON || entry.kind == ModelKind.DICT_FA_EN) {
+                    packImporter?.importFile(downloadedFile)
+                }
+                _statusMessage.value = "Downloaded ${entry.nameEn}"
+            } else {
+                _statusMessage.value = res.errorOrNull()?.message
+            }
         }
     }
 
@@ -190,15 +188,16 @@ class LearnViewModel(
     fun bookmarkDictionaryEntry(entry: DictionaryEntry) {
         val repo = myWords ?: return
         viewModelScope.launch {
-            val primaryGloss = entry.senses.values.flatten().firstOrNull()
+            val primaryGloss = entry.meanings.firstOrNull()
+            val firstEx = entry.examples.firstOrNull()
             repo.mark(
                 MarkedWord(
                     id = 0L,
-                    word = entry.word,
-                    isPhrase = entry.word.contains(' '),
+                    word = entry.headword,
+                    isPhrase = entry.headword.contains(' '),
                     translation = primaryGloss,
-                    contextText = entry.examples.firstOrNull(),
-                    contextTranslation = null,
+                    contextText = firstEx?.first,
+                    contextTranslation = firstEx?.second?.ifBlank { null },
                     sourceTitle = "Dictionary",
                     sourceStartMs = -1L,
                     status = WordStatus.LEARNING,
@@ -206,11 +205,12 @@ class LearnViewModel(
                     note = entry.synonyms.take(5).joinToString(", ").ifBlank { null },
                     markedAt = System.currentTimeMillis(),
                     reviewCount = 0,
-                    lemma = entry.word.lowercase(),
+                    lemma = entry.headword.lowercase(),
+                    lexiconEntryId = entry.entryId,
                     sourceKind = "PACK",
                 ),
             )
-            _statusMessage.value = "Saved '${entry.word}' to My Words"
+            _statusMessage.value = "Saved '${entry.headword}' to My Words"
         }
     }
 

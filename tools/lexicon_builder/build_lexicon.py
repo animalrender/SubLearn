@@ -1919,21 +1919,29 @@ def main():
     parser = argparse.ArgumentParser(description="Build SubLearn Lexicon Pack v2")
     parser.add_argument("--input", required=True, help="Path to source SQLite database (main_db.sqlite)")
     parser.add_argument("--output-dir", default=".", help="Directory for output files")
+    parser.add_argument("--output", default=None, help="Optional explicit path for the output .sqlite file")
+    parser.add_argument("--report", default=None, help="Optional explicit path for the JSON build report")
     parser.add_argument("--direction", choices=["en-fa", "fa-en"], default="en-fa", help="Pack direction")
     parser.add_argument("--gzip", action="store_true", help="Also write .sqlite.gz compressed pack")
     parser.add_argument("--export-test-json", default=None, help="Directory to export JSON fixtures for JVM tests")
     args = parser.parse_args()
 
     try:
+        out_dir = os.path.dirname(os.path.abspath(args.output)) if args.output else args.output_dir
         report = build_lexicon(
             args.input,
-            args.output_dir,
+            out_dir,
             direction=args.direction,
             gzip_output=args.gzip,
             export_test_json_dir=args.export_test_json,
         )
+        if args.output and os.path.abspath(report["output_file"]) != os.path.abspath(args.output):
+            shutil.copyfile(report["output_file"], args.output)
+            if args.gzip and report.get("gzip_file"):
+                shutil.copyfile(report["gzip_file"], args.output + ".gz")
+
         report_name = "build_report.json" if args.direction == "en-fa" else "build_report_fa_en.json"
-        report_path = os.path.join(args.output_dir, report_name)
+        report_path = args.report or os.path.join(out_dir, report_name)
         with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report, f, ensure_ascii=False, indent=2)
 
