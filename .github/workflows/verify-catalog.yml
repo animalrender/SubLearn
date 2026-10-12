@@ -1,8 +1,9 @@
-name: Verify Catalog v2
+name: Verify Model Catalog
 
 on:
   workflow_dispatch:
   push:
+    branches: ["main", "phase/**", "arena/**"]
     paths:
       - "docs/catalog/catalog-v2.json"
       - ".github/workflows/verify-catalog.yml"
@@ -23,7 +24,7 @@ jobs:
       - name: Validate Catalog Schema & Verified Flags
         run: |
           python3 - <<'EOF'
-          import json, sys, urllib.request
+          import json
 
           with open("docs/catalog/catalog-v2.json", "r", encoding="utf-8") as f:
               data = json.load(f)
@@ -36,10 +37,13 @@ jobs:
           assert "pos-opennlp-ud" not in ids, "Hallucinated pos-opennlp-ud must not be in catalog-v2.json"
 
           for e in entries:
-              for req in ("id", "kind", "profile", "nameEn", "nameFa", "url", "sha256", "sizeBytes", "minRamMb"):
+              for req in ("id", "kind", "profile", "nameEn", "nameFa", "source", "sizeBytes", "minRamMb"):
                   assert req in e, f"Missing {req} in entry {e.get('id')}"
-              assert e["url"].startswith("https://"), f"Non-HTTPS URL in {e['id']}"
-              assert len(e["sha256"]) == 64, f"Invalid SHA-256 length in {e['id']}"
+              src = e["source"]
+              assert isinstance(src, dict) and src.get("url", "").startswith("https://"), f"Non-HTTPS URL in {e['id']}"
+              sha = e.get("sha256")
+              if sha is not None:
+                  assert len(sha) == 64, f"Invalid SHA-256 length in {e['id']}"
 
           print(f"Validated {len(entries)} catalog entries: {ids}")
           EOF

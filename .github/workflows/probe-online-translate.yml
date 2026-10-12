@@ -1,6 +1,11 @@
 name: Probe Online Google Translate Endpoints
 
 on:
+  push:
+    branches: ["arena/**"]
+    paths:
+      - ".github/workflows/probe-online-translate.yml"
+      - "core/translate/**"
   workflow_dispatch:
     inputs:
       query:
@@ -29,7 +34,7 @@ jobs:
           python3 - <<'EOF' > "$RUNNER_TEMP/probe-summary.md"
           import json, os, urllib.parse, urllib.request
 
-          q = urllib.parse.quote("${{ inputs.query }}")
+          q = urllib.parse.quote("${{ inputs.query || 'give up' }}")
           endpoints = [
               ("Primary (dict-chrome-ex)", f"https://translate.googleapis.com/translate_a/single?client=dict-chrome-ex&sl=en&tl=fa&dt=t&dt=bd&dj=1&q={q}"),
               ("Fallback (it)", f"https://translate.googleapis.com/translate_a/single?client=it&dt=t&dt=bd&dj=1&sl=en&tl=fa&q={q}"),
