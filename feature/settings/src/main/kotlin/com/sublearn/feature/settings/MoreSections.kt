@@ -522,7 +522,7 @@ fun QuickActionsSection(settings: AppSettings, viewModel: SettingsViewModel) {
     }
 }
 
-/** SET-6 and the honest "about" screen: version, licence, privacy, export, import, reset. */
+/** SET-6 and the honest "about" screen: version, privacy, export, import, reset. */
 @Composable
 fun AboutSection(settings: AppSettings, viewModel: SettingsViewModel, versionName: String, onBack: () -> Unit) {
     val clipboard = LocalClipboardManager.current
@@ -536,7 +536,6 @@ fun AboutSection(settings: AppSettings, viewModel: SettingsViewModel, versionNam
             style = MaterialTheme.typography.bodyLarge,
         )
         Text(stringResource(R.string.settings_schema_version, AppSettings.SCHEMA_VERSION), style = MaterialTheme.typography.bodySmall)
-        Text(stringResource(R.string.settings_about_license), style = MaterialTheme.typography.bodySmall)
         Text(
             stringResource(R.string.settings_about_privacy),
             style = MaterialTheme.typography.bodySmall,

@@ -5,7 +5,7 @@ import com.sublearn.core.common.AppResult
 /**
  * Anything that can turn text from one language into another. The only implementation shipped now
  * is on-device Google ML Kit; the interface exists so an online engine or a different on-device
- * stack can be swapped in without touching a screen (GEN-6, LICENSE SAFETY rule 2).
+ * stack can be swapped in without touching a screen (GEN-6).
  */
 interface TranslationProvider {
     val id: String

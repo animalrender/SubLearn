@@ -54,8 +54,8 @@ class ManualLevelProvider(private val level: CefrLevel) : WordLevelProvider {
 }
 
 /**
- * A user-imported frequency/CEFR list. The file comes from the user because the licence audit could
- * not verify a permissively licensed CEFR word list (docs/AGENT_REQUESTS.md AR-002).
+ * A user-imported frequency/CEFR list. The file comes from the user because no word list is bundled
+ * (D-2, docs/DECISIONS.md).
  */
 class FrequencyListLevelProvider(
     private val entries: Map<String, CefrLevel>,

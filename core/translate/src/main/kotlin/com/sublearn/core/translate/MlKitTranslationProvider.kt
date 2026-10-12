@@ -20,9 +20,9 @@ import kotlin.coroutines.resumeWithException
 /**
  * On-device translation through the official ML Kit Translate client.
  *
- * ML Kit downloads and owns its own models, which is exactly what the licence audit requires: no
- * extracted `.bipe` packs, no reverse-engineered model loader (docs/DECISIONS.md D-014). Model
- * files live in the app's private storage and are never copied into the repository.
+ * ML Kit downloads and owns its own models, so the app never handles a model file itself: no
+ * extracted `.bipe` packs, no custom model loader (docs/DECISIONS.md D-014). Model files live in the
+ * app's private storage and are never copied into the repository.
  *
  * ML Kit stores one model per language (English is the pivot and ships with the SDK), so a "pair"
  * here is available when both of its language models are on the device.

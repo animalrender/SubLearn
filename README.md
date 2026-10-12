@@ -4,7 +4,7 @@ Learn English from real video: an offline-first Android player with two independ
 tap-to-translate, shadowing tools, your own word list and an optional AI helper for the lines that
 refuse to make sense.
 
-Free and open source (Apache-2.0). No ads, no accounts, no telemetry, no paywall.
+No ads, no accounts, no telemetry, no paywall.
 
 ## Why this app exists
 
@@ -136,10 +136,3 @@ Read [AGENTS.md](AGENTS.md) first if you are going to change code, then
 
 Everything except the optional AI request runs on the device. There is no analytics, no ad SDK and
 no crash reporter in the dependency graph; see [docs/DECISIONS.md](docs/DECISIONS.md).
-
-## License and third-party material
-
-Apache-2.0 — see [LICENSE](LICENSE). Every dependency, font and asset with its license:
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Third-party *databases* and *model files* are
-deliberately not part of this repository, and never will be: read the rights note in
-[docs/AGENT_REQUESTS.md](docs/AGENT_REQUESTS.md) before suggesting one.

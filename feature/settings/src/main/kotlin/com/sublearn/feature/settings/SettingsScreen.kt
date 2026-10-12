@@ -190,7 +190,7 @@ private enum class Sections(val id: String, val titleRes: Int, val hintRes: Int,
     Dictionary("dictionary", R.string.settings_category_dictionary, R.string.settings_hint_dictionary, listOf("dictionary", "offline",
         "فرهنگ")),
     QuickActions("quick", R.string.settings_category_quick_actions, R.string.settings_hint_quick_actions, listOf("button", "dock", "icon")),
-    About("about", R.string.settings_category_about, R.string.settings_hint_about, listOf("version", "license", "github", "export",
+    About("about", R.string.settings_category_about, R.string.settings_hint_about, listOf("version", "github", "export",
         "import")),
     ;
 

@@ -3,21 +3,15 @@
 Every consequential choice, with the reason and the alternative that was rejected. Items tagged
 **ASSUMPTION** were made by the agent without a human answer and are the first things to review.
 
-## Product and licensing
+## Product
 
-**D-1 — Apache-2.0 for the app. ASSUMPTION-lite.** Every shipped dependency is Apache-2.0/MIT/BSD
-compatible, and a patent grant matters for a project that will take outside contributions of
-decoder/ML code. MIT was rejected for that grant; GPL was impossible (it would be compatible with the
-references but would forbid the Apache-2.0 AndroidX samples we may vendor later). Canonical text from
-the SPDX/choosealicense source, not typed from memory.
-
-**D-2 — No bundled dictionary, word list or model file, ever.** The reconstruction repo we were told
-to study got its schema from another app's Java source and its loader from reverse-engineered `.bipe`
-files, so neither its data nor its loader may be redistributed. What ships instead: `DictionaryProvider`
-reading a **user-picked local file** with a documented schema, and an importer in `core:lexicon` for a
-user-picked frequency list. Enforced by `.gitignore` (`*.sqlite`, `*.db`, `*.bipe`, `fastdic_plain*`,
-`assets/dictionaries/`, `assets/models/`) and by the CI hygiene guard. Translation is official ML Kit
-only, whose models the Play services download themselves and which we never repackage.
+**D-2 — No bundled dictionary, word list or model file, ever.** Those are large binary blobs that do
+not belong in the app package or in git, so they stay outside it: what ships instead is a
+`DictionaryProvider` reading a **user-picked local file** with a documented schema, and an importer in
+`core:lexicon` for a user-picked frequency list. Enforced by `.gitignore` (`*.sqlite`, `*.db`,
+`*.bipe`, `fastdic_plain*`, `assets/dictionaries/`, `assets/models/`) and by the CI hygiene guard.
+Translation is official ML Kit only, whose models the Play services download themselves and which we
+never repackage.
 
 **D-3 — Offline-first is a hard feature boundary.** No NOW feature may require network except the
 opt-in AI request. Level popups therefore work off "words not marked as known" when nothing is
@@ -55,7 +49,7 @@ stepping and batch tools are file-only and show an explanatory empty state rathe
 decoder fallback disabled; `HARDWARE_PLUS` = defaults with `setEnableDecoderFallback(true)` (that is
 what "HW+" means in practice on Android: try hardware, fall back per-stream); `SOFTWARE` = a
 `MediaCodecSelector` that asks for software decoders. Media3's FFmpeg extension was rejected: extra
-native build, ~4 MB, and it changes the license surface for a mode almost no device needs. The UI
+native build and ~4 MB for a mode almost no device needs. The UI
 therefore never advertises "any codec": the sheet explains what each choice does.
 
 ## Architecture
@@ -231,12 +225,12 @@ those already present in the lexicon database. A future v2 may add a frequency t
 separate phase and decision.
 
 **D-37 — Model weights are never in the APK or the repo.** A JSON catalog lists models with their
-source URLs, SHA-256 and licenses; the Model Manager downloads them on demand from the original host.
+source URLs and SHA-256; the Model Manager downloads them on demand from the original host.
 The default catalog URL points at `docs/catalog/catalog-v1.json` in this repo (raw GitHub URL), and
 the user can override it in Settings.
 
 **D-38 — Translation fallback is official ML Kit only.** When a word or sense is not in the lexicon,
-`core:translate` translates it and labels the result as "machine translation" (D-2, REQ-1). No other
+`core:translate` translates it and labels the result as "machine translation" (D-2). No other
 translation service is wired.
 
 **D-39 — ProudVocab is a visual reference only.** The card design, colors and badge shapes are

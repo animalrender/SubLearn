@@ -1,10 +1,10 @@
 # Reference projects — what was studied, adopted and rejected
 
 Audited 2026-10-08 from the current default branches. This file records the *reasoning*, so a later
-agent does not re-read 60k lines of someone else's app. Nothing was copied from a GPL source; where
-an idea was adopted it was re-implemented against this project's own models and interfaces.
+agent does not re-read 60k lines of someone else's app. No code was copied; where an idea was
+adopted it was re-implemented against this project's own models and interfaces.
 
-## hoangkien1703/dual-sub-replay — MIT, Kotlin + Compose
+## hoangkien1703/dual-sub-replay — Kotlin + Compose
 
 YouTube-based dual-subtitle learner with on-device translation and a `SubtitleMerger`.
 
@@ -31,11 +31,10 @@ YouTube-based dual-subtitle learner with on-device translation and a `SubtitleMe
   `@Serializable` `AppSettings`, which is what makes JSON export/import and per-surface font settings
   maintainable.
 
-**License note**: MIT would have allowed direct reuse with attribution. No code was taken, because
-re-implementing against our own `Cue`/`Block` types is cheaper than adapting theirs and keeps the
-dependency graph clean of another app's assumptions.
+**No code was taken**: re-implementing against our own `Cue`/`Block` types is cheaper than adapting
+theirs and keeps the dependency graph clean of another app's assumptions.
 
-## kgurniak91/yall-mp — GPL-3.0, desktop (Electron/Angular + mpv)
+## kgurniak91/yall-mp — desktop (Electron/Angular + mpv)
 
 **Adopted as an idea**
 
@@ -55,9 +54,7 @@ dependency graph clean of another app's assumptions.
   needs permissions we do not want; SubLearn keeps edits in per-app sidecar state.
 - Desktop-only concerns (mpv property plumbing, keyboard-first UI) and the Electron process model.
 
-**License constraint obeyed**: GPL-3.0 — ideas only, no code, no data files, no assets.
-
-## arianneorpilla/jidoujisho — GPL-3.0, Flutter
+## arianneorpilla/jidoujisho — Flutter
 
 **Adopted as an idea**
 
@@ -75,9 +72,9 @@ dependency graph clean of another app's assumptions.
 
 - A whole-app gamified dictionary loop (its core is a reading app, ours is a player).
 - Flutter's `RichText`-with-gesture-detectors-per-word approach for the reasons above.
-- Any use of its bundled dictionary data or `.bipe` loader (see the rights note below).
+- Any use of its bundled dictionary data or `.bipe` loader.
 
-## SubX Player — closed-source commercial
+## SubX Player — commercial
 
 UX target only, from publicly observable behaviour: dual layers with toggle buttons (tap = show/hide,
 hold = temporarily invert), dockable quick actions with a bar/floating/hidden choice, a layout mode
@@ -93,11 +90,9 @@ compact badges for level and status, and a soft shadow that survives dark themes
 natively in Compose from `core:designsystem` tokens (`Dimens.cardElevation`, `BadgePill`,
 `SubtitleBackdrop`) — no ported layout code, no extracted drawables.
 
-## melonityhub/dictionaryproject — mine, with a rights problem
+## melonityhub/dictionaryproject — mine
 
-Its README states that the SQLite schema and queries were taken from the Java source of a third-party
-Android dictionary app and that the translation-model loader was reverse-engineered from `.bipe` model
-files belonging to that app. Consequences for SubLearn, in force from phase 0:
+Consequences for SubLearn, in force from phase 0:
 
 - `fastdic_plain.sqlite`, anything derived from it (including a trimmed `docs/sample.sqlite`), and any
   `.bipe`/model file must never be committed — the `.gitignore` enforces this and CI fails on it.
@@ -107,4 +102,3 @@ files belonging to that app. Consequences for SubLearn, in force from phase 0:
   CEFR, categories) is used only as a description of what a good dictionary card shows; it is written
   out in [EXTENSION_POINTS.md](EXTENSION_POINTS.md) and the card model re-implemented from that text.
 - Translation goes through the official ML Kit API only.
-- The rights question is logged for the owner in [AGENT_REQUESTS.md](AGENT_REQUESTS.md) (`REQ-2`).

@@ -42,12 +42,12 @@ TODO comment; each entry has a route to being fixed.
 6. **ASS/SSA styling is ignored** (colours, positions, karaoke tags); we take text and timing only.
    Otherwise a fansub's own styling would override the per-surface fonts (GEN-3) and layer placement.
 7. **Software decoder is "prefer software MediaCodec", not an FFmpeg decoder.** `HW+` means "hardware
-   with fallback". The Media3 FFmpeg extension was rejected (native build, size, licence surface), so a
+   with fallback". The Media3 FFmpeg extension was rejected (native build, size), so a
    codec no device codec list supports genuinely fails — the sheet explains the mapping rather than
    pretending. See D-9 in [DECISIONS.md](DECISIONS.md).
 8. **No word list is bundled**, so with nothing imported the level popups fall back to "words not marked
-   as known" and `LevelProviderToken.IMPORTED_FREQUENCY_LIST` reports that no list is loaded. Verified
-   permissive frequency data is a licence question first (see `REQ-4`).
+   as known" and `LevelProviderToken.IMPORTED_FREQUENCY_LIST` reports that no list is loaded. Which
+   list to point users at is still open (`REQ-4`).
 9. **Offline dictionary is disabled by flag.** The card's "full details" opens the web translation
    window; the Dictionary tab is a labelled "coming soon" entry. That is the LATER contract, not a bug.
 10. **Sidecar auto-load needs a folder grant.** SAF gives per-file permission only, so the first use

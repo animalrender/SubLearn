@@ -24,7 +24,7 @@ enum class FontSurface {
     }
 }
 
-/** Families available without shipping a font binary (see the license audit in THIRD_PARTY_NOTICES). */
+/** Families available without shipping a font binary. */
 @Serializable
 enum class FontFamilyToken {
     DEFAULT,

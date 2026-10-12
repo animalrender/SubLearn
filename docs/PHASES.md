@@ -7,7 +7,7 @@ phase: the listed deliverables exist on the real code path, CI is green, `docs/C
 
 | # | Name | Deliverables | Spec IDs | Status |
 | --- | --- | --- | --- | --- |
-| 0 | Foundations | Repo audit, references and license audit, docs skeleton, 16 Gradle modules with version catalog, CI (build/unit tests/lint/assembleDebug + APK artifact), design tokens and motion specs, typed versioned settings, EN/FA + RTL base, LATER stubs with flags | GEN-1..7 (structure) | in review (PR #1) |
+| 0 | Foundations | Repo audit, references, docs skeleton, 16 Gradle modules with version catalog, CI (build/unit tests/lint/assembleDebug + APK artifact), design tokens and motion specs, typed versioned settings, EN/FA + RTL base, LATER stubs with flags | GEN-1..7 (structure) | in review (PR #1) |
 | 1 | App shell | Theme, navigation, settings screens, Home with recent videos in Room, opening video/URL/subtitle intents | GEN-2, GEN-5, settings system, entry points | in review (same branch) |
 | 2 | Player core | Media3 wrapper, local + URL playback, MX-style overlay with auto-hide, gestures, orientation + lock, decoder choice, track selection, PiP, aspect ratio, speed, playlist, lock | PLY-1..5 | in review |
 | 3 | Subtitle engine | Parsers, normalizer, two layers, multi-track per layer, delay, styling hooks, Subtitle List View, layout mode, toggle buttons, dockable quick actions | PLY-6, PLY-7, SUB-1..3, SUB-7 | in review |

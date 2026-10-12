@@ -54,11 +54,11 @@ jobs:
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
-      - name: License and hygiene guard
+      - name: Repository hygiene guard
         run: |
           set -e
-          # LICENSE SAFETY (docs/DECISIONS.md): no third-party databases, model files or signing
-          # material may ever enter the repository. This fails the build instead of trusting review.
+          # No third-party databases, model files or signing material may ever enter the
+          # repository. This fails the build instead of trusting review.
           bad=$(git ls-files | grep -Ei '\.(sqlite|sqlite3|db|bipe|jks|keystore|p12|keystore.properties)$|^local\.properties$|fastdic_plain' || true)
           if [ -n "$bad" ]; then
             echo "Forbidden files are tracked:"

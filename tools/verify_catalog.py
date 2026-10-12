@@ -4,8 +4,7 @@
 For each entry in the catalog JSON:
 1. If a direct download URL is available, fetch the file headers to get the size.
 2. Compute SHA-256 if the file is downloaded (or use Content-Length for size only).
-3. Verify the license URL is reachable.
-4. Write a verification report and a verified catalog.
+3. Write a verification report and a verified catalog.
 
 Usage:
     python3 tools/verify_catalog.py [--catalog docs/catalog/catalog-v1.json] [--output-dir .]
@@ -65,23 +64,10 @@ def verify_entry(entry: dict) -> dict:
         result["verification"]["status"] = "error"
         result["verification"]["error"] = str(e)
 
-    # Verify license URL
-    license_url = entry.get("license", {}).get("url", "")
-    if license_url:
-        try:
-            req = urllib.request.Request(license_url, method="HEAD")
-            req.add_header("User-Agent", "SubLearn-Catalog-Verifier/1.0")
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                result["verification"]["license_reachable"] = True
-                result["verification"]["license_status"] = resp.status
-        except Exception:
-            result["verification"]["license_reachable"] = False
-
     # Determine if verified
     is_verified = (
         result["verification"].get("status") == "reachable"
         and result["verification"].get("size_match", False)
-        and result["verification"].get("license_reachable", False)
     )
 
     # If we have a SHA-256 in the catalog and the URL is reachable, we'd need to download

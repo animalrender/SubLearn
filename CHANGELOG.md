@@ -158,7 +158,7 @@ happened yet, so treat it as a technical preview (see `docs/KNOWN_ISSUES.md`).
 - Added: 16-module Gradle project (app, ten `core:*`, five `feature:*`) with a version catalog,
   Gradle 8.11.1 wrapper, AGP 8.7.3, Kotlin 2.0.21, compile/target SDK 35, minSdk 26.
 - Added: GitHub Actions CI (`build, test, lintDebug, assembleDebug`, debug APK artifact, lint and test
-  report artifacts) plus a license/hygiene guard that fails on a tracked third-party database, model
+  report artifacts) plus a repository hygiene guard that fails on a tracked third-party database, model
   file, keystore or literal API key, and a manual instrumented workflow for the emulator run.
 - Added: static check tools for sandboxes without a JVM — `tools/check_sources.py`,
   `tools/check_symbols.py`, `tools/check_deps.py`.
@@ -172,9 +172,9 @@ happened yet, so treat it as a technical preview (see `docs/KNOWN_ISSUES.md`).
 - Added: interfaces and `NotImplemented` stubs plus feature flags for every LATER item
   (YouTube, PDF/OCR, dictionary import, quiz, level auto-detection, POS analysis, speech-to-text,
   on-device AI, update checker).
-- Docs: `AGENTS.md`, `README.md`, `LICENSE` (Apache-2.0), `THIRD_PARTY_NOTICES.md` and the `docs/*`
-  set (brief, product spec, references, architecture, design system, decisions, phases, checklist,
-  extension points, agent requests, known issues, progress).
+- Docs: `AGENTS.md`, `README.md` and the `docs/*` set (brief, product spec, references, architecture,
+  design system, decisions, phases, checklist, extension points, agent requests, known issues,
+  progress).
 
 ### Phase 1 — Player, subtitles and interaction
 
