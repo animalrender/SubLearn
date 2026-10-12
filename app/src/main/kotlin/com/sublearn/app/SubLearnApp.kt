@@ -198,7 +198,7 @@ private fun AppScaffold(nav: AppNavigator, versionName: String) {
 
                     AppRoute.WORDS -> MyWordsScreen(
                         onBack = { nav.go(AppRoute.HOME) },
-                        onJumpToSource = { title, _ -> nav.openPlayer(title, title) },
+                        onOpenContext = { title, _ -> nav.openPlayer(title, title) },
                     )
                     AppRoute.SETTINGS -> SettingsScreen(
                         onBack = { nav.go(AppRoute.HOME) },

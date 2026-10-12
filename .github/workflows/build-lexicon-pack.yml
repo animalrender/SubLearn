@@ -57,7 +57,7 @@ jobs:
           python3 tools/lexicon_builder/validate_pack.py \
             --pack "$RUNNER_TEMP/sublearn-lexicon-en-fa-v2.sqlite" \
             --direction en-fa \
-            --max-size-mb 110
+            --max-size-mb 110 2>&1 | tee -a "$RUNNER_TEMP/validation.log"
 
       - name: Build & Validate FA->EN Dictionary Pack v1
         run: |
@@ -70,7 +70,7 @@ jobs:
           python3 tools/lexicon_builder/validate_pack.py \
             --pack "$RUNNER_TEMP/sublearn-dict-fa-en-v1.sqlite" \
             --direction fa-en \
-            --max-size-mb 110
+            --max-size-mb 110 2>&1 | tee -a "$RUNNER_TEMP/validation.log"
 
       - name: Publish Build Report Check Run
         if: always()
@@ -81,6 +81,10 @@ jobs:
           SUMMARY_FILE="$RUNNER_TEMP/pack-summary.md"
           {
             echo "## Lexicon Pack v2 Build Report"
+            echo "### Validation Output"
+            echo '```text'
+            cat "$RUNNER_TEMP/validation.log" || true
+            echo '```'
             echo '### EN -> FA Pack (`sublearn-lexicon-en-fa-v2.sqlite`)'
             echo '```json'
             cat "$RUNNER_TEMP/report-en-fa.json" || true
