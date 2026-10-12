@@ -1,6 +1,5 @@
 package com.sublearn.core.data
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Fts4
 import androidx.room.Index
@@ -24,7 +23,7 @@ data class RecentVideoEntity(
     val takenAt: Long = System.currentTimeMillis(),
 )
 
-/** My Words (SUB-5, LRN-1). A marked word or phrase plus the line it came from. */
+/** My Words (SUB-5, LRN-1, MWE-19..23). A marked word or phrase plus the line it came from. */
 @Entity(
     tableName = "my_words",
     indices = [Index("wordLower"), Index("markedAt"), Index(unique = true, value = ["wordLower", "surface"])],
@@ -48,6 +47,18 @@ data class MyWordEntity(
     val markedAt: Long = System.currentTimeMillis(),
     val reviewedAt: Long = 0L,
     val reviewCount: Int = 0,
+    /** v2 columns: PHRASAL | IDIOM | COLLOCATION, or null for single words. */
+    val phraseType: String? = null,
+    /** Base lemma or canonical lexicon key (e.g. "give" or "give up") for lemma-aware highlighting. */
+    val lemma: String? = null,
+    /** Optional entry ID in the active lexicon pack. */
+    val lexiconEntryId: Long? = null,
+    /** Surface tokens when the phrase was separated in the subtitle (e.g. "picked ... up"). */
+    val surfaceParts: String? = null,
+    /** End timestamp of the source cue. */
+    val sourceCueEndMs: Long = 0L,
+    /** Provenance of the saved translation (PACK, LEGACY_V1, ML_KIT, ONLINE_GOOGLE). */
+    val sourceKind: String? = null,
 ) {
     companion object {
         const val KIND_WORD = "WORD"
@@ -61,8 +72,8 @@ data class MyWordEntity(
 }
 
 /**
- * Translation cache. Offline-first means a re-watched video must not re-run ML Kit for the same
- * lines, and the cache also keeps translations readable when the model is later removed.
+ * Translation cache. Offline-first means a re-watched video must not re-run ML Kit or online lookup
+ * for the same lines, and the cache also keeps translations readable when a model is removed.
  */
 @Entity(tableName = "translation_cache", indices = [Index("createdAt"), Index("hits")])
 data class TranslationCacheEntity(
@@ -84,4 +95,53 @@ data class MyWordFts(
     val translation: String,
     val contextText: String,
     val note: String,
+)
+
+/**
+ * Installed dictionary/lexicon packs and AI models on device (Phase 10 / D-58).
+ */
+@Entity(
+    tableName = "installed_packs",
+    indices = [Index("kind"), Index("enabled")],
+)
+data class InstalledPackEntity(
+    @PrimaryKey val packId: String,
+    val kind: String,
+    val version: String,
+    val titleEn: String,
+    val titleFa: String,
+    val localPath: String,
+    val sizeBytes: Long,
+    val sha256: String,
+    val entryCount: Int = 0,
+    val sourceLang: String = "en",
+    val targetLang: String = "fa",
+    val enabled: Boolean = true,
+    val installedAt: Long = System.currentTimeMillis(),
+)
+
+/**
+ * Cached phrase analysis spans per subtitle document and lexicon/analyzer version (D-32, D-46).
+ */
+@Entity(
+    tableName = "phrase_span",
+    primaryKeys = ["sourceKey", "packId", "packVersion", "analyzerVersion", "spanId"],
+    indices = [Index(value = ["sourceKey", "blockId"])],
+)
+data class PhraseSpanCacheEntity(
+    val sourceKey: String,
+    val packId: String,
+    val packVersion: String,
+    val analyzerVersion: Int,
+    val spanId: String,
+    val blockId: Long,
+    val startChar: Int,
+    val endChar: Int,
+    val tokensCsv: String,
+    val kind: String,
+    val headword: String,
+    val lemmaKey: String,
+    val confidence: Float,
+    val separable: Boolean,
+    val createdAt: Long = System.currentTimeMillis(),
 )

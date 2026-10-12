@@ -26,7 +26,15 @@ enum class FeatureFlag(val id: String, val specIds: String) {
          * Compile-time map kept deliberately small and explicit. `false` means the UI shows a
          * disabled "Coming soon" entry and the stub throws [NotImplementedInThisBuild].
          */
-        val enabled: Map<FeatureFlag, Boolean> = entries.associateWith { false }
+        val enabled: Map<FeatureFlag, Boolean> = entries.associateWith { flag ->
+            when (flag) {
+                OFFLINE_DICTIONARY,
+                POS_ANALYSIS,
+                ON_DEVICE_AI,
+                -> true
+                else -> false
+            }
+        }
 
         fun isEnabled(flag: FeatureFlag, overrides: Map<String, Boolean> = emptyMap()): Boolean =
             overrides[flag.id] ?: enabled[flag] ?: false

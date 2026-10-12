@@ -119,4 +119,116 @@ class TranslationServiceTest {
         val block = SubtitleBlock(0, 0, 1_000, "One two.", "t", listOf(Cue(1, 0, 1_000, "One two.", "t")))
         assertTrue(service.translateBlock(block).getOrThrow().contains("One two."))
     }
+
+    @Test
+    fun `orchestrator priority chain stops at first hit and merge all combines deduplicated meanings`() = runTest {
+        val packEngine = PackTranslationEngine(isPackReady = { true }) { q ->
+            if (q == "give up") {
+                PackGlossaryResult(
+                    headword = "give up",
+                    lemma = "give up",
+                    cefr = "B1",
+                    phonetic = "/ɡɪv ʌp/",
+                    primaryGloss = "دست کشیدن، تسلیم شدن",
+                    posGlosses = listOf("VERB" to listOf("دست کشیدن", "تسلیم شدن")),
+                    lexiconEntryId = 10L,
+                )
+            } else {
+                null
+            }
+        }
+        val mlKitEngine = MlKitTranslationEngine(
+            object : TranslationProvider by EchoProvider() {
+                override suspend fun translate(text: String, sourceLanguage: String, targetLanguage: String): AppResult<String> =
+                    AppResult.success("تسلیم شدن، رها کردن")
+            },
+        )
+
+        var mode = com.sublearn.core.settings.TranslationOrchestrationMode.PRIORITY_CHAIN
+        val orchestrator = TranslationOrchestrator(
+            engines = mapOf(
+                com.sublearn.core.settings.TranslationSourceKind.PACK to packEngine,
+                com.sublearn.core.settings.TranslationSourceKind.ML_KIT to mlKitEngine,
+            ),
+            cache = InMemoryTranslationCacheStore(),
+            settingsProvider = {
+                com.sublearn.core.settings.TranslationSettings(
+                    mode = mode,
+                    enabledSources = listOf(
+                        com.sublearn.core.settings.TranslationSourceKind.PACK,
+                        com.sublearn.core.settings.TranslationSourceKind.ML_KIT,
+                    ),
+                )
+            },
+        )
+
+        val chainRes = orchestrator.translateImmediate("give up")
+        assertEquals(listOf(com.sublearn.core.settings.TranslationSourceKind.PACK), chainRes.sourcesUsed)
+        assertEquals(listOf("دست کشیدن", "تسلیم شدن"), chainRes.mergedMeanings)
+
+        mode = com.sublearn.core.settings.TranslationOrchestrationMode.MERGE_ALL
+        val mergeRes = orchestrator.translateImmediate("give up")
+        assertEquals(
+            listOf(
+                com.sublearn.core.settings.TranslationSourceKind.PACK,
+                com.sublearn.core.settings.TranslationSourceKind.ML_KIT,
+            ),
+            mergeRes.sourcesUsed,
+        )
+        assertEquals(listOf("دست کشیدن", "تسلیم شدن", "رها کردن"), mergeRes.mergedMeanings)
+    }
+
+    @Test
+    fun `online google engine respects privacy and falls back from primary to client it`() = runBlockingCompat {
+        val requestedUrls = ArrayList<String>()
+        val dj1Payload = """
+            {
+              "sentences": [
+                {"trans": "دست کشیدن", "orig": "give up", "src_translit": "giv ap"}
+              ],
+              "dict": [
+                {"pos": "verb", "terms": ["دست کشیدن", "رها کردن", "تسلیم شدن"]}
+              ]
+            }
+        """.trimIndent()
+
+        var settings = com.sublearn.core.settings.TranslationSettings(
+            enabledSources = listOf(com.sublearn.core.settings.TranslationSourceKind.ONLINE_GOOGLE),
+            offlineOnly = true,
+            onlinePrivacyAccepted = true,
+        )
+
+        val engine = OnlineGoogleTranslationEngine(
+            settingsProvider = { settings },
+            fetcher = { url, _ ->
+                requestedUrls += url
+                if (url.contains("client=dict-chrome-ex")) {
+                    HttpFetchResult(code = 429, body = "rate limited")
+                } else {
+                    HttpFetchResult(code = 200, body = dj1Payload)
+                }
+            },
+        )
+
+        // Blocked while offlineOnly = true
+        val blocked = engine.translate("give up", "en", "fa")
+        assertTrue(blocked.isFailure)
+        assertTrue(requestedUrls.isEmpty())
+
+        // Allowed once offlineOnly = false and onlinePrivacyAccepted = true
+        settings = settings.copy(offlineOnly = false)
+        val hit = engine.translate("give up\nignored second line", "en", "fa").getOrThrow()
+        assertEquals(2, requestedUrls.size)
+        assertTrue(requestedUrls[0].contains("client=dict-chrome-ex"))
+        assertTrue(requestedUrls[1].contains("client=it"))
+        assertTrue(!requestedUrls[0].contains("ignored"))
+        assertEquals("دست کشیدن", hit.text)
+        assertEquals("giv ap", hit.phonetic)
+        assertEquals(1, hit.posGlosses.size)
+        assertEquals("VERB", hit.posGlosses[0].first)
+    }
+
+    private fun runBlockingCompat(block: suspend () -> Unit) {
+        kotlinx.coroutines.runBlocking { block() }
+    }
 }

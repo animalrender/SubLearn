@@ -1,0 +1,91 @@
+name: Build Extra Packs
+
+on:
+  push:
+    branches: ["arena/**"]
+    paths:
+      - ".github/workflows/build-extra-packs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-extra:
+    name: Build ProudVocab & CEFR Supplementary Packs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout SubLearn
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Clone ProudVocab Reference
+        run: |
+          git clone --depth 1 https://github.com/melonityhub/proudvocab.git "$RUNNER_TEMP/proudvocab"
+
+      - name: Package Supplementary Phrasal/Idiom & CEFR Packs
+        run: |
+          python3 - <<'EOF'
+          import gzip, hashlib, json, os, re, sqlite3
+
+          tmp = os.environ["RUNNER_TEMP"]
+          pv_dir = os.path.join(tmp, "proudvocab", "proudvocab-desktop", "src", "renderer", "ext", "content")
+          cefr_path = os.path.join(pv_dir, "cefr_data.js")
+          text = open(cefr_path, encoding="utf-8").read()
+          pairs = re.findall(r'(?:"([^"]+)"|([a-zA-Z0-9_-]+)):"([ABC][12])"', text)
+          cefr_entries = [(k1 or k2, lvl) for k1, k2, lvl in pairs]
+          assert len(cefr_entries) >= 8000, f"Expected >=8000 CEFR entries, got {len(cefr_entries)}"
+
+          out_sqlite = os.path.join(tmp, "sublearn-cefr-v1.sqlite")
+          if os.path.exists(out_sqlite):
+              os.remove(out_sqlite)
+          conn = sqlite3.connect(out_sqlite)
+          conn.execute("CREATE TABLE meta(key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+          conn.execute("CREATE TABLE cefr_word(word TEXT PRIMARY KEY, level TEXT NOT NULL)")
+          conn.executemany(
+              "INSERT INTO meta(key, value) VALUES(?, ?)",
+              [
+                  ("schema_version", "1"),
+                  ("pack_id", "sublearn-cefr-v1"),
+                  ("pack_version", "1.0.0"),
+                  ("entry_count", str(len(cefr_entries))),
+              ],
+          )
+          conn.executemany("INSERT OR REPLACE INTO cefr_word(word, level) VALUES(?, ?)", cefr_entries)
+          conn.commit()
+          conn.close()
+
+          out_sqlite_gz = out_sqlite + ".gz"
+          with open(out_sqlite, "rb") as src, gzip.open(out_sqlite_gz, "wb", compresslevel=9) as dst:
+              dst.write(src.read())
+
+          out_tsv = os.path.join(tmp, "cefr-levels-en-v1.tsv.gz")
+          with gzip.open(out_tsv, "wt", encoding="utf-8") as f:
+              f.write("word\tcefr\n")
+              for w, lvl in cefr_entries:
+                  f.write(f"{w}\t{lvl}\n")
+
+          for p in (out_sqlite_gz, out_tsv):
+              h = hashlib.sha256(open(p, "rb").read()).hexdigest()
+              print(f"{os.path.basename(p)}: {os.path.getsize(p)} bytes, sha256={h}")
+          EOF
+
+      - name: Upload Extra Pack Artifacts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sublearn-extra-packs
+          path: |
+            ${{ runner.temp }}/sublearn-cefr-v1.sqlite.gz
+            ${{ runner.temp }}/cefr-levels-en-v1.tsv.gz
+          retention-days: 14
+
+      - name: Upload to GitHub Release packs-v2.0.0
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "packs-v2.0.0" >/dev/null 2>&1; then
+            gh release upload "packs-v2.0.0" \
+              "$RUNNER_TEMP/sublearn-cefr-v1.sqlite.gz" \
+              "$RUNNER_TEMP/cefr-levels-en-v1.tsv.gz" \
+              --clobber
+          fi

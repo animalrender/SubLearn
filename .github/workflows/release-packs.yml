@@ -1,0 +1,70 @@
+name: Release Packs
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag for packs"
+        required: false
+        default: "packs-v2.0.0"
+
+permissions:
+  contents: write
+
+jobs:
+  release-packs:
+    name: Build & Publish All Packs to GitHub Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Download Source SQLite Database
+        run: |
+          if ! curl -fL --retry 3 -o "$RUNNER_TEMP/main_db.sqlite" \
+            "https://github.com/melonityhub/dictionaryproject/releases/download/db1.0.0/main_db.sqlite"; then
+            curl -fL --retry 3 -o "$RUNNER_TEMP/main_db.sqlite" \
+              "https://raw.githubusercontent.com/melonityhub/dictionaryproject/main/docs/sample.sqlite"
+          fi
+
+      - name: Build EN-FA & FA-EN Packs
+        run: |
+          python3 tools/lexicon_builder/build_lexicon.py \
+            --input "$RUNNER_TEMP/main_db.sqlite" \
+            --output "$RUNNER_TEMP/sublearn-lexicon-en-fa-v2.sqlite" \
+            --direction en-fa \
+            --gzip \
+            --report "$RUNNER_TEMP/report-en-fa.json"
+          python3 tools/lexicon_builder/validate_pack.py \
+            --pack "$RUNNER_TEMP/sublearn-lexicon-en-fa-v2.sqlite" \
+            --direction en-fa \
+            --max-size-mb 110
+
+          python3 tools/lexicon_builder/build_lexicon.py \
+            --input "$RUNNER_TEMP/main_db.sqlite" \
+            --output "$RUNNER_TEMP/sublearn-dict-fa-en-v1.sqlite" \
+            --direction fa-en \
+            --gzip \
+            --report "$RUNNER_TEMP/report-fa-en.json"
+          python3 tools/lexicon_builder/validate_pack.py \
+            --pack "$RUNNER_TEMP/sublearn-dict-fa-en-v1.sqlite" \
+            --direction fa-en \
+            --max-size-mb 110
+
+      - name: Publish Release Assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ inputs.tag }}"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --title "SubLearn Offline Lexicon Packs ($TAG)" \
+              --notes "Offline lexicon and dictionary packs built by tools/lexicon_builder."
+          fi
+          gh release upload "$TAG" \
+            "$RUNNER_TEMP/sublearn-lexicon-en-fa-v2.sqlite.gz" \
+            "$RUNNER_TEMP/sublearn-dict-fa-en-v1.sqlite.gz" \
+            "$RUNNER_TEMP/report-en-fa.json" \
+            "$RUNNER_TEMP/report-fa-en.json" \
+            --clobber

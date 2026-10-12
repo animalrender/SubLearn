@@ -296,7 +296,7 @@ data class LearningSettings(
     val multiTapWindowMs: Long = 320L,
     val bookmarkButton: Boolean = true,
     val openDetailsWith: DetailsOpenTrigger = DetailsOpenTrigger.ICON,
-    val dictionaryPreference: DictionaryPreference = DictionaryPreference.WEB_TRANSLATE_ONLY,
+    val dictionaryPreference: DictionaryPreference = DictionaryPreference.OFFLINE_FIRST,
     /** When a word is marked in My Words it counts as "known" for the popup filter. */
     val markedWordsAreKnown: Boolean = true,
 )
@@ -313,7 +313,7 @@ data class WordStyleSettings(
     val phrasalVerbs: WordStyle = WordStyle(colorArgb = 0xFFC084FC, decoration = TextDecorationToken.DASHED_UNDERLINE, bold = true),
     val idioms: WordStyle = WordStyle(colorArgb = 0xFFFB923C, decoration = TextDecorationToken.DASHED_UNDERLINE, bold = true),
     val collocations: WordStyle = WordStyle(colorArgb = 0xFF38BDF8, decoration = TextDecorationToken.DASHED_UNDERLINE, bold = true),
-    val savedPhrasesKeepTypeColor: Boolean = false,
+    val savedPhrasesKeepTypeColor: Boolean = true,
     val unknownAboveLevel: WordStyle = WordStyle(colorArgb = 0xFFFFD98A, decoration = TextDecorationToken.NONE, bold = true),
     val enabled: Boolean = true,
 )
@@ -372,6 +372,20 @@ data class AiSettings(
 }
 
 @Serializable
+enum class TranslationSourceKind {
+    PACK,
+    ML_KIT,
+    LEGACY_V1,
+    ONLINE_GOOGLE,
+}
+
+@Serializable
+enum class TranslationOrchestrationMode {
+    PRIORITY_CHAIN,
+    MERGE_ALL,
+}
+
+@Serializable
 data class TranslationSettings(
     val provider: TranslationProviderToken = TranslationProviderToken.ML_KIT_ON_DEVICE,
     val autoDownloadModels: Boolean = true,
@@ -379,15 +393,52 @@ data class TranslationSettings(
     val cacheMaxEntries: Int = 4_000,
     val translateWholeBlockFirst: Boolean = true,
     val fallbackToOnline: Boolean = false,
-)
+    val mode: TranslationOrchestrationMode = TranslationOrchestrationMode.PRIORITY_CHAIN,
+    val enabledSources: List<TranslationSourceKind> = DEFAULT_ENABLED_SOURCES,
+    val sourceOrder: List<TranslationSourceKind> = DEFAULT_SOURCE_ORDER,
+    val offlineOnly: Boolean = false,
+    val onlinePrivacyAccepted: Boolean = false,
+    val onlineCustomHost: String = DEFAULT_ONLINE_HOST,
+    val onlinePrimaryUrlTemplate: String = DEFAULT_ONLINE_PRIMARY_TEMPLATE,
+    val onlineFallbackUrlTemplate: String = DEFAULT_ONLINE_FALLBACK_TEMPLATE,
+    val onlineTimeoutMs: Long = 3_500L,
+) {
+    fun activeOrderedSources(): List<TranslationSourceKind> {
+        val enabledSet = enabledSources.toSet()
+        val ordered = sourceOrder.filter { it in enabledSet }
+        val extras = enabledSources.filter { it !in ordered }
+        val combined = ordered + extras
+        return if (offlineOnly) combined.filter { it != TranslationSourceKind.ONLINE_GOOGLE } else combined
+    }
+
+    companion object {
+        val DEFAULT_ENABLED_SOURCES = listOf(
+            TranslationSourceKind.PACK,
+            TranslationSourceKind.ML_KIT,
+            TranslationSourceKind.LEGACY_V1,
+        )
+        val DEFAULT_SOURCE_ORDER = listOf(
+            TranslationSourceKind.PACK,
+            TranslationSourceKind.ML_KIT,
+            TranslationSourceKind.LEGACY_V1,
+            TranslationSourceKind.ONLINE_GOOGLE,
+        )
+        const val DEFAULT_ONLINE_HOST = "https://translate.googleapis.com"
+        const val DEFAULT_ONLINE_PRIMARY_TEMPLATE =
+            "{host}/translate_a/single?client=dict-chrome-ex&sl={sl}&tl={tl}&dt=t&dt=bd&dj=1&q={q}"
+        const val DEFAULT_ONLINE_FALLBACK_TEMPLATE =
+            "{host}/translate_a/single?client=it&dt=t&dt=rmt&dt=bd&dt=rms&dt=qca&dt=ss&dt=md&dt=ld&dt=ex" +
+                "&otf=2&dj=1&hl=en&ie=UTF-8&oe=UTF-8&sl={sl}&tl={tl}&q={q}"
+    }
+}
 
 @Serializable
 enum class TranslationProviderToken { ML_KIT_ON_DEVICE, OFF_STUB }
 
-/** LATER: offline dictionary import. The fields exist now so enabling the feature adds no schema break. */
+/** Offline dictionary import and display configuration. */
 @Serializable
 data class DictionarySettings(
-    val importEnabled: Boolean = false,
+    val importEnabled: Boolean = true,
     val databaseFileKey: String? = null,
     val lookupTimeoutMs: Long = 1_500L,
     val showSections: List<String> = DEFAULT_SECTIONS,
@@ -416,6 +467,8 @@ data class SmartLearningSettings(
     val showPossibleMatches: Boolean = true,
     val accuracyProfile: AccuracyProfileToken = AccuracyProfileToken.BASIC,
     val analyzeDuringBatterySaver: Boolean = false,
+    val benchmarkMaxHeapMb: Int = 512,
+    val completedOnboarding: Boolean = false,
 )
 
 @Serializable
@@ -457,7 +510,7 @@ data class AppSettings(
     fun subtitleLayer(role: TrackRole): SubtitleLayerSettings = subtitles.layer(role)
 
     companion object {
-        const val SCHEMA_VERSION = 3
+        const val SCHEMA_VERSION = 4
 
         val DEFAULT = AppSettings()
     }

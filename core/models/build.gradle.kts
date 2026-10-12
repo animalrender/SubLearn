@@ -37,7 +37,7 @@ dependencies {
     api(project(":core:common"))
     api(project(":core:settings"))
     api(libs.coroutines.core)
-    implementation(libs.serialization.json)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
     implementation(libs.koin.core)
     testImplementation(libs.junit)

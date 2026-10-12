@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-"""Tests for the lexicon builder.
+"""Tests for the lexicon builder and pack validator.
 
-Run with: python3 -m pytest tools/lexicon_builder/test_lexicon_builder.py
-   or:    python3 tools/lexicon_builder/test_lexicon_builder.py
-
-Uses the sample.sqlite from the dictionaryproject repo as input.
+Run with: python3 -m unittest tools/lexicon_builder/test_lexicon_builder.py
 """
 
 import json
@@ -14,27 +11,231 @@ import sys
 import tempfile
 import unittest
 
-# Add the parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from build_lexicon import build_lexicon, normalize_key, convert_to_pattern, find_anchor_lemma
-
-
-# Path to the sample database (from dictionaryproject/docs/)
-# The sample.sqlite is cloned alongside the SubLearn repo
-SAMPLE_DB = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "..", "..", "..", "..", "dictionaryproject", "docs", "sample.sqlite",
+from build_lexicon import (
+    build_lexicon,
+    convert_to_pattern,
+    convert_to_patterns,
+    find_anchor_lemma,
+    is_separable_phrasal,
+    normalize_key,
+    normalize_persian_key,
 )
+from validate_pack import validate_pack
 
-# Try alternative paths
-if not os.path.exists(SAMPLE_DB):
-    SAMPLE_DB = os.path.expanduser("~/dictionaryproject/docs/sample.sqlite")
-if not os.path.exists(SAMPLE_DB):
-    # Also try the test output from a previous run
-    SAMPLE_DB = os.path.join(
+CANDIDATE_SAMPLE_PATHS = [
+    os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        "test_fixtures", "sample.sqlite",
+        "..", "..", "..", "..", "dictionaryproject", "docs", "sample.sqlite",
+    ),
+    os.path.expanduser("~/dictionaryproject/docs/sample.sqlite"),
+    "/tmp/refs/dictionaryproject/docs/sample.sqlite",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_fixtures", "sample.sqlite"),
+]
+
+SAMPLE_DB = next((p for p in CANDIDATE_SAMPLE_PATHS if os.path.exists(p)), CANDIDATE_SAMPLE_PATHS[-1])
+
+
+def _create_synthetic_source_db(path: str) -> None:
+    """Create a realistic synthetic source SQLite database mirroring main_db.sqlite schema."""
+    conn = sqlite3.connect(path)
+    conn.executescript("""
+        CREATE TABLE category_names (
+            id INTEGER PRIMARY KEY,
+            persian_category_name TEXT,
+            english_category_name TEXT,
+            is_hidden INTEGER,
+            is_my_words INTEGER
+        );
+        INSERT INTO category_names VALUES (1, 'گیاه‌شناسی', 'Botany', 0, 0);
+        INSERT INTO category_names VALUES (16, 'کامپیوتر', 'Computer', 0, 0);
+
+        CREATE TABLE english_words (
+            english_word_id INTEGER PRIMARY KEY,
+            english_word TEXT,
+            simple_past INTEGER,
+            past_participle INTEGER,
+            infinitive INTEGER,
+            plural INTEGER,
+            present_participle INTEGER,
+            third_person_singular INTEGER,
+            comparative INTEGER,
+            superlative INTEGER,
+            canonical INTEGER,
+            word_description_html TEXT,
+            english_word_id_parent INTEGER
+        );
+
+        CREATE TABLE english_details (
+            english_detail_id INTEGER PRIMARY KEY,
+            persian_meaning TEXT,
+            most_common INTEGER,
+            countable_uncountable INTEGER,
+            english_word_id INTEGER,
+            position INTEGER,
+            formal_informal INTEGER,
+            british_american INTEGER,
+            cefr TEXT,
+            has_image INTEGER,
+            description_html TEXT
+        );
+
+        CREATE TABLE english_pos (
+            english_pos_id INTEGER PRIMARY KEY,
+            pos INTEGER,
+            english_detail_id INTEGER
+        );
+
+        CREATE TABLE english_categories (
+            english_category_id INTEGER PRIMARY KEY,
+            category INTEGER,
+            english_detail_id INTEGER
+        );
+
+        CREATE TABLE english_sentences (
+            english_sentence_id INTEGER PRIMARY KEY,
+            english_sentence TEXT,
+            persian_sentence TEXT,
+            position INTEGER,
+            english_detail_id INTEGER
+        );
+
+        CREATE TABLE english_synonyms_antonyms (
+            english_synonyms_antonyms_id INTEGER PRIMARY KEY,
+            english_word_id INTEGER,
+            definitions TEXT,
+            synonyms TEXT,
+            antonyms TEXT,
+            pos TEXT,
+            position INTEGER
+        );
+
+        CREATE TABLE english_word_families_words (
+            english_word_family_word_id INTEGER PRIMARY KEY,
+            pos INTEGER,
+            word TEXT,
+            english_word_family_id INTEGER
+        );
+
+        CREATE TABLE english_american_audios (
+            english_american_audio_id INTEGER PRIMARY KEY,
+            filename TEXT,
+            phonetic TEXT,
+            english_word_id INTEGER
+        );
+
+        CREATE TABLE english_british_audios (
+            english_british_audio_id INTEGER PRIMARY KEY,
+            filename TEXT,
+            phonetic TEXT,
+            english_word_id INTEGER
+        );
+
+        CREATE TABLE english_idioms (
+            english_idiom_id INTEGER PRIMARY KEY,
+            position INTEGER,
+            english_word_id INTEGER,
+            english_idiom_word_id INTEGER
+        );
+
+        CREATE TABLE persian_words (
+            persian_word_id INTEGER PRIMARY KEY,
+            persian_word TEXT
+        );
+        CREATE TABLE persian_details (
+            persian_detail_id INTEGER PRIMARY KEY,
+            english_meaning TEXT,
+            persian_phonetic TEXT,
+            persian_meaning TEXT,
+            position INTEGER,
+            persian_word_id INTEGER
+        );
+        CREATE TABLE persian_pos (
+            persian_pos_id INTEGER PRIMARY KEY,
+            pos INTEGER,
+            persian_detail_id INTEGER
+        );
+        CREATE TABLE persian_categories (
+            persian_category_id INTEGER PRIMARY KEY,
+            category INTEGER,
+            persian_detail_id INTEGER
+        );
+        CREATE TABLE persian_sentences (
+            persian_sentence_id INTEGER PRIMARY KEY,
+            persian_sentence TEXT,
+            english_sentence TEXT,
+            persian_detail_id INTEGER
+        );
+        CREATE TABLE persian_synonyms_antonyms (
+            persian_synonyms_antonyms_id INTEGER PRIMARY KEY,
+            synonym_antonym TEXT,
+            type INTEGER,
+            position INTEGER,
+            persian_word_id INTEGER
+        );
+    """)
+
+    # Insert test words including irregular paradigms (break/broke/broken, go/went/gone, good/better/best)
+    words = [
+        (1, "break", 2, 3, None, None, None, None, None, None, None, "<p>To separate into pieces</p>", None),
+        (2, "broke", None, 3, 1, None, None, None, None, None, None, None, None),
+        (3, "broken", 2, None, 1, None, None, None, None, None, None, None, None),
+        (4, "go", 5, 6, None, None, None, None, None, None, None, None, None),
+        (5, "went", None, 6, 4, None, None, None, None, None, None, None, None),
+        (6, "gone", 5, None, 4, None, None, None, None, None, None, None, None),
+        (7, "good", None, None, None, None, None, None, 8, 9, None, None, None),
+        (8, "better", None, None, None, None, None, None, None, 9, None, None, None),
+        (9, "best", None, None, None, None, None, None, 8, None, None, None, None),
+        (10, "do over", None, None, None, None, None, None, None, None, None, None, None),
+        (11, "look after", None, None, None, None, None, None, None, None, None, None, None),
+        (12, "get (or have) the goods on", None, None, None, None, None, None, None, None, None, None, None),
+        (13, "in (or into) flower", None, None, None, None, None, None, None, None, None, None, None),
+        (14, "piece of cake", None, None, None, None, None, None, None, None, None, None, None),
+    ]
+    conn.executemany(
+        "INSERT INTO english_words VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        words,
     )
+
+    details = [
+        (1, "شکستن", 1, None, 1, 0, 1, 0, "A1", 0, None),
+        (2, "شکسته (گذشته)", 1, None, 2, 0, None, None, "A2", 0, None),
+        (3, "شکسته‌شده", 1, None, 3, 0, None, None, "A2", 0, None),
+        (4, "رفتن", 1, None, 4, 0, None, None, "A1", 0, None),
+        (5, "خوب", 1, None, 7, 0, None, None, "A1", 0, None),
+        (6, "دوباره انجام دادن", 1, None, 10, 0, None, None, "B1", 0, None),
+        (7, "مراقبت کردن از", 1, None, 11, 0, None, None, "B1", 0, None),
+        (8, "مدرک علیه کسی داشتن", 1, None, 12, 0, 0, 1, "C1", 0, None),
+        (9, "گل دادن، شکوفه دادن", 1, None, 13, 0, None, None, "B2", 0, None),
+        (10, "مثل آب خوردن", 1, None, 14, 0, 0, None, "B1", 0, None),
+    ]
+    conn.executemany(
+        "INSERT INTO english_details VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        details,
+    )
+
+    pos_rows = [
+        (1, 5, 1),
+        (2, 6, 4),
+        (3, 7, 5),
+        (4, 20, 6),
+        (5, 20, 7),
+        (6, 18, 8),
+        (7, 18, 9),
+        (8, 18, 10),
+    ]
+    conn.executemany("INSERT INTO english_pos VALUES (?, ?, ?)", pos_rows)
+    conn.execute("INSERT INTO english_categories VALUES (1, 1, 9)")
+    conn.execute("INSERT INTO english_sentences VALUES (1, 'It was a piece of cake.', 'مثل آب خوردن بود.', 0, 10)")
+    conn.execute("INSERT INTO english_synonyms_antonyms VALUES (1, 1, 'separate into pieces', 'shatter, smash', 'mend, repair', 'verb', 0)")
+    conn.execute("INSERT INTO english_word_families_words VALUES (1, 1, 'break', 100)")
+    conn.execute("INSERT INTO english_word_families_words VALUES (2, 7, 'breakable', 100)")
+    conn.execute("INSERT INTO english_american_audios VALUES (1, 'break_us.mp3', '/breɪk/', 1)")
+    conn.execute("INSERT INTO english_idioms VALUES (1, 0, 1, 10)")
+    conn.execute("INSERT INTO persian_words VALUES (1, 'کتاب')")
+    conn.execute("INSERT INTO persian_details VALUES (1, 'book', 'ketāb', 'نوشته چاپی', 0, 1)")
+    conn.commit()
+    conn.close()
 
 
 class TestNormalizeKey(unittest.TestCase):
@@ -50,6 +251,9 @@ class TestNormalizeKey(unittest.TestCase):
 
     def test_strip_both_ends(self):
         self.assertEqual(normalize_key("  hello  "), "hello")
+
+    def test_persian_normalize(self):
+        self.assertEqual(normalize_persian_key("كِتابي"), "کتابی")
 
 
 class TestConvertToPattern(unittest.TestCase):
@@ -72,6 +276,31 @@ class TestConvertToPattern(unittest.TestCase):
         result = convert_to_pattern("help someone out")
         self.assertIn("{NP}", result)
 
+    def test_or_expansion(self):
+        pats, err = convert_to_patterns("get (or have) the goods on")
+        self.assertIsNone(err)
+        self.assertEqual(pats, ["get the goods on", "have the goods on"])
+
+        pats2, err2 = convert_to_patterns("in (or into) flower")
+        self.assertIsNone(err2)
+        self.assertEqual(pats2, ["in flower", "into flower"])
+
+    def test_optional_parenthetical_expansion(self):
+        pats, err = convert_to_patterns("check up (on)")
+        self.assertIsNone(err)
+        self.assertEqual(pats, ["check up", "check up on"])
+
+    def test_np_optional_expansion(self):
+        pats, err = convert_to_patterns("take (someone or something) seriously")
+        self.assertIsNone(err)
+        self.assertIn("take seriously", pats)
+        self.assertIn("take {NP} seriously", pats)
+
+    def test_rejected_patterns(self):
+        pats, err = convert_to_patterns("since you ask...")
+        self.assertEqual(pats, [])
+        self.assertEqual(err, "ellipsis")
+
 
 class TestFindAnchorLemma(unittest.TestCase):
     def test_picks_content_word(self):
@@ -80,63 +309,75 @@ class TestFindAnchorLemma(unittest.TestCase):
 
     def test_skips_function_words(self):
         anchor = find_anchor_lemma("get up")
-        # Should not pick "get" as it's a common verb; "up" is a particle
-        # Either is acceptable, but the anchor should be a real word
         self.assertTrue(len(anchor) > 0)
+
+    def test_phrasal_verb_anchor_is_verb(self):
+        self.assertEqual(find_anchor_lemma("do over", kind="PHRASAL"), "do")
+        self.assertEqual(find_anchor_lemma("have on", kind="PHRASAL"), "have")
+        self.assertEqual(find_anchor_lemma("look after", kind="PHRASAL"), "look")
+
+    def test_separable_phrasal(self):
+        self.assertTrue(is_separable_phrasal("do over", {20}))
+        self.assertTrue(is_separable_phrasal("turn down", {20, 5}))
+        self.assertFalse(is_separable_phrasal("look after", {20}))
+        self.assertFalse(is_separable_phrasal("come up with", {20}))
 
 
 class TestBuildLexicon(unittest.TestCase):
+    def test_synthetic_build_and_validate(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            src_db = os.path.join(tmpdir, "src.sqlite")
+            _create_synthetic_source_db(src_db)
+            json_dir = os.path.join(tmpdir, "json")
+
+            report = build_lexicon(src_db, tmpdir, direction="en-fa", gzip_output=True, export_test_json_dir=json_dir)
+            output_path = report["output_file"]
+            self.assertTrue(os.path.exists(output_path))
+            self.assertTrue(os.path.exists(report["gzip_file"]))
+            self.assertTrue(os.path.exists(os.path.join(json_dir, "lemma_forms.json")))
+
+            ok, errors = validate_pack(output_path)
+            self.assertTrue(ok, f"Validation failed: {errors}")
+
+            # Also test fa-en build and validation
+            report_fa = build_lexicon(src_db, tmpdir, direction="fa-en", gzip_output=True)
+            ok_fa, errors_fa = validate_pack(report_fa["output_file"])
+            self.assertTrue(ok_fa, f"FA-EN validation failed: {errors_fa}")
+
     @unittest.skipUnless(os.path.exists(SAMPLE_DB), f"Sample DB not found at {SAMPLE_DB}")
     def test_builds_valid_output(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             report = build_lexicon(SAMPLE_DB, tmpdir)
 
-            # Check report
             self.assertTrue(report["stats"]["entries_created"] > 0)
             self.assertTrue(report["stats"]["senses_created"] > 0)
             self.assertIn("output_sha256", report)
-            self.assertEqual(report["stats"]["entries_created"], int(
-                # Check meta entry_count matches
-                sqlite3.connect(os.path.join(tmpdir, "sublearn-lexicon-en-fa-v2.sqlite"))
-                .execute("SELECT value FROM meta WHERE key='entry_count'").fetchone()[0]
-            ))
-
-            # Check output file exists
             output_path = os.path.join(tmpdir, "sublearn-lexicon-en-fa-v2.sqlite")
             self.assertTrue(os.path.exists(output_path))
 
-            # Check schema
+            ok, errors = validate_pack(output_path)
+            self.assertTrue(ok, f"Sample DB pack validation failed: {errors}")
+
             conn = sqlite3.connect(output_path)
             tables = {r[0] for r in conn.execute(
                 "SELECT name FROM sqlite_master WHERE type='table'"
             ).fetchall()}
-            required_tables = {"meta", "lemma_form", "entry", "sense", "example", "pattern", "relation"}
+            required_tables = {
+                "meta", "lemma_form", "entry", "sense", "example",
+                "pattern", "word_pos", "entry_extra", "pron", "colloc", "relation",
+            }
             self.assertTrue(required_tables.issubset(tables), f"Missing tables: {required_tables - tables}")
 
-            # Check meta
             meta = dict(conn.execute("SELECT key, value FROM meta").fetchall())
             self.assertEqual(meta["format_version"], "2")
             self.assertEqual(meta["source_lang"], "en")
             self.assertEqual(meta["gloss_lang"], "fa")
-
-            # Check entry kinds
-            kinds = {r[0] for r in conn.execute("SELECT DISTINCT kind FROM entry").fetchall()}
-            self.assertIn("WORD", kinds)
-            # Check that we have at least some idioms/phrasals
-            multi_word = {r[0] for r in conn.execute(
-                "SELECT DISTINCT kind FROM entry WHERE kind IN ('PHRASAL', 'IDIOM')"
-            ).fetchall()}
-            self.assertTrue(len(multi_word) > 0, "Expected some phrasal/idiom entries")
-
             conn.close()
 
     @unittest.skipUnless(os.path.exists(SAMPLE_DB), f"Sample DB not found at {SAMPLE_DB}")
     def test_report_json(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             report = build_lexicon(SAMPLE_DB, tmpdir)
-            report_path = os.path.join(tmpdir, "build_report.json")
-            # The build function doesn't write the JSON, but the main() function does
-            # Let's verify the report dict has the expected structure
             self.assertIn("stats", report)
             self.assertIn("builder_version", report)
             self.assertIn("output_sha256", report)

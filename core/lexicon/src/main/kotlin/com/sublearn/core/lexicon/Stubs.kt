@@ -7,9 +7,8 @@ import com.sublearn.core.settings.CefrLevel
 import com.sublearn.core.subtitles.SubtitleBlock
 
 /**
- * LATER capabilities are declared here so the NOW build compiles against the same shapes the future
- * features will use. Every stub throws [NotImplementedInThisBuild] and every entry in the UI that
- * could call it is behind [FeatureFlag] and shows "Coming soon" instead.
+ * Capability interfaces for dictionary lookup, word analysis, speech-to-text, update checks,
+ * level detection, and quizzes.
  */
 
 /** Part-of-speech, phrasal verb, collocation and idiom detection (SUB-5, LRN-3). */
@@ -33,7 +32,7 @@ class NotImplementedWordAnalyzer : WordAnalyzer {
         throw NotImplementedInThisBuild(feature)
 }
 
-/** Offline dictionary import and lookup (LRN-1 full details, scope switch item 1). */
+/** Offline dictionary import and lookup (LRN-1 full details, DCT-1..5). */
 data class DictionaryEntry(
     val headword: String,
     val meanings: List<String>,
@@ -47,15 +46,24 @@ data class DictionaryEntry(
     val categories: List<String> = emptyList(),
     val pronunciationUs: String? = null,
     val pronunciationUk: String? = null,
+    val pos: String? = null,
+    val register: String? = null,
+    val englishGlosses: List<String> = emptyList(),
+    val examples: List<Pair<String, String>> = emptyList(),
+    val kind: LexiconKind = LexiconKind.WORD,
+    val entryId: Long? = null,
+    val sourceLabel: String? = null,
 ) {
     val isEmpty: Boolean
-        get() = meanings.isEmpty() && synonyms.isEmpty() && phrasalVerbs.isEmpty() && idioms.isEmpty()
+        get() = meanings.isEmpty() && englishGlosses.isEmpty() && synonyms.isEmpty() && phrasalVerbs.isEmpty() && idioms.isEmpty()
 }
 
 interface DictionaryProvider {
     val feature: FeatureFlag get() = FeatureFlag.OFFLINE_DICTIONARY
 
     suspend fun lookup(word: String): AppResult<DictionaryEntry?>
+
+    suspend fun search(query: String, limit: Int = 40): AppResult<List<DictionaryEntry>> = AppResult.success(emptyList())
 
     suspend fun isAvailable(): Boolean
 }
@@ -78,7 +86,7 @@ class NotImplementedSpeechToText : SpeechToText {
         throw NotImplementedInThisBuild(feature)
 }
 
-/** GitHub Releases update check (scope switch item 3). */
+/** GitHub Releases update check. */
 data class UpdateInfo(val versionName: String, val url: String, val notes: String)
 
 interface UpdateChecker {
@@ -91,7 +99,7 @@ class NotImplementedUpdateChecker : UpdateChecker {
     override suspend fun check(currentVersion: String): AppResult<UpdateInfo?> = throw NotImplementedInThisBuild(feature)
 }
 
-/** Automatic level detection (LRN-2, LATER). */
+/** Automatic level detection (LRN-2). */
 interface LevelDetector {
     val feature: FeatureFlag get() = FeatureFlag.LEVEL_DETECTION
 
@@ -102,7 +110,7 @@ class NotImplementedLevelDetector : LevelDetector {
     override suspend fun detect(sampleWords: List<String>): AppResult<CefrLevel> = throw NotImplementedInThisBuild(feature)
 }
 
-/** Quiz over My Words (scope switch item 2). */
+/** Quiz over My Words. */
 interface QuizEngine {
     val feature: FeatureFlag get() = FeatureFlag.QUIZ
 }

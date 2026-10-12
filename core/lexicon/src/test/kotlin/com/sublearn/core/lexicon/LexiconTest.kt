@@ -83,4 +83,20 @@ class LexiconTest {
         assertEquals(false, NotImplementedDictionaryProvider().isAvailable())
         assertEquals(FeatureFlag.POS_ANALYSIS, NotImplementedWordAnalyzer().feature)
     }
+
+    @Test
+    fun `bipe codec round trips sqlite payload in streaming chunks`() {
+        val fakeSqlite = ("SQLite format 3\u0000" + "A".repeat(150_000)).toByteArray(Charsets.US_ASCII)
+        val encoded = BipeCodec.encodeToBipe(fakeSqlite)
+        val out = java.io.ByteArrayOutputStream()
+        val sha = BipeCodec.decodeToSqlite(java.io.ByteArrayInputStream(encoded), out)
+        assertTrue(sha.length == 64)
+        assertTrue(fakeSqlite.contentEquals(out.toByteArray()))
+
+        // Raw SQLite pass-through also works
+        val rawOut = java.io.ByteArrayOutputStream()
+        val sha2 = BipeCodec.decodeToSqlite(java.io.ByteArrayInputStream(fakeSqlite), rawOut)
+        assertEquals(sha, sha2)
+        assertTrue(fakeSqlite.contentEquals(rawOut.toByteArray()))
+    }
 }

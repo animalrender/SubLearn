@@ -15,16 +15,20 @@ languages structurally supported but not built. Full requirements:
 ## Non-negotiable rules
 
 1. **No third-party data in the repository.** Never commit a dictionary database, a `.bipe` file, an
-   extracted translation model, or anything derived from them: the user imports their own files and
-   the Model Manager downloads packs at runtime. Translation is official ML Kit only. `.gitignore`
+   extracted translation model, or anything derived from them: the user imports their own files or
+   downloads packs from the Resource Library at runtime. Translation is multi-source via
+   `TranslationOrchestrator` (offline `PACK`, `ML_KIT`, `LEGACY_V1`, plus optional user-enabled
+   `ONLINE_GOOGLE` with an "Offline only" master switch — see D-58, D-59, D-62). `.gitignore`
    keeps data, model and signing files out of the repository.
 2. **No fake success.** No demo data in shipped paths, no silent stubs, no `TODO`. An unfinished item
    is either finished or written down in `docs/KNOWN_ISSUES.md` / `docs/AGENT_REQUESTS.md`.
 3. **main always builds.** One branch per phase (`phase/N-name`), small conventional commits, one PR
    per phase, merge only at Definition of Done. If you are blocked, keep the branch green (feature
    flag or revert the partial work), log it, and move to the next independent task.
-4. **Every PR updates the docs it affects**, and [docs/PROGRESS.md](docs/PROGRESS.md) must always say
-   what is done, what remains and how to test it.
+4. **Every PR updates the docs it affects**, and [docs/PROGRESS.md](docs/PROGRESS.md),
+   [docs/PHASES.md](docs/PHASES.md), [docs/DECISIONS.md](docs/DECISIONS.md), and
+   [docs/IMPROVEMENTS.md](docs/IMPROVEMENTS.md) must always reflect what is done, what remains,
+   and the rationale for every architectural decision.
 5. **No secrets**: no API keys, keystores, `local.properties` or build outputs. Keys go through
    `core:security`; `.gitignore` keeps secrets and forbidden files out of the repository.
 

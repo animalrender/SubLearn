@@ -1,0 +1,110 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "b6d9f48c0a123e4f9a71c283910b7d11",
+    "entities": [
+      {
+        "tableName": "recent_videos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`uri` TEXT NOT NULL, `title` TEXT NOT NULL, `durationMs` INTEGER NOT NULL, `lastPositionMs` INTEGER NOT NULL, `lastOpenedAt` INTEGER NOT NULL, `widthPx` INTEGER NOT NULL, `heightPx` INTEGER NOT NULL, `isPlayable` INTEGER NOT NULL, `takenAt` INTEGER NOT NULL, PRIMARY KEY(`uri`))",
+        "fields": [
+          {"fieldPath": "uri", "columnName": "uri", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "title", "columnName": "title", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "durationMs", "columnName": "durationMs", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "lastPositionMs", "columnName": "lastPositionMs", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "lastOpenedAt", "columnName": "lastOpenedAt", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "widthPx", "columnName": "widthPx", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "heightPx", "columnName": "heightPx", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "isPlayable", "columnName": "isPlayable", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "takenAt", "columnName": "takenAt", "affinity": "INTEGER", "notNull": true}
+        ],
+        "primaryKey": {"autoGenerate": false, "columnNames": ["uri"]},
+        "indices": [
+          {"name": "index_recent_videos_lastOpenedAt", "unique": false, "columnNames": ["lastOpenedAt"], "orders": [], "createSql": "CREATE INDEX IF NOT EXISTS `index_recent_videos_lastOpenedAt` ON `${TABLE_NAME}` (`lastOpenedAt`)"},
+          {"name": "index_recent_videos_title", "unique": false, "columnNames": ["title"], "orders": [], "createSql": "CREATE INDEX IF NOT EXISTS `index_recent_videos_title` ON `${TABLE_NAME}` (`title`)"}
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "my_words",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `word` TEXT NOT NULL, `wordLower` TEXT NOT NULL, `kind` TEXT NOT NULL, `translation` TEXT, `contextText` TEXT, `contextTranslation` TEXT, `sourceUri` TEXT, `sourceTitle` TEXT, `sourceStartMs` INTEGER NOT NULL, `status` TEXT NOT NULL, `level` TEXT, `note` TEXT, `surface` TEXT NOT NULL, `markedAt` INTEGER NOT NULL, `reviewedAt` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL)",
+        "fields": [
+          {"fieldPath": "id", "columnName": "id", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "word", "columnName": "word", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "wordLower", "columnName": "wordLower", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "kind", "columnName": "kind", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "translation", "columnName": "translation", "affinity": "TEXT", "notNull": false},
+          {"fieldPath": "contextText", "columnName": "contextText", "affinity": "TEXT", "notNull": false},
+          {"fieldPath": "contextTranslation", "columnName": "contextTranslation", "affinity": "TEXT", "notNull": false},
+          {"fieldPath": "sourceUri", "columnName": "sourceUri", "affinity": "TEXT", "notNull": false},
+          {"fieldPath": "sourceTitle", "columnName": "sourceTitle", "affinity": "TEXT", "notNull": false},
+          {"fieldPath": "sourceStartMs", "columnName": "sourceStartMs", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "status", "columnName": "status", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "level", "columnName": "level", "affinity": "TEXT", "notNull": false},
+          {"fieldPath": "note", "columnName": "note", "affinity": "TEXT", "notNull": false},
+          {"fieldPath": "surface", "columnName": "surface", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "markedAt", "columnName": "markedAt", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "reviewedAt", "columnName": "reviewedAt", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "reviewCount", "columnName": "reviewCount", "affinity": "INTEGER", "notNull": true}
+        ],
+        "primaryKey": {"autoGenerate": true, "columnNames": ["id"]},
+        "indices": [
+          {"name": "index_my_words_wordLower", "unique": false, "columnNames": ["wordLower"], "orders": [], "createSql": "CREATE INDEX IF NOT EXISTS `index_my_words_wordLower` ON `${TABLE_NAME}` (`wordLower`)"},
+          {"name": "index_my_words_markedAt", "unique": false, "columnNames": ["markedAt"], "orders": [], "createSql": "CREATE INDEX IF NOT EXISTS `index_my_words_markedAt` ON `${TABLE_NAME}` (`markedAt`)"},
+          {"name": "index_my_words_wordLower_surface", "unique": true, "columnNames": ["wordLower", "surface"], "orders": [], "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_my_words_wordLower_surface` ON `${TABLE_NAME}` (`wordLower`, `surface`)"}
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "translation_cache",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cacheKey` TEXT NOT NULL, `sourceText` TEXT NOT NULL, `translatedText` TEXT NOT NULL, `sourceLanguage` TEXT NOT NULL, `targetLanguage` TEXT NOT NULL, `provider` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `hits` INTEGER NOT NULL, PRIMARY KEY(`cacheKey`))",
+        "fields": [
+          {"fieldPath": "cacheKey", "columnName": "cacheKey", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "sourceText", "columnName": "sourceText", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "translatedText", "columnName": "translatedText", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "sourceLanguage", "columnName": "sourceLanguage", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "targetLanguage", "columnName": "targetLanguage", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "provider", "columnName": "provider", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "createdAt", "columnName": "createdAt", "affinity": "INTEGER", "notNull": true},
+          {"fieldPath": "hits", "columnName": "hits", "affinity": "INTEGER", "notNull": true}
+        ],
+        "primaryKey": {"autoGenerate": false, "columnNames": ["cacheKey"]},
+        "indices": [
+          {"name": "index_translation_cache_createdAt", "unique": false, "columnNames": ["createdAt"], "orders": [], "createSql": "CREATE INDEX IF NOT EXISTS `index_translation_cache_createdAt` ON `${TABLE_NAME}` (`createdAt`)"},
+          {"name": "index_translation_cache_hits", "unique": false, "columnNames": ["hits"], "orders": [], "createSql": "CREATE INDEX IF NOT EXISTS `index_translation_cache_hits` ON `${TABLE_NAME}` (`hits`)"}
+        ],
+        "foreignKeys": []
+      },
+      {
+        "ftsVersion": "FTS4",
+        "ftsOptions": {
+          "tokenizer": "simple",
+          "tokenizerArgs": [],
+          "contentTable": "my_words",
+          "languageIdColumnName": "",
+          "matchInfo": "FTS4",
+          "notIndexedColumns": [],
+          "prefixSizes": [],
+          "preferredOrder": "ASC"
+        },
+        "contentSyncTriggers": [],
+        "tableName": "my_words_fts",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`word` TEXT NOT NULL, `translation` TEXT NOT NULL, `contextText` TEXT NOT NULL, `note` TEXT NOT NULL, content=`my_words`)",
+        "fields": [
+          {"fieldPath": "word", "columnName": "word", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "translation", "columnName": "translation", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "contextText", "columnName": "contextText", "affinity": "TEXT", "notNull": true},
+          {"fieldPath": "note", "columnName": "note", "affinity": "TEXT", "notNull": true}
+        ],
+        "primaryKey": {"autoGenerate": false, "columnNames": []},
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b6d9f48c0a123e4f9a71c283910b7d11')"
+    ]
+  }
+}

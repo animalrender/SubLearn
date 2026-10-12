@@ -46,84 +46,121 @@ device, and the importer below defines *our own* format for it.
 3. UI: Settings → Dictionary gains "Import a dictionary file" (already scaffolded through
    `OpenDocumentContract`), showing entry count, language pair, and a "remove import" action.
 
-**Documented import schema (v2, ours)** — normalised tables with separate entries for words and
-multi-word expressions. The v1 single-table format is also accepted for backward compatibility.
+### 6.1 Documented Lexicon Pack v2 Schema (`format_version = 2`, D-43)
+
+Normalised SQLite schema with deduplicated entries (`UNIQUE(key, kind)`), multi-lemma inflections
+(`PRIMARY KEY (form, lemma)` with `rank`), pre-expanded patterns, POS frequencies (`word_pos`),
+compact `' | '`-joined relations (`entry_extra`), pronunciations (`pron`), collocation links (`colloc`),
+and FTS4 prefix search (`entry_fts`). Both `en-fa` (`sublearn-lexicon-en-fa-v2.sqlite`) and `fa-en`
+(`sublearn-dict-fa-en-v1.sqlite`) packs use this schema. Legacy v1 files (`main_db.sqlite` and
+XOR+zlib `.bipe` / `fastdic_plain`) are imported via `LegacyV1Importer` (D-61).
 
 ```sql
--- Metadata
 CREATE TABLE meta (
-  key TEXT PRIMARY KEY,
-  value TEXT NOT NULL
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
 );
--- Required keys: format_version, source_lang, gloss_lang, entry_count, built_at, builder_version
+-- Keys: format_version ('2'), pack_id, direction ('en-fa'|'fa-en'), source_lang, gloss_lang,
+--       entry_count, sense_count, pattern_count, lemma_count, built_at, builder_version, source_db_sha256
 
--- Inflected form → lemma mapping (went → go, gave → give)
 CREATE TABLE lemma_form (
-  form TEXT NOT NULL,
-  lemma TEXT NOT NULL,
-  pos TEXT,
-  PRIMARY KEY (form, pos)
+    form   TEXT NOT NULL,
+    lemma  TEXT NOT NULL,
+    pos    TEXT,
+    rank   INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (form, lemma)
 );
 CREATE INDEX idx_lemma_form ON lemma_form(form);
 
--- Main entry: word, phrasal verb, idiom or collocation
 CREATE TABLE entry (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  key TEXT NOT NULL,            -- lookup key, lower-case, no trailing punctuation
-  headword TEXT NOT NULL,       -- display form
-  kind TEXT NOT NULL CHECK (kind IN ('WORD', 'PHRASAL', 'IDIOM', 'COLLOCATION')),
-  pos TEXT,                     -- normalised POS tag (NOUN, VERB, ADJ, ...)
-  cefr TEXT,                    -- A1|A2|B1|B2|C1|C2 or NULL
-  register TEXT                 -- formal/informal/slang or NULL
+    id        INTEGER PRIMARY KEY,
+    key       TEXT NOT NULL,
+    headword  TEXT NOT NULL,
+    kind      TEXT NOT NULL, -- 'WORD' | 'PHRASAL' | 'IDIOM' | 'COLLOCATION' | 'PHRASE'
+    pos       TEXT,
+    cefr      TEXT,
+    register  TEXT,
+    prior     REAL NOT NULL DEFAULT 0.5,
+    UNIQUE(key, kind)
 );
 CREATE INDEX idx_entry_key ON entry(key);
+CREATE INDEX idx_entry_kind ON entry(kind);
 
--- One row per meaning/sense
 CREATE TABLE sense (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  entry_id INTEGER NOT NULL REFERENCES entry(id),
-  position INTEGER NOT NULL DEFAULT 0,
-  pos TEXT,
-  gloss_fa TEXT,                -- Persian meaning
-  gloss_en TEXT,                -- English gloss (optional)
-  domain TEXT,                  -- medical/legal/... (optional)
-  register TEXT,
-  is_primary INTEGER NOT NULL DEFAULT 1
+    id         INTEGER PRIMARY KEY,
+    entry_id   INTEGER NOT NULL REFERENCES entry(id),
+    pos        TEXT,
+    gloss_fa   TEXT NOT NULL,
+    gloss_en   TEXT,
+    domain     TEXT,
+    domain_fa  TEXT,
+    domain_en  TEXT,
+    register   TEXT,
+    cefr       TEXT,
+    is_primary INTEGER NOT NULL DEFAULT 0,
+    prior      REAL NOT NULL DEFAULT 0.5,
+    position   INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX idx_sense_entry ON sense(entry_id);
 
--- Example sentences
 CREATE TABLE example (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  sense_id INTEGER NOT NULL REFERENCES sense(id),
-  en TEXT,
-  fa TEXT
+    id       INTEGER PRIMARY KEY,
+    sense_id INTEGER NOT NULL REFERENCES sense(id),
+    en       TEXT,
+    fa       TEXT,
+    UNIQUE(sense_id, en)
 );
+CREATE INDEX idx_example_sense ON example(sense_id);
 
--- Pattern for multi-word matching
 CREATE TABLE pattern (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  entry_id INTEGER NOT NULL REFERENCES entry(id),
-  pattern TEXT NOT NULL,        -- e.g. "POSS mind BE made up" or "get off"
-  anchor_lemma TEXT NOT NULL,   -- rarest content word for indexing
-  separable INTEGER NOT NULL DEFAULT 0,
-  min_tokens INTEGER NOT NULL DEFAULT 2,
-  max_tokens INTEGER NOT NULL DEFAULT 8
+    id           INTEGER PRIMARY KEY,
+    entry_id     INTEGER NOT NULL REFERENCES entry(id),
+    pattern      TEXT NOT NULL,
+    anchor_lemma TEXT NOT NULL,
+    separable    INTEGER NOT NULL DEFAULT 0,
+    min_tokens   INTEGER NOT NULL DEFAULT 2,
+    max_tokens   INTEGER NOT NULL DEFAULT 6
 );
 CREATE INDEX idx_pattern_anchor ON pattern(anchor_lemma);
 CREATE INDEX idx_pattern_entry ON pattern(entry_id);
 
--- Relations: synonym, antonym, word family
-CREATE TABLE relation (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  entry_id INTEGER NOT NULL REFERENCES entry(id),
-  kind TEXT NOT NULL CHECK (kind IN ('SYNONYM', 'ANTONYM', 'WORD_FAMILY')),
-  target TEXT NOT NULL
+CREATE TABLE word_pos (
+    word TEXT NOT NULL,
+    pos  TEXT NOT NULL,
+    freq INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (word, pos)
 );
-CREATE INDEX idx_relation_entry ON relation(entry_id);
+CREATE INDEX idx_word_pos_word ON word_pos(word);
 
--- Full-text search
-CREATE VIRTUAL TABLE entry_fts USING fts4(key, headword);
+CREATE TABLE entry_extra (
+    entry_id    INTEGER PRIMARY KEY REFERENCES entry(id),
+    synonyms    TEXT, -- ' | '-joined, max 20
+    antonyms    TEXT, -- ' | '-joined, max 20
+    word_family TEXT, -- ' | '-joined, max 20
+    notes       TEXT
+);
+
+CREATE TABLE pron (
+    entry_id INTEGER PRIMARY KEY REFERENCES entry(id),
+    ipa_us   TEXT,
+    ipa_uk   TEXT,
+    audio_us TEXT,
+    audio_uk TEXT
+);
+
+CREATE TABLE colloc (
+    entry_id        INTEGER NOT NULL REFERENCES entry(id),
+    colloc_entry_id INTEGER NOT NULL REFERENCES entry(id),
+    position        INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (entry_id, colloc_entry_id)
+);
+CREATE INDEX idx_colloc_entry ON colloc(entry_id);
+
+CREATE VIRTUAL TABLE entry_fts USING fts4(
+    key,
+    headword,
+    tokenize=unicode61
+);
 ```
 
 One row per sense is required (senses group by `entry_id` on read, in `position` order). The importer

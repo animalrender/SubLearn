@@ -46,7 +46,10 @@ dependencies {
 
     api(project(":core:common"))
     api(project(":core:data"))
+    api(project(":core:settings"))
     api(libs.mlkit.translate)
+    implementation(libs.okhttp)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.coroutines.android)
 
     api(libs.coroutines.core)

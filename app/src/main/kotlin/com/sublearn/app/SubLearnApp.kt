@@ -51,6 +51,7 @@ import com.sublearn.core.settings.SettingsRepository
 import com.sublearn.core.lexicon.LaterCapabilities
 import com.sublearn.feature.home.HomeScreen
 import com.sublearn.feature.home.HomeViewModel
+import com.sublearn.feature.learn.DictionaryScreen
 import com.sublearn.feature.learn.LearnScreen
 import com.sublearn.feature.player.PlayerScreen
 import com.sublearn.feature.player.PlayerViewModel
@@ -195,7 +196,10 @@ private fun AppScaffold(nav: AppNavigator, versionName: String) {
                         onOpenSettings = { nav.go(AppRoute.SETTINGS) },
                     )
 
-                    AppRoute.WORDS -> MyWordsScreen(onBack = { nav.go(AppRoute.HOME) })
+                    AppRoute.WORDS -> MyWordsScreen(
+                        onBack = { nav.go(AppRoute.HOME) },
+                        onOpenContext = { title, _ -> nav.openPlayer(title, title) },
+                    )
                     AppRoute.SETTINGS -> SettingsScreen(
                         onBack = { nav.go(AppRoute.HOME) },
                         versionName = versionName,
@@ -206,7 +210,7 @@ private fun AppScaffold(nav: AppNavigator, versionName: String) {
                         versionName = versionName,
                     )
                     AppRoute.YOUTUBE -> ComingSoonScreen(FeatureFlag.YOUTUBE)
-                    AppRoute.DICTIONARY -> ComingSoonScreen(FeatureFlag.OFFLINE_DICTIONARY)
+                    AppRoute.DICTIONARY -> DictionaryScreen()
                     AppRoute.QUIZ -> ComingSoonScreen(FeatureFlag.QUIZ)
                     AppRoute.UPDATES -> ComingSoonScreen(FeatureFlag.UPDATE_CHECKER)
                     AppRoute.PLAYER -> Unit

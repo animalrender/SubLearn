@@ -415,6 +415,7 @@ fun PlayerScreen(
             onAskAi = { viewModel.askAi(it) },
             modifier = Modifier.fillMaxSize(),
             registry = registry,
+            onTogglePhraseMark = viewModel::togglePhraseMarkInPopup,
         )
 
         if (ui.ai.state != AiState.IDLE && !inPip) {

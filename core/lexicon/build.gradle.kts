@@ -48,6 +48,8 @@ dependencies {
     api(project(":core:data"))
     api(project(":core:subtitles"))
     api(project(":core:settings"))
+    api(project(":core:nlp"))
+    implementation(libs.kotlinx.serialization.json)
 
     api(libs.coroutines.core)
     testImplementation(libs.junit)

@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 class WordLevelSource(
     private val myWords: MyWordsRepository,
+    private val lexiconAccess: PackLexiconAccess? = null,
 ) {
     private val _imported = MutableStateMap()
     private val _state = MutableStateFlow(Status())
@@ -44,20 +45,25 @@ class WordLevelSource(
     suspend fun provider(settings: LevelSettings, manualLevel: CefrLevel): WordLevelProvider {
         val known = suspend { myWords.statusWords(WordStatus.KNOWN) }
         val frequency = FrequencyListLevelProvider(_imported.snapshot(), fallback = null)
+        val lexiconProvider = lexiconAccess?.let { LexiconLevelProvider(it) }
         return when (settings.provider) {
             LevelProviderToken.MY_WORDS -> ChainedWordLevelProvider(
-                listOf(
+                listOfNotNull(
                     KnownWordsLevelProvider(known, settings.assumedLevelOfUnknownWords),
+                    lexiconProvider,
                     frequency,
                     ManualLevelProvider(manualLevel),
                 ),
             )
 
             LevelProviderToken.MANUAL -> ManualLevelProvider(manualLevel)
-            LevelProviderToken.IMPORTED_FREQUENCY_LIST -> ChainedWordLevelProvider(listOf(frequency, ManualLevelProvider(manualLevel)))
+            LevelProviderToken.IMPORTED_FREQUENCY_LIST -> ChainedWordLevelProvider(
+                listOfNotNull(frequency, lexiconProvider, ManualLevelProvider(manualLevel)),
+            )
 
-            // Automatic detection is LATER; until then the manual level answers, never a guess.
-            LevelProviderToken.AUTOMATIC -> ChainedWordLevelProvider(listOf(frequency, ManualLevelProvider(manualLevel)))
+            LevelProviderToken.AUTOMATIC -> ChainedWordLevelProvider(
+                listOfNotNull(lexiconProvider, frequency, ManualLevelProvider(manualLevel)),
+            )
         }
     }
 

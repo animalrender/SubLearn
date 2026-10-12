@@ -1,10 +1,12 @@
 package com.sublearn.feature.player
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,10 +19,16 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,12 +36,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -42,24 +46,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sublearn.core.designsystem.Dimens
-import com.sublearn.core.designsystem.LocalReduceMotion
 import com.sublearn.core.designsystem.LocalAppFontScale
+import com.sublearn.core.designsystem.LocalReduceMotion
 import com.sublearn.core.designsystem.Motion
+import com.sublearn.core.designsystem.Palette
 import com.sublearn.core.designsystem.R
 import com.sublearn.core.designsystem.badgeColorArgb
+import com.sublearn.core.designsystem.toTextStyle
+import com.sublearn.core.nlp.PhraseKind
 import com.sublearn.core.settings.AppSettings
 import com.sublearn.core.settings.CefrLevel
 import com.sublearn.core.settings.FontSurface
 import com.sublearn.core.settings.SubtitleLayerRole
-import com.sublearn.core.designsystem.toTextStyle
 
 /**
- * The translation cards (LRN-1). Word, line and block share one card so a tap never changes the
- * visual language of the app, only the amount of text on it.
+ * The ProudVocab-inspired translation card (LRN-1, D-49, D-58, D-59).
  *
- * A missing ML Kit model is shown as an action, not an error dialog: downloading the model is the
- * only way forward and the button takes the user straight there.
+ * - Top section: tapped word (or line/block), base lemma, IPA phonetic, CEFR badge, source chips,
+ *   POS-grouped Persian meanings, examples, and bookmark star.
+ * - Bottom section (when a phrasal verb / idiom / collocation was detected on the tapped token):
+ *   detected expression header, colored kind badge, phrase Persian meanings, examples, and a
+ *   separate bookmark star so the learner can save the word, the expression, or both.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun PopupLayer(
     popup: PopupUi?,
@@ -70,9 +79,9 @@ internal fun PopupLayer(
     onAskAi: (String) -> Unit,
     modifier: Modifier = Modifier,
     registry: PlayerHitRegistry? = null,
+    onTogglePhraseMark: () -> Unit = {},
 ) {
     val reduce = LocalReduceMotion.current
-    // The card keeps its last content while it animates out; without this it went blank mid-exit.
     val lastShown = remember { mutableStateOf(popup) }
     LaunchedEffect(popup) { if (popup != null) lastShown.value = popup }
     AnimatedVisibility(
@@ -88,10 +97,11 @@ internal fun PopupLayer(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .blocksGestures(registry)
-                    .widthIn(max = Dimens.cardMaxWidth)
+                    .widthIn(min = Dimens.proudPopupMinWidth, max = Dimens.cardMaxWidth)
                     .padding(Dimens.lg),
-                shape = RoundedCornerShape(settings.appearance.cornerRadiusDp.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                shape = RoundedCornerShape(Dimens.proudCardRadius),
+                color = Color(Palette.PROUD_CARD_BG),
+                border = BorderStroke(Dimens.strokeWidth, Color(Palette.PROUD_CARD_BORDER)),
                 tonalElevation = Dimens.cardElevation,
                 shadowElevation = spec.shadowElevationDp.dp,
             ) {
@@ -118,18 +128,46 @@ internal fun PopupLayer(
                             Spacer(Modifier.size(Dimens.sm))
                             LevelBadge(level)
                         }
+                        if (current.sourcesUsed.isNotEmpty()) {
+                            Spacer(Modifier.size(Dimens.xs))
+                            current.sourcesUsed.forEach { src ->
+                                PopupSourceChip(src)
+                                Spacer(Modifier.size(Dimens.xxs))
+                            }
+                        }
                         Spacer(Modifier.weight(1f))
                         IconButton(onClick = onDismiss) {
                             Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_close))
                         }
                     }
 
-                    Text(
-                        text = current.sourceText,
-                        style = settings.fontFor(FontSurface.TRANSLATION_POPUP, SubtitleLayerRole.LEARNING)
-                            .toTextStyle(LocalAppFontScale.current),
-                        maxLines = 6,
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+                    ) {
+                        Text(
+                            text = current.sourceText,
+                            style = settings.fontFor(FontSurface.TRANSLATION_POPUP, SubtitleLayerRole.LEARNING)
+                                .toTextStyle(LocalAppFontScale.current),
+                            color = Color(Palette.PROUD_WORD_NORMAL),
+                            maxLines = 6,
+                        )
+                        val lemma = current.lemma
+                        if (!lemma.isNullOrBlank() && !lemma.equals(current.sourceText, ignoreCase = true)) {
+                            Text(
+                                text = "→ $lemma",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                        current.phonetic?.takeIf { it.isNotBlank() }?.let { ipa ->
+                            Text(
+                                text = if (ipa.startsWith("/")) ipa else "/$ipa/",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
 
                     if (current.busy) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
@@ -141,8 +179,45 @@ internal fun PopupLayer(
                             Text(
                                 text = translated,
                                 style = spec.toTextStyle(LocalAppFontScale.current),
-                                color = MaterialTheme.colorScheme.onSurface,
+                                color = Color(Palette.PROUD_WORD_NORMAL),
                             )
+                        }
+                        if (current.posGlosses.isNotEmpty()) {
+                            Column(verticalArrangement = Arrangement.spacedBy(Dimens.xxs)) {
+                                current.posGlosses.take(4).forEach { (pos, terms) ->
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(Dimens.xs),
+                                        verticalArrangement = Arrangement.spacedBy(Dimens.xxs),
+                                    ) {
+                                        if (!pos.isNullOrBlank()) {
+                                            PopupPosChip(pos)
+                                        }
+                                        Text(
+                                            text = terms.take(5).joinToString("، "),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        if (current.examples.isNotEmpty()) {
+                            Column(verticalArrangement = Arrangement.spacedBy(Dimens.xxs)) {
+                                current.examples.take(2).forEach { (enEx, faEx) ->
+                                    Text(
+                                        text = "• $enEx",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    if (faEx.isNotBlank()) {
+                                        Text(
+                                            text = "  $faEx",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
+                            }
                         }
                         current.contextTranslation?.let { context ->
                             Text(
@@ -150,6 +225,19 @@ internal fun PopupLayer(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                        }
+                        if (current.isPendingOnline) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(Dimens.xs),
+                            ) {
+                                CircularProgressIndicator(Modifier.size(Dimens.spinnerSmall), strokeWidth = Dimens.spinnerStroke)
+                                Text(
+                                    text = stringResource(R.string.popup_online_loading),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
                         current.error?.let { error ->
                             Column {
@@ -176,7 +264,7 @@ internal fun PopupLayer(
                                     if (current.marked) R.string.word_remove else R.string.word_add,
                                 ),
                                 tint = if (current.marked) {
-                                    MaterialTheme.colorScheme.primary
+                                    Color(Palette.PROUD_WORD_SAVED)
                                 } else {
                                     MaterialTheme.colorScheme.onSurfaceVariant
                                 },
@@ -192,9 +280,137 @@ internal fun PopupLayer(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+
+                    // --- Bottom Section: Detected Phrasal Verb / Idiom / Collocation (D-49) ---
+                    current.phraseSection?.let { phrase ->
+                        HorizontalDivider(color = Color(Palette.PROUD_OVERLAY_BORDER))
+                        PopupPhraseCardSection(
+                            phrase = phrase,
+                            settings = settings,
+                            onTogglePhraseMark = onTogglePhraseMark,
+                            onAskAi = onAskAi,
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PopupPhraseCardSection(
+    phrase: PopupPhraseSection,
+    settings: AppSettings,
+    onTogglePhraseMark: () -> Unit,
+    onAskAi: (String) -> Unit,
+) {
+    val kindColor = when (phrase.kind) {
+        PhraseKind.PHRASAL -> Color(Palette.PROUD_PHRASAL_TEXT)
+        PhraseKind.IDIOM -> Color(Palette.PROUD_IDIOM_TEXT)
+        PhraseKind.COLLOCATION -> Color(Palette.PROUD_COLLOC_TEXT)
+    }
+    val kindLabel = stringResource(
+        when (phrase.kind) {
+            PhraseKind.PHRASAL -> R.string.popup_phrase_kind_phrasal
+            PhraseKind.IDIOM -> R.string.popup_phrase_kind_idiom
+            PhraseKind.COLLOCATION -> R.string.popup_phrase_kind_collocation
+        },
+    )
+    val nativeSpec = settings.fontFor(FontSurface.TRANSLATION_POPUP, SubtitleLayerRole.NATIVE)
+
+    Column(verticalArrangement = Arrangement.spacedBy(Dimens.xs)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Surface(
+                shape = RoundedCornerShape(Dimens.radiusSm),
+                color = kindColor.copy(alpha = 0.18f),
+            ) {
+                Text(
+                    text = kindLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = kindColor,
+                    modifier = Modifier.padding(horizontal = Dimens.sm, vertical = Dimens.xxs),
+                )
+            }
+            phrase.level?.let { lvl ->
+                Spacer(Modifier.size(Dimens.xs))
+                LevelBadge(lvl)
+            }
+            Spacer(Modifier.weight(1f))
+            IconButton(onClick = onTogglePhraseMark) {
+                Icon(
+                    imageVector = if (phrase.marked) Icons.Default.Star else Icons.Default.StarBorder,
+                    contentDescription = stringResource(
+                        if (phrase.marked) R.string.popup_unbookmark_phrase else R.string.popup_bookmark_phrase,
+                    ),
+                    tint = if (phrase.marked) Color(Palette.PROUD_WORD_SAVED) else kindColor,
+                )
+            }
+            IconButton(onClick = { onAskAi(phrase.headword) }) {
+                Icon(Icons.Default.AutoAwesome, contentDescription = stringResource(R.string.ai_explain), tint = kindColor)
+            }
+        }
+
+        Text(
+            text = phrase.headword,
+            style = settings.fontFor(FontSurface.TRANSLATION_POPUP, SubtitleLayerRole.LEARNING)
+                .toTextStyle(LocalAppFontScale.current),
+            color = kindColor,
+        )
+
+        phrase.translation?.takeIf { it.isNotBlank() }?.let { trans ->
+            Text(
+                text = trans,
+                style = nativeSpec.toTextStyle(LocalAppFontScale.current),
+                color = Color(Palette.PROUD_WORD_NORMAL),
+            )
+        }
+
+        if (phrase.examples.isNotEmpty()) {
+            phrase.examples.take(1).forEach { (enEx, faEx) ->
+                Text(
+                    text = "• $enEx",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (faEx.isNotBlank()) {
+                    Text(
+                        text = "  $faEx",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PopupSourceChip(source: String) {
+    Surface(
+        shape = RoundedCornerShape(Dimens.radiusSm),
+        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f),
+    ) {
+        Text(
+            text = source,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            modifier = Modifier.padding(horizontal = Dimens.xs, vertical = Dimens.xxs),
+        )
+    }
+}
+
+@Composable
+private fun PopupPosChip(pos: String) {
+    Surface(
+        shape = RoundedCornerShape(Dimens.radiusSm),
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+    ) {
+        Text(
+            text = pos,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = Dimens.xs, vertical = Dimens.xxs),
+        )
     }
 }
 

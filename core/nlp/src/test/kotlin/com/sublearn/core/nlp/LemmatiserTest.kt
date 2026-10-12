@@ -32,19 +32,26 @@ class LemmatiserTest {
 
     @Test
     fun `irregular past tense forms map to lemma`() {
-        assertTrue("gave" in lemmatiser.candidates("gave"))
-        assertTrue("broke" in lemmatiser.candidates("broke"))
-        assertTrue("came" in lemmatiser.candidates("came"))
-        assertTrue("took" in lemmatiser.candidates("took"))
-        assertTrue("saw" in lemmatiser.candidates("saw"))
+        assertTrue("give" in lemmatiser.candidates("gave"))
+        assertTrue("break" in lemmatiser.candidates("broke"))
+        assertTrue("come" in lemmatiser.candidates("came"))
+        assertTrue("take" in lemmatiser.candidates("took"))
+        assertTrue("see" in lemmatiser.candidates("saw"))
     }
 
     @Test
     fun `irregular past participle forms map to lemma`() {
-        assertTrue("gone" in lemmatiser.candidates("gone"))
-        assertTrue("given" in lemmatiser.candidates("given"))
-        assertTrue("taken" in lemmatiser.candidates("taken"))
-        assertTrue("broken" in lemmatiser.candidates("broken"))
+        assertTrue("go" in lemmatiser.candidates("gone"))
+        assertTrue("give" in lemmatiser.candidates("given"))
+        assertTrue("take" in lemmatiser.candidates("taken"))
+        assertTrue("break" in lemmatiser.candidates("broken"))
+    }
+
+    @Test
+    fun `ying forms map to ie base lemma`() {
+        assertTrue("die" in lemmatiser.candidates("dying"))
+        assertTrue("lie" in lemmatiser.candidates("lying"))
+        assertTrue("tie" in lemmatiser.candidates("tying"))
     }
 
     @Test

@@ -1,21 +1,30 @@
 package com.sublearn.app.di
 
 import com.sublearn.app.AndroidLogcatLogger
-import com.sublearn.core.ai.AnthropicProvider
 import com.sublearn.core.ai.AiAssistant
+import com.sublearn.core.ai.AnthropicProvider
 import com.sublearn.core.ai.GeminiProvider
 import com.sublearn.core.ai.HttpJsonClient
 import com.sublearn.core.ai.OkHttpJsonClient
 import com.sublearn.core.ai.OpenAiCompatibleProvider
 import com.sublearn.core.common.SubLearnLogger
+import com.sublearn.core.data.InstalledPackRepository
 import com.sublearn.core.data.MyWordsRepository
 import com.sublearn.core.data.RecentVideoRepository
+import com.sublearn.core.data.RoomInstalledPackRepository
 import com.sublearn.core.data.RoomMyWordsRepository
 import com.sublearn.core.data.RoomRecentVideoRepository
 import com.sublearn.core.data.SubLearnDatabase
+import com.sublearn.core.lexicon.DictionaryProvider
 import com.sublearn.core.lexicon.FrequencyListImporter
+import com.sublearn.core.lexicon.ImportedDictionaryProvider
+import com.sublearn.core.lexicon.LegacyV1Importer
+import com.sublearn.core.lexicon.PackImporter
+import com.sublearn.core.lexicon.PackLexiconAccess
 import com.sublearn.core.lexicon.TextResourceReader
 import com.sublearn.core.lexicon.WordLevelSource
+import com.sublearn.core.models.PackDownloader
+import com.sublearn.core.nlp.LexiconAccess
 import com.sublearn.core.player.Media3PlayerController
 import com.sublearn.core.player.PlayerController
 import com.sublearn.core.player.PositionSink
@@ -25,13 +34,20 @@ import com.sublearn.core.settings.DataStoreSettingsStorage
 import com.sublearn.core.settings.DefaultSettingsRepository
 import com.sublearn.core.settings.SettingsRepository
 import com.sublearn.core.settings.SettingsStorage
+import com.sublearn.core.settings.TranslationSourceKind
 import com.sublearn.core.subtitles.DefaultSubtitleRepository
 import com.sublearn.core.subtitles.SubtitleFileSource
 import com.sublearn.core.subtitles.SubtitleRepository
+import com.sublearn.core.translate.LegacyV1TranslationEngine
+import com.sublearn.core.translate.MlKitTranslationEngine
 import com.sublearn.core.translate.MlKitTranslationProvider
+import com.sublearn.core.translate.OnlineGoogleTranslationEngine
+import com.sublearn.core.translate.PackGlossaryResult
+import com.sublearn.core.translate.PackTranslationEngine
 import com.sublearn.core.translate.RoomTranslationCacheStore
 import com.sublearn.core.translate.TranslationCacheStore
 import com.sublearn.core.translate.TranslationOptions
+import com.sublearn.core.translate.TranslationOrchestrator
 import com.sublearn.core.translate.TranslationProvider
 import com.sublearn.core.translate.TranslationService
 import com.sublearn.feature.home.HomeViewModel
@@ -68,6 +84,7 @@ private fun coreModule(): Module = module {
     // repositories
     single { RoomRecentVideoRepository(get<SubLearnDatabase>().recentVideos()) } bind RecentVideoRepository::class
     single { RoomMyWordsRepository(get<SubLearnDatabase>().myWords()) } bind MyWordsRepository::class
+    single { RoomInstalledPackRepository(get<SubLearnDatabase>().installedPacks()) } bind InstalledPackRepository::class
     single {
         val settings: SettingsRepository = get()
         RoomTranslationCacheStore(
@@ -76,6 +93,13 @@ private fun coreModule(): Module = module {
         )
     } bind TranslationCacheStore::class
 
+    // lexicon & packs
+    single { PackLexiconAccess(get()) } bind LexiconAccess::class
+    single { LegacyV1Importer(androidContext(), get(), get()) }
+    single { PackImporter(androidContext(), get(), get(), get()) }
+    single { PackDownloader(androidContext().filesDir.resolve("packs")) }
+    single<DictionaryProvider> { ImportedDictionaryProvider(get()) }
+
     // subtitles
     single { SafSubtitleFileSource(androidContext()) } bind SubtitleFileSource::class
     single<SubtitleRepository> { DefaultSubtitleRepository(get()) }
@@ -83,7 +107,7 @@ private fun coreModule(): Module = module {
     single { FrequencyListImporter(get()) }
     single { WordLevelSource(get()) }
 
-    // translation: ML Kit on device only, never a network endpoint behind this seam
+    // translation
     single<TranslationProvider> { MlKitTranslationProvider(logger = get()) }
     single {
         val settings: SettingsRepository = get()
@@ -100,6 +124,61 @@ private fun coreModule(): Module = module {
                     translateWholeBlockFirst = value.translation.translateWholeBlockFirst,
                 )
             },
+        )
+    }
+
+    single {
+        val lexicon: PackLexiconAccess = get()
+        val settings: SettingsRepository = get()
+        val packEngine = PackTranslationEngine(
+            isPackReady = { lexicon.hasActiveEnFaPack() },
+            lookupFn = { q ->
+                val full = lexicon.lookupFullEntry(q)
+                full?.let {
+                    PackGlossaryResult(
+                        headword = it.headword,
+                        lemma = it.headword.lowercase(),
+                        cefr = it.cefr?.name,
+                        phonetic = it.pronunciationUs ?: it.pronunciationUk,
+                        primaryGloss = it.meanings.firstOrNull().orEmpty(),
+                        posGlosses = if (it.meanings.isNotEmpty()) listOf(it.pos to it.meanings) else emptyList(),
+                        examples = it.examples,
+                        lexiconEntryId = it.entryId,
+                    )
+                }
+            },
+        )
+        val legacyEngine = LegacyV1TranslationEngine(
+            isLegacyReady = { lexicon.hasActiveLegacyV1Pack() },
+            lookupFn = { q ->
+                val full = lexicon.lookupLegacyV1(q)
+                full?.let {
+                    PackGlossaryResult(
+                        headword = it.headword,
+                        lemma = it.headword.lowercase(),
+                        cefr = it.cefr?.name,
+                        phonetic = it.pronunciationUs ?: it.pronunciationUk,
+                        primaryGloss = it.meanings.firstOrNull().orEmpty(),
+                        posGlosses = if (it.meanings.isNotEmpty()) listOf(it.pos to it.meanings) else emptyList(),
+                        examples = it.examples,
+                        lexiconEntryId = it.entryId,
+                    )
+                }
+            },
+        )
+        val mlKitEngine = MlKitTranslationEngine(get())
+        val onlineEngine = OnlineGoogleTranslationEngine(
+            settingsProvider = { settings.settings.value.translation },
+        )
+        TranslationOrchestrator(
+            engines = mapOf(
+                TranslationSourceKind.PACK to packEngine,
+                TranslationSourceKind.ML_KIT to mlKitEngine,
+                TranslationSourceKind.LEGACY_V1 to legacyEngine,
+                TranslationSourceKind.ONLINE_GOOGLE to onlineEngine,
+            ),
+            cache = get<TranslationCacheStore>(),
+            settingsProvider = { settings.settings.value.translation },
         )
     }
 
@@ -135,7 +214,7 @@ private fun coreModule(): Module = module {
 private fun featureModule(): Module = module {
     viewModel { HomeViewModel(get()) }
     viewModel { WordsViewModel(get(), get(), get()) }
-    viewModel { LearnViewModel(get(), get()) }
+    viewModel { LearnViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), androidContext()) }
     viewModel {
         PlayerViewModel(
@@ -150,6 +229,9 @@ private fun featureModule(): Module = module {
             wordLevels = get(),
             ai = get(),
             secrets = get(),
+            lexiconAccessProvider = { get<LexiconAccess>() },
+            orchestrator = get(),
+            phraseSpanCacheDao = get<SubLearnDatabase>().phraseSpans(),
         )
     }
 }

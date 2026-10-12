@@ -51,6 +51,15 @@ class SettingsRepositoryTest {
         assertEquals(15_000L, decoded.player.seekStepMs)
         // Untouched sections keep their defaults.
         assertEquals(LearningMode.ENTERTAINMENT, decoded.learning.mode)
+        assertTrue(decoded.wordStyles.savedPhrasesKeepTypeColor)
+    }
+
+    @Test
+    fun `v3 to v4 migration maps fallbackToOnline into enabledSources`() {
+        val v3 = """{"schemaVersion": 3, "translation": {"fallbackToOnline": true}}"""
+        val decoded = SettingsJson.decode(v3).getOrThrow()
+        assertEquals(4, decoded.schemaVersion)
+        assertTrue(TranslationSourceKind.ONLINE_GOOGLE in decoded.translation.enabledSources)
     }
 
     @Test

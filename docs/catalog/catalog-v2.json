@@ -1,0 +1,167 @@
+{
+  "version": 2,
+  "updatedAt": "2026-10-12T00:00:00Z",
+  "entries": [
+    {
+      "id": "sublearn-lexicon-en-fa-v2",
+      "kind": "LEXICON",
+      "nameEn": "SubLearn English–Persian Lexicon Pack v2",
+      "nameFa": "پک واژه‌نامه و عبارات انگلیسی به فارسی (نسخهٔ ۲)",
+      "version": "2.0.0",
+      "direction": "en-fa",
+      "license": "ODbL-1.0 / CC-BY-SA-4.0",
+      "sizeBytes": 35863515,
+      "sha256": "500696765c0d5339c5c4d0823604d8d53fec9abff96bd1dd1b0bf1b4504669ef",
+      "source": {
+        "host": "github.com",
+        "url": "https://github.com/animalrender/SubLearn/releases/download/packs-v2.0.0/sublearn-lexicon-en-fa-v2.sqlite.gz"
+      },
+      "runtime": "NONE",
+      "minRamMb": 64,
+      "profile": "BASIC",
+      "verified": true,
+      "notes": "102k+ English headwords, phrasal verbs, idioms, collocations, CEFR levels, and Persian senses."
+    },
+    {
+      "id": "sublearn-dict-fa-en-v2",
+      "kind": "DICT_FA_EN",
+      "nameEn": "SubLearn Persian–English Dictionary Pack v2",
+      "nameFa": "پک دیکشنری فارسی به انگلیسی (نسخهٔ ۲)",
+      "version": "2.0.0",
+      "direction": "fa-en",
+      "license": "ODbL-1.0 / CC-BY-SA-4.0",
+      "sizeBytes": 14044817,
+      "sha256": "917e10115883394d5faa80a21ca1b39ceb6da2173f2c279f98dea84d44086f72",
+      "source": {
+        "host": "github.com",
+        "url": "https://github.com/animalrender/SubLearn/releases/download/packs-v2.0.0/sublearn-dict-fa-en-v1.sqlite.gz"
+      },
+      "runtime": "NONE",
+      "minRamMb": 64,
+      "profile": "BASIC",
+      "verified": true,
+      "notes": "107k+ Persian headwords with English equivalents and examples."
+    },
+    {
+      "id": "emb-potion-base-8m",
+      "kind": "EMBEDDER_STATIC",
+      "nameEn": "Static Sense Embeddings (Potion-base-8M)",
+      "nameFa": "بردارهای ایستا برای ابهام‌زدایی معنایی (Potion 8M)",
+      "version": "1.0.0",
+      "direction": "en",
+      "license": "MIT",
+      "sizeBytes": 30212096,
+      "sha256": null,
+      "source": {
+        "host": "huggingface.co",
+        "url": "https://huggingface.co/minishlab/potion-base-8M/resolve/main/model.safetensors"
+      },
+      "runtime": "NONE",
+      "minRamMb": 128,
+      "profile": "BALANCED",
+      "verified": true,
+      "notes": "Ultra-fast static token embeddings for context-to-sense cosine ranking."
+    },
+    {
+      "id": "emb-minilm-l6-int8",
+      "kind": "EMBEDDER_ONNX",
+      "nameEn": "Sentence Embeddings (MiniLM-L6-v2 INT8)",
+      "nameFa": "مدل بردار جمله (MiniLM INT8)",
+      "version": "1.0.0",
+      "direction": "en",
+      "license": "Apache-2.0",
+      "sizeBytes": 23068672,
+      "sha256": null,
+      "source": {
+        "host": "huggingface.co",
+        "url": "https://huggingface.co/Xenova/all-MiniLM-L6-v2/resolve/main/onnx/model_quantized.onnx"
+      },
+      "runtime": "ONNX",
+      "minRamMb": 256,
+      "profile": "PRECISE",
+      "verified": true,
+      "notes": "Quantized INT8 ONNX bi-encoder for sentence-level sense ranking."
+    },
+    {
+      "id": "wsd-distilbert-int8",
+      "kind": "WSD_ONNX",
+      "nameEn": "Contextual Sense Disambiguator (DistilBERT INT8)",
+      "nameFa": "ابهام‌زدای متنی دقیق (DistilBERT INT8)",
+      "version": "1.0.0",
+      "direction": "en",
+      "license": "Apache-2.0",
+      "sizeBytes": 67895296,
+      "sha256": null,
+      "source": {
+        "host": "huggingface.co",
+        "url": "https://huggingface.co/Xenova/distilbert-base-uncased/resolve/main/onnx/model_quantized.onnx"
+      },
+      "runtime": "ONNX",
+      "minRamMb": 512,
+      "profile": "ADVANCED",
+      "verified": true,
+      "notes": "Contextual token representations for polysemous words and idioms."
+    },
+    {
+      "id": "llm-qwen25-05b",
+      "kind": "LLM",
+      "nameEn": "On-Device Sense Selector (Qwen2.5 0.5B Instruct)",
+      "nameFa": "مدل هوشمند انتخاب معنی (Qwen2.5 0.5B)",
+      "version": "1.0.0",
+      "direction": "en-fa",
+      "license": "Apache-2.0",
+      "sizeBytes": 524288000,
+      "sha256": null,
+      "source": {
+        "host": "huggingface.co",
+        "url": "https://huggingface.co/litert-community/Qwen2.5-0.5B-Instruct/resolve/main/Qwen2.5-0.5B-Instruct_multi-prefill-seq_q8_ekv1280.task"
+      },
+      "runtime": "LITERT",
+      "minRamMb": 1536,
+      "profile": "SMART",
+      "verified": true,
+      "notes": "On-device LiteRT/MediaPipe LLM that picks the exact Persian sense for a subtitle line."
+    },
+    {
+      "id": "llm-smollm2-360m",
+      "kind": "LLM",
+      "nameEn": "On-Device Sense Selector (SmolLM2 360M Instruct)",
+      "nameFa": "مدل هوشمند سبک (SmolLM2 360M)",
+      "version": "1.0.0",
+      "direction": "en",
+      "license": "Apache-2.0",
+      "sizeBytes": 377487360,
+      "sha256": null,
+      "source": {
+        "host": "huggingface.co",
+        "url": "https://huggingface.co/litert-community/SmolLM2-360M-Instruct/resolve/main/SmolLM2-360M-Instruct_multi-prefill-seq_q8_ekv1280.task"
+      },
+      "runtime": "LITERT",
+      "minRamMb": 1024,
+      "profile": "SMART",
+      "verified": true,
+      "notes": "Compact 360M LiteRT LLM for devices with 4–6 GB RAM."
+    },
+    {
+      "id": "llm-gemma3-270m",
+      "kind": "LLM",
+      "nameEn": "On-Device Sense Selector (Gemma 3 270M IT)",
+      "nameFa": "مدل هوشمند جمّا (Gemma 3 270M)",
+      "version": "1.0.0",
+      "direction": "en",
+      "license": "Gemma Terms of Use",
+      "requiresTermsAcceptance": true,
+      "sizeBytes": 283115520,
+      "sha256": null,
+      "source": {
+        "host": "huggingface.co",
+        "url": "https://huggingface.co/litert-community/Gemma3-270M-IT"
+      },
+      "runtime": "LITERT",
+      "minRamMb": 1024,
+      "profile": "SMART",
+      "verified": false,
+      "notes": "Requires Hugging Face Gemma license acceptance; import .task file manually."
+    }
+  ]
+}

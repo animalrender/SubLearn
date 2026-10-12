@@ -9,8 +9,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -124,7 +126,38 @@ object SettingsMigrator {
     private val steps: List<Pair<Int, (JsonObject) -> JsonObject>> = listOf(
         2 to { it },
         3 to { it },
+        4 to ::migrateV3ToV4,
     )
+
+    private fun migrateV3ToV4(root: JsonObject): JsonObject {
+        val patched = root.toMutableMap()
+
+        val translationObj = root["translation"] as? JsonObject
+        if (translationObj != null) {
+            val transMap = translationObj.toMutableMap()
+            val fallback = transMap["fallbackToOnline"]?.jsonPrimitive?.booleanOrNull ?: false
+            if (fallback && "enabledSources" !in transMap) {
+                transMap["enabledSources"] = JsonArray(
+                    listOf(
+                        JsonPrimitive(TranslationSourceKind.PACK.name),
+                        JsonPrimitive(TranslationSourceKind.ML_KIT.name),
+                        JsonPrimitive(TranslationSourceKind.LEGACY_V1.name),
+                        JsonPrimitive(TranslationSourceKind.ONLINE_GOOGLE.name),
+                    ),
+                )
+            }
+            patched["translation"] = JsonObject(transMap)
+        }
+
+        val wordStylesObj = root["wordStyles"] as? JsonObject
+        if (wordStylesObj != null && "savedPhrasesKeepTypeColor" !in wordStylesObj) {
+            val wsMap = wordStylesObj.toMutableMap()
+            wsMap["savedPhrasesKeepTypeColor"] = JsonPrimitive(true)
+            patched["wordStyles"] = JsonObject(wsMap)
+        }
+
+        return JsonObject(patched)
+    }
 
     fun pendingSteps(from: Int): List<Int> = steps.filter { it.first > from }.map { it.first }
 

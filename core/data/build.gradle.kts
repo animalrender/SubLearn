@@ -42,6 +42,10 @@ android {
     }
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
 
     api(project(":core:common"))
@@ -49,6 +53,7 @@ dependencies {
     api(libs.room.runtime)
     api(libs.room.ktx)
     implementation(libs.coroutines.android)
+    implementation(libs.kotlinx.serialization.json)
     ksp(libs.room.compiler)
 
     api(libs.coroutines.core)

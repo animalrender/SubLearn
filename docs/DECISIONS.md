@@ -5,17 +5,20 @@ Every consequential choice, with the reason and the alternative that was rejecte
 
 ## Product
 
-**D-2 — No bundled dictionary, word list or model file, ever.** Those are large binary blobs that do
-not belong in the app package or in git, so they stay outside it: what ships instead is a
-`DictionaryProvider` reading a **user-picked local file** with a documented schema, and an importer in
-`core:lexicon` for a user-picked frequency list. Enforced by `.gitignore` (`*.sqlite`, `*.db`,
-`*.bipe`, `fastdic_plain*`, `assets/dictionaries/`, `assets/models/`).
-Translation is official ML Kit only, whose models the Play services download themselves and which we
-never repackage.
+**D-2 — No bundled dictionary, word list or model file in Git or the APK, ever. (Revised by D-58 / D-62).**
+Large binary blobs do not belong in the app package or in git, so they stay outside it: what ships
+instead is a `DictionaryProvider` reading an imported or downloaded pack (`sublearn-lexicon-en-fa-v2.sqlite`
+or `sublearn-dict-fa-en-v1.sqlite`), a Legacy v1 `.bipe` / `main_db.sqlite` importer, and a frequency
+list importer in `core:lexicon`. Enforced by `.gitignore` (`*.sqlite`, `*.db`, `*.bipe`,
+`fastdic_plain*`, `assets/dictionaries/`, `assets/models/`). Translation is multi-source via
+`TranslationOrchestrator` (offline `PACK`, `ML_KIT`, `LEGACY_V1`, plus optional user-enabled
+`ONLINE_GOOGLE` — see D-58 and D-62).
 
-**D-3 — Offline-first is a hard feature boundary.** No NOW feature may require network except the
-opt-in AI request. Level popups therefore work off "words not marked as known" when nothing is
-imported, and the imported-list provider is a *settings choice*, not a silent download.
+**D-3 — Offline-first with explicit, user-controlled online opt-in. (Revised by D-58 / D-62).**
+Core playback, subtitle parsing, dictionary lookup, and phrase detection work with zero network access
+once a pack is installed. Network requests happen only when explicitly enabled by the user (pack/model
+downloads, opt-in AI helper, or opt-in `ONLINE_GOOGLE` word/phrase lookup). An "Offline only" master
+switch in Settings disables all online translation and AI calls immediately.
 
 ## Platform
 
@@ -196,16 +199,19 @@ file on the default branch, so changes to the pipeline take effect after they ar
 `versionCode` is derived from `versionName` in `app/build.gradle.kts` so that a release bumps one
 number only.
 
-**D-31 — Phrase analysis runs on SubtitleBlock, not on individual cues.** `BlockBuilder` already merges
-broken cues into one `SubtitleBlock` (mergeGapMs=700, maxBlockDurationMs=7000, maxBlockChars=84). The
-phrase detector therefore operates on blocks, and a cross-block bridge handles expressions that span
-two adjacent blocks (section 6.6 of the owner's brief).
+**D-31 — Phrase analysis runs on the cue token stream across adjacent cues, projected back onto SubtitleBlock. (Revised by D-45).**
+Originally phrase analysis ran per `SubtitleBlock` with a heuristic `CrossBlockBridge`. Because
+`BlockBuilder` caps blocks at `maxBlockChars=84`, expressions frequently split across adjacent blocks.
+Under D-45, `PhraseEngine` builds a token stream over consecutive cues where `nextCue.startMs - prevCue.endMs <= 1200ms`
+and there is no sentence-final punctuation (`.`, `!`, `?`, `…`), runs `DeterministicPhraseDetector` on
+the continuous stream, and projects matched spans back onto each `SubtitleBlock` (and individual cue
+ranges). `CrossBlockBridge` is removed.
 
 **D-32 — One pass at subtitle-load time, cached in Room.** Phrase analysis is not per-frame. It runs
 once when the learning subtitle layer opens, results are written to a `phrase_span` table keyed by
-`(sourceKey, blockId, startChar, endChar, analyzerVersion)`, and playback only reads from the cache.
-Analysis runs on `Dispatchers.Default` or `WorkManager`, prioritises blocks near the current playhead
-and is cancellable.
+`(sourceKey, packId, packVersion, analyzerVersion, spanId)` (see D-46), and playback only reads from
+the cache. Analysis runs on `Dispatchers.Default`, prioritises blocks near the current playhead and is
+cancellable.
 
 **D-33 — Lexicon + lemmatiser + deterministic matcher first, models only refine.** The base engine
 works without any downloaded model. Models only add POS tagging, sense ranking and literal-vs-idiomatic
@@ -215,23 +221,26 @@ disambiguation. No model ever produces free-form Persian translation.
 confidence threshold for visible underlines is 0.75; below that the match appears only as a
 "possible" row in the touch card.
 
-**D-35 — Lexicon pack is a user-supplied file, never committed.** The format is SubLearn's own
-(`sublearn-lexicon-en-fa-v2.sqlite`); a Python converter in `tools/lexicon_builder/` builds it from
-the owner's database. The pack is imported through the Model Manager (phase 11) or by direct file
-pick. No database or derived file is committed (D-2 still applies).
+**D-35 — Lexicon pack is a user-supplied or release-downloaded file, never committed.** The format is
+SubLearn's own (`sublearn-lexicon-en-fa-v2.sqlite`); a Python converter in `tools/lexicon_builder/`
+builds it from the owner's database and publishes it to GitHub Releases via `build-lexicon-pack.yml`.
+The pack is downloaded through the Resource Library (`feature:packs`) or imported by direct file pick.
+No database or derived file is committed (D-2 still applies).
 
 **D-36 — No statistical collocation table or new model training in v1.** Collocations come only from
 those already present in the lexicon database. A future v2 may add a frequency table but that is a
 separate phase and decision.
 
-**D-37 — Model weights are never in the APK or the repo.** A JSON catalog lists models with their
-source URLs and SHA-256; the Model Manager downloads them on demand from the original host.
-The default catalog URL points at `docs/catalog/catalog-v1.json` in this repo (raw GitHub URL), and
-the user can override it in Settings.
+**D-37 — Model weights are never in the APK or the repo.** A JSON catalog lists models and packs with
+their source URLs and SHA-256; the Resource Library downloads them on demand from the host. The default
+catalog URL points at `docs/catalog/catalog-v2.json` in this repo (raw GitHub URL), and the user can
+override it in Settings.
 
-**D-38 — Translation fallback is official ML Kit only.** When a word or sense is not in the lexicon,
-`core:translate` translates it and labels the result as "machine translation" (D-2). No other
-translation service is wired.
+**D-38 — Multi-source translation orchestration instead of ML Kit-only fallback. (Revised by D-58 / D-62).**
+Instead of hardcoding ML Kit as the sole translation fallback, `TranslationOrchestrator` coordinates four
+pluggable sources (`PACK`, `ML_KIT`, `LEGACY_V1`, `ONLINE_GOOGLE`) in either `PRIORITY_CHAIN` or
+`MERGE_ALL` mode. Every translation result carries provenance chips (`SourceBadge`) so the user always
+sees whether a meaning came from Lexicon v2, FastDic v1, ML Kit, or Online Google Translate.
 
 **D-39 — ProudVocab is a visual reference only.** The card design, colors and badge shapes are
 re-implemented from scratch in Compose using the project's own `Tokens.kt`, `Motion.kt` and
@@ -248,4 +257,158 @@ has no Compose, Room or Android dependencies.
 
 **D-42 — ONNX Runtime is isolated in `core:nlp-onnx`.** The ONNX dependency and its ABI-specific
 native libraries live in a separate module so the APK size impact is measurable and the module can
-be dropped entirely. `core:nlp-llm` is similarly isolated for the experimental LLM adapter.
+be dropped entirely. `core:nlp-llm` is similarly isolated for the MediaPipe GenAI `.task` LLM adapter.
+
+## Phase 10–19 Architecture & Product Decisions (D-43 .. D-62)
+
+**D-43 — Lexicon Pack v2 SQLite schema (`format_version = 2`).**
+The v2 lexicon pack (`sublearn-lexicon-en-fa-v2.sqlite`) adds `lemma_form(form, lemma, pos, rank)` with
+composite primary key `(form, lemma)`, `entry` with `UNIQUE(key, kind)`, `sense` with `gloss_en`,
+`domain_fa`, `domain_en`, `cefr`, `is_primary`, and `prior`, `example` with `UNIQUE(sense_id, en)`,
+`pattern` with precomputed `anchor_lemma` and `separable`, `word_pos(word, pos, freq)` for dictionary
+POS tagging, `entry_extra(entry_id, synonyms, antonyms, word_family, notes)` using compact `' | '`-joined
+strings (capped at 20 items per field to avoid row-count bloat), `pron(entry_id, ipa_us, ipa_uk, audio_us, audio_uk)`,
+`colloc(entry_id, colloc_entry_id, position)`, and `entry_fts` (FTS4 on `key, headword`).
+
+**D-44 — Converter normalization, intermediate-lemma pruning, and MWE deduplication.**
+In `main_db.sqlite`, inflected rows copy their base paradigm's sibling inflection columns (e.g. `broke`
+has `past_participle -> broken`; `best` has `comparative -> better`), and every idiom in `english_idioms`
+is already a row in `english_words`. `build_lexicon.py` therefore:
+1. Prunes intermediate forms using `infinitive` and root-paradigm ownership so `broken -> break (rank 0)`,
+   `gone -> go (rank 0)`, `best -> good/well (rank 0)` while preserving homograph self-lemmas (`left -> leave (0), left (1)`;
+   `saw -> see (0), saw (1)`).
+2. Groups `english_words` by normalized `key` into a single `entry` per key (`IDIOM > PHRASAL > COLLOCATION > PHRASE > WORD`),
+   using `english_idioms` only for MWE classification and `colloc` parent-child links, eliminating the 2x
+   sense/example duplication.
+3. Expands `(or X)` alternatives and optional `(X)` groups into up to 8 concrete patterns per entry,
+   replaces `one's`/`someone's` with `POSS`, reflexives with `REFL`, and `someone`/`something` with `{NP}`,
+   selects the verb lemma as `anchor_lemma` for `PHRASAL` and lowest-DF content lemma for `IDIOM`/`COLLOCATION`,
+   and sets `separable = 1` only for transitive 2-word phrasal verbs with separable particles.
+
+**D-45 — Cue-stream phrase detection across block boundaries.**
+Instead of running `DeterministicPhraseDetector` on isolated `SubtitleBlock` texts and patching across
+blocks with `CrossBlockBridge`, `PhraseEngine` constructs a continuous token stream across consecutive
+cues whose gap is `<= 1200ms` and where the preceding cue does not end with terminal punctuation
+(`.`, `!`, `?`, `…`). Matched spans are projected back onto each `SubtitleBlock` and cue character range,
+and `CrossBlockBridge` is deleted.
+
+**D-46 — Precompiled pattern cache and Room `phrase_span` composite key.**
+`DeterministicPhraseDetector` precompiles `PatternRule` instances once per lexicon load into an
+anchor-indexed map (`Map<String, List<CompiledPattern>>`) instead of recompiling regexes per block.
+Room caches detected spans in `phrase_span` keyed by `(sourceKey, packId, packVersion, analyzerVersion, spanId)`
+so upgrading a lexicon pack or analyzer automatically invalidates stale spans without manual cache clearing.
+
+**D-47 — Dictionary-backed POS tagger (`LexiconPosTagger`).**
+A fast, zero-model POS tagger in `core:nlp` uses the `word_pos(word, pos, freq)` table from the v2 lexicon
+pack combined with English suffix heuristics (`-ing`, `-ed`, `-ly`, `-tion`, `-ness`, `-able`, `-ous`) and
+contextual disambiguation rules (e.g., `DET + X -> NOUN/ADJ`, `TO + X -> VERB`, `VERB + pron + PART -> RP`
+vs `PREP + DET + NOUN -> IN`) so separated phrasal verbs (`pick the book up`) and POS-dependent sense
+ranking work accurately even in the Base/Light profiles without an ONNX POS model.
+
+**D-48 — Range-based `WordVisualState` and Canvas dashed/dotted underlines.**
+Compose `SpanStyle(textDecoration = TextDecoration.Underline)` only draws solid lines. `SubtitleOverlay`
+uses `TextLayoutResult` (`onTextLayout`) to query bounding boxes (`getBoundingBox` / `getPathForRange`)
+for each styled token or phrase range and draws real `PathEffect.dashPathEffect(floatArrayOf(8f, 5f))`
+(dashed) and `floatArrayOf(2f, 4f)` (dotted) underlines on a `drawBehind` Canvas layer.
+
+**D-49 — ProudVocab dual-section touch card.**
+When the user taps a word that belongs to a detected `PhraseSpan` (phrasal verb, idiom, or collocation),
+the touch popup card renders two sections in one unified surface (`border-radius: 12dp`, dark glass
+`#0A0F1E` at 92% alpha, `1.5dp` indigo border `#6366F1` at 35% alpha): the tapped single word at the
+top (with IPA, audio button, POS/CEFR badges, word senses, and word bookmark button) separated by a
+`1dp` divider (`rgba(255,255,255,0.12)`) from the matched phrase at the bottom (with `PHRASAL` / `IDIOM` /
+`COLLOCATION` badge, full phrase Persian meaning, and an independent phrase bookmark button).
+
+**D-50 — Saved phrases keep their phrase-type color by default (`savedPhrasesKeepTypeColor = true`).**
+Single saved words turn emerald green (`#10B981`) with a dashed underline. However, coloring saved
+phrasal verbs, idioms, and collocations green would erase the visual distinction between purple phrasal
+verbs (`#C084FC`), orange idioms (`#FB923C`), and sky-blue collocations (`#38BDF8`). By default,
+`savedPhrasesKeepTypeColor = true` keeps the phrase's type color while showing the filled bookmark
+indicator in the card; users can toggle this in Settings.
+
+**D-51 — Catalog v2 (`docs/catalog/catalog-v2.json`) and verified-only release entries.**
+Catalog v2 unifies packs and AI models in one schema (`version: 2`) with explicit `kind`, `sizeBytes`,
+`sha256`, `minRamMb`, `url`, and `verified` fields. The unverified `pos-opennlp-ud` placeholder is
+removed. Only entries whose URLs and SHA-256 checksums have been verified are shown by default in release
+builds (`verify-catalog.yml` validates every entry).
+
+**D-52 — Six NLP performance profiles (`Base`, `Light`, `Balanced`, `Precise`, `Advanced`, `Smart`).**
+Replaces the earlier 4-tier enum with six clear profiles:
+- `BASE`: Lexicon + Lemmatiser + Deterministic Matcher (0 MB extra, works on all devices).
+- `LIGHT`: Base + `LexiconPosTagger` (`word_pos` + contextual rules, 0 MB extra).
+- `BALANCED`: Light + MiniLM sentence embeddings (`minilm-l6-v2`, ~23 MB ONNX) for sense ranking.
+- `PRECISE`: Balanced + MobileBERT POS/context (`mobilebert-uncased`, ~25 MB ONNX) for literal-vs-idiomatic scoring.
+- `ADVANCED`: Precise + Gemma 2B / Qwen2.5 1.5B MediaPipe `.task` LLM selector (`core:nlp-llm`) for ambiguous lines.
+- `SMART`: Automatic profile selection via `DeviceCapabilityProbe` (RAM, CPU cores, storage, battery saver)
+  and `ModelRuntimeGuard` (auto-downgrades on OOM, timeout > 500ms, or native crash).
+
+**D-53 — MediaPipe Tasks GenAI (`.task`) for `core:nlp-llm` (Revises earlier llama.cpp assumption).**
+Instead of compiling a custom JNI `llama.cpp` bridge for `.gguf` files, `core:nlp-llm` uses Google's
+official `com.google.mediapipe:tasks-genai` (`LlmInference`) with `.task` model bundles. The LLM is
+strictly constrained to selecting a sense index (`1..N`) or `LITERAL` vs `IDIOMATIC` from lexicon
+candidates and never generates free-form Persian text.
+
+**D-54 — WorkManager-backed resumable downloader (`PackDownloadWorker`).**
+All large pack and model downloads (> 5 MB) run through `WorkManager` with HTTP `Range` resume support
+(`.part` file + ETag/Last-Modified tracking), streaming SHA-256 verification before atomic rename,
+free-disk-space preflight check (`>= 2.2x` compressed size), and a configurable Wi-Fi-only guard for
+downloads `> 50 MB`.
+
+**D-55 — Automated pack build workflows (`build-lexicon-pack.yml`, `build-extra-packs.yml`, `release-packs.yml`).**
+Because `main_db.sqlite` (~98 MB) lives on GitHub Releases of `melonityhub/dictionaryproject`, a manual
+`workflow_dispatch` workflow (`build-lexicon-pack.yml`) downloads `main_db.sqlite`, runs `build_lexicon.py`
+for both `en-fa` (`sublearn-lexicon-en-fa-v2.sqlite.gz`) and `fa-en` (`sublearn-dict-fa-en-v1.sqlite.gz`),
+runs `validate_pack.py --full`, uploads the compressed packs and `build_report.json` to a GitHub Release
+on `animalrender/SubLearn`, and updates `docs/catalog/catalog-v2.json` with exact byte sizes and SHA-256
+hashes.
+
+**D-56 — Open-data auxiliary packs (`build-extra-packs.yml`).**
+Word frequency and CEFR packs (`wordfreq-en-cefr-v1`), WordNet English gloss supplements, and audio
+pronunciation packs are built reproducibly in CI from open sources and published to GitHub Releases.
+
+**D-57 — Real-DB integration test workflow in GitHub Actions.**
+In addition to fast synthetic and `sample.sqlite` tests on every push, CI / workflow dispatch runs
+`build_lexicon.py` + `validate_pack.py --full` + JVM NLP tests against the real converted `main_db.sqlite`
+and posts a concise markdown summary table to `$GITHUB_STEP_SUMMARY`.
+
+**D-58 — Separation of Lexicon Pack (`LEXICON_EN_FA`), Translation Sources, and Reverse Dictionary (`DICT_FA_EN`).**
+- **Lexicon Pack (`LEXICON_EN_FA`)**: Powers the NLP pipeline (lemmatisation, POS tagging, phrasal/idiom/collocation
+  detection, CEFR badges, IPA, examples) AND serves as the `PACK` translation source.
+- **Translation Sources (`ML_KIT`, `PACK`, `LEGACY_V1`, `ONLINE_GOOGLE`)**: Provide word/phrase/line
+  meanings via `TranslationOrchestrator`.
+- **Reverse Dictionary (`DICT_FA_EN`)**: Used in the Dictionary screen when the user types Persian text
+  to look up English equivalents (`sublearn-dict-fa-en-v1.sqlite`). Never loaded into the English subtitle
+  NLP pipeline.
+
+**D-59 — `TranslationOrchestrator` modes (`PRIORITY_CHAIN` vs `MERGE_ALL`) and latency budgets.**
+In `PRIORITY_CHAIN` mode, sources are queried in user-configured priority order (default:
+`[PACK, LEGACY_V1, ML_KIT, ONLINE_GOOGLE]`) and the first non-empty result is returned. In `MERGE_ALL`
+mode, all enabled offline sources return immediately (`< 50 ms` p95) with source provenance chips
+(`Lexicon v2`, `FastDic v1`, `ML Kit`), while `ONLINE_GOOGLE` (if enabled) streams in asynchronously
+(`<= 1500 ms` timeout) and caches results in `TranslationCacheDao` with source attribution.
+
+**D-60 — Unified "Library & Resources" screen (`feature:packs`) and real Dictionary tab (Revises earlier split UI).**
+Instead of scattering downloads across a "Model Manager" screen, a "Packs" screen, and Settings file
+pickers, `feature:packs` presents a unified **Library & Resources** screen with four clear sections:
+1. **Dictionaries & Lexicon Packs** (`LEXICON_EN_FA`, `DICT_FA_EN`, `LEGACY_V1` `.bipe`/`main_db.sqlite` import, frequency list import)
+2. **Offline Translation Models** (ML Kit EN↔FA model status & download)
+3. **Smart NLP Enhancement Models** (Profile selector `Base..Smart` + ONNX / MediaPipe `.task` models)
+4. **Storage & Maintenance** (disk usage breakdown, verify integrity, clear caches)
+And the bottom-navigation **Dictionary** tab (`feature:dictionary`) is upgraded from a placeholder into
+a full bidirectional EN↔FA dictionary lookup screen with FTS4 prefix search, POS/CEFR/domain badges,
+IPA, examples, collocations, and one-tap "Save to My Words".
+
+**D-61 — Legacy v1 `.bipe` (`fastdic_plain`) and raw `main_db.sqlite` importer (`LegacyV1Importer`).**
+Users who already have files from the desktop `dictionaryproject` app (`main_db.sqlite` or the XOR+zlib
+obfuscated `fastdic_plain` / `.bipe` file with key `b"Fastdic@1995"`) can import them directly on-device.
+`LegacyV1Importer` streams the de-obfuscation (`4-byte magic 'BIPE' + 4-byte length + XOR 'Fastdic@1995' + zlib inflate`
+or raw XOR+zlib) in 64 KB chunks without loading the full 98 MB into heap, validates the SQLite header,
+and registers it in `installed_packs` as `LEGACY_V1`.
+
+**D-62 — Optional, privacy-preserving `ONLINE_GOOGLE` translation source.**
+`ONLINE_GOOGLE` is disabled by default (`enabledSources` excludes `ONLINE_GOOGLE` until opted in) and is
+governed by an "Offline only" master switch. When enabled by the user after a clear privacy notice, it
+sends **only** the tapped word or phrase (`<= 60` chars) — never the full subtitle sentence or file
+metadata — to the configurable endpoint template (primary `client=dict-chrome-ex`, fallback `client=it`
+on `translate.googleapis.com`), parses dictionary POS groups, reverse translations, and primary gloss,
+and caches the response in Room (`TranslationCacheDao`).
