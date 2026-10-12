@@ -47,3 +47,23 @@ jobs:
 
           print(f"Validated {len(entries)} catalog entries: {ids}")
           EOF
+
+      - name: Probe Verified Release Assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'EOF'
+          import json, urllib.request
+
+          with open("docs/catalog/catalog-v2.json", "r", encoding="utf-8") as f:
+              data = json.load(f)
+
+          for e in data["entries"]:
+              if not e.get("verified"):
+                  continue
+              url = e["source"]["url"]
+              if "animalrender/SubLearn/releases/download/" in url:
+                  req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": "SubLearn-Catalog-Verifier"})
+                  with urllib.request.urlopen(req, timeout=20) as resp:
+                      print(f"Verified asset {e['id']}: HTTP {resp.status}, Content-Length={resp.headers.get('Content-Length')}")
+          EOF

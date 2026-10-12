@@ -16,6 +16,7 @@ class ImportedDictionaryProvider(
     override suspend fun lookup(word: String): AppResult<DictionaryEntry?> = withContext(Dispatchers.IO) {
         val trimmed = word.trim()
         if (trimmed.isEmpty()) return@withContext AppResult.success(null)
+        lexiconAccess.ensureInitialized()
 
         val isPersian = trimmed.any { it in '\u0600'..'\u06FF' }
         val entry = if (isPersian) {
@@ -27,11 +28,14 @@ class ImportedDictionaryProvider(
     }
 
     override suspend fun search(query: String, limit: Int): AppResult<List<DictionaryEntry>> = withContext(Dispatchers.IO) {
+        lexiconAccess.ensureInitialized()
         AppResult.success(lexiconAccess.searchDictionary(query, limit))
     }
 
-    override suspend fun isAvailable(): Boolean =
-        lexiconAccess.hasActiveEnFaPack() || lexiconAccess.hasActiveFaEnPack() || lexiconAccess.hasActiveLegacyV1Pack()
+    override suspend fun isAvailable(): Boolean {
+        lexiconAccess.ensureInitialized()
+        return lexiconAccess.hasActiveEnFaPack() || lexiconAccess.hasActiveFaEnPack() || lexiconAccess.hasActiveLegacyV1Pack()
+    }
 }
 
 /**
@@ -43,6 +47,7 @@ class LexiconLevelProvider(
     override val id: String = "lexicon_v2"
 
     override suspend fun level(word: String): CefrLevel? {
+        lexiconAccess.ensureInitialized()
         if (!lexiconAccess.hasActiveEnFaPack()) return null
         val entry = lexiconAccess.lookupWord(word) ?: run {
             val lemmas = lexiconAccess.lemmatiser(word)

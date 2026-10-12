@@ -371,6 +371,7 @@ fun DictionaryScreen(
     val query by viewModel.dictQuery.collectAsStateWithLifecycle()
     val direction by viewModel.dictDirection.collectAsStateWithLifecycle()
     val entry by viewModel.dictEntry.collectAsStateWithLifecycle()
+    val searchResults by viewModel.dictSearchResults.collectAsStateWithLifecycle()
     val installedPacks by viewModel.installedPacks.collectAsStateWithLifecycle()
 
     Column(
@@ -459,11 +460,44 @@ fun DictionaryScreen(
                         )
                     }
 
+                    if (currentEntry.englishGlosses.isNotEmpty()) {
+                        Text(
+                            text = currentEntry.englishGlosses.take(3).joinToString(" • "),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
                     if (currentEntry.synonyms.isNotEmpty()) {
                         Text(
                             text = "Synonyms: ${currentEntry.synonyms.take(10).joinToString(", ")}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    if (currentEntry.antonyms.isNotEmpty()) {
+                        Text(
+                            text = "Antonyms: ${currentEntry.antonyms.take(8).joinToString(", ")}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    if (currentEntry.wordFamily.isNotEmpty()) {
+                        Text(
+                            text = "Family: ${currentEntry.wordFamily.take(8).joinToString(", ")}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    if (currentEntry.phrasalVerbs.isNotEmpty() || currentEntry.idioms.isNotEmpty()) {
+                        val related = (currentEntry.phrasalVerbs + currentEntry.idioms + currentEntry.collocations).distinct().take(8)
+                        Text(
+                            text = "Expressions: ${related.joinToString(" · ")}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
                         )
                     }
 
@@ -480,6 +514,21 @@ fun DictionaryScreen(
                                 )
                             }
                         }
+                    }
+                }
+            }
+
+            if (searchResults.size > 1) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.xs),
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                ) {
+                    searchResults.take(12).forEach { candidate ->
+                        FilterChip(
+                            selected = candidate.headword.equals(currentEntry.headword, ignoreCase = true),
+                            onClick = { viewModel.selectDictionaryEntry(candidate) },
+                            label = { Text(candidate.headword) },
+                        )
                     }
                 }
             }

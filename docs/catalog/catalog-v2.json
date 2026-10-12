@@ -10,8 +10,8 @@
       "version": "2.0.0",
       "direction": "en-fa",
       "license": "ODbL-1.0 / CC-BY-SA-4.0",
-      "sizeBytes": 39185920,
-      "sha256": null,
+      "sizeBytes": 35863515,
+      "sha256": "500696765c0d5339c5c4d0823604d8d53fec9abff96bd1dd1b0bf1b4504669ef",
       "source": {
         "host": "github.com",
         "url": "https://github.com/animalrender/SubLearn/releases/download/packs-v2.0.0/sublearn-lexicon-en-fa-v2.sqlite.gz"
@@ -20,7 +20,7 @@
       "minRamMb": 64,
       "profile": "BASIC",
       "verified": true,
-      "notes": "81k+ English headwords, phrasal verbs, idioms, collocations, CEFR levels, and Persian senses."
+      "notes": "102k+ English headwords, phrasal verbs, idioms, collocations, CEFR levels, and Persian senses."
     },
     {
       "id": "sublearn-dict-fa-en-v2",
@@ -30,17 +30,17 @@
       "version": "2.0.0",
       "direction": "fa-en",
       "license": "ODbL-1.0 / CC-BY-SA-4.0",
-      "sizeBytes": 15728640,
-      "sha256": null,
+      "sizeBytes": 14044817,
+      "sha256": "917e10115883394d5faa80a21ca1b39ceb6da2173f2c279f98dea84d44086f72",
       "source": {
         "host": "github.com",
-        "url": "https://github.com/animalrender/SubLearn/releases/download/packs-v2.0.0/sublearn-dict-fa-en-v2.sqlite.gz"
+        "url": "https://github.com/animalrender/SubLearn/releases/download/packs-v2.0.0/sublearn-dict-fa-en-v1.sqlite.gz"
       },
       "runtime": "NONE",
       "minRamMb": 64,
       "profile": "BASIC",
       "verified": true,
-      "notes": "53k+ Persian headwords with English equivalents and examples."
+      "notes": "107k+ Persian headwords with English equivalents and examples."
     },
     {
       "id": "emb-potion-base-8m",

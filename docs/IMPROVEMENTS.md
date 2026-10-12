@@ -50,3 +50,16 @@ integrity, performance, UX consistency, and reference repositories (`dictionaryp
   XOR (`Fastdic@1995`) + zlib in 64 KB chunks without heap spikes.
 - **Full bidirectional EN↔FA Dictionary tab (`feature:dictionary`)**: Enabled `FeatureFlag.OFFLINE_DICTIONARY`
   and built a complete dictionary search and detail screen supporting both `LEXICON_EN_FA` and `DICT_FA_EN`.
+
+## 5. Lifecycle Reload, Room Span Cache & Release Verification (`core:lexicon`, `feature:player`, `core:models`)
+- **Lazy startup initialization and pack toggle reload (`PackLexiconAccess.ensureInitialized`)**:
+  Automatically loads active packs from `InstalledPackRepository` on first query after app launch and
+  reloads immediately when packs are toggled or deleted in `LearnViewModel`.
+- **Rich Dictionary Screen FTS suggestions and extended fields (`LearnScreen`)**: Displays clickable
+  prefix/FTS search result chips alongside English glosses, antonyms, word family, and related phrasal
+  verbs/idioms/collocations.
+- **Room `phrase_span` cache wiring (`PlayerViewModel`)**: Wired `PhraseSpanCacheDao` into `PlayerViewModel`
+  and `AppModule` so analyzed subtitle spans are persisted keyed by `(sourceKey, packId, packVersion, analyzerVersion, spanId)`.
+- **Verified `packs-v2.0.0` SHA-256 digests in `catalog-v2.json` and `ModelCatalog.kt`**: Populated exact
+  byte sizes and SHA-256 hashes from the full 98 MB `main_db.sqlite` (`db1.0.0`) build and added live HTTP
+  HEAD verification in `verify-catalog.yml`.

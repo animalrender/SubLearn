@@ -92,6 +92,7 @@ class PlayerViewModel(
     private val secrets: SecretStore,
     private val lexiconAccessProvider: () -> com.sublearn.core.nlp.LexiconAccess? = { null },
     private val orchestrator: com.sublearn.core.translate.TranslationOrchestrator? = null,
+    private val phraseSpanCacheDao: com.sublearn.core.data.PhraseSpanCacheDao? = null,
 ) : ViewModel() {
     private val cueStreamAnalyzer = com.sublearn.core.nlp.CueStreamPhraseAnalyzer()
     private val fallbackLemmatiser = com.sublearn.core.nlp.Lemmatiser()
@@ -1465,6 +1466,9 @@ class PlayerViewModel(
         settings: AppSettings,
     ): Pair<Map<String, List<com.sublearn.core.nlp.PhraseSpan>>, Set<String>> {
         val lex = lexiconAccessProvider() ?: return emptyMap<String, List<com.sublearn.core.nlp.PhraseSpan>>() to emptySet()
+        if (lex is com.sublearn.core.lexicon.PackLexiconAccess) {
+            lex.ensureInitialized()
+        }
         val smart = settings.smartLearning
         val nlpConfig = com.sublearn.core.nlp.NlpConfig(
             phrasalVerbsEnabled = smart.phrasalVerbsEnabled,
@@ -1501,6 +1505,30 @@ class PlayerViewModel(
 
         val currentSpans = analyzedByBlock[currentBlock.id].orEmpty()
             .filter { it.isAboveThreshold(nlpConfig.confidenceThreshold) }
+        if (phraseSpanCacheDao != null && currentSpans.isNotEmpty() && lex is com.sublearn.core.lexicon.PackLexiconAccess) {
+            val sourceKey = _ui.value.mediaUri.ifBlank { "inline" }
+            val packId = lex.activePackId()
+            val packVer = lex.activePackVersion()
+            val entities = currentSpans.mapIndexed { sIdx, sp ->
+                com.sublearn.core.data.PhraseSpanCacheEntity(
+                    sourceKey = sourceKey,
+                    packId = packId,
+                    packVersion = packVer,
+                    analyzerVersion = 2,
+                    spanId = "${currentBlock.id}:$sIdx:${sp.startChar}-${sp.endChar}",
+                    blockId = currentBlock.id,
+                    startChar = sp.startChar,
+                    endChar = sp.endChar,
+                    tokensCsv = sp.tokens.joinToString(","),
+                    kind = sp.kind.name,
+                    headword = sp.headword,
+                    lemmaKey = sp.lemmaKey,
+                    confidence = sp.confidence,
+                    separable = sp.separable,
+                )
+            }
+            runCatching { phraseSpanCacheDao.upsertAll(entities) }
+        }
         val candidateKeys = currentSpans.flatMap { listOf(it.headword.lowercase(), it.lemmaKey.lowercase()) }.distinct()
         val savedMap = if (candidateKeys.isNotEmpty()) {
             runCatching { myWords.findByWords(candidateKeys) }.getOrDefault(emptyMap())

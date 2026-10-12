@@ -42,6 +42,9 @@ class PackLexiconAccess(
     @Volatile
     private var lemmatiserInstance: Lemmatiser = Lemmatiser()
 
+    @Volatile
+    private var initialized: Boolean = false
+
     private val anchorCache = ConcurrentHashMap<String, List<LexiconEntry>>()
     private val wordPosCache = ConcurrentHashMap<String, Map<String, Int>>()
 
@@ -55,7 +58,14 @@ class PackLexiconAccess(
 
     fun hasActiveLegacyV1Pack(): Boolean = legacyV1Db?.isOpen == true
 
+    suspend fun ensureInitialized() {
+        if (!initialized) {
+            reloadFromRepository()
+        }
+    }
+
     suspend fun reloadFromRepository() = withContext(Dispatchers.IO) {
+        initialized = true
         val enFaEntity = packRepository.findActiveByKind(PackKind.LEXICON_EN_FA.id)
         val faEnEntity = packRepository.findActiveByKind(PackKind.DICT_FA_EN.id)
         val legacyEntity = packRepository.findActiveByKind(PackKind.LEGACY_V1.id)

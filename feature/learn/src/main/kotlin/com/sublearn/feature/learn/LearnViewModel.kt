@@ -41,6 +41,7 @@ class LearnViewModel(
     private val downloader: PackDownloader? = null,
     private val dictionaryProvider: DictionaryProvider? = null,
     private val myWords: MyWordsRepository? = null,
+    private val lexiconAccess: com.sublearn.core.lexicon.PackLexiconAccess? = null,
 ) : ViewModel() {
     val settings: StateFlow<AppSettings> = settingsRepository.settings
 
@@ -72,6 +73,15 @@ class LearnViewModel(
 
     private val _dictEntry = MutableStateFlow<DictionaryEntry?>(null)
     val dictEntry: StateFlow<DictionaryEntry?> = _dictEntry.asStateFlow()
+
+    private val _dictSearchResults = MutableStateFlow<List<DictionaryEntry>>(emptyList())
+    val dictSearchResults: StateFlow<List<DictionaryEntry>> = _dictSearchResults.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            lexiconAccess?.ensureInitialized()
+        }
+    }
 
     fun setMode(mode: LearningMode) = update { it.copy(learning = it.learning.copy(mode = mode)) }
 
@@ -124,6 +134,7 @@ class LearnViewModel(
     fun activatePack(pack: InstalledPackEntity) {
         viewModelScope.launch {
             installedPacksRepo?.setEnabled(pack.packId, !pack.enabled)
+            lexiconAccess?.reloadFromRepository()
         }
     }
 
@@ -147,6 +158,7 @@ class LearnViewModel(
         viewModelScope.launch {
             runCatching { File(pack.localPath).delete() }
             installedPacksRepo?.remove(pack.packId)
+            lexiconAccess?.reloadFromRepository()
         }
     }
 
@@ -177,11 +189,22 @@ class LearnViewModel(
         val trimmed = query.trim()
         if (trimmed.isEmpty()) {
             _dictEntry.value = null
+            _dictSearchResults.value = emptyList()
             return
         }
         viewModelScope.launch {
-            val entry = runCatching { dictionaryProvider?.lookup(trimmed)?.getOrNull() }.getOrNull()
-            _dictEntry.value = entry
+            val exact = runCatching { dictionaryProvider?.lookup(trimmed)?.getOrNull() }.getOrNull()
+            val results = runCatching { dictionaryProvider?.search(trimmed, 20)?.getOrNull().orEmpty() }.getOrDefault(emptyList())
+            _dictEntry.value = exact ?: results.firstOrNull()
+            _dictSearchResults.value = results
+        }
+    }
+
+    fun selectDictionaryEntry(entry: DictionaryEntry) {
+        _dictQuery.value = entry.headword
+        viewModelScope.launch {
+            val full = runCatching { dictionaryProvider?.lookup(entry.headword)?.getOrNull() }.getOrNull()
+            _dictEntry.value = full ?: entry
         }
     }
 

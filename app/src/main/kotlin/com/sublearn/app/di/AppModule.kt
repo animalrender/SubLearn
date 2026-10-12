@@ -214,7 +214,7 @@ private fun coreModule(): Module = module {
 private fun featureModule(): Module = module {
     viewModel { HomeViewModel(get()) }
     viewModel { WordsViewModel(get(), get(), get()) }
-    viewModel { LearnViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { LearnViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), androidContext()) }
     viewModel {
         PlayerViewModel(
@@ -231,6 +231,7 @@ private fun featureModule(): Module = module {
             secrets = get(),
             lexiconAccessProvider = { get<LexiconAccess>() },
             orchestrator = get(),
+            phraseSpanCacheDao = get<SubLearnDatabase>().phraseSpans(),
         )
     }
 }
