@@ -1505,8 +1505,9 @@ class PlayerViewModel(
 
         val currentSpans = analyzedByBlock[currentBlock.id].orEmpty()
             .filter { it.isAboveThreshold(nlpConfig.confidenceThreshold) }
-        if (phraseSpanCacheDao != null && currentSpans.isNotEmpty() && lex is com.sublearn.core.lexicon.PackLexiconAccess) {
-            val sourceKey = _ui.value.mediaUri.ifBlank { "inline" }
+        val spanDao = phraseSpanCacheDao
+        if (spanDao != null && currentSpans.isNotEmpty() && lex is com.sublearn.core.lexicon.PackLexiconAccess) {
+            val sourceKey = openedTarget?.uri ?: "inline"
             val packId = lex.activePackId()
             val packVer = lex.activePackVersion()
             val entities = currentSpans.mapIndexed { sIdx, sp ->
@@ -1527,7 +1528,7 @@ class PlayerViewModel(
                     separable = sp.separable,
                 )
             }
-            runCatching { phraseSpanCacheDao.upsertAll(entities) }
+            runCatching { spanDao.upsertAll(entities) }
         }
         val candidateKeys = currentSpans.flatMap { listOf(it.headword.lowercase(), it.lemmaKey.lowercase()) }.distinct()
         val savedMap = if (candidateKeys.isNotEmpty()) {
