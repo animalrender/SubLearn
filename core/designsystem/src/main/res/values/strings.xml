@@ -244,7 +244,6 @@
     <string name="settings_dictionary_import">Import a dictionary database</string>
     <string name="settings_word_colors">Colour words by category</string>
     <string name="settings_about_version">Version %1$s (%2$d)</string>
-    <string name="settings_about_license">Apache License 2.0</string>
     <string name="settings_about_source">View source on GitHub</string>
     <string name="settings_about_privacy">SubLearn has no analytics and no ads. Local files never leave the device; only the AI feature you configure talks to a server.</string>
 
@@ -278,7 +277,7 @@
     <string name="settings_hint_translation">On-device engine and its cache</string>
     <string name="settings_hint_dictionary">Offline dictionary import</string>
     <string name="settings_hint_quick_actions">Buttons on the player and their places</string>
-    <string name="settings_hint_about">Version, licence, export and import</string>
+    <string name="settings_hint_about">Version, export and import</string>
     <string name="settings_orientation_auto">Automatic</string>
     <string name="settings_orientation_portrait">Portrait</string>
     <string name="settings_orientation_landscape">Landscape</string>

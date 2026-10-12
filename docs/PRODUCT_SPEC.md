@@ -101,8 +101,8 @@ meaning so that `docs/CHECKLIST.md` can point at an ID for every claim of comple
 - **LRN-2** Learning mode: everything above, plus words/phrases of the current block above the user's
   level appear with translations as low-opacity, soft-shadow popup cards in a corner, floating up from
   the bottom and fading out. Animated and pleasant. Level data comes from a `WordLevelProvider`: NOW
-  ships a manual-level setting and a default provider using a permissively licensed frequency/CEFR list
-  **if its license can be verified**; otherwise popups are driven by "words not marked as known".
+  ships a manual-level setting and a default provider using a frequency/CEFR list the user imports;
+  otherwise popups are driven by "words not marked as known".
   Automatic level detection stays LATER.
 - **LRN-3** English only: phrasal verbs, collocations, idioms, word level via offline lightweight NLP —
   LATER (`WordAnalyzer` stub).

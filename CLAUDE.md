@@ -1,7 +1,7 @@
 # Claude Code
 
 Read [AGENTS.md](AGENTS.md) first; it is the single entry point for this repository, including the
-hard license-safety rules, the module boundaries and the per-task loop. Two things that surprise
+hard repository rules, the module boundaries and the per-task loop. Two things that surprise
 agents here:
 
 - `./gradlew` cannot run in the sandbox (no JVM). Use `python3 tools/check_sources.py`,

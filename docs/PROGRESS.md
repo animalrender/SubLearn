@@ -15,7 +15,7 @@ tool, the NLP engine module, the model catalog, and the dictionary management UI
   `CrossBlockBridge`, `PriorSenseRanker`, and all interfaces (`PhraseDetector`, `PosTagger`,
   `SenseRanker`, `LexiconAccess`).
 - **core:models module** (Android): `ModelCatalogEntry`, `ModelKind`, `AccuracyProfile`,
-  `ModelRuntime`, `LicenseInfo`, `SourceInfo`, `ModelCatalog`.
+  `ModelRuntime`, `SourceInfo`, `ModelCatalog`.
 - **core:nlp-onnx module** (Android, skeleton): ONNX Runtime wrapper placeholder for phase 14.
 - **core:nlp-llm module** (Android, skeleton): LLM adapter placeholder for phase 15.
 - **Model catalog** (`docs/catalog/catalog-v1.json`): 8 entries (1 lexicon + 7 models), all with
@@ -288,7 +288,7 @@ gh release view v0.1.0          # four APKs + SHA256SUMS once the release workfl
 
 **Goal.** Take the repository from a `hello world` commit to the full NOW scope: module scaffold, core
 layers, the player with dual subtitles, interaction, shadowing, learning popups, the AI button, subtitle
-tools and the app shell — with CI, license audit and docs, and `main` never broken.
+tools and the app shell — with CI, repository-hygiene checks and docs, and `main` never broken.
 
 **Done**
 
@@ -296,7 +296,7 @@ tools and the app shell — with CI, license audit and docs, and `main` never br
   Room 2.6.1, Koin 3.5.6, ML Kit translate 17.0.3), minSdk 26, compile/target 35, `.gitignore` covering
   build outputs, signing material and every forbidden data/model file.
 - CI: `ci.yml` (static checks → `assembleDebug test lintDebug assembleDebugAndroidTest --continue`, debug
-  APK + lint/test/log artifacts, license-hygiene guard that fails on a tracked `.sqlite`/`.bipe`/keystore
+  APK + lint/test/log artifacts, a hygiene guard that fails on a tracked `.sqlite`/`.bipe`/keystore
   or a literal key) and a manual `instrumented.yml` emulator job. Actions pinned by SHA,
   `persist-credentials: false`, read-only token.
 - `core:*`: parsers + `SubtitleFormat` + charset sniffing + normalizer + block builder; typed versioned
@@ -310,8 +310,8 @@ tools and the app shell — with CI, license audit and docs, and `main` never br
   Home with recents and open-a-file/open-a-url; `app` with Koin, intent filters, PiP and locale override.
 - 18 unit-test classes for the pure and Android-adjacent layers, one instrumented smoke test for the
   overlays that need real font measurement.
-- Docs: `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `README.md`, `LICENSE` (Apache-2.0),
-  `THIRD_PARTY_NOTICES.md`, `CHANGELOG.md` and the twelve `docs/*` files.
+- Docs: `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `README.md`, `CHANGELOG.md` and the
+  twelve `docs/*` files.
 - Fixed along the way: `SubtitleFormat` was referenced but never declared (now declared + tested);
   `TranslationKey` had no package line; `app` imported `subLearnModules` from a nonexistent package;
   `core:data` declared the nonexistent `androidx.room:room-fts` artifact; the placement nudge helper had
@@ -329,7 +329,7 @@ tools and the app shell — with CI, license audit and docs, and `main` never br
    process death, gestures), README screenshots, tag `v0.1.0`.
 3. LATER items stay stubs by design; the only permitted promotions are the three ordered stretch items,
    after NOW is green (see [EXTENSION_POINTS.md](EXTENSION_POINTS.md)).
-4. Open owner questions are listed in [AGENT_REQUESTS.md](AGENT_REQUESTS.md) (REQ-1…REQ-9) with the
+4. Open owner questions are listed in [AGENT_REQUESTS.md](AGENT_REQUESTS.md), each with the
    workaround used in each case.
 
 **How to test right now**

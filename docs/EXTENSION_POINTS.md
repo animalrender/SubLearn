@@ -31,11 +31,9 @@ collocations, idioms, word family, CEFR, categories, US/UK pronunciation), `Dict
 and `isAvailable`, `DictionaryPreference { OFFLINE_FIRST, WEB_TRANSLATE_ONLY, OFFLINE_ONLY }` in
 settings, `DictionarySections` (12 labels) for the card layout, and a disabled Dictionary tab.
 
-**Rights rule, non-negotiable**: no dictionary database or model file may ever be committed to this
-repository (`.gitignore` and the CI hygiene guard enforce it). The dictionary is a **file the user
-picks** on their own device. The reference reconstruction project obtained its schema from another
-app's source and its loader from reverse-engineered `.bipe` files, so neither the data nor the loader
-format may be reproduced here — the importer below defines *our own* format.
+**Repository rule, non-negotiable**: no dictionary database or model file may ever be committed to
+this repository (`.gitignore` and the CI hygiene guard enforce it). The dictionary is a **file the
+user picks** on their own device, and the importer below defines *our own* format for it.
 
 **Implementation plan**
 
@@ -172,7 +170,7 @@ notice. Keep it out of `core:subtitles`: parsing stays pure, retrieval is a netw
 
 Entry point already accepted by the manifest design (`FEATURE_OPEN` with a PDF mime is routed to the
 Learn tab instead of the player). Needs: a text extraction path (`PdfRenderer` is in the framework and
-sufficient for text PDFs; images need an OCR model, which is a separate licensing and size decision), a
+sufficient for text PDFs; images need an OCR model, which is a separate size and accuracy decision), a
 `ReadingRepository` (Room) for passages, and reuse of the same popup pipeline as subtitles: tap a word →
 `TranslationProvider` → `MyWordsRepository`. Do not fork the popup UI: `feature:learn` should render the
 identical card.
@@ -200,4 +198,4 @@ Data-only; follow the numbered steps in
 [ARCHITECTURE.md](ARCHITECTURE.md#adding-a-language). The two things to check rather than assume: the
 language must be one ML Kit's on-device translation supports, and its script must be legible in the
 device font at the sizes `FontSpec.defaultFor(surface, role)` picks — otherwise ship a font *instruction*
-in the README, not a bundled binary whose licence nobody verified.
+in the README, not a bundled binary.

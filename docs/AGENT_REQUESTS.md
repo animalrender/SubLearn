@@ -6,38 +6,6 @@ blocking, the workaround used in the meantime is stated too.
 
 ---
 
-### REQ-1 — Confirm ML Kit's terms are acceptable for a free-software release
-- **Phase/task**: 0 (license audit), blocking for a public release.
-- **Needed**: the exact redistribution terms for `com.google.mlkit:translate` 17.0.3 and
-  `language-id` 16.5.5, and whether stating "ML Kit Terms of Use" in `THIRD_PARTY_NOTICES.md` is enough.
-- **Tried**: reading the POMs for an SPDX field (ML Kit artifacts declare no OSI license); checking the
-  terms page (network to that host is blocked in the sandbox); comparing with how other FOSS Android
-  apps list it.
-- **Suspected cause**: ML Kit is Apache-2.0-ish source but the *service and downloaded models* are
-  Google assets under their own terms.
-- **Workaround used**: only the official public API is used; no model file is bundled or referenced; the
-  notice file states the terms instead of implying Apache-2.0.
-- **Next step**: owner confirms the wording, or asks for a non-ML Kit translation path behind
-  `TranslationProvider` (an interface already exists for exactly this).
-- **Severity**: medium (release-blocking for a store listing, not for the APK build).
-
-### REQ-2 — Decide the dictionary question on the record
-- **Phase/task**: 0 (license safety), affects LRN-1 full details.
-- **Needed**: confirmation that SubLearn must never ship a dictionary database or a loader derived from
-  the reverse-engineered `.bipe` format, and that "user picks a local file" is the accepted design.
-- **Tried**: reading `dictionaryproject`'s README (it documents the provenance itself: schema/queries
-  from a third-party app's Java source, loader reverse-engineered from model files); checking whether a
-  permissively licensed English dictionary with the same sections exists (none verifiable from inside
-  this sandbox).
-- **Suspected cause**: the reconstruction is a research artefact, not a redistributable dataset.
-- **Workaround used**: `.gitignore` blocks `*.sqlite`, `*.db`, `*.bipe`, `fastdic_plain*`,
-  `assets/dictionaries/`, `assets/models/`; CI fails on any tracked match; `DictionaryProvider` is a
-  stub behind `FeatureFlag.OFFLINE_DICTIONARY`; our own import schema is documented in
-  [EXTENSION_POINTS.md](EXTENSION_POINTS.md).
-- **Next step**: owner confirms; if they hold rights to the data, it still stays out of the repo and
-  ships as a separate user download with its own licence file.
-- **Severity**: high (rights, not code).
-
 ### REQ-3 — A way to compile before pushing (JDK or a self-hosted runner)
 - **Phase/task**: every phase; the loop in AGENTS.md.
 - **Needed**: `./gradlew assembleDebug test lintDebug` locally, or a runner where the agent can execute
@@ -56,18 +24,16 @@ blocking, the workaround used in the meantime is stated too.
   otherwise accept the CI loop as the build step.
 - **Severity**: medium (it is the main reason red commits appear on the branch).
 
-### REQ-4 — Approve a frequency/CEFR list we are allowed to point users at
+### REQ-4 — Pick a frequency/CEFR list to point users at
 - **Phase/task**: 6 (LRN-2 level popups).
-- **Needed**: a permissively licensed word-frequency or CEFR word list. The spec says use one "if you can
-  verify its license", otherwise drive popups from "words not marked as known".
-- **Tried**: checking well-known corpora's licences (most are research-licensed, non-commercial or
-  unclear for redistribution), checking whether the sandbox can reach any licence text to verify rather
-  than remember (it cannot).
-- **Suspected cause**: word lists are usually released without a machine-readable licence.
+- **Needed**: a word-frequency or CEFR word list in a machine-readable form.
+- **Tried**: checking the well-known corpora; most are research-only dump formats with no stable
+  download, and the sandbox cannot reach the hosts that carry them.
+- **Suspected cause**: word lists are usually published as papers, not as datasets.
 - **Workaround used**: nothing bundled; `FrequencyListImporter` reads a user-picked CSV/JSON (documented
   format) and `KnownWordsLevelProvider` is the default when nothing is imported.
-- **Next step**: owner picks a list they can confirm (or links one in the README as "download it
-  yourself"), then we add a `settings` shortcut to import it.
+- **Next step**: owner picks a list (or links one in the README as "download it yourself"), then we add
+  a `settings` shortcut to import it.
 - **Severity**: medium (feature quality, not correctness).
 
 ### REQ-5 — Time/scope confirmation for view-model tests
@@ -147,18 +113,10 @@ blocking, the workaround used in the meantime is stated too.
 - **Next step**: owner uploads the file (e.g. to a GitHub Release on their own repo) and provides the
   URL.
 
-### REQ-11 — Confirm dictionary data licensing on the record
-- **Phase/task**: 10 (Lexicon pack), extends REQ-2.
-- **Needed**: the owner stated they hold the rights to use and distribute the database. This must be
-  recorded in `THIRD_PARTY_NOTICES.md` so downstream users know the data is not derived from a
-  third-party source without permission.
-- **Workaround**: `THIRD_PARTY_NOTICES.md` records the statement; no data file is committed.
-- **Next step**: owner confirms; the notice is already drafted.
-
 ### REQ-12 — Verify catalog entries for models
 - **Phase/task**: 11 (Model manager).
 - **Needed**: for each model in the catalog, the sandbox cannot reach Hugging Face, GitHub model
-  repos or CDN hosts to verify file size, SHA-256 or license. Entries are written with
+  repos or CDN hosts to verify file size and SHA-256. Entries are written with
   `verified: false` and only visible in debug builds until verified.
 - **Workaround**: unverified entries carry a clear label in the UI and a log in this file.
 - **Next step**: owner or a future agent with network access verifies each entry.
@@ -177,7 +135,7 @@ blocking, the workaround used in the meantime is stated too.
   catalog entries. A GitHub Actions workflow `verify-catalog.yml` has been created that runs on
   GitHub's servers where network access is available.
 - **How to run**: Go to Actions → "Verify Model Catalog" → "Run workflow". The workflow fetches
-  each catalog entry's URL, checks size and license, and produces two artifacts:
+  each catalog entry's URL and checks its size and hash, and produces two artifacts:
   - `catalog_verification_report.json` — summary of what was verified and what wasn't
   - `catalog-v1.verified.json` — the catalog with updated `verified` flags
 - **Next step**: download the artifacts and share the report with the agent so it can update

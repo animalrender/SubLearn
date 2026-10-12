@@ -29,7 +29,7 @@ keystore.properties
 secrets.properties
 google-services.json
 
-# Third-party data / model files that must not be shipped (see docs/DECISIONS.md, LICENSE SAFETY)
+# Third-party data / model files that must not be shipped (see docs/DECISIONS.md)
 *.sqlite
 *.sqlite3
 *.db

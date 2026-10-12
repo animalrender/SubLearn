@@ -14,7 +14,6 @@ package com.sublearn.core.models
  * @property version semver version string
  * @property sizeBytes approximate size in bytes
  * @property sha256 expected SHA-256 hash (null if not yet verified)
- * @property license license information
  * @property source where to download from
  * @property files the individual files in this pack
  * @property runtime the runtime needed (NONE for data packs, ONNX for ONNX models, LITERT for LiteRT)
@@ -31,7 +30,6 @@ data class ModelCatalogEntry(
     val version: String,
     val sizeBytes: Long,
     val sha256: String? = null,
-    val license: LicenseInfo,
     val source: SourceInfo,
     val files: List<FileInfo> = emptyList(),
     val runtime: ModelRuntime = ModelRuntime.NONE,
@@ -64,12 +62,6 @@ enum class AccuracyProfile {
     ADVANCED,
     SMART,
 }
-
-data class LicenseInfo(
-    val spdx: String,
-    val url: String,
-    val requiresAcceptance: Boolean = false,
-)
 
 data class SourceInfo(
     val host: String,

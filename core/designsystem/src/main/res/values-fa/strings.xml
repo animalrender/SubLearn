@@ -230,7 +230,6 @@
     <string name="settings_dictionary_import">وارد کردن پایگاه داده‌ی فرهنگ</string>
     <string name="settings_word_colors">رنگ‌بندی واژه‌ها بر اساس دسته</string>
     <string name="settings_about_version">نسخه %1$s (%2$d)</string>
-    <string name="settings_about_license">پروانه Apache 2.0</string>
     <string name="settings_about_source">دیدن کد در گیت‌هاب</string>
     <string name="settings_about_privacy">ساب‌لرن تبلیغ و تحلیلگر ندارد. فایل‌های محلی هرگز از دستگاه بیرون نمی‌روند؛ تنها بخشی که شما تنظیم می‌کنید به سرویس دستیار وصل می‌شود.</string>
     <string name="intent_open_video">پخش در ساب‌لرن</string>
@@ -262,7 +261,7 @@
     <string name="settings_hint_translation">موتور روی دستگاه و حافظه‌ی آن</string>
     <string name="settings_hint_dictionary">وارد کردن فرهنگ آفلاین</string>
     <string name="settings_hint_quick_actions">دکمه‌های روی پلیر و جای آن‌ها</string>
-    <string name="settings_hint_about">نسخه، پروانه، گرفتن و وارد کردن تنظیمات</string>
+    <string name="settings_hint_about">نسخه، گرفتن و وارد کردن تنظیمات</string>
     <string name="settings_orientation_auto">خودکار</string>
     <string name="settings_orientation_portrait">عمودی</string>
     <string name="settings_orientation_landscape">افقی</string>

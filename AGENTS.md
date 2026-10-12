@@ -14,12 +14,10 @@ languages structurally supported but not built. Full requirements:
 
 ## Non-negotiable rules
 
-1. **License safety.** Never copy code from the GPL references (`yall-mp`, `jidoujisho`); re-implement
-   ideas independently. Never commit a third-party dictionary database, `.bipe` file, extracted
-   translation model, or anything derived from them. Translation is official ML Kit only. Every
-   dependency, font, icon and asset gets a verified permissive license in
-   [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); if you cannot verify it, do not ship it and log
-   the question in [docs/AGENT_REQUESTS.md](docs/AGENT_REQUESTS.md).
+1. **No third-party data in the repository.** Never commit a dictionary database, a `.bipe` file, an
+   extracted translation model, or anything derived from them: the user imports their own files and
+   the Model Manager downloads packs at runtime. Translation is official ML Kit only. CI fails the
+   build on a tracked data, model or signing file.
 2. **No fake success.** No demo data in shipped paths, no silent stubs, no `TODO`. An unfinished item
    is either finished or written down in `docs/KNOWN_ISSUES.md` / `docs/AGENT_REQUESTS.md`.
 3. **main always builds.** One branch per phase (`phase/N-name`), small conventional commits, one PR
@@ -146,8 +144,7 @@ Rules that keep those boundaries:
 
 ## Reference repos (ideas only, studied in phase 0)
 
-`dual-sub-replay` (MIT, Kotlin/Compose, cue merging, ML Kit wrapper, CI), `yall-mp` (GPL, subtitle
-timeline editing), `jidoujisho` (GPL, tap-and-drag selection, swipe-to-repeat, dictionary popups),
-SubX Player (closed, UX only), `proudvocab` (my own, card visual style), `dictionaryproject` (my own,
-dictionary schema — see the rights note before using anything from it). Findings and what was
-adopted/rejected: [docs/REFERENCES.md](docs/REFERENCES.md).
+`dual-sub-replay` (Kotlin/Compose, cue merging, ML Kit wrapper, CI), `yall-mp` (subtitle timeline
+editing), `jidoujisho` (tap-and-drag selection, swipe-to-repeat, dictionary popups), SubX Player
+(UX only), `proudvocab` (my own, card visual style), `dictionaryproject` (my own, dictionary
+schema). Findings and what was adopted/rejected: [docs/REFERENCES.md](docs/REFERENCES.md).

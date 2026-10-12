@@ -2,7 +2,7 @@
 
 ## One paragraph
 
-SubLearn is a free, open-source Android app for learning English from real video. It is an
+SubLearn is an Android app for learning English from real video. It is an
 MX-Player-class video player first — gestures, PiP, speed, decoder choice, subtitle tracks — with a
 learning layer that stays out of the way: two independent subtitle layers you can move and restyle,
 tap-to-translate at word/line/block granularity, shadowing tools that repeat a block with a pause
@@ -24,9 +24,8 @@ native language is Persian, but nothing in the architecture hard-codes that pair
 - **Real code only.** A control that cannot do something is hidden or labelled, never decorative. This
   is why the decoder list, the embedded-track features and the dictionary entry are written the way
   they are (see [DECISIONS.md](DECISIONS.md)).
-- **Clean rights.** GPL reference projects contributed ideas, never code; no third-party dictionary
-  database or model file may ever be committed. See
-  [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
+- **Nothing third-party is vendored.** Reference projects contributed ideas, never code; no
+  third-party dictionary database or model file may ever be committed (CI fails the build on one).
 
 ## What "done" means
 

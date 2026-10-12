@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
  * Owns the imported word list and answers level questions for the whole app (LRN-2).
  *
  * The list lives in memory and is re-imported from the file the user picked; nothing is shipped in
- * the APK, because no permissively licensed CEFR word list could be verified (docs/DECISIONS.md).
+ * the APK, because no word list is bundled (D-2, docs/DECISIONS.md).
  */
 class WordLevelSource(
     private val myWords: MyWordsRepository,
