@@ -60,6 +60,7 @@ dependencies {
     api(project(":core:data"))
     api(project(":core:security"))
     api(project(":core:lexicon"))
+    api(project(":core:nlp"))
     api(libs.androidx.navigation.compose)
     api(libs.koin.compose)
     api(libs.androidx.window)

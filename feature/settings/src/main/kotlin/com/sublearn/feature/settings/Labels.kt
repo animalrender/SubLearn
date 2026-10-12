@@ -20,8 +20,11 @@ import com.sublearn.core.settings.QuickActionColumn
 import com.sublearn.core.settings.SubtitleHorizontalAnchor
 import com.sublearn.core.settings.SubtitleVerticalAnchor
 import com.sublearn.core.settings.ThemeMode
+import com.sublearn.core.settings.AccuracyProfileToken
 import com.sublearn.core.settings.AiProviderToken
+import com.sublearn.core.settings.TranslationOrchestrationMode
 import com.sublearn.core.settings.TranslationProviderToken
+import com.sublearn.core.settings.TranslationSourceKind
 import com.sublearn.core.subtitles.TrackRole
 
 /**
@@ -186,6 +189,28 @@ fun AiProviderToken.labelRes(): Int = when (this) {
 fun TranslationProviderToken.labelRes(): Int = when (this) {
     TranslationProviderToken.ML_KIT_ON_DEVICE -> R.string.settings_translation_mlkit
     TranslationProviderToken.OFF_STUB -> R.string.settings_mode_off
+}
+
+fun TranslationSourceKind.labelRes(): Int = when (this) {
+    TranslationSourceKind.PACK -> R.string.settings_trans_source_pack
+    TranslationSourceKind.ML_KIT -> R.string.settings_trans_source_mlkit
+    TranslationSourceKind.LEGACY_V1 -> R.string.settings_trans_source_legacy_v1
+    TranslationSourceKind.ONLINE_GOOGLE -> R.string.settings_trans_source_online_google
+}
+
+fun TranslationOrchestrationMode.labelRes(): Int = when (this) {
+    TranslationOrchestrationMode.PRIORITY_CHAIN -> R.string.settings_trans_mode_priority
+    TranslationOrchestrationMode.MERGE_ALL -> R.string.settings_trans_mode_merge
+}
+
+fun AccuracyProfileToken.labelRes(): Int = when (this) {
+    AccuracyProfileToken.BASIC -> R.string.settings_mode_entertainment
+    AccuracyProfileToken.LIGHT -> R.string.settings_mode_learning
+    AccuracyProfileToken.BALANCED -> R.string.level_b1
+    AccuracyProfileToken.PRECISE -> R.string.level_b2
+    AccuracyProfileToken.ADVANCED -> R.string.level_c1
+    AccuracyProfileToken.SMART_EXPERIMENTAL -> R.string.level_c2
+    AccuracyProfileToken.CUSTOM -> R.string.player_aspect_custom
 }
 
 /** The section list entry for a route key. */

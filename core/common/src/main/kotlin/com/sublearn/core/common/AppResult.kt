@@ -79,6 +79,7 @@ data class SubLearnError(
         RateLimited,
         Unauthorized,
         ModelMissing,
+        Timeout,
         NotImplemented,
         Unknown,
     }

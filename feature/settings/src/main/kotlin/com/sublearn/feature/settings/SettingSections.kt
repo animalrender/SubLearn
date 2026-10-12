@@ -662,6 +662,11 @@ fun LearningSection(settings: AppSettings, viewModel: SettingsViewModel) {
             value = styles.enabled,
             onChange = { value -> viewModel.update { it.copy(wordStyles = it.wordStyles.copy(enabled = value)) } },
         )
+        SwitchRow(
+            title = stringResource(R.string.settings_trans_saved_phrases_keep_color),
+            value = styles.savedPhrasesKeepTypeColor,
+            onChange = { value -> viewModel.update { it.copy(wordStyles = it.wordStyles.copy(savedPhrasesKeepTypeColor = value)) } },
+        )
         WordStyleRow(stringResource(R.string.settings_category_learning), styles.myWords) { value ->
             viewModel.update { it.copy(wordStyles = it.wordStyles.copy(myWords = value)) }
         }

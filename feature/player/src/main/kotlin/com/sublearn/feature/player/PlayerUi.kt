@@ -59,6 +59,10 @@ data class PlayerUi(
     val ai: AiUi = AiUi(),
     /** SUB-5: marked words and above-level words get a style. */
     val wordStates: Map<String, WordVisualState> = emptyMap(),
+    /** Range-based multi-word expression spans per subtitle line key (D-45, D-48). */
+    val lineSpans: Map<String, List<com.sublearn.core.nlp.PhraseSpan>> = emptyMap(),
+    /** Normalized keys/lemmas of phrases saved in My Words, used with savedPhrasesKeepTypeColor (D-50). */
+    val savedPhraseKeys: Set<String> = emptySet(),
     /** Last translation per word, so a re-tap shows the gloss instantly while the popup loads. */
     val glosses: Map<String, String> = emptyMap(),
 ) {
@@ -147,6 +151,7 @@ data class SubtitleLineUi(
     val key: String,
     val text: String,
     val block: SubtitleBlock? = null,
+    val spans: List<com.sublearn.core.nlp.PhraseSpan> = emptyList(),
 )
 
 @Immutable
@@ -177,21 +182,45 @@ data class AiUi(
     val wasPlaying: Boolean = false,
 )
 
-/** LRN-1 card. `level` is the CEFR name as stored on a marked word, so the badge needs no lookup. */
+/** Detected multi-word expression section rendered in the bottom half of the ProudVocab popup card (D-49). */
+@Immutable
+data class PopupPhraseSection(
+    val headword: String,
+    val lemmaKey: String,
+    val surfaceText: String,
+    val kind: com.sublearn.core.nlp.PhraseKind,
+    val translation: String? = null,
+    val posGlosses: List<Pair<String?, List<String>>> = emptyList(),
+    val examples: List<Pair<String, String>> = emptyList(),
+    val level: String? = null,
+    val lexiconEntryId: Long? = null,
+    val marked: Boolean = false,
+    val sourcesUsed: List<String> = emptyList(),
+)
+
+/** LRN-1 & D-49 ProudVocab card. `level` is the CEFR name as stored on a marked word, so the badge needs no lookup. */
 @Immutable
 data class PopupUi(
     val kind: PopupKind,
     val sourceText: String,
     val word: String? = null,
+    val lemma: String? = null,
+    val phonetic: String? = null,
     val translation: String? = null,
+    val posGlosses: List<Pair<String?, List<String>>> = emptyList(),
+    val examples: List<Pair<String, String>> = emptyList(),
+    val sourcesUsed: List<String> = emptyList(),
+    val lexiconEntryId: Long? = null,
     val contextTranslation: String? = null,
     val level: String? = null,
     val marked: Boolean = false,
     val busy: Boolean = false,
+    val isPendingOnline: Boolean = false,
     val error: String? = null,
     val timestampMs: Long = 0L,
     val needsModelDownload: Boolean = false,
     val wasPlayingBeforePause: Boolean = false,
+    val phraseSection: PopupPhraseSection? = null,
 )
 
 @Immutable

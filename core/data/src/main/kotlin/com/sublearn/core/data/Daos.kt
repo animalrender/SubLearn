@@ -37,10 +37,13 @@ interface MyWordDao {
     @Query("SELECT * FROM my_words ORDER BY markedAt DESC")
     fun observeAll(): Flow<List<MyWordEntity>>
 
+    @Query("SELECT * FROM my_words ORDER BY markedAt DESC")
+    suspend fun getAll(): List<MyWordEntity>
+
     @Query("SELECT * FROM my_words ORDER BY markedAt DESC LIMIT :limit OFFSET :offset")
     fun observePage(limit: Int, offset: Int): Flow<List<MyWordEntity>>
 
-    @Query("SELECT * FROM my_words WHERE wordLower IN (:wordsLower)")
+    @Query("SELECT * FROM my_words WHERE wordLower IN (:wordsLower) OR lemma IN (:wordsLower)")
     suspend fun findByWords(wordsLower: List<String>): List<MyWordEntity>
 
     @Query("SELECT wordLower FROM my_words WHERE status = :status")
@@ -70,13 +73,6 @@ interface MyWordDao {
     @Query("UPDATE my_words SET translation = :translation WHERE id = :id")
     suspend fun updateTranslation(id: Long, translation: String?)
 
-    /**
-     * FTS search; [searchLike] is the fallback when the query has no FTS-safe tokens.
-     *
-     * Ordered by recency rather than by the FTS `rank` column: `rank` is a hidden column of the
-     * external-content table and is not visible through this join, and the most recently marked word
-     * is what a learner wants at the top anyway.
-     */
     @Query(
         "SELECT m.* FROM my_words_fts JOIN my_words m ON m.rowid = my_words_fts.rowid " +
             "WHERE my_words_fts MATCH :query ORDER BY m.markedAt DESC LIMIT :limit",
@@ -107,11 +103,74 @@ interface TranslationCacheDao {
     @Query("SELECT COUNT(*) FROM translation_cache")
     suspend fun count(): Int
 
-    /** Keeps the cache bounded without a scheduled job: evict the least valuable rows first. */
     @Query(
         "DELETE FROM translation_cache WHERE cacheKey IN (" +
             "SELECT cacheKey FROM translation_cache ORDER BY (hits + 1) * 1.0 / MAX(1, (:now - createdAt) / 86400000.0) ASC " +
             "LIMIT :count)",
     )
     suspend fun evictLeastValuable(now: Long, count: Int)
+}
+
+@Dao
+interface InstalledPackDao {
+    @Query("SELECT * FROM installed_packs ORDER BY installedAt DESC")
+    fun observeAll(): Flow<List<InstalledPackEntity>>
+
+    @Query("SELECT * FROM installed_packs ORDER BY installedAt DESC")
+    suspend fun getAll(): List<InstalledPackEntity>
+
+    @Query("SELECT * FROM installed_packs WHERE kind = :kind AND enabled = 1 ORDER BY installedAt DESC LIMIT 1")
+    suspend fun findActiveByKind(kind: String): InstalledPackEntity?
+
+    @Query("SELECT * FROM installed_packs WHERE packId = :packId LIMIT 1")
+    suspend fun findById(packId: String): InstalledPackEntity?
+
+    @Upsert
+    suspend fun upsert(entity: InstalledPackEntity)
+
+    @Query("UPDATE installed_packs SET enabled = :enabled WHERE packId = :packId")
+    suspend fun setEnabled(packId: String, enabled: Boolean)
+
+    @Query("DELETE FROM installed_packs WHERE packId = :packId")
+    suspend fun deleteById(packId: String)
+}
+
+@Dao
+interface PhraseSpanCacheDao {
+    @Query(
+        "SELECT * FROM phrase_span WHERE sourceKey = :sourceKey AND packId = :packId " +
+            "AND packVersion = :packVersion AND analyzerVersion = :analyzerVersion " +
+            "ORDER BY blockId, startChar",
+    )
+    suspend fun findForDocument(
+        sourceKey: String,
+        packId: String,
+        packVersion: String,
+        analyzerVersion: Int,
+    ): List<PhraseSpanCacheEntity>
+
+    @Query(
+        "SELECT * FROM phrase_span WHERE sourceKey = :sourceKey AND blockId = :blockId " +
+            "AND packId = :packId AND packVersion = :packVersion AND analyzerVersion = :analyzerVersion " +
+            "ORDER BY startChar",
+    )
+    suspend fun findForBlock(
+        sourceKey: String,
+        blockId: Long,
+        packId: String,
+        packVersion: String,
+        analyzerVersion: Int,
+    ): List<PhraseSpanCacheEntity>
+
+    @Upsert
+    suspend fun upsertAll(spans: List<PhraseSpanCacheEntity>)
+
+    @Query("DELETE FROM phrase_span WHERE sourceKey = :sourceKey")
+    suspend fun deleteForSource(sourceKey: String)
+
+    @Query("DELETE FROM phrase_span")
+    suspend fun clear()
+
+    @Query("SELECT COUNT(*) FROM phrase_span")
+    suspend fun count(): Int
 }

@@ -3,8 +3,10 @@ package com.sublearn.feature.words
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sublearn.core.data.MarkedWord
+import com.sublearn.core.data.MyWordsExporter
 import com.sublearn.core.data.MyWordsRepository
 import com.sublearn.core.data.WordStatus
+import com.sublearn.core.data.WordsExportKind
 import com.sublearn.core.settings.AppSettings
 import com.sublearn.core.settings.SettingsRepository
 import com.sublearn.core.translate.TranslationService
@@ -16,7 +18,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/** My Words: everything the user marked, with the filters and edits the card offers. */
+/** My Words: everything the user marked, with filters, edits, and JSON/CSV/Anki TSV export/import. */
 class WordsViewModel(
     private val myWords: MyWordsRepository,
     private val translation: TranslationService,
@@ -69,16 +71,52 @@ class WordsViewModel(
         }
     }
 
-    private fun MarkedWord.matches(query: String, filter: WordFilter): Boolean {
-        if (query.isNotBlank() && !word.contains(query, ignoreCase = true) && !(translation?.contains(query, true) == true)) {
-            return false
+    fun exportVocabulary(kind: WordsExportKind): String =
+        MyWordsExporter.export(rows.value, kind)
+
+    fun importVocabulary(rawText: String, onFinished: (Int) -> Unit = {}) {
+        viewModelScope.launch {
+            val parsed = MyWordsExporter.importText(rawText)
+            var countImported = 0
+            for (item in parsed) {
+                val id = myWords.mark(item)
+                if (id != 0L) countImported++
+            }
+            onFinished(countImported)
         }
-        return filter.status == null || status == filter.status
+    }
+
+    private fun MarkedWord.matches(query: String, filter: WordFilter): Boolean {
+        if (query.isNotBlank()) {
+            val q = query.trim()
+            val matchesText = word.contains(q, ignoreCase = true) ||
+                (lemma?.contains(q, ignoreCase = true) == true) ||
+                (translation?.contains(q, ignoreCase = true) == true) ||
+                (contextText?.contains(q, ignoreCase = true) == true) ||
+                (note?.contains(q, ignoreCase = true) == true)
+            if (!matchesText) return false
+        }
+        return when (filter) {
+            WordFilter.ALL -> true
+            WordFilter.WORDS -> !isPhrase && phraseType.isNullOrBlank()
+            WordFilter.PHRASES -> isPhrase || !phraseType.isNullOrBlank()
+            WordFilter.PHRASAL -> phraseType.equals("PHRASAL", ignoreCase = true)
+            WordFilter.IDIOM -> phraseType.equals("IDIOM", ignoreCase = true)
+            WordFilter.COLLOCATION -> phraseType.equals("COLLOCATION", ignoreCase = true)
+            WordFilter.NEW -> status == WordStatus.NEW
+            WordFilter.LEARNING -> status == WordStatus.LEARNING
+            WordFilter.KNOWN -> status == WordStatus.KNOWN
+        }
     }
 }
 
 enum class WordFilter(val status: WordStatus?) {
     ALL(null),
+    WORDS(null),
+    PHRASES(null),
+    PHRASAL(null),
+    IDIOM(null),
+    COLLOCATION(null),
     NEW(WordStatus.NEW),
     LEARNING(WordStatus.LEARNING),
     KNOWN(WordStatus.KNOWN),

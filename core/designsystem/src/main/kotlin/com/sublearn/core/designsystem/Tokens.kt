@@ -26,6 +26,20 @@ object Palette {
     const val LIGHT_BACKGROUND = 0xFFF6F8FAL
     const val LIGHT_ON = 0xFF14181DL
 
+    // ProudVocab visual parity tokens (D-48, D-49, D-50)
+    const val PROUD_OVERLAY_BG = 0xD90A0F1EL
+    const val PROUD_OVERLAY_BORDER = 0x596366F1L
+    const val PROUD_WORD_NORMAL = 0xFFF8FAFCL
+    const val PROUD_WORD_SAVED = 0xFF10B981L
+    const val PROUD_PHRASAL_TEXT = 0xFFC084FCL
+    const val PROUD_PHRASAL_UNDERLINE = 0xFFA855F7L
+    const val PROUD_IDIOM_TEXT = 0xFFFB923CL
+    const val PROUD_IDIOM_UNDERLINE = 0xFFF97316L
+    const val PROUD_COLLOC_TEXT = 0xFF38BDF8L
+    const val PROUD_COLLOC_UNDERLINE = 0xFF0284C7L
+    const val PROUD_CARD_BG = 0xFA0F172AL
+    const val PROUD_CARD_BORDER = 0x666366F1L
+
     fun accent(token: String): AccentPair = when (token) {
         "INDIGO" -> AccentPair(0xFF7C9BFFL, 0xFF3555C9L)
         "AMBER" -> AccentPair(0xFFFFC46BL, 0xFF8A5A00L)
@@ -101,6 +115,10 @@ object Dimens {
     val hudCircle = 72.dp
     val hudPadding = 24.dp
     val dockGap = 4.dp
+    val proudCardRadius = 12.dp
+    val proudPopupMinWidth = 220.dp
+    val proudPopupMaxWidth = 340.dp
+    val underlineStroke = 2.dp
 }
 
 /** Minimal dp/span so this module does not need to import foundation everywhere. */

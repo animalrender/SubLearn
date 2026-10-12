@@ -109,7 +109,7 @@ internal class PlayerHitRegistry {
             val offset = layout.getOffsetForPosition(position - bounds.topLeft)
             val word = layout.layoutInput.text.getStringAnnotations(SUBTITLE_WORD_TAG, offset, offset)
                 .firstOrNull()?.item
-            return SubtitleTextHit(key, word)
+            return SubtitleTextHit(key, word, offset)
         }
         return null
     }
@@ -126,7 +126,7 @@ internal class PlayerHitRegistry {
     }
 }
 
-internal data class SubtitleTextHit(val lineKey: String, val word: String?)
+internal data class SubtitleTextHit(val lineKey: String, val word: String?, val charOffset: Int = -1)
 
 private data class SubtitleTextSurface(val coordinates: LayoutCoordinates, val layout: TextLayoutResult?)
 
@@ -354,7 +354,7 @@ private suspend fun AwaitPointerEventScope.subtitleTaps(
         pointer = next
     }
     val hit = if (taps == 1) registry.subtitleTextAt(role, lastPosition) else null
-    viewModel.onSubtitleTap(role, taps, hit?.word, hit?.lineKey)
+    viewModel.onSubtitleTap(role, taps, hit?.word, hit?.lineKey, hit?.charOffset ?: -1)
 }
 
 /** Layout mode: the plate follows the finger in dp, and the position is persisted when the finger lifts. */

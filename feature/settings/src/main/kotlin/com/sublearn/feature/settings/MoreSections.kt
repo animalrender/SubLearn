@@ -46,7 +46,9 @@ import kotlinx.coroutines.withContext
 import com.sublearn.core.settings.QuickActionId
 import com.sublearn.core.settings.SubtitleLayerRole
 import com.sublearn.core.settings.TextDecorationToken
+import com.sublearn.core.settings.TranslationOrchestrationMode
 import com.sublearn.core.settings.TranslationProviderToken
+import com.sublearn.core.settings.TranslationSourceKind
 import com.sublearn.core.ai.AiPromptBuilder
 import kotlinx.coroutines.launch
 
@@ -361,7 +363,21 @@ fun PromptSection(settings: AppSettings, viewModel: SettingsViewModel, onDone: (
 fun TranslationSection(settings: AppSettings, viewModel: SettingsViewModel) {
     val translation = settings.translation
     val modelProgress by viewModel.modelProgress.collectAsStateWithLifecycle()
+    var showOnlinePrivacyDialog by remember { mutableStateOf(false) }
+
     SectionCard(stringResource(R.string.settings_category_translation)) {
+        ChoiceRow(
+            title = stringResource(R.string.settings_trans_mode),
+            options = TranslationOrchestrationMode.entries,
+            selected = translation.mode,
+            label = { stringResource(it.labelRes()) },
+            onSelect = { value -> viewModel.update { it.copy(translation = it.translation.copy(mode = value)) } },
+        )
+        SwitchRow(
+            title = stringResource(R.string.settings_trans_offline_only),
+            value = translation.offlineOnly,
+            onChange = { value -> viewModel.update { it.copy(translation = it.translation.copy(offlineOnly = value)) } },
+        )
         ChoiceRow(
             title = stringResource(R.string.settings_translation_provider),
             options = TranslationProviderToken.entries,
@@ -391,15 +407,8 @@ fun TranslationSection(settings: AppSettings, viewModel: SettingsViewModel) {
             value = translation.translateWholeBlockFirst,
             onChange = { value -> viewModel.update { it.copy(translation = it.translation.copy(translateWholeBlockFirst = value)) } },
         )
-        SwitchRow(
-            title = stringResource(R.string.settings_fallback_online),
-            value = translation.fallbackToOnline,
-            subtitle = stringResource(R.string.settings_fallback_online_hint),
-            onChange = { value -> viewModel.update { it.copy(translation = it.translation.copy(fallbackToOnline = value)) } },
-        )
         val progress = modelProgress
         if (progress != null) {
-            // ML Kit only reports start and finish, so a zero fraction means "running" rather than "0 %".
             if (progress > 0f) {
                 LinearProgressIndicator(progress = { progress.coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
             } else {
@@ -411,6 +420,114 @@ fun TranslationSection(settings: AppSettings, viewModel: SettingsViewModel) {
             TextButton(onClick = viewModel::downloadModel) { Text(stringResource(R.string.translate_download)) }
             TextButton(onClick = viewModel::clearTranslationCache) { Text(stringResource(R.string.settings_translation_clear_cache)) }
         }
+    }
+
+    SectionCard(stringResource(R.string.settings_trans_sources_header)) {
+        val ordered = translation.sourceOrder.ifEmpty { com.sublearn.core.settings.TranslationSettings.DEFAULT_SOURCE_ORDER }
+        ordered.forEachIndexed { idx, sourceKind ->
+            val isEnabled = sourceKind in translation.enabledSources
+            Column(Modifier.fillMaxWidth().padding(vertical = Dimens.xxs)) {
+                SwitchRow(
+                    title = stringResource(sourceKind.labelRes()),
+                    value = isEnabled,
+                    onChange = { checked ->
+                        if (sourceKind == TranslationSourceKind.ONLINE_GOOGLE && checked && !translation.onlinePrivacyAccepted) {
+                            showOnlinePrivacyDialog = true
+                        } else {
+                            val nextEnabled = if (checked) {
+                                (translation.enabledSources + sourceKind).distinct()
+                            } else {
+                                translation.enabledSources - sourceKind
+                            }
+                            viewModel.update {
+                                it.copy(
+                                    translation = it.translation.copy(
+                                        enabledSources = nextEnabled,
+                                        fallbackToOnline = TranslationSourceKind.ONLINE_GOOGLE in nextEnabled,
+                                    ),
+                                )
+                            }
+                        }
+                    },
+                )
+                Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Dimens.xs)) {
+                    if (idx > 0) {
+                        TextButton(
+                            onClick = {
+                                val mutable = ordered.toMutableList()
+                                val item = mutable.removeAt(idx)
+                                mutable.add(idx - 1, item)
+                                viewModel.update { it.copy(translation = it.translation.copy(sourceOrder = mutable)) }
+                            },
+                        ) {
+                            Text(stringResource(R.string.settings_move_up))
+                        }
+                    }
+                    if (idx < ordered.lastIndex) {
+                        TextButton(
+                            onClick = {
+                                val mutable = ordered.toMutableList()
+                                val item = mutable.removeAt(idx)
+                                mutable.add(idx + 1, item)
+                                viewModel.update { it.copy(translation = it.translation.copy(sourceOrder = mutable)) }
+                            },
+                        ) {
+                            Text(stringResource(R.string.settings_move_down))
+                        }
+                    }
+                }
+            }
+        }
+
+        TextRow(
+            title = stringResource(R.string.settings_trans_online_host),
+            value = translation.onlineCustomHost,
+            placeholder = com.sublearn.core.settings.TranslationSettings.DEFAULT_ONLINE_HOST,
+            onValueChange = { value -> viewModel.update { it.copy(translation = it.translation.copy(onlineCustomHost = value)) } },
+        )
+        TextRow(
+            title = stringResource(R.string.settings_trans_online_primary_tpl),
+            value = translation.onlinePrimaryUrlTemplate,
+            onValueChange = { value -> viewModel.update { it.copy(translation = it.translation.copy(onlinePrimaryUrlTemplate = value)) } },
+        )
+        TextRow(
+            title = stringResource(R.string.settings_trans_online_fallback_tpl),
+            value = translation.onlineFallbackUrlTemplate,
+            onValueChange = { value -> viewModel.update { it.copy(translation = it.translation.copy(onlineFallbackUrlTemplate = value)) } },
+        )
+    }
+
+    if (showOnlinePrivacyDialog) {
+        AlertDialog(
+            onDismissRequest = { showOnlinePrivacyDialog = false },
+            title = { Text(stringResource(R.string.settings_trans_online_privacy_title)) },
+            text = { Text(stringResource(R.string.settings_trans_online_privacy_body)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showOnlinePrivacyDialog = false
+                        viewModel.update {
+                            val nextEnabled = (it.translation.enabledSources + TranslationSourceKind.ONLINE_GOOGLE).distinct()
+                            it.copy(
+                                translation = it.translation.copy(
+                                    onlinePrivacyAccepted = true,
+                                    offlineOnly = false,
+                                    enabledSources = nextEnabled,
+                                    fallbackToOnline = true,
+                                ),
+                            )
+                        }
+                    },
+                ) {
+                    Text(stringResource(R.string.settings_trans_online_accept))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showOnlinePrivacyDialog = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
     }
 }
 

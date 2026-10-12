@@ -90,7 +90,12 @@ class PlayerViewModel(
     private val wordLevels: WordLevelSource,
     private val ai: AiAssistant,
     private val secrets: SecretStore,
+    private val lexiconAccessProvider: () -> com.sublearn.core.nlp.LexiconAccess? = { null },
+    private val orchestrator: com.sublearn.core.translate.TranslationOrchestrator? = null,
 ) : ViewModel() {
+    private val cueStreamAnalyzer = com.sublearn.core.nlp.CueStreamPhraseAnalyzer()
+    private val fallbackLemmatiser = com.sublearn.core.nlp.Lemmatiser()
+    private val fallbackPosTagger = com.sublearn.core.nlp.LexiconPosTagger()
     private val _ui = MutableStateFlow(PlayerUi())
     val ui: StateFlow<PlayerUi> = _ui.asStateFlow()
 
@@ -1062,22 +1067,27 @@ class PlayerViewModel(
     // ------------------------------------------------------------------ popups (LRN-1)
 
     /**
-     * A tap on the learning layer: one tap on a word translates that word, two taps the line and
-     * three the block. Taps on the translation layer are read-only, so they never open a card.
+     * A tap on the learning layer: one tap on a word translates that word (and any enclosing MWE),
+     * two taps the line and three the block. Taps on the translation layer are read-only, so they
+     * never open a card.
      */
-    fun onSubtitleTap(role: TrackRole, taps: Int, word: String?, lineKey: String? = null) {
+    fun onSubtitleTap(role: TrackRole, taps: Int, word: String?, lineKey: String? = null, charOffset: Int = -1) {
         if (role != TrackRole.LEARNING) return
         val layer = _ui.value.layer(role)
-        val block = if (lineKey != null) {
-            layer.lines.firstOrNull { it.key == lineKey }?.block
+        val matchedLine = if (lineKey != null) {
+            layer.lines.firstOrNull { it.key == lineKey }
         } else {
-            layer.block
-        } ?: return message(application.getString(R.string.player_msg_no_block))
-        val lineText = lineAt(block, playback.value.positionMs + layer.delayMs)
+            layer.lines.firstOrNull()
+        }
+        val block = matchedLine?.block ?: layer.block ?: return message(application.getString(R.string.player_msg_no_block))
+        val lineText = matchedLine?.text ?: lineAt(block, playback.value.positionMs + layer.delayMs)
+        val effectiveKey = lineKey ?: matchedLine?.key ?: "current"
+        val spansForLine = matchedLine?.spans?.takeIf { it.isNotEmpty() } ?: _ui.value.lineSpans[effectiveKey].orEmpty()
+        val matchedPhrase = findTappedPhraseSpan(word, charOffset, lineText, spansForLine)
         when {
             taps >= 3 -> showLinePopup(block.text, block, whole = true)
             taps == 2 -> showLinePopup(lineText, block, whole = false)
-            !word.isNullOrBlank() -> showWordPopup(word, block)
+            !word.isNullOrBlank() -> showWordPopup(word, block, matchedPhrase, lineText)
             else -> showLinePopup(lineText, block, whole = false)
         }
         if (_ui.value.settings.learning.mode == LearningMode.OFF) {
@@ -1085,33 +1095,155 @@ class PlayerViewModel(
         }
     }
 
+    private fun findTappedPhraseSpan(
+        word: String?,
+        charOffset: Int,
+        lineText: String,
+        spans: List<com.sublearn.core.nlp.PhraseSpan>,
+    ): com.sublearn.core.nlp.PhraseSpan? {
+        if (spans.isEmpty()) return null
+        if (charOffset >= 0) {
+            spans.firstOrNull { charOffset in it.startChar until it.endChar }?.let { return it }
+        }
+        if (!word.isNullOrBlank()) {
+            val wLower = word.lowercase()
+            spans.firstOrNull { span ->
+                val s = span.startChar.coerceIn(0, lineText.length)
+                val e = span.endChar.coerceIn(s, lineText.length)
+                val slice = lineText.substring(s, e).lowercase()
+                slice.contains(wLower) || span.headword.lowercase().contains(wLower)
+            }?.let { return it }
+        }
+        return null
+    }
+
     /** The cue on screen right now, falling back to the whole block when the cues do not line up. */
     private fun lineAt(block: SubtitleBlock, positionMs: Long): String =
         block.cues.firstOrNull { positionMs in it.startMs..it.endMs }?.text ?: block.text
 
-    private fun showWordPopup(word: String, block: SubtitleBlock) {
-        _ui.value = _ui.value.copy(popup = PopupUi(PopupKind.WORD, word, word = word, busy = true, timestampMs = block.startMs))
+    private fun showWordPopup(
+        word: String,
+        block: SubtitleBlock,
+        matchedPhrase: com.sublearn.core.nlp.PhraseSpan? = null,
+        lineText: String = block.text,
+    ) {
+        val candidates = lexiconAccessProvider()?.lemmatiser(word) ?: fallbackLemmatiser.candidates(word)
+        val bestLemma = candidates.firstOrNull { it != word.lowercase() } ?: word.lowercase()
+        val initialPhraseSection = matchedPhrase?.let { span ->
+            val sliceEnd = span.endChar.coerceIn(0, lineText.length)
+            val sliceStart = span.startChar.coerceIn(0, sliceEnd)
+            val surface = lineText.substring(sliceStart, sliceEnd).ifBlank { span.headword }
+            PopupPhraseSection(
+                headword = span.headword,
+                lemmaKey = span.lemmaKey,
+                surfaceText = surface,
+                kind = span.kind,
+                marked = span.lemmaKey.lowercase() in _ui.value.savedPhraseKeys ||
+                    span.headword.lowercase() in _ui.value.savedPhraseKeys,
+            )
+        }
+
+        _ui.value = _ui.value.copy(
+            popup = PopupUi(
+                kind = PopupKind.WORD,
+                sourceText = word,
+                word = word,
+                lemma = bestLemma,
+                busy = true,
+                timestampMs = block.startMs,
+                phraseSection = initialPhraseSection,
+            ),
+        )
         pauseIfLineIsAboutToChange()
         popupJob?.cancel()
         popupJob = viewModelScope.launch {
-            val result: WordTranslation = translation.translateWord(word, block.text)
-            val marked = runCatching { myWords.find(word) }.getOrNull()
-            val level = levelOf(word)
-            _ui.value = _ui.value.copy(
-                popup = _ui.value.popup?.copy(
-                    busy = false,
-                    translation = result.glossText,
-                    contextTranslation = result.contextTranslation,
-                    error = result.error?.message,
-                    needsModelDownload = result.needsModelDownload,
-                    marked = marked != null,
-                    level = level?.name,
-                ),
-                modelMissing = result.needsModelDownload,
-            )
-            result.glossText?.let { gloss ->
-                val ui = _ui.value
-                _ui.value = ui.copy(glosses = ui.glosses + (word.lowercase() to gloss))
+            val markedExact = runCatching { myWords.find(word) }.getOrNull()
+            val markedByLemma = if (markedExact == null && bestLemma != word.lowercase()) {
+                runCatching { myWords.find(bestLemma) }.getOrNull()
+            } else {
+                null
+            }
+            val marked = markedExact ?: markedByLemma
+            val level = levelOf(word) ?: levelOf(bestLemma)
+
+            val resolvedPhraseSection = initialPhraseSection?.let { section ->
+                val phraseMarked = runCatching {
+                    myWords.find(section.headword) ?: myWords.find(section.lemmaKey)
+                }.getOrNull() != null
+                val orchPhrase = orchestrator?.translateImmediate(section.headword)
+                val lexEntry = lexiconAccessProvider()?.lookupWord(section.lemmaKey.lowercase())
+                val lexSenses = lexEntry?.let { lexiconAccessProvider()?.senses(it.id).orEmpty() }.orEmpty()
+                val lexExamples = lexSenses.firstOrNull()?.let { lexiconAccessProvider()?.examples(it.senseId).orEmpty() }.orEmpty()
+                val phraseGloss = orchPhrase?.primaryTranslation
+                    ?: lexSenses.map { it.faGloss }.distinct().take(4).joinToString("، ").takeIf { it.isNotBlank() }
+                    ?: runCatching { translation.translate(section.headword).getOrNull() }.getOrNull()
+                section.copy(
+                    translation = phraseGloss,
+                    examples = orchPhrase?.examples?.ifEmpty { lexExamples } ?: lexExamples,
+                    level = orchPhrase?.cefr ?: lexEntry?.cefr,
+                    lexiconEntryId = orchPhrase?.lexiconEntryId ?: lexEntry?.id,
+                    marked = phraseMarked,
+                    sourcesUsed = orchPhrase?.sourcesUsed?.map { it.name }.orEmpty(),
+                )
+            }
+
+            if (orchestrator != null) {
+                orchestrator.translateFlow(word, block.text).collect { orch ->
+                    val fallbackRes = if (orch.primaryTranslation.isNullOrBlank()) {
+                        translation.translateWord(word, block.text)
+                    } else {
+                        null
+                    }
+                    val finalGloss = orch.primaryTranslation ?: fallbackRes?.glossText
+                    val finalContext = orch.contextTranslation ?: fallbackRes?.contextTranslation
+                    val finalError = if (finalGloss == null) (orch.error?.message ?: fallbackRes?.error?.message) else null
+                    val needsDownload = (orch.error?.kind == com.sublearn.core.common.SubLearnError.Kind.ModelMissing) ||
+                        (fallbackRes?.needsModelDownload == true)
+                    _ui.value = _ui.value.copy(
+                        popup = _ui.value.popup?.copy(
+                            busy = false,
+                            lemma = orch.lemma ?: bestLemma,
+                            phonetic = orch.phonetic,
+                            translation = finalGloss,
+                            posGlosses = orch.posGlosses,
+                            examples = orch.examples,
+                            sourcesUsed = orch.sourcesUsed.map { it.name },
+                            lexiconEntryId = orch.lexiconEntryId,
+                            contextTranslation = finalContext,
+                            isPendingOnline = orch.isPendingOnline,
+                            error = finalError,
+                            needsModelDownload = needsDownload,
+                            marked = marked != null,
+                            level = orch.cefr ?: level?.name,
+                            phraseSection = resolvedPhraseSection,
+                        ),
+                        modelMissing = needsDownload,
+                    )
+                    finalGloss?.let { gloss ->
+                        val ui = _ui.value
+                        _ui.value = ui.copy(glosses = ui.glosses + (word.lowercase() to gloss))
+                    }
+                }
+            } else {
+                val result: WordTranslation = translation.translateWord(word, block.text)
+                _ui.value = _ui.value.copy(
+                    popup = _ui.value.popup?.copy(
+                        busy = false,
+                        lemma = bestLemma,
+                        translation = result.glossText,
+                        contextTranslation = result.contextTranslation,
+                        error = result.error?.message,
+                        needsModelDownload = result.needsModelDownload,
+                        marked = marked != null,
+                        level = level?.name,
+                        phraseSection = resolvedPhraseSection,
+                    ),
+                    modelMissing = result.needsModelDownload,
+                )
+                result.glossText?.let { gloss ->
+                    val ui = _ui.value
+                    _ui.value = ui.copy(glosses = ui.glosses + (word.lowercase() to gloss))
+                }
             }
         }
     }
@@ -1165,10 +1297,14 @@ class PlayerViewModel(
         val popup = _ui.value.popup ?: return
         val block = _ui.value.layer(TrackRole.LEARNING).block ?: return
         viewModelScope.launch {
-            val existing = popup.word?.let { runCatching { myWords.find(it) }.getOrNull() }
+            val existing = popup.word?.let {
+                runCatching { myWords.find(it) ?: popup.lemma?.let { lem -> myWords.find(lem) } }.getOrNull()
+            }
             if (existing != null) {
                 myWords.remove(existing.id)
                 _ui.value = _ui.value.copy(popup = popup.copy(marked = false))
+                wordStateKey = emptyList()
+                refreshWordStates(playback.value, _ui.value.settings)
             } else {
                 val text = popup.word ?: popup.sourceText
                 val id = myWords.mark(
@@ -1187,10 +1323,64 @@ class PlayerViewModel(
                         note = null,
                         markedAt = System.currentTimeMillis(),
                         reviewCount = 0,
+                        lemma = popup.lemma,
+                        lexiconEntryId = popup.lexiconEntryId,
+                        sourceCueEndMs = block.endMs,
+                        sourceKind = popup.sourcesUsed.firstOrNull(),
                     ),
                 )
                 _ui.value = _ui.value.copy(popup = popup.copy(marked = id != 0L))
+                wordStateKey = emptyList()
                 refreshWordStates(playback.value, _ui.value.settings)
+            }
+        }
+    }
+
+    fun togglePhraseMarkInPopup() {
+        val popup = _ui.value.popup ?: return
+        val phrase = popup.phraseSection ?: return
+        val block = _ui.value.layer(TrackRole.LEARNING).block ?: return
+        viewModelScope.launch {
+            val existing = runCatching {
+                myWords.find(phrase.headword) ?: myWords.find(phrase.lemmaKey)
+            }.getOrNull()
+            if (existing != null) {
+                myWords.remove(existing.id)
+                val nextSaved = _ui.value.savedPhraseKeys - phrase.headword.lowercase() - phrase.lemmaKey.lowercase()
+                _ui.value = _ui.value.copy(
+                    popup = popup.copy(phraseSection = phrase.copy(marked = false)),
+                    savedPhraseKeys = nextSaved,
+                )
+            } else {
+                val id = myWords.mark(
+                    MarkedWord(
+                        id = 0L,
+                        word = phrase.headword,
+                        isPhrase = true,
+                        translation = phrase.translation,
+                        contextText = block.text,
+                        contextTranslation = popup.contextTranslation,
+                        sourceTitle = playback.value.target?.title,
+                        sourceUri = playback.value.target?.uri,
+                        sourceStartMs = block.startMs,
+                        status = WordStatus.LEARNING,
+                        level = phrase.level,
+                        note = null,
+                        markedAt = System.currentTimeMillis(),
+                        reviewCount = 0,
+                        phraseType = phrase.kind.name,
+                        lemma = phrase.lemmaKey,
+                        lexiconEntryId = phrase.lexiconEntryId,
+                        surfaceParts = phrase.surfaceText,
+                        sourceCueEndMs = block.endMs,
+                        sourceKind = phrase.sourcesUsed.firstOrNull(),
+                    ),
+                )
+                val nextSaved = _ui.value.savedPhraseKeys + phrase.headword.lowercase() + phrase.lemmaKey.lowercase()
+                _ui.value = _ui.value.copy(
+                    popup = popup.copy(phraseSection = phrase.copy(marked = id != 0L)),
+                    savedPhraseKeys = nextSaved,
+                )
             }
         }
     }
@@ -1213,41 +1403,113 @@ class PlayerViewModel(
         }
     }
 
-    // ------------------------------------------------------------------ word styling (SUB-5, LRN-3)
+    // ------------------------------------------------------------------ word styling (SUB-5, LRN-3, D-45, D-50)
 
     /**
-     * Styles the words of the block on screen (SUB-5). It runs on every position tick, so it only
-     * starts work when the set of words changes, and the result is written on the main thread so
-     * it can never overwrite a newer snapshot.
+     * Styles the words and multi-word expressions of the block on screen (SUB-5, D-45, D-48, D-50).
      */
     private fun refreshWordStates(state: PlaybackState, settings: AppSettings) {
         if (settings.learning.mode == LearningMode.OFF || state.target == null) return
-        val block = documentFor(TrackRole.LEARNING)?.blockAt(
-            state.positionMs + settings.subtitleLayer(TrackRole.LEARNING).delayMs,
-        ) ?: return
+        val doc = documentFor(TrackRole.LEARNING) ?: return
+        val posMs = state.positionMs + settings.subtitleLayer(TrackRole.LEARNING).delayMs
+        val block = doc.blockAt(posMs) ?: return
         val words = block.tokens.filter { it.isWord }.map { it.text.lowercase() }.distinct()
         if (words.isEmpty() || words == wordStateKey) return
         wordStateKey = words
         wordStateJob?.cancel()
         wordStateJob = viewModelScope.launch {
-            val states = withContext(Dispatchers.Default) { computeWordStates(words, settings) }
-            if (wordStateKey == words) _ui.value = _ui.value.copy(wordStates = states)
+            val (states, spansMap, savedPhrases) = withContext(Dispatchers.Default) {
+                val st = computeWordStates(words, settings)
+                val (sp, spSaved) = computeLinePhraseSpans(doc, block, settings)
+                Triple(st, sp, spSaved)
+            }
+            if (wordStateKey == words) {
+                _ui.value = _ui.value.copy(
+                    wordStates = states,
+                    lineSpans = spansMap,
+                    savedPhraseKeys = savedPhrases,
+                )
+            }
         }
     }
 
     private suspend fun computeWordStates(words: List<String>, settings: AppSettings): Map<String, WordVisualState> {
-        val marked = runCatching { myWords.findByWords(words) }.getOrDefault(emptyMap())
+        val lex = lexiconAccessProvider()
+        val expandedLookup = LinkedHashSet<String>()
+        val wordToLemmas = HashMap<String, Set<String>>()
+        for (w in words) {
+            expandedLookup += w
+            val cands = lex?.lemmatiser(w) ?: fallbackLemmatiser.candidates(w)
+            wordToLemmas[w] = cands
+            expandedLookup.addAll(cands)
+        }
+        val marked = runCatching { myWords.findByWords(expandedLookup.toList()) }.getOrDefault(emptyMap())
         val provider = runCatching { wordLevels.provider(settings.level, settings.learning.manualLevel) }.getOrNull()
         return words.associateWith { word ->
+            val lemmas = wordToLemmas[word].orEmpty()
+            val isMarked = marked.containsKey(word) || lemmas.any { marked.containsKey(it) }
             val level = provider?.let { runCatching { it.level(word) }.getOrNull() }
             when {
-                marked.containsKey(word) -> WordVisualState.MARKED
+                isMarked -> WordVisualState.MARKED
                 level != null && level.ordinal >= settings.learning.manualLevel.ordinal &&
                     settings.learning.showAboveLevelOnly -> WordVisualState.ABOVE_LEVEL
                 level != null && level.ordinal >= settings.level.assumedLevelOfUnknownWords.ordinal -> WordVisualState.ABOVE_LEVEL
                 else -> WordVisualState.NONE
             }
         }
+    }
+
+    private suspend fun computeLinePhraseSpans(
+        doc: SubtitleDocument,
+        currentBlock: SubtitleBlock,
+        settings: AppSettings,
+    ): Pair<Map<String, List<com.sublearn.core.nlp.PhraseSpan>>, Set<String>> {
+        val lex = lexiconAccessProvider() ?: return emptyMap<String, List<com.sublearn.core.nlp.PhraseSpan>>() to emptySet()
+        val smart = settings.smartLearning
+        val nlpConfig = com.sublearn.core.nlp.NlpConfig(
+            phrasalVerbsEnabled = smart.phrasalVerbsEnabled,
+            idiomsEnabled = smart.idiomsEnabled,
+            collocationsEnabled = smart.collocationsEnabled,
+            crossBlockBridgeEnabled = smart.crossBlockBridgeEnabled,
+            confidenceThreshold = smart.confidenceThreshold,
+            showPossibleMatches = smart.showPossibleMatches,
+        )
+        val idx = doc.blocks.indexOfFirst { it.id == currentBlock.id }
+        val windowBlocks = if (idx >= 0) {
+            val from = (idx - 1).coerceAtLeast(0)
+            val to = (idx + 1).coerceAtMost(doc.blocks.lastIndex)
+            doc.blocks.subList(from, to + 1)
+        } else {
+            listOf(currentBlock)
+        }
+        val slices = windowBlocks.map { b ->
+            com.sublearn.core.nlp.CueSlice(
+                blockId = b.id,
+                startMs = b.startMs,
+                endMs = b.endMs,
+                text = b.text,
+            )
+        }
+        val tagger = if (smart.accuracyProfile != com.sublearn.core.settings.AccuracyProfileToken.BASIC) {
+            fallbackPosTagger
+        } else {
+            null
+        }
+        val analyzedByBlock = runCatching {
+            cueStreamAnalyzer.analyze(slices, lex, nlpConfig, tagger)
+        }.getOrDefault(emptyMap())
+
+        val currentSpans = analyzedByBlock[currentBlock.id].orEmpty()
+            .filter { it.isAboveThreshold(nlpConfig.confidenceThreshold) }
+        val candidateKeys = currentSpans.flatMap { listOf(it.headword.lowercase(), it.lemmaKey.lowercase()) }.distinct()
+        val savedMap = if (candidateKeys.isNotEmpty()) {
+            runCatching { myWords.findByWords(candidateKeys) }.getOrDefault(emptyMap())
+        } else {
+            emptyMap()
+        }
+        val lineKeys = (_ui.value.layer(TrackRole.LEARNING).lines.map { it.key } + "current").distinct()
+        val spansByLine = lineKeys.associateWith { currentSpans }
+        return spansByLine to savedMap.keys
     }
 
     private suspend fun levelOf(word: String): com.sublearn.core.settings.CefrLevel? {

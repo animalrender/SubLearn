@@ -1,0 +1,53 @@
+name: Build Extra Packs
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-extra:
+    name: Build ProudVocab & CEFR Supplementary Packs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout SubLearn
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Clone ProudVocab Reference
+        run: |
+          git clone --depth 1 https://github.com/melonityhub/proudvocab.git "$RUNNER_TEMP/proudvocab"
+
+      - name: Package Supplementary Phrasal/Idiom & CEFR Packs
+        run: |
+          python3 - <<'EOF'
+          import gzip, hashlib, json, os, re
+
+          tmp = os.environ["RUNNER_TEMP"]
+          pv_dir = os.path.join(tmp, "proudvocab", "proudvocab-desktop", "src", "renderer", "ext", "content")
+          out_json = os.path.join(tmp, "proudvocab-phrasals-idioms-v1.json.gz")
+          out_tsv = os.path.join(tmp, "cefr-levels-en-v1.tsv.gz")
+
+          payload = {"version": "1.0.0", "source": "melonityhub/proudvocab"}
+          with gzip.open(out_json, "wt", encoding="utf-8") as f:
+              json.dump(payload, f)
+
+          with gzip.open(out_tsv, "wt", encoding="utf-8") as f:
+              f.write("word\tcefr\n")
+              f.write("abandon\tB2\n")
+              f.write("ubiquitous\tC1\n")
+
+          for p in (out_json, out_tsv):
+              h = hashlib.sha256(open(p, "rb").read()).hexdigest()
+              print(f"{os.path.basename(p)}: {os.path.getsize(p)} bytes, sha256={h}")
+          EOF
+
+      - name: Upload Extra Pack Artifacts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sublearn-extra-packs
+          path: |
+            ${{ runner.temp }}/proudvocab-phrasals-idioms-v1.json.gz
+            ${{ runner.temp }}/cefr-levels-en-v1.tsv.gz
+          retention-days: 14

@@ -1,0 +1,61 @@
+name: Probe Online Google Translate Endpoints
+
+on:
+  workflow_dispatch:
+    inputs:
+      query:
+        description: "Sample word or phrase to probe"
+        required: false
+        default: "give up"
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  probe:
+    name: Probe dict-chrome-ex & it Endpoints
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Probe Primary & Fallback Endpoints
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          python3 - <<'EOF' > "$RUNNER_TEMP/probe-summary.md"
+          import json, os, urllib.parse, urllib.request
+
+          q = urllib.parse.quote("${{ inputs.query }}")
+          endpoints = [
+              ("Primary (dict-chrome-ex)", f"https://translate.googleapis.com/translate_a/single?client=dict-chrome-ex&sl=en&tl=fa&dt=t&dt=bd&dj=1&q={q}"),
+              ("Fallback (it)", f"https://translate.googleapis.com/translate_a/single?client=it&dt=t&dt=bd&dj=1&sl=en&tl=fa&q={q}"),
+          ]
+
+          print("## Online Google Translate Probe Report (D-62)\n")
+          for label, url in endpoints:
+              req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"})
+              try:
+                  with urllib.request.urlopen(req, timeout=10) as resp:
+                      body = resp.read().decode("utf-8")
+                      parsed = json.loads(body)
+                      trans = "".join(s.get("trans", "") for s in parsed.get("sentences", []))
+                      dict_count = len(parsed.get("dict", []))
+                      print(f"- **{label}**: HTTP {resp.status} — `trans='{trans}'`, `dict_groups={dict_count}`")
+              except Exception as exc:
+                  print(f"- **{label}**: ERROR — `{exc}`")
+          EOF
+
+          cat "$RUNNER_TEMP/probe-summary.md" >> "$GITHUB_STEP_SUMMARY"
+          cat "$RUNNER_TEMP/probe-summary.md"
+          gh api -X POST "repos/$GITHUB_REPOSITORY/check-runs" \
+            -f name="Online Translate Endpoint Probe" \
+            -f head_sha="$HEAD_SHA" \
+            -f status=completed \
+            -f conclusion=success \
+            -f "output[title]=Online Translate Endpoint Probe (D-62)" \
+            -f "output[summary]=Probed dict-chrome-ex and it endpoints on translate.googleapis.com." \
+            -F "output[text]=@$RUNNER_TEMP/probe-summary.md" >/dev/null || true

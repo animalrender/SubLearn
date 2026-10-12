@@ -4,7 +4,7 @@ package com.sublearn.core.nlp
  * Maps inflected English word forms to their lemma(s).
  *
  * Two sources are combined:
- * 1. The `lemma_form` table in the lexicon pack (irregular + learned forms)
+ * 1. The `lemma_form` table in the lexicon pack (irregular + learned forms, ordered by rank)
  * 2. A set of regular English suffix rules for verbs, nouns and adjectives
  *
  * Each form can map to multiple candidate lemmas (e.g. "saw" → {see, saw}, "left" → {leave, left}).
@@ -18,18 +18,22 @@ class Lemmatiser(
     /**
      * Return all candidate lemmas for a word form.
      *
-     * The set always includes the word itself (lowercased), because not every word
-     * is inflected and the detector needs to try the surface form as a lemma too.
+     * Rank-0 irregular lemmas come first so [bestCandidate] and iteration prefer the base lemma,
+     * followed by regular suffix rules and the lowercased surface form itself.
      */
     fun candidates(word: String): Set<String> {
-        val lower = word.lowercase()
-        val result = mutableSetOf(lower)
+        val lower = word.lowercase().trim()
+        if (lower.isEmpty()) return emptySet()
+        val result = LinkedHashSet<String>()
 
-        // 1. Check irregular forms from the lexicon
+        // 1. Check irregular forms from the lexicon first (preserves rank order)
         irregularForms[lower]?.let { result.addAll(it) }
 
         // 2. Apply regular rules
         result.addAll(applyRegularRules(lower))
+
+        // 3. Always include the lowercased surface form
+        result.add(lower)
 
         return result
     }
@@ -39,50 +43,66 @@ class Lemmatiser(
      * the one that is an actual lemma in the provided set of known lemmas.
      */
     fun bestCandidate(word: String, knownLemmas: Set<String>): String {
-        val cands = candidates(word)
-        // Prefer a candidate that is a known lemma
-        val known = cands.filter { it in knownLemmas }
-        if (known.isNotEmpty()) return known.first()
-        // Otherwise return the first non-self candidate, or self
-        return cands.firstOrNull { it != word.lowercase() } ?: word.lowercase()
+        val lower = word.lowercase().trim()
+        val cands = candidates(lower)
+        // Prefer an irregular candidate that is in knownLemmas
+        irregularForms[lower]?.firstOrNull { it in knownLemmas }?.let { return it }
+        // Otherwise any candidate in knownLemmas (preferring non-self base lemma first)
+        cands.firstOrNull { it != lower && it in knownLemmas }?.let { return it }
+        if (lower in knownLemmas) return lower
+        return cands.firstOrNull { it != lower } ?: lower
     }
 
     companion object {
         /**
          * Regular English inflection rules.
-         * Each rule: (suffix to strip, suffix to add back or "", lemma suffix condition).
          * Returns a set of candidate base forms.
          */
         private fun applyRegularRules(word: String): Set<String> {
-            val candidates = mutableSetOf<String>()
+            val candidates = LinkedHashSet<String>()
 
             // --- Verb forms ---
+            // -ying → -ie ("dying" → "die", "lying" → "lie", "tying" → "tie")
+            if (word.endsWith("ying") && word.length >= 5) {
+                candidates.add(word.dropLast(4) + "ie")
+            }
+
             // -ing → remove "ing", possibly add "e" or deduplicate consonant
-            if (word.endsWith("ing") && word.length > 5) {
+            if (word.endsWith("ing") && word.length >= 5) {
                 val stem = word.dropLast(3)
-                candidates.add(stem) // "running" → "runn" (will try dedup)
-                candidates.add(stem + "e") // "making" → "make"
-                // Deduplicate final consonant: "running" → "run"
-                if (stem.length >= 2 && stem.last() == stem[stem.length - 2] && stem.last() !in "aeiou") {
-                    candidates.add(stem.dropLast(1))
+                if (stem.length >= 2) {
+                    candidates.add(stem)
+                    candidates.add(stem + "e") // "making" → "make"
+                    // Deduplicate final consonant: "running" → "run"
+                    if (stem.last() == stem[stem.length - 2] && stem.last() !in "aeiou") {
+                        candidates.add(stem.dropLast(1))
+                    }
+                    // -ying → -y: "carrying" → "carry"
+                    if (stem.endsWith("i")) {
+                        candidates.add(stem.dropLast(1) + "y")
+                    }
                 }
-                // -ying → -y: "carrying" → "carry"
-                if (stem.endsWith("i")) {
-                    candidates.add(stem.dropLast(1) + "y")
-                }
+            }
+
+            // -ied → -y ("carried" → "carry", "tried" → "try")
+            if (word.endsWith("ied") && word.length >= 4) {
+                candidates.add(word.dropLast(3) + "y")
             }
 
             // -ed → remove "ed", possibly add "e" or deduplicate
-            if (word.endsWith("ed") && word.length > 4) {
+            if (word.endsWith("ed") && word.length >= 4) {
                 val stem = word.dropLast(2)
-                candidates.add(stem)
-                candidates.add(stem + "e")
-                if (stem.length >= 2 && stem.last() == stem[stem.length - 2] && stem.last() !in "aeiou") {
-                    candidates.add(stem.dropLast(1))
+                if (stem.length >= 2) {
+                    candidates.add(stem)
+                    candidates.add(stem + "e") // "died" → "die", "liked" → "like"
+                    if (stem.last() == stem[stem.length - 2] && stem.last() !in "aeiou") {
+                        candidates.add(stem.dropLast(1))
+                    }
                 }
             }
-            // Special: -ied → -y
-            if (word.endsWith("ied") && word.length > 4) {
+
+            // -ies → -y ("flies" → "fly", "tries" → "try")
+            if (word.endsWith("ies") && word.length >= 4) {
                 candidates.add(word.dropLast(3) + "y")
             }
 
@@ -96,12 +116,12 @@ class Lemmatiser(
             if (word.endsWith("s") && !word.endsWith("ss") && word.length > 2) {
                 candidates.add(word.dropLast(1))
             }
-            // -ies → -y
-            if (word.endsWith("ies") && word.length > 4) {
-                candidates.add(word.dropLast(3) + "y")
-            }
 
             // --- Adjective forms ---
+            // -ier → -y ("happier" → "happy")
+            if (word.endsWith("ier") && word.length > 4) {
+                candidates.add(word.dropLast(3) + "y")
+            }
             // -er → remove "er" or "er" → "e"
             if (word.endsWith("er") && word.length > 4) {
                 val stem = word.dropLast(2)
@@ -111,11 +131,11 @@ class Lemmatiser(
                     candidates.add(stem.dropLast(1))
                 }
             }
-            // -ier → -y
-            if (word.endsWith("ier") && word.length > 4) {
-                candidates.add(word.dropLast(3) + "y")
-            }
 
+            // -iest → -y ("happiest" → "happy")
+            if (word.endsWith("iest") && word.length > 5) {
+                candidates.add(word.dropLast(4) + "y")
+            }
             // -est → remove "est" or "est" → "e"
             if (word.endsWith("est") && word.length > 5) {
                 val stem = word.dropLast(3)
@@ -125,19 +145,14 @@ class Lemmatiser(
                     candidates.add(stem.dropLast(1))
                 }
             }
-            // -iest → -y
-            if (word.endsWith("iest") && word.length > 5) {
-                candidates.add(word.dropLast(4) + "y")
-            }
 
             // --- Adverb ---
             // -ly → remove "ly"
             if (word.endsWith("ly") && word.length > 4) {
-                candidates.add(word.dropLast(2))
-                // -ily → -y
                 if (word.endsWith("ily")) {
                     candidates.add(word.dropLast(3) + "y")
                 }
+                candidates.add(word.dropLast(2))
             }
 
             return candidates
@@ -147,9 +162,9 @@ class Lemmatiser(
          * Build a Lemmatiser from the lemma_form table of a lexicon pack.
          */
         fun fromLexicon(forms: List<Triple<String, String, String?>>): Lemmatiser {
-            val map = mutableMapOf<String, MutableSet<String>>()
+            val map = LinkedHashMap<String, MutableSet<String>>()
             for ((form, lemma, _) in forms) {
-                map.getOrPut(form) { mutableSetOf() }.add(lemma)
+                map.getOrPut(form.lowercase()) { LinkedHashSet() }.add(lemma.lowercase())
             }
             return Lemmatiser(map)
         }
