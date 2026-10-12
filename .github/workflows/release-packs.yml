@@ -23,7 +23,7 @@ jobs:
       - name: Download Source SQLite Database
         run: |
           if ! curl -fL --retry 3 -o "$RUNNER_TEMP/main_db.sqlite" \
-            "https://github.com/melonityhub/dictionaryproject/releases/download/v1.0.1/main_db.sqlite"; then
+            "https://github.com/melonityhub/dictionaryproject/releases/download/db1.0.0/main_db.sqlite"; then
             curl -fL --retry 3 -o "$RUNNER_TEMP/main_db.sqlite" \
               "https://raw.githubusercontent.com/melonityhub/dictionaryproject/main/docs/sample.sqlite"
           fi

@@ -511,6 +511,8 @@
     <string name="settings_trans_online_fallback_tpl">Fallback URL template</string>
     <string name="settings_trans_online_probe">Test online endpoint</string>
     <string name="settings_trans_saved_phrases_keep_color">Saved expressions keep their type color</string>
+    <string name="words_filter_words">Words</string>
+    <string name="words_filter_phrases">Phrases</string>
     <string name="words_filter_phrasal">Phrasal verbs</string>
     <string name="words_filter_idioms">Idioms</string>
     <string name="words_filter_collocations">Collocations</string>

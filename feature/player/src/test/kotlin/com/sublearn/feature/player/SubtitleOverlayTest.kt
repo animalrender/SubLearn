@@ -14,7 +14,6 @@ class SubtitleOverlayTest {
         val line = "Please pick the book up now"
         // Tokens: 0="Please", 1="pick", 2="the", 3="book", 4="up", 5="now"
         val sepSpan = PhraseSpan(
-            blockId = 1L,
             startChar = 7,
             endChar = 23,
             tokens = listOf(1, 4),
@@ -41,7 +40,6 @@ class SubtitleOverlayTest {
     fun `styleWords keeps phrase type color when savedPhrasesKeepTypeColor is true`() {
         val line = "Never gave up"
         val span = PhraseSpan(
-            blockId = 1L,
             startChar = 6,
             endChar = 13,
             tokens = listOf(1, 2),

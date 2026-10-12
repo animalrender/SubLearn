@@ -495,6 +495,8 @@
     <string name="settings_trans_online_fallback_tpl">قالب نشانی جایگزین</string>
     <string name="settings_trans_online_probe">آزمایش سرویس آنلاین</string>
     <string name="settings_trans_saved_phrases_keep_color">حفظ رنگ نوع عبارت پس از ذخیره</string>
+    <string name="words_filter_words">واژه‌ها</string>
+    <string name="words_filter_phrases">عبارت‌ها</string>
     <string name="words_filter_phrasal">افعال عبارتی</string>
     <string name="words_filter_idioms">اصطلاحات</string>
     <string name="words_filter_collocations">هم‌آیی‌ها</string>
