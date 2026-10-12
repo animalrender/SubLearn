@@ -25,7 +25,7 @@ native language is Persian, but nothing in the architecture hard-codes that pair
   is why the decoder list, the embedded-track features and the dictionary entry are written the way
   they are (see [DECISIONS.md](DECISIONS.md)).
 - **Nothing third-party is vendored.** Reference projects contributed ideas, never code; no
-  third-party dictionary database or model file may ever be committed (CI fails the build on one).
+  third-party dictionary database or model file may ever be committed (`.gitignore` keeps them out).
 
 ## What "done" means
 

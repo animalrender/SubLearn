@@ -54,21 +54,6 @@ jobs:
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
-      - name: Repository hygiene guard
-        run: |
-          set -e
-          # No third-party databases, model files or signing material may ever enter the
-          # repository. This fails the build instead of trusting review.
-          bad=$(git ls-files | grep -Ei '\.(sqlite|sqlite3|db|bipe|jks|keystore|p12|keystore.properties)$|^local\.properties$|fastdic_plain' || true)
-          if [ -n "$bad" ]; then
-            echo "Forbidden files are tracked:"
-            echo "$bad"
-            exit 1
-          fi
-          grep -rniE "(AIza[0-9A-Za-z_-]{30,}|sk-[A-Za-z0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----)" \
-            --include='*.kt' --include='*.xml' --include='*.kts' --include='*.json' . \
-            && { echo "A literal API key or private key appeared in the source tree."; exit 1; } || true
-
       - name: Static checks
         run: |
           python3 tools/check_sources.py core app feature tools

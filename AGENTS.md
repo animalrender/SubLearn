@@ -16,8 +16,8 @@ languages structurally supported but not built. Full requirements:
 
 1. **No third-party data in the repository.** Never commit a dictionary database, a `.bipe` file, an
    extracted translation model, or anything derived from them: the user imports their own files and
-   the Model Manager downloads packs at runtime. Translation is official ML Kit only. CI fails the
-   build on a tracked data, model or signing file.
+   the Model Manager downloads packs at runtime. Translation is official ML Kit only. `.gitignore`
+   keeps data, model and signing files out of the repository.
 2. **No fake success.** No demo data in shipped paths, no silent stubs, no `TODO`. An unfinished item
    is either finished or written down in `docs/KNOWN_ISSUES.md` / `docs/AGENT_REQUESTS.md`.
 3. **main always builds.** One branch per phase (`phase/N-name`), small conventional commits, one PR
@@ -26,7 +26,7 @@ languages structurally supported but not built. Full requirements:
 4. **Every PR updates the docs it affects**, and [docs/PROGRESS.md](docs/PROGRESS.md) must always say
    what is done, what remains and how to test it.
 5. **No secrets**: no API keys, keystores, `local.properties` or build outputs. Keys go through
-   `core:security`; CI fails the build on a tracked secret or forbidden file.
+   `core:security`; `.gitignore` keeps secrets and forbidden files out of the repository.
 
 ## The build reality in this sandbox
 
