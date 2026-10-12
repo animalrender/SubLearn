@@ -32,8 +32,8 @@ and `isAvailable`, `DictionaryPreference { OFFLINE_FIRST, WEB_TRANSLATE_ONLY, OF
 settings, `DictionarySections` (12 labels) for the card layout, and a disabled Dictionary tab.
 
 **Repository rule, non-negotiable**: no dictionary database or model file may ever be committed to
-this repository (`.gitignore` and the CI hygiene guard enforce it). The dictionary is a **file the
-user picks** on their own device, and the importer below defines *our own* format for it.
+this repository (`.gitignore` enforces it). The dictionary is a **file the user picks** on their own
+device, and the importer below defines *our own* format for it.
 
 **Implementation plan**
 

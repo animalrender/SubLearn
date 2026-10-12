@@ -95,7 +95,7 @@ natively in Compose from `core:designsystem` tokens (`Dimens.cardElevation`, `Ba
 Consequences for SubLearn, in force from phase 0:
 
 - `fastdic_plain.sqlite`, anything derived from it (including a trimmed `docs/sample.sqlite`), and any
-  `.bipe`/model file must never be committed — the `.gitignore` enforces this and CI fails on it.
+  `.bipe`/model file must never be committed — the `.gitignore` enforces this.
 - The offline dictionary is a **user-supplied local import**: `DictionaryProvider` + a documented
   schema + an importer that reads a file the user picks. We ship no data.
 - The result layout (meanings, synonyms/antonyms, phrasal verbs, collocations, idioms, word family,

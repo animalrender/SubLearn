@@ -9,7 +9,7 @@ Every consequential choice, with the reason and the alternative that was rejecte
 not belong in the app package or in git, so they stay outside it: what ships instead is a
 `DictionaryProvider` reading a **user-picked local file** with a documented schema, and an importer in
 `core:lexicon` for a user-picked frequency list. Enforced by `.gitignore` (`*.sqlite`, `*.db`,
-`*.bipe`, `fastdic_plain*`, `assets/dictionaries/`, `assets/models/`) and by the CI hygiene guard.
+`*.bipe`, `fastdic_plain*`, `assets/dictionaries/`, `assets/models/`).
 Translation is official ML Kit only, whose models the Play services download themselves and which we
 never repackage.
 
