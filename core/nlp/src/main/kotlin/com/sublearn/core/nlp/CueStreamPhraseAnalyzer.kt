@@ -1,9 +1,18 @@
 package com.sublearn.core.nlp
 
+import java.security.MessageDigest
+
 /**
  * A single subtitle cue or block slice in timeline order (D-45).
+ *
+ * @property cueId unique identifier for this cue within the subtitle file
+ * @property blockId the display block this cue belongs to (may span multiple cues)
+ * @property startMs start time in milliseconds
+ * @property endMs end time in milliseconds
+ * @property text raw text of the cue (before any cleanup)
  */
 data class CueSlice(
+    val cueId: Long,
     val blockId: Long,
     val startMs: Long,
     val endMs: Long,
@@ -11,26 +20,118 @@ data class CueSlice(
 )
 
 /**
+ * Maps a CueSlice-based span back to display-block coordinates.
+ * Used by the UI layer to translate analysis offsets to block/line offsets.
+ */
+data class CueOffsetMapping(
+    val cueId: Long,
+    val cueStartChar: Int,
+    val cueEndChar: Int,
+    val displayBlockId: Int,
+    val displayStartChar: Int,
+    val displayEndChar: Int,
+)
+
+/**
+ * Analysis cache key. Binds results to the exact analysis input so that
+ * changing pack/profile/normalizer invalidates the cache automatically.
+ */
+data class AnalysisCacheKey(
+    val sourceKey: String,
+    val contentHash: String,
+    val normalizerHash: String,
+    val packId: String,
+    val packVersion: String,
+    val analyzerVersion: Int,
+    val profile: String,
+) {
+    fun toCacheKey(): String {
+        val raw = "$sourceKey|$contentHash|$normalizerHash|$packId|$packVersion|$analyzerVersion|$profile"
+        return sha256(raw)
+    }
+
+    companion object {
+        fun sha256(input: String): String {
+            val digest = MessageDigest.getInstance("SHA-256")
+            return digest.digest(input.toByteArray()).joinToString("") { "%02x".format(it) }
+        }
+    }
+}
+
+/** Configuration for sentence segmentation. */
+data class SegmentConfig(
+    val maxTokensPerSegment: Int = 64,
+    val maxSpanTokens: Int = 12,
+    val maxSpanCues: Int = 3,
+    val maxSpanDurationMs: Long = 4000L,
+    val hardGapMs: Long = 1500L,
+    val softOverlapTokens: Int = 8,
+)
+
+/**
+ * Text cleanup for analysis input.
+ * Strips speaker labels, stage directions, music symbols, and normalizes quotes.
+ */
+object AnalysisTextCleanup {
+
+    private val SPEAKER_LABEL = Regex("^[A-Z][A-Z ]*:\\s*", RegexOption.MULTILINE)
+    private val STAGE_DIRECTION_SQ = Regex("\\[[^\\]]*\\]")
+    private val STAGE_DIRECTION_RND = Regex("\\([^)]*\\.\\.\\.[^)]*\\)")
+    private val MUSIC_SYMBOL = Regex("[♪♫♬\uD83C\uDFB5\uD83C\uDFB6]")
+    private val LEADING_HYPHEN = Regex("^\\s*[–—-]\\s*", RegexOption.MULTILINE)
+    private val HTML_TAGS = Regex("<[^>]+>")
+
+    private val CONTRACTIONS = mapOf(
+        "gonna" to "going to",
+        "wanna" to "want to",
+        "gotta" to "got to",
+        "gimme" to "give me",
+        "lemme" to "let me",
+        "kinda" to "kind of",
+        "'em" to "them",
+    )
+
+    fun clean(text: String): String {
+        var c = text
+        c = HTML_TAGS.replace(c, " ")
+        c = SPEAKER_LABEL.replace(c, " ")
+        c = STAGE_DIRECTION_SQ.replace(c, " ")
+        c = STAGE_DIRECTION_RND.replace(c, " ")
+        c = MUSIC_SYMBOL.replace(c, " ")
+        c = LEADING_HYPHEN.replace(c, " ")
+        c = c.replace('\u2019', '\'').replace('\u2018', '\'')
+        c = c.replace('\u201C', '"').replace('\u201D', '"')
+        c = c.replace(Regex("\\s+"), " ").trim()
+        return c
+    }
+
+    fun isContinuationStart(text: String): Boolean {
+        val t = text.trimStart()
+        return t.startsWith("...") || t.startsWith("\u2026")
+    }
+
+    fun isContinuationEnd(text: String): Boolean {
+        val t = text.trimEnd()
+        return t.endsWith("...") || t.endsWith("\u2026")
+    }
+}
+
+/**
  * Continuous cue-stream phrase analyzer (D-31 revised, D-45).
  *
- * Replaces `CrossBlockBridge` by building a continuous token stream across consecutive cues
- * where `next.startMs - prev.endMs <= maxGapMs` and `prev.text` does not end with terminal
- * sentence punctuation (`.`, `!`, `?`, `…`), running [PhraseDetector] on the continuous stream,
- * and projecting matched [PhraseSpan]s back onto each `blockId`.
+ * Operates on raw cue streams with text cleanup, segment limits,
+ * and analysis cache keyed by content hash.
  */
 class CueStreamPhraseAnalyzer(
     private val detector: PhraseDetector = DeterministicPhraseDetector(),
 ) {
 
-    /**
-     * Analyze a sequence of [CueSlice]s and return detected [PhraseSpan]s grouped by `blockId`.
-     */
     suspend fun analyze(
         cues: List<CueSlice>,
         lexicon: LexiconAccess,
         config: NlpConfig = NlpConfig.DEFAULT,
         posTagger: PosTagger? = null,
-        maxGapMs: Long = 1200L,
+        segmentConfig: SegmentConfig = SegmentConfig(),
     ): Map<Long, List<PhraseSpan>> {
         if (cues.isEmpty()) return emptyMap()
 
@@ -39,18 +140,45 @@ class CueStreamPhraseAnalyzer(
             resultByBlock.getOrPut(cue.blockId) { ArrayList() }
         }
 
-        // Partition cues into continuous sentence streams
-        val streams = ArrayList<List<CueSlice>>()
-        var currentStream = ArrayList<CueSlice>()
+        // Clean text for analysis
+        val cleanedCues = cues.map { cue ->
+            CleanedCue(
+                cueId = cue.cueId,
+                blockId = cue.blockId,
+                startMs = cue.startMs,
+                endMs = cue.endMs,
+                rawText = cue.text,
+                cleanedText = AnalysisTextCleanup.clean(cue.text),
+            )
+        }
+
+        val streams = buildStreams(cleanedCues, segmentConfig)
+
+        for (stream in streams) {
+            analyzeStream(stream, lexicon, config, posTagger, segmentConfig, resultByBlock)
+        }
+
+        return resultByBlock.mapValues { (_, list) -> list.sortedBy { it.startChar } }
+    }
+
+    private fun buildStreams(
+        cues: List<CleanedCue>,
+        segmentConfig: SegmentConfig,
+    ): List<List<CleanedCue>> {
+        val streams = ArrayList<List<CleanedCue>>()
+        var currentStream = ArrayList<CleanedCue>()
+
         for (cue in cues) {
+            if (cue.cleanedText.isBlank()) continue
             if (currentStream.isEmpty()) {
                 currentStream.add(cue)
             } else {
                 val prev = currentStream.last()
                 val gap = cue.startMs - prev.endMs
-                val canBridge = config.crossBlockBridgeEnabled &&
-                    gap <= maxGapMs &&
-                    !endsWithSentenceBoundary(prev.text)
+                val canBridge = gap <= segmentConfig.hardGapMs &&
+                    !endsWithSentenceBoundary(prev.cleanedText) &&
+                    !AnalysisTextCleanup.isContinuationEnd(prev.rawText) &&
+                    !isHardBoundaryStart(cue.rawText)
                 if (canBridge) {
                     currentStream.add(cue)
                 } else {
@@ -60,94 +188,96 @@ class CueStreamPhraseAnalyzer(
                 }
             }
         }
-        if (currentStream.isNotEmpty()) {
-            streams.add(currentStream)
+        if (currentStream.isNotEmpty()) streams.add(currentStream)
+        return streams
+    }
+
+    private suspend fun analyzeStream(
+        stream: List<CleanedCue>,
+        lexicon: LexiconAccess,
+        config: NlpConfig,
+        posTagger: PosTagger?,
+        segmentConfig: SegmentConfig,
+        resultByBlock: LinkedHashMap<Long, MutableList<PhraseSpan>>,
+    ) {
+        val mappedTokens = ArrayList<StreamToken>()
+        var virtualOffset = 0
+
+        for (cue in stream) {
+            val localTokens = tokenizeText(cue.cleanedText)
+            for (lt in localTokens) {
+                mappedTokens += StreamToken(
+                    streamToken = TokenInfo(mappedTokens.size, lt.text, virtualOffset + lt.startChar, virtualOffset + lt.endChar),
+                    cueId = cue.cueId,
+                    blockId = cue.blockId,
+                    localTokenIndex = lt.index,
+                    localStartChar = lt.startChar,
+                    localEndChar = lt.endChar,
+                )
+            }
+            virtualOffset += cue.cleanedText.length + 1
         }
 
-        // Run detection on each continuous stream and project back to blockIds
-        for (stream in streams) {
-            val mappedTokens = ArrayList<StreamToken>()
-            var virtualOffset = 0
+        if (mappedTokens.isEmpty()) return
 
-            for (slice in stream) {
-                val localTokens = tokenizeText(slice.text)
-                for (lt in localTokens) {
-                    val streamIdx = mappedTokens.size
-                    val vStart = virtualOffset + lt.startChar
-                    val vEnd = virtualOffset + lt.endChar
-                    mappedTokens += StreamToken(
-                        streamToken = TokenInfo(
-                            index = streamIdx,
-                            text = lt.text,
-                            startChar = vStart,
-                            endChar = vEnd,
-                        ),
-                        blockId = slice.blockId,
-                        localTokenIndex = lt.index,
-                        localStartChar = lt.startChar,
-                        localEndChar = lt.endChar,
-                    )
-                }
-                virtualOffset += slice.text.length + 1
-            }
+        val segments = segmentTokens(mappedTokens, segmentConfig)
 
-            if (mappedTokens.isEmpty()) continue
-
+        for (segment in segments) {
             val rawSpans = detector.detect(
-                tokens = mappedTokens.map { it.streamToken },
+                tokens = segment.map { it.streamToken },
                 lexicon = lexicon,
                 config = config,
                 posTagger = posTagger,
             )
 
             for (span in rawSpans) {
-                val firstStreamIdx = span.tokens.minOrNull() ?: continue
-                val lastStreamIdx = span.tokens.maxOrNull() ?: continue
-                if (firstStreamIdx < 0 || lastStreamIdx >= mappedTokens.size) continue
+                val firstIdx = span.tokens.minOrNull() ?: continue
+                val lastIdx = span.tokens.maxOrNull() ?: continue
+                if (firstIdx < 0 || lastIdx >= segment.size) continue
 
-                val coveredStreamTokens = (firstStreamIdx..lastStreamIdx).map { mappedTokens[it] }
-                val byBlock = coveredStreamTokens.groupBy { it.blockId }
+                val covered = (firstIdx..lastIdx).map { segment[it] }
+                val byBlock = covered.groupBy { it.blockId }
 
                 val allParts = byBlock.entries.map { (bId, toks) ->
-                    SpanPart(
-                        blockId = bId.toInt(),
-                        startChar = toks.minOf { it.localStartChar },
-                        endChar = toks.maxOf { it.localEndChar },
-                    )
+                    SpanPart(bId.toInt(), toks.minOf { it.localStartChar }, toks.maxOf { it.localEndChar })
                 }
 
                 for ((bId, toksInBlock) in byBlock) {
                     val localStart = toksInBlock.minOf { it.localStartChar }
                     val localEnd = toksInBlock.maxOf { it.localEndChar }
                     val matchedSet = span.tokens.toSet()
-                    val highlightedInBlock = toksInBlock.filter { it.streamToken.index in matchedSet }
-                    val localTokenIndices = (highlightedInBlock.ifEmpty { toksInBlock }).map { it.localTokenIndex }
+                    val highlighted = toksInBlock.filter { it.streamToken.index in matchedSet }
+                    val localIdxs = (highlighted.ifEmpty { toksInBlock }).map { it.localTokenIndex }
 
-                    val projected = PhraseSpan(
-                        startChar = localStart,
-                        endChar = localEnd,
-                        tokens = localTokenIndices,
-                        kind = span.kind,
-                        headword = span.headword,
-                        lemmaKey = span.lemmaKey,
-                        confidence = span.confidence,
-                        separable = span.separable,
-                        parts = allParts,
+                    resultByBlock.getOrPut(bId) { ArrayList() }.add(
+                        PhraseSpan(localStart, localEnd, localIdxs, span.kind, span.headword, span.lemmaKey,
+                            span.confidence, span.separable, allParts),
                     )
-                    resultByBlock.getOrPut(bId) { ArrayList() }.add(projected)
                 }
             }
         }
-
-        return resultByBlock.mapValues { (_, list) -> list.sortedBy { it.startChar } }
     }
 
+    private fun segmentTokens(tokens: List<StreamToken>, config: SegmentConfig): List<List<StreamToken>> {
+        if (tokens.size <= config.maxTokensPerSegment) return listOf(tokens)
+        val segments = ArrayList<List<StreamToken>>()
+        var start = 0
+        while (start < tokens.size) {
+            val end = (start + config.maxTokensPerSegment).coerceAtMost(tokens.size)
+            segments.add(tokens.subList(start, end))
+            start = (end - config.softOverlapTokens).coerceAtLeast(start + 1)
+        }
+        return segments
+    }
+
+    private data class CleanedCue(
+        val cueId: Long, val blockId: Long, val startMs: Long, val endMs: Long,
+        val rawText: String, val cleanedText: String,
+    )
+
     private data class StreamToken(
-        val streamToken: TokenInfo,
-        val blockId: Long,
-        val localTokenIndex: Int,
-        val localStartChar: Int,
-        val localEndChar: Int,
+        val streamToken: TokenInfo, val cueId: Long, val blockId: Long,
+        val localTokenIndex: Int, val localStartChar: Int, val localEndChar: Int,
     )
 
     companion object {
@@ -157,12 +287,7 @@ class CueStreamPhraseAnalyzer(
             val out = ArrayList<TokenInfo>()
             var idx = 0
             for (m in TOKEN_REGEX.findAll(text)) {
-                out += TokenInfo(
-                    index = idx++,
-                    text = m.value,
-                    startChar = m.range.first,
-                    endChar = m.range.last + 1,
-                )
+                out += TokenInfo(idx++, m.value, m.range.first, m.range.last + 1)
             }
             return out
         }
@@ -170,9 +295,26 @@ class CueStreamPhraseAnalyzer(
         fun endsWithSentenceBoundary(text: String): Boolean {
             val trimmed = text.trimEnd()
             if (trimmed.isEmpty()) return true
-            if (trimmed.endsWith("...") || trimmed.endsWith("…")) return false
+            if (trimmed.endsWith("...") || trimmed.endsWith("\u2026")) return false
             val last = trimmed.last()
-            return last == '.' || last == '!' || last == '?' || last == '؟' || last == ';'
+            return last == '.' || last == '!' || last == '?' || last == '\u061F' || last == ';'
+        }
+
+        private fun isHardBoundaryStart(rawText: String): Boolean {
+            val trimmed = rawText.trimStart()
+            if (trimmed.isEmpty()) return false
+            val first = trimmed.first()
+            if (first == '\u2013' || first == '\u2014' || first == '[' || first == '\u266A' || first == '\u266B') return true
+            if (trimmed.length > 2 && trimmed[0].isUpperCase()) {
+                val colonIdx = trimmed.indexOf(':')
+                if (colonIdx in 1..20 && trimmed.substring(0, colonIdx).all { it.isUpperCase() || it == ' ' }) return true
+            }
+            return false
+        }
+
+        fun computeContentHash(cues: List<CueSlice>): String {
+            val combined = cues.joinToString("\u0000") { "${it.cueId}:${AnalysisTextCleanup.clean(it.text)}" }
+            return AnalysisCacheKey.sha256(combined)
         }
     }
 }

@@ -1,0 +1,87 @@
+name: Lexicon Integration Test
+
+on:
+  pull_request:
+    paths:
+      - 'core/nlp/**'
+      - 'core/lexicon/**'
+      - 'tools/lexicon_builder/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache main_db.sqlite
+        uses: actions/cache@v4
+        with:
+          path: /tmp/main_db.sqlite
+          key: main-db-1.0.0
+          restore-keys: |
+            main-db-
+
+      - name: Download main_db.sqlite
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          curl -L -o /tmp/main_db.sqlite \
+            https://github.com/melonityhub/dictionaryproject/releases/download/db1.0.0/main_db.sqlite
+
+      - name: Build lexicon packs
+        run: |
+          mkdir -p /tmp/lexicon_out
+          python3 tools/lexicon_builder/build_lexicon.py \
+            --input /tmp/main_db.sqlite \
+            --output-dir /tmp/lexicon_out \
+            --direction en-fa --gzip
+          python3 tools/lexicon_builder/build_lexicon.py \
+            --input /tmp/main_db.sqlite \
+            --output-dir /tmp/lexicon_out \
+            --direction fa-en --gzip
+
+      - name: Validate packs
+        run: |
+          python3 tools/lexicon_builder/validate_pack.py /tmp/lexicon_out/sublearn-lexicon-en-fa-v2.sqlite --full
+          python3 tools/lexicon_builder/validate_pack.py /tmp/lexicon_out/sublearn-dict-fa-en-v1.sqlite --full
+
+      - name: Export test JSON
+        run: |
+          python3 tools/lexicon_builder/build_lexicon.py \
+            --input /tmp/main_db.sqlite \
+            --output-dir /tmp/lexicon_out \
+            --direction en-fa \
+            --export-test-json /tmp/lexicon_test_json
+
+      - name: Run JVM NLP tests
+        run: |
+          ./gradlew :core:nlp:test --no-daemon
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Lexicon Integration Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Pack | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          for f in /tmp/lexicon_out/*.sqlite*; do
+            if [ -f "$f" ]; then
+              size=$(stat -c%s "$f" 2>/dev/null || stat -f%z "$f" 2>/dev/null)
+              echo "| $(basename $f) | ${size} bytes |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done

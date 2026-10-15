@@ -28,6 +28,96 @@
 {"id": "pos-028", "type": "positive", "text": "They broke the ice at the meeting.", "expected": ["break the ice"]}
 {"id": "pos-029", "type": "positive", "text": "She sat on the fence about the decision.", "expected": ["sit on the fence"]}
 {"id": "pos-030", "type": "positive", "text": "Speak of the devil and he shall appear.", "expected": ["speak of the devil"]}
+{"id": "pos-031", "type": "positive", "text": "He set up a new company last year.", "expected": ["set up"]}
+{"id": "pos-032", "type": "positive", "text": "She takes after her mother.", "expected": ["take after"]}
+{"id": "pos-033", "type": "positive", "text": "I ran into an old friend yesterday.", "expected": ["run into"]}
+{"id": "pos-034", "type": "positive", "text": "They put off the meeting until next week.", "expected": ["put off"]}
+{"id": "pos-035", "type": "positive", "text": "She brought up an interesting point.", "expected": ["bring up"]}
+{"id": "pos-036", "type": "positive", "text": "He threw away the old newspapers.", "expected": ["throw away"]}
+{"id": "pos-037", "type": "positive", "text": "We ran into problems with the project.", "expected": ["run into"]}
+{"id": "pos-038", "type": "positive", "text": "She came across an old photograph.", "expected": ["come across"]}
+{"id": "pos-039", "type": "positive", "text": "He found out about the surprise.", "expected": ["find out"]}
+{"id": "pos-040", "type": "positive", "text": "I'll look into the matter.", "expected": ["look into"]}
+{"id": "pos-041", "type": "positive", "text": "She stood up for her rights.", "expected": ["stand up for"]}
+{"id": "pos-042", "type": "positive", "text": "They went over the details again.", "expected": ["go over"]}
+{"id": "pos-043", "type": "positive", "text": "He pulled through after the surgery.", "expected": ["pull through"]}
+{"id": "pos-044", "type": "positive", "text": "She handed in her resignation.", "expected": ["hand in"]}
+{"id": "pos-045", "type": "positive", "text": "I'll figure out a solution.", "expected": ["figure out"]}
+{"id": "pos-046", "type": "positive", "text": "He was cut off during the call.", "expected": ["cut off"]}
+{"id": "pos-047", "type": "positive", "text": "She pointed out the mistake.", "expected": ["point out"]}
+{"id": "pos-048", "type": "positive", "text": "They came across as very friendly.", "expected": ["come across"]}
+{"id": "pos-049", "type": "positive", "text": "He kept on talking for hours.", "expected": ["keep on"]}
+{"id": "pos-050", "type": "positive", "text": "She took over the company.", "expected": ["take over"]}
+{"id": "pos-051", "type": "positive", "text": "I need to sort out my finances.", "expected": ["sort out"]}
+{"id": "pos-052", "type": "positive", "text": "He ran away from home.", "expected": ["run away"]}
+{"id": "pos-053", "type": "positive", "text": "She blew up at her colleague.", "expected": ["blow up"]}
+{"id": "pos-054", "type": "positive", "text": "They put up a new fence.", "expected": ["put up"]}
+{"id": "pos-055", "type": "positive", "text": "He filled in the application form.", "expected": ["fill in"]}
+{"id": "pos-056", "type": "positive", "text": "She handed out the worksheets.", "expected": ["hand out"]}
+{"id": "pos-057", "type": "positive", "text": "I came up against a big problem.", "expected": ["come up against"]}
+{"id": "pos-058", "type": "positive", "text": "He won't give in to pressure.", "expected": ["give in"]}
+{"id": "pos-059", "type": "positive", "text": "She dropped out of university.", "expected": ["drop out"]}
+{"id": "pos-060", "type": "positive", "text": "They brought about a major change.", "expected": ["bring about"]}
+{"id": "pos-061", "type": "positive", "text": "He backed out of the deal.", "expected": ["back out"]}
+{"id": "pos-062", "type": "positive", "text": "She came down with a cold.", "expected": ["come down with"]}
+{"id": "pos-063", "type": "positive", "text": "I ran out of milk this morning.", "expected": ["run out of"]}
+{"id": "pos-064", "type": "positive", "text": "He carried on working despite the noise.", "expected": ["carry on"]}
+{"id": "pos-065", "type": "positive", "text": "She let me down when I needed her.", "expected": ["let down"]}
+{"id": "pos-066", "type": "positive", "text": "They put out the fire quickly.", "expected": ["put out"]}
+{"id": "pos-067", "type": "positive", "text": "He came up to me and said hello.", "expected": ["come up to"]}
+{"id": "pos-068", "type": "positive", "text": "I need to work out more often.", "expected": ["work out"]}
+{"id": "pos-069", "type": "positive", "text": "She turned up late to the meeting.", "expected": ["turn up"]}
+{"id": "pos-070", "type": "positive", "text": "He wore out his shoes.", "expected": ["wear out"]}
+{"id": "pos-071", "type": "positive", "text": "They went through a lot of hardship.", "expected": ["go through"]}
+{"id": "pos-072", "type": "positive", "text": "She made up a story.", "expected": ["make up"]}
+{"id": "pos-073", "type": "positive", "text": "I ran across an interesting article.", "expected": ["run across"]}
+{"id": "pos-074", "type": "positive", "text": "He took off his jacket.", "expected": ["take off"]}
+{"id": "pos-075", "type": "positive", "text": "She switched off the lights.", "expected": ["switch off"]}
+{"id": "pos-076", "type": "positive", "text": "He was blown away by the performance.", "expected": ["blow away"]}
+{"id": "pos-077", "type": "positive", "text": "She broke up with her boyfriend.", "expected": ["break up"]}
+{"id": "pos-078", "type": "positive", "text": "I can't make out what he's saying.", "expected": ["make out"]}
+{"id": "pos-079", "type": "positive", "text": "He fell apart after the divorce.", "expected": ["fall apart"]}
+{"id": "pos-080", "type": "positive", "text": "She picked up a new hobby.", "expected": ["pick up"]}
+{"id": "pos-081", "type": "positive", "text": "They cut back on spending.", "expected": ["cut back"]}
+{"id": "pos-082", "type": "positive", "text": "He brought back the book.", "expected": ["bring back"]}
+{"id": "pos-083", "type": "positive", "text": "She held back her tears.", "expected": ["hold back"]}
+{"id": "pos-084", "type": "positive", "text": "I gave away all my old clothes.", "expected": ["give away"]}
+{"id": "pos-085", "type": "positive", "text": "He hung up the phone angrily.", "expected": ["hang up"]}
+{"id": "pos-086", "type": "positive", "text": "She passed away peacefully.", "expected": ["pass away"]}
+{"id": "pos-087", "type": "positive", "text": "They showed up on time.", "expected": ["show up"]}
+{"id": "pos-088", "type": "positive", "text": "He pointed out the error in the report.", "expected": ["point out"]}
+{"id": "pos-089", "type": "positive", "text": "I need to cut down on sugar.", "expected": ["cut down"]}
+{"id": "pos-090", "type": "positive", "text": "She turned down the volume.", "expected": ["turn down"]}
+{"id": "pos-091", "type": "positive", "text": "He gave up his seat to the elderly woman.", "expected": ["give up"]}
+{"id": "pos-092", "type": "positive", "text": "She looked up the word in the dictionary.", "expected": ["look up"]}
+{"id": "pos-093", "type": "positive", "text": "He ran into his teacher at the mall.", "expected": ["run into"]}
+{"id": "pos-094", "type": "positive", "text": "We need to wrap up this meeting.", "expected": ["wrap up"]}
+{"id": "pos-095", "type": "positive", "text": "She wrote down the instructions.", "expected": ["write down"]}
+{"id": "pos-096", "type": "positive", "text": "He washed up the dishes.", "expected": ["wash up"]}
+{"id": "pos-097", "type": "positive", "text": "They called off the wedding.", "expected": ["call off"]}
+{"id": "pos-098", "type": "positive", "text": "She brushed up on her French.", "expected": ["brush up"]}
+{"id": "pos-099", "type": "positive", "text": "I came across your profile online.", "expected": ["come across"]}
+{"id": "pos-100", "type": "positive", "text": "He took up gardening as a hobby.", "expected": ["take up"]}
+{"id": "pos-101", "type": "positive", "text": "She cleared up the misunderstanding.", "expected": ["clear up"]}
+{"id": "pos-102", "type": "positive", "text": "They went along with the plan.", "expected": ["go along with"]}
+{"id": "pos-103", "type": "positive", "text": "He dropped by for a quick visit.", "expected": ["drop by"]}
+{"id": "pos-104", "type": "positive", "text": "She brought up her children alone.", "expected": ["bring up"]}
+{"id": "pos-105", "type": "positive", "text": "I let go of the rope.", "expected": ["let go"]}
+{"id": "pos-106", "type": "positive", "text": "He got along with everyone.", "expected": ["get along"]}
+{"id": "pos-107", "type": "positive", "text": "She came into a large inheritance.", "expected": ["come into"]}
+{"id": "pos-108", "type": "positive", "text": "They set off early in the morning.", "expected": ["set off"]}
+{"id": "pos-109", "type": "positive", "text": "He burned down the old barn.", "expected": ["burn down"]}
+{"id": "pos-110", "type": "positive", "text": "She pointed out the landmarks.", "expected": ["point out"]}
+{"id": "pos-111", "type": "positive", "text": "I got over the flu last week.", "expected": ["get over"]}
+{"id": "pos-112", "type": "positive", "text": "He ended up staying home.", "expected": ["end up"]}
+{"id": "pos-113", "type": "positive", "text": "She put on her coat.", "expected": ["put on"]}
+{"id": "pos-114", "type": "positive", "text": "They did away with the old rules.", "expected": ["do away with"]}
+{"id": "pos-115", "type": "positive", "text": "He came out with a bold statement.", "expected": ["come out with"]}
+{"id": "pos-116", "type": "positive", "text": "She looked after the neighbor's cat.", "expected": ["look after"]}
+{"id": "pos-117", "type": "positive", "text": "I ran over the plan one more time.", "expected": ["run over"]}
+{"id": "pos-118", "type": "positive", "text": "He opened up about his past.", "expected": ["open up"]}
+{"id": "pos-119", "type": "positive", "text": "She kept up with the latest news.", "expected": ["keep up with"]}
+{"id": "pos-120", "type": "positive", "text": "They came about because of the storm.", "expected": ["come about"]}
 {"id": "neg-001", "type": "negative", "text": "She looked up at the sky and smiled.", "not_expected": ["look up"]}
 {"id": "neg-002", "type": "negative", "text": "She turned the corner and disappeared.", "not_expected": ["turn down"]}
 {"id": "neg-003", "type": "negative", "text": "In truth, I never liked him.", "not_expected_phrases": true}
@@ -44,17 +134,77 @@
 {"id": "neg-014", "type": "negative", "text": "She went to the store for milk.", "not_expected_phrases": true}
 {"id": "neg-015", "type": "negative", "text": "He came to the party last night.", "not_expected_phrases": true}
 {"id": "neg-016", "type": "negative", "text": "We are going to be late for the meeting.", "not_expected_phrases": true}
+{"id": "neg-017", "type": "negative", "text": "The way he looked at me was strange.", "not_expected_phrases": true}
+{"id": "neg-018", "type": "negative", "text": "A lot of people came to the event.", "not_expected_phrases": true}
+{"id": "neg-019", "type": "negative", "text": "He turned the lights on in the room.", "not_expected": ["turn down"]}
+{"id": "neg-020", "type": "negative", "text": "She picked up speed as she ran.", "not_expected": ["pick up"]}
+{"id": "neg-021", "type": "negative", "text": "At that point, he decided to leave.", "not_expected_phrases": true}
+{"id": "neg-022", "type": "negative", "text": "Take it from me, she's talented.", "not_expected_phrases": true}
+{"id": "neg-023", "type": "negative", "text": "He set the alarm for seven o'clock.", "not_expected": ["set up"]}
+{"id": "neg-024", "type": "negative", "text": "She ran the company for ten years.", "not_expected": ["run out of"]}
+{"id": "neg-025", "type": "negative", "text": "The pas seul was beautifully performed.", "not_expected_phrases": true}
+{"id": "neg-026", "type": "negative", "text": "He put the kettle on the stove.", "not_expected": ["put up"]}
+{"id": "neg-027", "type": "negative", "text": "I carry my phone everywhere.", "not_expected": ["carry on"]}
+{"id": "neg-028", "type": "negative", "text": "She came to a stop at the red light.", "not_expected": ["come up with"]}
+{"id": "neg-029", "type": "negative", "text": "He worked at the factory.", "not_expected": ["work out"]}
+{"id": "neg-030", "type": "negative", "text": "She held the door open for me.", "not_expected": ["hold back"]}
+{"id": "neg-031", "type": "negative", "text": "He ran a marathon last year.", "not_expected": ["run into"]}
+{"id": "neg-032", "type": "negative", "text": "She took the children to school.", "not_expected": ["take over"]}
+{"id": "neg-033", "type": "negative", "text": "He gave his opinion freely.", "not_expected": ["give up"]}
+{"id": "neg-034", "type": "negative", "text": "The plane took off on time.", "not_expected": ["take off"]}
+{"id": "neg-035", "type": "negative", "text": "She broke the glass accidentally.", "not_expected": ["break up"]}
+{"id": "neg-036", "type": "negative", "text": "He looked out the window.", "not_expected": ["look forward to"]}
+{"id": "neg-037", "type": "negative", "text": "They made a cake for the party.", "not_expected": ["make up"]}
+{"id": "neg-038", "type": "negative", "text": "She ran through the park quickly.", "not_expected": ["run into"]}
+{"id": "neg-039", "type": "negative", "text": "He passed the ball to his teammate.", "not_expected": ["pass away"]}
+{"id": "neg-040", "type": "negative", "text": "She handed him the letter.", "not_expected": ["hand in"]}
+{"id": "neg-041", "type": "negative", "text": "He cut the bread with a knife.", "not_expected": ["cut off"]}
+{"id": "neg-042", "type": "negative", "text": "She dropped the vase on the floor.", "not_expected": ["drop out"]}
+{"id": "neg-043", "type": "negative", "text": "He kept the secret for years.", "not_expected": ["keep up with"]}
+{"id": "neg-044", "type": "negative", "text": "The way things are going, we'll be fine.", "not_expected_phrases": true}
+{"id": "neg-045", "type": "negative", "text": "Have to go now, sorry.", "not_expected_phrases": true}
+{"id": "neg-046", "type": "negative", "text": "She brought her lunch from home.", "not_expected": ["bring up"]}
+{"id": "neg-047", "type": "negative", "text": "He let his dog out in the garden.", "not_expected": ["let down"]}
+{"id": "neg-048", "type": "negative", "text": "She showed him the way to the station.", "not_expected": ["show up"]}
+{"id": "neg-049", "type": "negative", "text": "He turned his head to look.", "not_expected": ["turn down"]}
+{"id": "neg-050", "type": "negative", "text": "She set the table for dinner.", "not_expected": ["set off"]}
 {"id": "cue-001", "type": "two_cue", "cues": ["I never thought she would give", "up so easily."], "expected": ["give up"]}
 {"id": "cue-002", "type": "two_cue", "cues": ["It's a piece", "of cake."], "expected": ["piece of cake"]}
 {"id": "cue-003", "type": "two_cue", "cues": ["Don't beat around", "the bush."], "expected": ["beat around the bush"]}
 {"id": "cue-004", "type": "two_cue", "cues": ["She has made up her", "mind about the job."], "expected": ["make up one's mind"]}
-{"id": "cue-005", "type": "two_cue_hard_boundary", "cues": ["He gave.", "Up next is the news."], "expected": [], "note": "Hard boundary after period — should NOT bridge"}
+{"id": "cue-005", "type": "two_cue_hard_boundary", "cues": ["He gave.", "Up next is the news."], "expected": [], "note": "Hard boundary — should NOT bridge"}
 {"id": "cue-006", "type": "two_cue_hard_boundary", "cues": ["She looked up.", "At the sky she stared."], "expected": [], "note": "Hard boundary — 'looked up' should not cross"}
-{"id": "noise-001", "type": "noise", "text": "<i>She gave up everything.</i>", "expected": ["give up"], "note": "HTML tags should be stripped"}
-{"id": "noise-002", "type": "noise", "text": "He  broke   down    crying.", "expected": ["break down"], "note": "Extra spaces should be collapsed"}
+{"id": "cue-007", "type": "two_cue", "cues": ["She will never give", "up on her dream."], "expected": ["give up"]}
+{"id": "cue-008", "type": "two_cue", "cues": ["He came up", "with a solution."], "expected": ["come up with"]}
+{"id": "cue-009", "type": "two_cue", "cues": ["They need to cut", "corners on this project."], "expected": ["cut corners"]}
+{"id": "cue-010", "type": "two_cue", "cues": ["Don't let", "me down now."], "expected": ["let down"]}
+{"id": "cue-011", "type": "two_cue", "cues": ["She will figure", "it out eventually."], "expected": ["figure out"]}
+{"id": "cue-012", "type": "two_cue", "cues": ["He can't make", "out the words."], "expected": ["make out"]}
+{"id": "cue-013", "type": "two_cue", "cues": ["We should wrap", "this up soon."], "expected": ["wrap up"]}
+{"id": "cue-014", "type": "two_cue_hard_boundary", "cues": ["She broke.", "Down the street she ran."], "expected": [], "note": "Hard boundary after period"}
+{"id": "cue-015", "type": "two_cue", "cues": ["They called off", "the match."], "expected": ["call off"]}
+{"id": "cue-016", "type": "two_cue", "cues": ["He got over", "the illness."], "expected": ["get over"]}
+{"id": "cue-017", "type": "two_cue", "cues": ["I need to sort", "out my files."], "expected": ["sort out"]}
+{"id": "cue-018", "type": "two_cue", "cues": ["She was blown away", "by the view."], "expected": ["blow away"]}
+{"id": "cue-019", "type": "two_cue_hard_boundary", "cues": ["He set.", "Off the alarm rang."], "expected": [], "note": "Hard boundary — different sentence"}
+{"id": "cue-020", "type": "two_cue", "cues": ["They brought about", "real change."], "expected": ["bring about"]}
+{"id": "noise-001", "type": "noise", "text": "<i>She gave up everything.</i>", "expected": ["give up"], "note": "HTML tags stripped"}
+{"id": "noise-002", "type": "noise", "text": "He  broke   down    crying.", "expected": ["break down"], "note": "Extra spaces collapsed"}
 {"id": "noise-003", "type": "noise", "text": "They ran out of time...", "expected": ["run out of"], "note": "Trailing ellipsis"}
-{"id": "noise-004", "type": "noise", "text": "John: I kicked the bucket yesterday.", "expected": ["kick the bucket"], "note": "Speaker label to strip"}
+{"id": "noise-004", "type": "noise", "text": "John: I kicked the bucket yesterday.", "expected": ["kick the bucket"], "note": "Speaker label stripped"}
 {"id": "noise-005", "type": "noise", "text": "[MUSIC] She came up with an idea.", "expected": ["come up with"], "note": "Sound effect tag"}
 {"id": "noise-006", "type": "noise", "text": "I'm gonna look it up later.", "expected": ["look up"], "note": "gonna contraction"}
 {"id": "noise-007", "type": "noise", "text": "Wanna give it up? Go ahead.", "expected": ["give up"], "note": "wanna contraction"}
 {"id": "noise-008", "type": "noise", "text": "He's gonna break down if you push him.", "expected": ["break down"], "note": "gonna + break down"}
+{"id": "noise-009", "type": "noise", "text": "<b>Don't beat around</b> the bush.", "expected": ["beat around the bush"], "note": "Bold tag mid-phrase"}
+{"id": "noise-010", "type": "noise", "text": "– She gave up her seat.", "expected": ["give up"], "note": "Leading dash"}
+{"id": "noise-011", "type": "noise", "text": "MARY: She picked the book up.", "expected": ["pick up"], "note": "Speaker label + separated phrasal"}
+{"id": "noise-012", "type": "noise", "text": "[LAUGHTER] He kicked the bucket.", "expected": ["kick the bucket"], "note": "Laughter tag"}
+{"id": "noise-013", "type": "noise", "text": "I'm gonna put up with it.", "expected": ["put up with"], "note": "gonna + put up with"}
+{"id": "noise-014", "type": "noise", "text": "She\u2019s gonna run out of time.", "expected": ["run out of"], "note": "Curly apostrophe + gonna"}
+{"id": "noise-015", "type": "noise", "text": "They looked forward\u2026 to the weekend.", "expected": ["look forward to"], "note": "Unicode ellipsis in phrase"}
+{"id": "noise-016", "type": "noise", "text": "♪ She turned the offer down ♪", "expected": ["turn down"], "note": "Music symbols"}
+{"id": "noise-017", "type": "noise", "text": "BOB: Gonna give up now?", "expected": ["give up"], "note": "Speaker + gonna"}
+{"id": "noise-018", "type": "noise", "text": "He found out about it <i>yesterday</i>.", "expected": ["find out"], "note": "HTML tag after phrase"}
+{"id": "noise-019", "type": "noise", "text": "She  let  the  cat  out  of  the  bag.", "expected": ["let the cat out of the bag"], "note": "Extra spaces throughout"}
+{"id": "noise-020", "type": "noise", "text": "JOHN: I can\u2019t make out what she\u2019s saying.", "expected": ["make out"], "note": "Speaker + curly quotes"}

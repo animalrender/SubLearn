@@ -11,6 +11,8 @@
     <string name="menu_settings">تنظیمات</string>
     <string name="coming_soon">به‌زودی</string>
     <string name="coming_soon_body">این بخش هنوز ساخته نشده است. بقیه‌ی برنامه بدون آن کار می‌کند.</string>
+    <string name="learn_placeholder_title">یادگیری از PDF، مرورگر و تصویر</string>
+    <string name="learn_placeholder_body">به‌زودی — یادگیری مبتنی بر زیرنویس، پروفایل‌های هوشمند و ابزارهای لغت‌نامه در تنظیمات در دسترس هستند.</string>
     <string name="home_open_file">باز کردن ویدیو</string>
     <string name="home_open_url">باز کردن پیوند</string>
     <string name="home_recent_title">ادامه‌ی تماشا</string>
@@ -31,6 +33,10 @@
     <string name="action_reset">بازگردانی</string>
     <string name="action_add">افزودن</string>
     <string name="action_remove">حذف کردن</string>
+    <string name="action_download">دانلود</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_retry">تلاش دوباره</string>
+    <string name="status_installed">نصب شده</string>
     <string name="action_search">جستجو</string>
     <string name="action_apply">اعمال</string>
     <string name="player_no_media">چیزی برای پخش نیست</string>

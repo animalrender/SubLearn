@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,7 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
@@ -99,8 +100,10 @@ fun SettingsScreen(
     var section by remember { mutableStateOf(startSection) }
     var query by remember { mutableStateOf("") }
 
+    // Use WindowInsets(0) to avoid double-insets when nested inside the app-level Scaffold (§4.3)
     Scaffold(
         modifier = modifier,
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(section.settingsTitleRes())) },
@@ -108,8 +111,8 @@ fun SettingsScreen(
                     val atRoot = section == "root"
                     IconButton(onClick = { if (atRoot) onBack() else section = "root" }) {
                         Icon(
-                            imageVector = if (atRoot) Icons.Default.Close else Icons.Default.ArrowBack,
-                            contentDescription = stringResource(R.string.action_close),
+                            imageVector = if (atRoot) Icons.AutoMirrored.Filled.ArrowBack else Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back),
                         )
                     }
                 },
