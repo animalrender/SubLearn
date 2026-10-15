@@ -135,10 +135,10 @@ enum class WordSort(val labelRes: Int) {
 
     val comparator: Comparator<MarkedWord>
         get() = when (this) {
-            NEWEST -> compareByDescending { it.markedAt }.thenBy { it.word.lowercase() }
-            OLDEST -> compareBy { it.markedAt }.thenBy { it.word.lowercase() }
-            ALPHABETICAL -> compareBy({ it.word.lowercase() }, { it.markedAt })
-            LEVEL -> compareBy({ it.level ?: "~~" }, { it.word.lowercase() })
+            NEWEST -> compareByDescending<MarkedWord> { it.markedAt }.thenBy { it.word.lowercase() }
+            OLDEST -> compareBy<MarkedWord> { it.markedAt }.thenBy { it.word.lowercase() }
+            ALPHABETICAL -> compareBy<MarkedWord>({ it.word.lowercase() }, { it.markedAt })
+            LEVEL -> compareBy<MarkedWord>({ it.level ?: "~~" }, { it.word.lowercase() })
         }
 }
 
