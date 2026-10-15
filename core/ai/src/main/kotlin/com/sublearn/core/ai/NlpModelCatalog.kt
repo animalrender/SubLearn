@@ -110,6 +110,13 @@ object NlpModelCatalog {
 
     val byId: Map<String, NlpModel> = all.associateBy { it.id }
 
+    /**
+     * Further models the SMART tier may run instead of [QWEN25_05B]. All three are LiteRT LLMs;
+     * the smaller two exist for phones that cannot hold the 0.5B weights, so the tier is a set of
+     * choices rather than one mandatory download.
+     */
+    val smartAlternatives: List<NlpModel> = listOf(SMOLLM2_360M, GEMMA3_270M)
+
     /** The models a profile needs on top of the lexicon pack. */
     fun modelsFor(profile: ProfileTier): List<NlpModel> = when (profile) {
         ProfileTier.BASIC -> emptyList()

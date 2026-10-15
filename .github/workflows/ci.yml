@@ -62,7 +62,9 @@ jobs:
           python3 tools/check_resources.py core app feature
           python3 tools/check_docs.py --repo-root .
           python3 tools/check_schema.py --repo-root .
+          python3 tools/check_catalog.py --repo-root .
           python3 -m unittest tools/test_update_catalog.py
+          python3 -m unittest tools/test_check_catalog.py
           python3 -m unittest tools/lexicon_builder/test_lexicon_builder.py
 
       - name: Assemble, unit test, lint
