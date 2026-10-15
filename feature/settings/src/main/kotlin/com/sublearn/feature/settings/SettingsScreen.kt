@@ -138,6 +138,7 @@ fun SettingsScreen(
                 "gestures" -> GesturesSection(settings, viewModel)
                 "shadowing" -> ShadowingSection(settings, viewModel)
                 "learning" -> LearningSection(settings, viewModel)
+                "models" -> ModelsSection(viewModel)
                 "ai" -> AiSection(settings, viewModel, onOpenPrompt = { section = "prompt" })
                 "translation" -> TranslationSection(settings, viewModel)
                 "dictionary" -> DictionarySection(settings, viewModel)
@@ -190,6 +191,8 @@ private enum class Sections(val id: String, val titleRes: Int, val hintRes: Int,
     Ai("ai", R.string.settings_category_ai, R.string.settings_hint_ai, listOf("openai", "gemini", "anthropic", "key", "prompt")),
     Translation("translation", R.string.settings_category_translation, R.string.settings_hint_translation, listOf("ml kit", "model",
         "cache")),
+    Models("models", R.string.settings_category_models, R.string.settings_hint_models, listOf("download", "model", "pack", "ml kit",
+        "storage", "دانلود", "مدل")),
     Dictionary("dictionary", R.string.settings_category_dictionary, R.string.settings_hint_dictionary, listOf("dictionary", "offline",
         "فرهنگ")),
     QuickActions("quick", R.string.settings_category_quick_actions, R.string.settings_hint_quick_actions, listOf("button", "dock", "icon")),

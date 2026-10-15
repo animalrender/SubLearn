@@ -17,6 +17,7 @@ import com.sublearn.core.settings.AiProviderToken
 import com.sublearn.core.settings.ImportMode
 import com.sublearn.core.settings.ImportReport
 import com.sublearn.core.settings.SettingsRepository
+import com.sublearn.core.translate.MlKitModelInstaller
 import com.sublearn.core.translate.TranslationService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,6 +40,7 @@ class SettingsViewModel(
     private val secrets: SecretStore,
     private val ai: AiAssistant,
     private val context: Context,
+    private val mlKitInstaller: MlKitModelInstaller,
 ) : ViewModel() {
     val settings: StateFlow<AppSettings> = settingsRepository.settings
 
@@ -50,6 +52,51 @@ class SettingsViewModel(
 
     private val _modelProgress = MutableStateFlow<Float?>(null)
     val modelProgress: StateFlow<Float?> = _modelProgress.asStateFlow()
+
+    /**
+     * State of the manually installed ML Kit translation model (§3.1), independent of the
+     * SDK-managed download shown on the Translation screen.
+     */
+    private val _mlKitState = MutableStateFlow<MlKitModelInstaller.InstallState>(
+        if (mlKitInstaller.isInstalled(MlKitModelInstaller.EN_FA_METADATA.pair)) {
+            MlKitModelInstaller.InstallState.Installed
+        } else {
+            MlKitModelInstaller.InstallState.NotInstalled
+        },
+    )
+    val mlKitState: StateFlow<MlKitModelInstaller.InstallState> = _mlKitState.asStateFlow()
+
+    /** Download and install the EN↔FA ML Kit model from Google's CDN (§3.1). */
+    fun installMlKitModel() {
+        viewModelScope.launch {
+            mlKitInstaller.install(MlKitModelInstaller.EN_FA_METADATA) { state ->
+                _mlKitState.value = state
+            }.fold(
+                onSuccess = { _status.value = SettingsStatus.Info("the translation model is installed") },
+                onFailure = { error ->
+                    _mlKitState.value = MlKitModelInstaller.InstallState.Error(
+                        error.message ?: "the download failed",
+                    )
+                    _status.value = SettingsStatus.Error(error.message ?: "the download failed")
+                },
+            )
+        }
+    }
+
+    /** Remove the manually installed model copy. */
+    fun deleteMlKitModel() {
+        viewModelScope.launch {
+            mlKitInstaller.delete(MlKitModelInstaller.EN_FA_METADATA.pair).fold(
+                onSuccess = {
+                    _mlKitState.value = MlKitModelInstaller.InstallState.NotInstalled
+                    _status.value = SettingsStatus.Info("the translation model was removed")
+                },
+                onFailure = { error ->
+                    _status.value = SettingsStatus.Error(error.message ?: "the model could not be removed")
+                },
+            )
+        }
+    }
 
     sealed interface SettingsStatus {
         data object Idle : SettingsStatus

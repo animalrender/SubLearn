@@ -75,7 +75,7 @@ dependencies {
 
     implementation(project(":core:data"))
 
-    implementation(project(":core:translate"))
+    api(project(":core:translate"))
 
     implementation(project(":core:player"))
 

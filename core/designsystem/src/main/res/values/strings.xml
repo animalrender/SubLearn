@@ -170,6 +170,7 @@
     <string name="settings_category_appearance">Appearance</string>
     <string name="settings_category_about">About</string>
     <string name="settings_category_translation">Translation</string>
+    <string name="settings_category_models">Models &amp; Downloads</string>
     <string name="settings_category_quick_actions">Buttons and docks</string>
     <string name="settings_export">Export settings</string>
     <string name="settings_import">Import settings</string>
@@ -282,6 +283,7 @@
     <string name="settings_hint_learning">Modes, level, cards, colours</string>
     <string name="settings_hint_ai">Provider, key, prompt, limits</string>
     <string name="settings_hint_translation">On-device engine and its cache</string>
+    <string name="settings_hint_models">Download models, packs and language data</string>
     <string name="settings_hint_dictionary">Offline dictionary import</string>
     <string name="settings_hint_quick_actions">Buttons on the player and their places</string>
     <string name="settings_hint_about">Version, export and import</string>
@@ -504,6 +506,11 @@
     <string name="settings_trans_mode">Translation orchestration</string>
     <string name="settings_trans_mode_priority">Priority chain (stop at first hit)</string>
     <string name="settings_trans_mode_merge">Merge all enabled sources</string>
+    <string name="settings_models_installed_header">Downloads</string>
+    <string name="settings_models_mlkit_name">Offline translation model (EN &#8596; FA)</string>
+    <string name="settings_models_mlkit_desc">Google ML Kit neural translation, stored on the device</string>
+    <string name="settings_models_mlkit_info">Downloads the EN&#8596;FA pair from the Google content network, verifies its SHA-256 checksum, rejects unsafe archive paths and installs it atomically. Once installed, translation works with no network at all.</string>
+    <string name="settings_models_footer">Installed items stay in this list so you can remove them; a download in progress can be cancelled at any time.</string>
     <string name="settings_trans_sources_header">Translation sources &amp; priority</string>
     <string name="settings_trans_source_pack">Offline Lexicon Pack v2</string>
     <string name="settings_trans_source_mlkit">Google ML Kit (on-device)</string>

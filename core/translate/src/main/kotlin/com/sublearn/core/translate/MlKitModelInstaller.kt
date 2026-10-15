@@ -12,13 +12,14 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
-import java.security.MessageDigest
-import java.util.zip.ZipEntry
-import java.util.zip.ZipInputStream
 
 /**
  * Robust ML Kit translation model installer with HTTP download, SHA-256 verification,
  * zip-slip protection, and atomic installation.
+ *
+ * The pure logic (URL scheme, checksum, archive handling) lives in [MlKitInstallLogic]
+ * so it is unit testable without an Android context; this class only adds the
+ * Android file locations, the network transfer and its progress reporting.
  *
  * Reference: `melonityhub/dictionaryproject` `mlkit_models.py` and `translate_models_metadata.json`.
  *
@@ -29,21 +30,6 @@ class MlKitModelInstaller(
     private val context: Context,
     private val logger: SubLearnLogger? = null,
 ) {
-    /**
-     * Metadata for a translation model pair.
-     */
-    data class ModelMetadata(
-        val pair: String,       // e.g. "en_fa"
-        val version: Int,       // V
-        val revision: Int,      // RV
-        val downloadSize: Long, // DL_SZ
-        val installedSize: Long,// SZ
-        val sha256: String,     // HASH
-    )
-
-    private val installBaseDir: File
-        get() = File(context.noBackupFilesDir, "com.google.mlkit.translate.models")
-
     /**
      * Current state of a model download/install.
      */
@@ -56,15 +42,9 @@ class MlKitModelInstaller(
         data class Error(val message: String, val retryable: Boolean = true) : InstallState()
     }
 
-    /**
-     * Build the download URL for a model pair.
-     * Primary: https://dl.google.com/translate/offline/v{V}/high/r{RV}/{pair}.zip
-     * Fallback: https://redirector.gvt1.com/edgedl/translate/offline/v{V}/high/r{RV}/{pair}.zip
-     */
-    fun buildDownloadUrl(meta: ModelMetadata, useFallback: Boolean = false): String {
-        val host = if (useFallback) "redirector.gvt1.com" else "dl.google.com"
-        return "https://$host/translate/offline/v${meta.version}/high/r${meta.revision}/${meta.pair}.zip"
-    }
+    /** Build the download URL for a model pair (see [MlKitInstallLogic.buildDownloadUrl]). */
+    fun buildDownloadUrl(meta: MlKitModelMetadata, useFallback: Boolean = false): String =
+        MlKitInstallLogic.buildDownloadUrl(meta, useFallback)
 
     /**
      * Download and install a translation model pair.
@@ -74,27 +54,30 @@ class MlKitModelInstaller(
      * @return success or error
      */
     suspend fun install(
-        meta: ModelMetadata,
+        meta: MlKitModelMetadata,
         onProgress: (InstallState) -> Unit = {},
     ): AppResult<Unit> = withContext(Dispatchers.IO) {
         val pairDir = getInstallDir(meta.pair)
         val partFile = File(context.cacheDir, "mlkit_${meta.pair}.zip.part")
 
         try {
-            // 1. Download with resume
+            // 1. Download (with redirect-host fallback)
             onProgress(InstallState.Downloading(0, meta.downloadSize))
-            val downloadResult = downloadWithResume(meta, partFile, onProgress)
+            val downloadResult = download(meta, partFile, onProgress)
             if (downloadResult is AppResult.Failure) {
                 return@withContext downloadResult
             }
 
             // 2. Verify SHA-256
             onProgress(InstallState.Verifying)
-            val hash = sha256(partFile)
-            if (hash.lowercase() != meta.sha256.lowercase()) {
+            val hash = MlKitInstallLogic.sha256(partFile)
+            if (meta.sha256.isNotBlank() && hash.lowercase() != meta.sha256.lowercase()) {
                 partFile.delete()
                 return@withContext AppResult.failure(
-                    SubLearnError(SubLearnError.Kind.Unknown, "SHA-256 mismatch: expected ${meta.sha256}, got $hash")
+                    SubLearnError(
+                        SubLearnError.Kind.MalformedInput,
+                        "SHA-256 mismatch: expected ${meta.sha256}, got $hash",
+                    ),
                 )
             }
 
@@ -103,23 +86,23 @@ class MlKitModelInstaller(
             val tempDir = File(context.cacheDir, "mlkit_unzip_${meta.pair}")
             tempDir.deleteRecursively()
             tempDir.mkdirs()
-            val unzipResult = unzipSafe(partFile, tempDir)
+            val unzipResult = MlKitInstallLogic.unzipSafe(partFile, tempDir)
             if (unzipResult is AppResult.Failure) {
                 tempDir.deleteRecursively()
                 return@withContext unzipResult
             }
 
-            // 4. Validate structure
-            val validationResult = validateStructure(tempDir, meta.pair)
+            // 4. Validate the extracted layout
+            val validationResult = MlKitInstallLogic.validateStructure(tempDir, meta.pair)
             if (validationResult is AppResult.Failure) {
                 tempDir.deleteRecursively()
                 return@withContext validationResult
             }
 
-            // 5. Atomic install: move to final location
+            // 5. Atomic install: drop the old copy, then move the verified one into place
             pairDir.deleteRecursively()
+            pairDir.parentFile?.mkdirs()
             if (!tempDir.renameTo(pairDir)) {
-                // Fallback: copy and delete
                 tempDir.copyRecursively(pairDir, overwrite = true)
                 tempDir.deleteRecursively()
             }
@@ -160,160 +143,88 @@ class MlKitModelInstaller(
      */
     fun isInstalled(pair: String): Boolean {
         val dir = getInstallDir(pair)
-        return dir.exists() && dir.isDirectory && dir.listFiles()?.isNotEmpty() == true
+        return dir.isDirectory && dir.listFiles()?.isNotEmpty() == true
     }
 
-    private fun getInstallDir(pair: String): File {
-        // Same layout as offdic: noBackupFilesDir/com.google.mlkit.translate.models/<pair>/
-        return File(context.noBackupFilesDir, "com.google.mlkit.translate.models/$pair")
-    }
+    /** Same layout ML Kit itself uses: `noBackupFilesDir/com.google.mlkit.translate.models/<pair>/`. */
+    private fun getInstallDir(pair: String): File =
+        File(context.noBackupFilesDir, "$MODELS_DIR/$pair")
 
-    private suspend fun downloadWithResume(
-        meta: ModelMetadata,
-        partFile: File,
+    private suspend fun download(
+        meta: MlKitModelMetadata,
+        target: File,
         onProgress: (InstallState) -> Unit,
     ): AppResult<Unit> {
-        var useFallback = false
-        var attempts = 0
-        val maxAttempts = 3
+        var lastError: Throwable? = null
 
-        while (attempts < maxAttempts) {
-            attempts++
+        for (useFallback in listOf(false, true)) {
             try {
-                val existingBytes = if (partFile.exists()) partFile.length() else 0L
-                val downloadUrl = buildDownloadUrl(meta, useFallback)
-                val conn = URL(downloadUrl).openConnection() as HttpURLConnection
-                conn.connectTimeout = 30_000
-                conn.readTimeout = 60_000
-                if (existingBytes > 0) {
-                    conn.setRequestProperty("Range", "bytes=$existingBytes-")
-                }
+                val url = MlKitInstallLogic.buildDownloadUrl(meta, useFallback)
+                val conn = URL(url).openConnection() as HttpURLConnection
+                conn.connectTimeout = CONNECT_TIMEOUT_MS
+                conn.readTimeout = READ_TIMEOUT_MS
+                conn.instanceFollowRedirects = true
 
                 val code = conn.responseCode
-                if (code != HttpURLConnection.HTTP_OK && code != HttpURLConnection.HTTP_PARTIAL) {
+                if (code != HttpURLConnection.HTTP_OK) {
                     conn.disconnect()
-                    if (!useFallback && attempts < maxAttempts) {
-                        useFallback = true
-                        continue
-                    }
+                    if (!useFallback) continue
                     return AppResult.failure(
-                        SubLearnError(SubLearnError.Kind.NetworkUnavailable, "HTTP $code from $downloadUrl")
+                        SubLearnError(SubLearnError.Kind.NetworkUnavailable, "HTTP $code from $url"),
                     )
                 }
 
-                val totalBytes = meta.downloadSize
                 var downloaded = 0L
-                val buffer = ByteArray(8192)
+                val buffer = ByteArray(BUFFER_SIZE)
 
-                val input: java.io.InputStream = conn.inputStream
-                val out: java.io.OutputStream = partFile.outputStream()
-                try {
-                    var bytesRead: Int
-                    while (true) {
-                        bytesRead = input.read(buffer)
-                        if (bytesRead == -1) break
-                        currentCoroutineContext().ensureActive()
-                        out.write(buffer, 0, bytesRead)
-                        downloaded += bytesRead
-                        onProgress(InstallState.Downloading(downloaded, totalBytes))
+                target.outputStream().use { out ->
+                    conn.inputStream.use { input ->
+                        while (true) {
+                            val read = input.read(buffer)
+                            if (read == -1) break
+                            currentCoroutineContext().ensureActive()
+                            out.write(buffer, 0, read)
+                            downloaded += read
+                            onProgress(InstallState.Downloading(downloaded, meta.downloadSize))
+                        }
                     }
-                } finally {
-                    input.close()
-                    out.close()
                 }
                 conn.disconnect()
                 return AppResult.success(Unit)
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (t: Throwable) {
-                if (!useFallback && attempts < maxAttempts) {
-                    useFallback = true
-                    continue
-                }
-                if (attempts >= maxAttempts) {
-                    return AppResult.failure(SubLearnError.from(t))
-                }
+                lastError = t
+                target.delete()
+                if (!useFallback) continue
             }
         }
-        return AppResult.failure(SubLearnError(SubLearnError.Kind.Unknown, "Download failed after $maxAttempts attempts"))
-    }
 
-    private fun unzipSafe(zipFile: File, targetDir: File): AppResult<Unit> {
-        try {
-            ZipInputStream(zipFile.inputStream()).use { zis ->
-                var entry: ZipEntry? = zis.nextEntry
-                while (entry != null) {
-                    val outFile = File(targetDir, entry.name)
-                    // Zip-slip protection
-                    if (!outFile.canonicalPath.startsWith(targetDir.canonicalPath + File.separator)) {
-                        return AppResult.failure(
-                            SubLearnError(SubLearnError.Kind.Unknown, "Zip-slip detected: ${entry.name}")
-                        )
-                    }
-                    if (entry.isDirectory) {
-                        outFile.mkdirs()
-                    } else {
-                        outFile.parentFile?.mkdirs()
-                        outFile.outputStream().use { out ->
-                            zis.copyTo(out)
-                        }
-                    }
-                    zis.closeEntry()
-                    entry = zis.nextEntry
-                }
-            }
-            return AppResult.success(Unit)
-        } catch (t: Throwable) {
-            return AppResult.failure(SubLearnError.from(t))
-        }
-    }
-
-    private fun validateStructure(dir: File, pair: String): AppResult<Unit> {
-        // Expected: translate_enfa/translation_model.pb or translate_faen/...
-        val parts = pair.split("_")
-        if (parts.size != 2) {
-            return AppResult.failure(SubLearnError(SubLearnError.Kind.Unknown, "Invalid pair format: $pair"))
-        }
-        val fwdDir = "translate_${parts[0]}${parts[1]}"
-        val revDir = "translate_${parts[1]}${parts[0]}"
-
-        val fwdModel = File(File(dir, fwdDir), "translation_model.pb")
-        val revModel = File(File(dir, revDir), "translation_model.pb")
-
-        if (!fwdModel.exists() && !revModel.exists()) {
-            return AppResult.failure(
-                SubLearnError(SubLearnError.Kind.Unknown, "Missing translation_model.pb in $fwdDir or $revDir")
-            )
-        }
-        return AppResult.success(Unit)
-    }
-
-    private fun sha256(file: File): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-        file.inputStream().use { fis ->
-            val buffer = ByteArray(8192)
-            var read: Int
-            while (fis.read(buffer).also { read = it } != -1) {
-                digest.update(buffer, 0, read)
-            }
-        }
-        return digest.digest().joinToString("") { "%02x".format(it) }
+        return AppResult.failure(
+            lastError?.let { SubLearnError.from(it) }
+                ?: SubLearnError(SubLearnError.Kind.NetworkUnavailable, "Download failed for ${meta.pair}"),
+        )
     }
 
     companion object {
         private const val TAG = "MlKitModelInstaller"
+        private const val MODELS_DIR = "com.google.mlkit.translate.models"
+        private const val CONNECT_TIMEOUT_MS = 30_000
+        private const val READ_TIMEOUT_MS = 60_000
+        private const val BUFFER_SIZE = 8192
 
         /**
-         * Known model metadata for EN↔FA translation.
-         * These values come from translate_models_metadata.json in dictionaryproject.
+         * Known model metadata for the EN↔FA pair, from `translate_models_metadata.json`
+         * in `melonityhub/dictionaryproject`. `sha256` is filled in by `verify-catalog.yml`
+         * once the catalog is resolved; an empty hash skips the checksum step.
          */
-        val EN_FA_METADATA = ModelMetadata(
+        val EN_FA_METADATA = MlKitModelMetadata(
             pair = "en_fa",
             version = 5,
             revision = 29,
-            downloadSize = 31_457_280,  // ~30 MB
-            installedSize = 42_000_000,
-            sha256 = "", // Filled by verify-catalog.yml
+            downloadSize = 31_457_280L,  // ~30 MB
+            installedSize = 42_000_000L,
+            sha256 = "",
         )
     }
 }

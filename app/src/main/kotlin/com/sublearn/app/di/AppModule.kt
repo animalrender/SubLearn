@@ -40,6 +40,7 @@ import com.sublearn.core.subtitles.SubtitleFileSource
 import com.sublearn.core.subtitles.SubtitleRepository
 import com.sublearn.core.translate.LegacyV1TranslationEngine
 import com.sublearn.core.translate.MlKitTranslationEngine
+import com.sublearn.core.translate.MlKitModelInstaller
 import com.sublearn.core.translate.MlKitTranslationProvider
 import com.sublearn.core.translate.OnlineGoogleTranslationEngine
 import com.sublearn.core.translate.PackGlossaryResult
@@ -109,6 +110,7 @@ private fun coreModule(): Module = module {
 
     // translation
     single<TranslationProvider> { MlKitTranslationProvider(logger = get()) }
+    single { MlKitModelInstaller(androidContext(), get()) }
     single {
         val settings: SettingsRepository = get()
         TranslationService(
@@ -215,7 +217,7 @@ private fun featureModule(): Module = module {
     viewModel { HomeViewModel(get()) }
     viewModel { WordsViewModel(get(), get(), get()) }
     viewModel { LearnViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-    viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), androidContext()) }
+    viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), androidContext(), get()) }
     viewModel {
         PlayerViewModel(
             application = get(),
