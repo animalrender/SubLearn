@@ -8,12 +8,12 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
+import java.io.RandomAccessFile
+import java.net.HttpURLConnection
+import java.net.URL
 import java.security.MessageDigest
-import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
@@ -42,6 +42,9 @@ class MlKitModelInstaller(
         val sha256: String,     // HASH
     )
 
+    private val installBaseDir: File
+        get() = File(context.noBackupFilesDir, "com.google.mlkit.translate.models")
+
     /**
      * Current state of a model download/install.
      */
@@ -53,12 +56,6 @@ class MlKitModelInstaller(
         object Installed : InstallState()
         data class Error(val message: String, val retryable: Boolean = true) : InstallState()
     }
-
-    private val httpClient = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
-        .build()
 
     /**
      * Build the download URL for a model pair.
@@ -185,45 +182,43 @@ class MlKitModelInstaller(
             attempts++
             try {
                 val existingBytes = if (partFile.exists()) partFile.length() else 0L
-                val url = buildDownloadUrl(meta, useFallback)
-
-                val requestBuilder = Request.Builder().url(url)
+                val downloadUrl = buildDownloadUrl(meta, useFallback)
+                val conn = URL(downloadUrl).openConnection() as HttpURLConnection
+                conn.connectTimeout = 30_000
+                conn.readTimeout = 60_000
                 if (existingBytes > 0) {
-                    requestBuilder.addHeader("Range", "bytes=$existingBytes-")
+                    conn.setRequestProperty("Range", "bytes=$existingBytes-")
                 }
 
-                val response = httpClient.newCall(requestBuilder.build()).execute()
-                if (!response.isSuccessful && response.code != 206) {
+                val code = conn.responseCode
+                if (code != HttpURLConnection.HTTP_OK && code != HttpURLConnection.HTTP_PARTIAL) {
+                    conn.disconnect()
                     if (!useFallback && attempts < maxAttempts) {
                         useFallback = true
                         continue
                     }
                     return AppResult.failure(
-                        SubLearnError(SubLearnError.Kind.NetworkUnavailable, "HTTP ${response.code}")
+                        SubLearnError(SubLearnError.Kind.NetworkUnavailable, "HTTP $code from $downloadUrl")
                     )
                 }
 
-                val body = response.body ?: return AppResult.failure(
-                    SubLearnError(SubLearnError.Kind.NetworkUnavailable, "Empty response body")
-                )
-
-                val append = response.code == 206 && existingBytes > 0
+                val isResume = code == HttpURLConnection.HTTP_PARTIAL && existingBytes > 0
                 val totalBytes = meta.downloadSize
                 var downloaded = existingBytes
 
-                FileOutputStream(partFile, append).use { fos ->
-                    body.byteStream().use { bis ->
+                conn.inputStream.use { input ->
+                    FileOutputStream(partFile, isResume).use { fos ->
                         val buffer = ByteArray(8192)
-                        var read: Int
-                        while (bis.read(buffer).also { read = it } != -1) {
+                        var bytesRead: Int
+                        while (input.read(buffer).also { bytesRead = it } != -1) {
                             ensureActive()
-                            fos.write(buffer, 0, read)
-                            downloaded += read
+                            fos.write(buffer, 0, bytesRead)
+                            downloaded += bytesRead
                             onProgress(InstallState.Downloading(downloaded, totalBytes))
                         }
                     }
                 }
-
+                conn.disconnect()
                 return AppResult.success(Unit)
             } catch (cancelled: CancellationException) {
                 throw cancelled

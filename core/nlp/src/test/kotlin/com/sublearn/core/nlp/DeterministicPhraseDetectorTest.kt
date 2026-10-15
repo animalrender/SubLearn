@@ -204,7 +204,11 @@ class DeterministicPhraseDetectorTest {
 
     @Test
     fun `confidence uses pattern prior instead of flat 0_85`() = runBlocking {
-        val lem = Lemmatiser()
+        val lem = Lemmatiser(
+            irregularForms = mapOf(
+                "gave" to setOf("give"),
+            ),
+        )
         val entries = listOf(
             LexiconEntry(
                 id = 200, key = "give up", headword = "give up",
