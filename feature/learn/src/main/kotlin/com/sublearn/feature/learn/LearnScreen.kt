@@ -19,12 +19,14 @@ import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FileOpen
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -36,6 +38,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -353,6 +358,8 @@ private fun CatalogEntryRow(
     downloadState: PackDownloadState?,
     onDownload: () -> Unit,
 ) {
+    var showDetails by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -367,6 +374,14 @@ private fun CatalogEntryRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            // §6.7: the ⓘ answers "what am I actually downloading" — licence, version, hash,
+            // runtime and RAM floor — without leaving the list.
+            IconButton(onClick = { showDetails = true }) {
+                Icon(
+                    Icons.Default.Info,
+                    contentDescription = stringResource(R.string.library_entry_details),
+                )
+            }
             IconButton(onClick = onDownload) {
                 Icon(Icons.Default.CloudDownload, contentDescription = stringResource(R.string.translate_download))
             }
@@ -377,6 +392,73 @@ private fun CatalogEntryRow(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+    }
+
+    if (showDetails) {
+        AlertDialog(
+            onDismissRequest = { showDetails = false },
+            title = { Text(entry.nameEn) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(Dimens.xxs)) {
+                    Text(entry.nameFa, style = MaterialTheme.typography.bodyMedium)
+                    entry.notes?.takeIf { it.isNotBlank() }?.let { note ->
+                        Text(note, style = MaterialTheme.typography.bodySmall)
+                    }
+                    Text(
+                        text = stringResource(R.string.library_entry_version, entry.version),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.library_entry_size,
+                            entry.sizeBytes / (1024 * 1024),
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                    Text(
+                        text = stringResource(R.string.library_entry_runtime, entry.runtime.name),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                    if (entry.minRamMb > 0) {
+                        Text(
+                            text = stringResource(R.string.library_entry_ram, entry.minRamMb),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                    Text(
+                        text = stringResource(R.string.library_entry_profile, entry.profile.name),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                    entry.license?.takeIf { it.isNotBlank() }?.let { license ->
+                        Text(
+                            text = stringResource(R.string.library_entry_license, license),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                    Text(
+                        text = stringResource(R.string.library_entry_source, entry.source.host),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                    if (entry.sha256.isNullOrBlank()) {
+                        Text(
+                            text = stringResource(R.string.library_entry_no_hash),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.library_entry_hash, entry.sha256.take(16)),
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showDetails = false }) {
+                    Text(stringResource(R.string.action_close))
+                }
+            },
+        )
     }
 }
 

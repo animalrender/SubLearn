@@ -11,6 +11,16 @@
     <string name="menu_settings">تنظیمات</string>
     <string name="coming_soon">به‌زودی</string>
     <string name="coming_soon_body">این بخش هنوز ساخته نشده است. بقیه‌ی برنامه بدون آن کار می‌کند.</string>
+    <string name="library_entry_details">جزئیات</string>
+    <string name="library_entry_version">نسخه %1$s</string>
+    <string name="library_entry_size">حجم دانلود: %1$d مگابایت</string>
+    <string name="library_entry_runtime">موتور اجرا: %1$s</string>
+    <string name="library_entry_ram">رم پیشنهادی: %1$d مگابایت</string>
+    <string name="library_entry_profile">پروفایل دقت: %1$s</string>
+    <string name="library_entry_license">مجوز: %1$s</string>
+    <string name="library_entry_source">منبع: %1$s</string>
+    <string name="library_entry_hash">SHA-256: %1$s&#8230;</string>
+    <string name="library_entry_no_hash">برای این مورد هنوز SHA-256 منتشر نشده است؛ بنابراین دانلود تأیید نمی‌شود.</string>
     <string name="profile_needs_models">این پروفایل %1$d دانلود، حدود %2$d مگابایت، اضافه می‌کند و تنها پس از نصب آن‌ها اجرا می‌شود.</string>
     <string name="profile_runtime_missing">موتور لازم برای این پروفایل در این نسخه وجود ندارد؛ بنابراین تحلیل روی پروفایل قبلی می‌ماند.</string>
     <string name="home_open_file">باز کردن ویدیو</string>
