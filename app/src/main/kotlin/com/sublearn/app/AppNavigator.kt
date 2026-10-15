@@ -20,6 +20,8 @@ enum class AppRoute {
     DICTIONARY,
     WORDS,
     SETTINGS,
+    @Deprecated("Use SETTINGS with startSection='learning'", replaceWith = ReplaceWith("SETTINGS"))
+    LEVEL,
     QUIZ,
     UPDATES,
     PLAYER,

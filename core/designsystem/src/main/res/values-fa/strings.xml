@@ -26,6 +26,7 @@
     <string name="action_cancel">لغو</string>
     <string name="action_ok">تأیید</string>
     <string name="action_close">بستن</string>
+    <string name="action_back">بازگشت</string>
     <string name="action_save">ذخیره</string>
     <string name="action_reset">بازگردانی</string>
     <string name="action_add">افزودن</string>
