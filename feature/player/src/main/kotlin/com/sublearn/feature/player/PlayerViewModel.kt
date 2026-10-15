@@ -1488,6 +1488,7 @@ class PlayerViewModel(
         }
         val slices = windowBlocks.map { b ->
             com.sublearn.core.nlp.CueSlice(
+                cueId = b.id,
                 blockId = b.id,
                 startMs = b.startMs,
                 endMs = b.endMs,
