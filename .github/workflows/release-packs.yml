@@ -68,3 +68,29 @@ jobs:
             "$RUNNER_TEMP/report-en-fa.json" \
             "$RUNNER_TEMP/report-fa-en.json" \
             --clobber
+
+      - name: Refresh the catalog from the published bytes
+        # The catalog must describe exactly what was uploaded, so its size and SHA-256 are
+        # written from the built files rather than typed by hand (§6.1).
+        run: |
+          python3 tools/update_catalog.py \
+            --catalog docs/catalog/catalog-v2.json \
+            --asset "sublearn-lexicon-en-fa-v2=$RUNNER_TEMP/sublearn-lexicon-en-fa-v2.sqlite.gz" \
+            --asset "sublearn-dict-fa-en-v2=$RUNNER_TEMP/sublearn-dict-fa-en-v1.sqlite.gz" \
+            --tag "${{ inputs.tag }}" \
+            --repo "${{ github.repository }}"
+
+      - name: Commit the refreshed catalog
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- docs/catalog/catalog-v2.json; then
+            echo "catalog already matches the published packs"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/catalog/catalog-v2.json
+          git commit -m "chore(catalog): refresh pack sizes and hashes for $TAG"
+          git push origin "HEAD:${{ github.ref_name }}"
