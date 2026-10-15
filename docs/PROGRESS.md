@@ -39,12 +39,22 @@ smart profiles, feature completion, auto-versioning, and documentation.
 - `tools/test_bump_version.py`: 9/9 pass.
 - `git diff --check`: clean.
 
+**CI verification (2026-10-15)**
+- CI run 38808380130 on `arena/3779275b-sublearn` (commit `cc60465`): **green**.
+  `assembleDebug`, `assembleRelease`, `test`, `lintDebug` all pass.
+  All 18 test classes pass (including 4 new tests for prior-based confidence,
+  per-type thresholds, separable phrasal bug fixes, and `look that up`).
+- Static checks: 150 files, 0 problems; 0 unresolved imports; 18 modules, 0 missing deps;
+  15 resource files, 0 problems. EN/FA strings in sync.
+- Auto-release pre-release should be published at `dev-arena-3779275b-sublearn`.
+
 **What remains (honest)**
-- Phases 21–24 code is partially implemented; CI must compile and test. The MlKitModelInstaller,
-  DownloadItemCard, navigation restructuring, settings reorganization, smart profiles, model runtimes,
-  and feature completions need additional implementation cycles.
+- Phases 21–24 code is partially implemented. The MlKitModelInstaller compiles but has not been
+  tested on a real device. DownloadItemCard (unified download UI), settings reorganization,
+  smart profiles, model runtimes, and feature completions need additional implementation cycles.
 - No device testing has been done.
 - The gold integration test needs a real pack to compute precision/recall numbers.
+- The `build-lexicon-pack.yml` workflow needs the quality filters tested against the real DB.
 
 ---
 
