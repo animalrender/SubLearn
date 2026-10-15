@@ -202,18 +202,23 @@ class MlKitModelInstaller(
 
                 val totalBytes = meta.downloadSize
                 var downloaded = 0L
+                val buffer = ByteArray(8192)
 
-                conn.inputStream.use { input ->
-                    partFile.outputStream().use { out ->
-                        val buffer = ByteArray(8192)
-                        var bytesRead: Int
-                        while (input.read(buffer).also { bytesRead = it } != -1) {
-                            ensureActive()
-                            out.write(buffer, 0, bytesRead)
-                            downloaded += bytesRead
-                            onProgress(InstallState.Downloading(downloaded, totalBytes))
-                        }
+                val input: java.io.InputStream = conn.inputStream
+                val out: java.io.OutputStream = partFile.outputStream()
+                try {
+                    var bytesRead: Int
+                    while (true) {
+                        bytesRead = input.read(buffer)
+                        if (bytesRead == -1) break
+                        ensureActive()
+                        out.write(buffer, 0, bytesRead)
+                        downloaded += bytesRead
+                        onProgress(InstallState.Downloading(downloaded, totalBytes))
                     }
+                } finally {
+                    input.close()
+                    out.close()
                 }
                 conn.disconnect()
                 return AppResult.success(Unit)
