@@ -6,6 +6,11 @@ on:
     paths:
       - ".github/workflows/build-extra-packs.yml"
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to upload the supplementary packs to"
+        required: false
+        default: "packs-v2.0.0"
 
 permissions:
   contents: write
@@ -79,13 +84,20 @@ jobs:
             ${{ runner.temp }}/cefr-levels-en-v1.tsv.gz
           retention-days: 14
 
-      - name: Upload to GitHub Release packs-v2.0.0
+      - name: Upload to the packs release
+        # This used to skip silently when the release did not exist yet, which built the packs and
+        # then discarded them. Creating the release when it is missing keeps the artifacts reachable.
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view "packs-v2.0.0" >/dev/null 2>&1; then
-            gh release upload "packs-v2.0.0" \
-              "$RUNNER_TEMP/sublearn-cefr-v1.sqlite.gz" \
-              "$RUNNER_TEMP/cefr-levels-en-v1.tsv.gz" \
-              --clobber
+          set -euo pipefail
+          TAG="${{ inputs.tag || 'packs-v2.0.0' }}"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --title "SubLearn Offline Lexicon Packs ($TAG)" \
+              --notes "Offline lexicon, dictionary and supplementary packs built by tools and workflows."
           fi
+          gh release upload "$TAG" \
+            "$RUNNER_TEMP/sublearn-cefr-v1.sqlite.gz" \
+            "$RUNNER_TEMP/cefr-levels-en-v1.tsv.gz" \
+            --clobber

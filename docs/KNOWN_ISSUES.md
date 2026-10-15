@@ -124,3 +124,10 @@ TODO comment; each entry has a route to being fixed.
     `MIGRATION_1_2` with the exported v2 schema, but no test opens a v1 database and upgrades it,
     so a SQL statement that is valid DDL yet wrong at runtime would still pass. Route: a
     `MigrationTestHelper` test in `core/data` with `room-testing` on the instrumented test path.
+28. **The supplementary CEFR pack is built but not installable from the catalog.** The
+    `Build Extra Packs` workflow publishes `sublearn-cefr-v1.sqlite.gz` and
+    `cefr-levels-en-v1.tsv.gz` to the packs release, and the app can already import a word list
+    through Settings, but the catalog has no entry for it because `ModelKind` has no CEFR kind and
+    `visibleEntries()` would show a row the installer could not handle. Route: add a
+    `WORDFREQ_CEFR` kind, an importer branch for the two formats, and a catalog entry; until then
+    the pack is downloaded from the release page rather than from inside the app.
