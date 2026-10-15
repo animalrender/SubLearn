@@ -142,6 +142,46 @@ class CueStreamPhraseAnalyzerTest {
         assertFalse(tags3[4] == tags4[2])
     }
 
+    /**
+     * Throughput benchmark (§2.4). A feature film is roughly 1,500 cues and 15-20k tokens, so the
+     * analyser has to clear that in well under a second of CPU on a phone. The bound here is
+     * deliberately loose: it is a regression tripwire for an accidental O(n^2) change, not a
+     * performance target, because CI machines vary.
+     */
+    @Test
+    fun `analyses twenty thousand tokens within the regression budget`() = runBlocking {
+        val analyzer = CueStreamPhraseAnalyzer()
+        val lexicon = buildLexicon()
+
+        // Three cues per sentence, bridging into one stream, 20 tokens per sentence, 1000 sentences.
+        val sentences = 1_000
+        val cues = ArrayList<CueSlice>(sentences * 3)
+        var cueId = 1L
+        for (i in 0 until sentences) {
+            val base = i * 10_000L
+            cues += CueSlice(cueId++, i * 3L, base, base + 1_500L, "She finally came")            // 3
+            cues += CueSlice(cueId++, i * 3L + 1, base + 1_600L, base + 3_000L,
+                "up with a brilliant plan for the whole team")                                     // 10
+            cues += CueSlice(cueId++, i * 3L + 2, base + 3_100L, base + 4_500L,
+                "and then turned it all down again today")                                         // 8
+        }
+
+        val tokenCount = cues.sumOf {
+            CueStreamPhraseAnalyzer.tokenizeText(AnalysisTextCleanup.clean(it.text)).size
+        }
+        assertEquals("the benchmark should exercise 20k tokens", 20_000, tokenCount)
+
+        val started = System.nanoTime()
+        val result = analyzer.analyze(cues, lexicon, NlpConfig.DEFAULT, LexiconPosTagger())
+        val elapsedMs = (System.nanoTime() - started) / 1_000_000
+
+        assertEquals("each cue is its own block", sentences * 3, result.size)
+        assertTrue(
+            "analysing $tokenCount tokens took ${elapsedMs}ms, above the regression budget",
+            elapsedMs < 15_000,
+        )
+    }
+
     @Test
     fun `hard boundary start detection`() {
         assertTrue(CueStreamPhraseAnalyzer.endsWithSentenceBoundary("He said."))
