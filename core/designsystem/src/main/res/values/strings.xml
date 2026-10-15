@@ -535,6 +535,15 @@
     <string name="words_export_json">JSON</string>
     <string name="words_export_csv">CSV</string>
     <string name="words_export_anki_tsv">Anki TSV</string>
+    <string name="words_export_save_header">Save as a file</string>
+    <string name="words_export_save_csv">Save as CSV&#8230;</string>
+    <string name="words_export_save_json">Save as JSON&#8230;</string>
+    <string name="words_export_save_tsv">Save as Anki TSV&#8230;</string>
+    <string name="words_sort_label">Sort:</string>
+    <string name="words_sort_newest">Newest</string>
+    <string name="words_sort_oldest">Oldest</string>
+    <string name="words_sort_alphabetical">A&#8211;Z</string>
+    <string name="words_sort_level">Level</string>
     <string name="words_exported_copied">Copied exported vocabulary to clipboard</string>
     <string name="words_import_paste_hint">Paste JSON, CSV, or Anki TSV vocabulary rows</string>
     <string name="words_imported_count">Imported %1$d items</string>

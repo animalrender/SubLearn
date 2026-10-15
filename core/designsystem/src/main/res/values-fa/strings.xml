@@ -519,6 +519,15 @@
     <string name="words_export_json">JSON</string>
     <string name="words_export_csv">CSV</string>
     <string name="words_export_anki_tsv">Anki TSV</string>
+    <string name="words_export_save_header">ذخیره به‌صورت فایل</string>
+    <string name="words_export_save_csv">ذخیره به‌صورت CSV&#8230;</string>
+    <string name="words_export_save_json">ذخیره به‌صورت JSON&#8230;</string>
+    <string name="words_export_save_tsv">ذخیره به‌صورت Anki TSV&#8230;</string>
+    <string name="words_sort_label">ترتیب:</string>
+    <string name="words_sort_newest">تازه‌ترین</string>
+    <string name="words_sort_oldest">قدیمی‌ترین</string>
+    <string name="words_sort_alphabetical">الف&#8211;ی</string>
+    <string name="words_sort_level">سطح</string>
     <string name="words_exported_copied">واژگان برون‌ریزی‌شده در حافظهٔ موقت کپی شد</string>
     <string name="words_import_paste_hint">متن JSON، CSV یا Anki TSV را وارد کنید</string>
     <string name="words_imported_count">%1$d مورد درون‌ریزی شد</string>

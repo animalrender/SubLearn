@@ -6,6 +6,7 @@ import com.sublearn.core.data.MarkedWord
 import com.sublearn.core.data.MyWordsExporter
 import com.sublearn.core.data.MyWordsRepository
 import com.sublearn.core.data.WordStatus
+import com.sublearn.core.designsystem.R
 import com.sublearn.core.data.WordsExportKind
 import com.sublearn.core.settings.AppSettings
 import com.sublearn.core.settings.SettingsRepository
@@ -26,13 +27,20 @@ class WordsViewModel(
 ) : ViewModel() {
     private val _query = MutableStateFlow("")
     private val _filter = MutableStateFlow(WordFilter.ALL)
+    private val _sort = MutableStateFlow(WordSort.NEWEST)
 
     val filter: StateFlow<WordFilter> = _filter.asStateFlow()
+    val sort: StateFlow<WordSort> = _sort.asStateFlow()
 
     val settings: StateFlow<AppSettings> = settingsRepository.settings
 
-    val rows: StateFlow<List<MarkedWord>> = combine(myWords.observeAll(), _query, _filter) { list, query, filter ->
-        list.filter { it.matches(query, filter) }
+    val rows: StateFlow<List<MarkedWord>> = combine(
+        myWords.observeAll(),
+        _query,
+        _filter,
+        _sort,
+    ) { list, query, filter, sort ->
+        list.filter { it.matches(query, filter) }.sortedWith(sort.comparator)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val count: StateFlow<Int> = myWords.observeCount()
@@ -44,6 +52,10 @@ class WordsViewModel(
 
     fun setFilter(value: WordFilter) {
         _filter.value = value
+    }
+
+    fun setSort(value: WordSort) {
+        _sort.value = value
     }
 
     fun setStatus(word: MarkedWord, status: WordStatus) {
@@ -108,6 +120,26 @@ class WordsViewModel(
             WordFilter.KNOWN -> status == WordStatus.KNOWN
         }
     }
+}
+
+/**
+ * Sort order of the My Words list (LRN-3). Every order is stable: ties fall back to the
+ * most recently marked entry so the list never reshuffles between recompositions.
+ */
+enum class WordSort(val labelRes: Int) {
+    NEWEST(R.string.words_sort_newest),
+    OLDEST(R.string.words_sort_oldest),
+    ALPHABETICAL(R.string.words_sort_alphabetical),
+    LEVEL(R.string.words_sort_level),
+    ;
+
+    val comparator: Comparator<MarkedWord>
+        get() = when (this) {
+            NEWEST -> compareByDescending { it.markedAt }.thenBy { it.word.lowercase() }
+            OLDEST -> compareBy { it.markedAt }.thenBy { it.word.lowercase() }
+            ALPHABETICAL -> compareBy({ it.word.lowercase() }, { it.markedAt })
+            LEVEL -> compareBy({ it.level ?: "~~" }, { it.word.lowercase() })
+        }
 }
 
 enum class WordFilter(val status: WordStatus?) {

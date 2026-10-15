@@ -57,6 +57,7 @@ dependencies {
     api(project(":core:translate"))
     api(project(":core:settings"))
     api(libs.koin.compose)
+    api(libs.androidx.activity.compose)
     api(libs.androidx.lifecycle.viewmodel.compose)
     api(libs.androidx.lifecycle.runtime.compose)
     api(platform(libs.compose.bom))

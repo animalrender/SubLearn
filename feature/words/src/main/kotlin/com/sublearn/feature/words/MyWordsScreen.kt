@@ -3,6 +3,9 @@ package com.sublearn.feature.words
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -82,10 +85,23 @@ fun MyWordsScreen(
     val count by viewModel.count.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val activeFilter by viewModel.filter.collectAsStateWithLifecycle()
+    val activeSort by viewModel.sort.collectAsStateWithLifecycle()
     var query by remember { mutableStateOf("") }
     var showExportDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
     var importInput by remember { mutableStateOf("") }
+
+    // SAF save targets (LRN-3): one contract per format so the created file gets the right
+    // extension and MIME type without guessing from a shared launcher.
+    val saveCsv = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/csv"),
+    ) { uri -> uri?.let { writeWordsToUri(context, it, viewModel.exportVocabulary(WordsExportKind.CSV)) } }
+    val saveJson = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json"),
+    ) { uri -> uri?.let { writeWordsToUri(context, it, viewModel.exportVocabulary(WordsExportKind.JSON)) } }
+    val saveTsv = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/tab-separated-values"),
+    ) { uri -> uri?.let { writeWordsToUri(context, it, viewModel.exportVocabulary(WordsExportKind.ANKI_TSV)) } }
 
     // Use WindowInsets(0) to avoid double-insets when nested inside the app-level Scaffold (§4.3)
     Scaffold(
@@ -139,6 +155,27 @@ fun MyWordsScreen(
                         selected = filter == activeFilter,
                         onClick = { viewModel.setFilter(filter) },
                         label = { Text(stringResource(filter.labelRes())) },
+                    )
+                }
+            }
+            Spacer(Modifier.height(Dimens.xs))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.words_sort_label),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                WordSort.entries.forEach { sort ->
+                    FilterChip(
+                        selected = sort == activeSort,
+                        onClick = { viewModel.setSort(sort) },
+                        label = { Text(stringResource(sort.labelRes)) },
                     )
                 }
             }
@@ -209,6 +246,35 @@ fun MyWordsScreen(
                     ) {
                         Text(stringResource(R.string.words_export_anki_tsv))
                     }
+                    Text(
+                        text = stringResource(R.string.words_export_save_header),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    TextButton(
+                        onClick = {
+                            saveCsv.launch("sublearn-words.csv")
+                            showExportDialog = false
+                        },
+                    ) {
+                        Text(stringResource(R.string.words_export_save_csv))
+                    }
+                    TextButton(
+                        onClick = {
+                            saveJson.launch("sublearn-words.json")
+                            showExportDialog = false
+                        },
+                    ) {
+                        Text(stringResource(R.string.words_export_save_json))
+                    }
+                    TextButton(
+                        onClick = {
+                            saveTsv.launch("sublearn-words.tsv")
+                            showExportDialog = false
+                        },
+                    ) {
+                        Text(stringResource(R.string.words_export_save_tsv))
+                    }
                 }
             },
             confirmButton = {
@@ -250,6 +316,15 @@ fun MyWordsScreen(
                 }
             },
         )
+    }
+}
+
+/** Write an export to the document the user picked in the system file dialog (SAF). */
+private fun writeWordsToUri(context: Context, uri: Uri, content: String) {
+    runCatching {
+        context.contentResolver.openOutputStream(uri)?.use { stream ->
+            stream.write(content.toByteArray())
+        }
     }
 }
 
