@@ -36,22 +36,42 @@ class RealPackIntegrationTest {
         }
     }
 
+    /**
+     * Parse a JSONL gold entry line using simple string parsing (no Gson dependency in core:nlp).
+     * The gold set uses simple JSON with string arrays.
+     */
+    private fun parseGoldLine(line: String): GoldEntry {
+        fun extractString(key: String): String? {
+            val regex = Regex(""""$key"\s*:\s*"([^"]*)"""")
+            return regex.find(line)?.groupValues?.get(1)
+        }
+        fun extractStringArray(key: String): List<String>? {
+            val regex = Regex(""""$key"\s*:\s*\[(.*?)\]""")
+            val match = regex.find(line) ?: return null
+            return match.groupValues[1].split(",").map { it.trim().removeSurrounding("\"") }.filter { it.isNotEmpty() }
+        }
+        fun extractBoolean(key: String): Boolean {
+            return line.contains(""""$key"\s*:\s*true""".toRegex())
+        }
+
+        return GoldEntry(
+            id = extractString("id") ?: "",
+            type = extractString("type") ?: "",
+            text = extractString("text"),
+            cues = extractStringArray("cues"),
+            expected = extractStringArray("expected"),
+            notExpected = extractStringArray("not_expected"),
+            notExpectedPhrases = extractBoolean("not_expected_phrases"),
+        )
+    }
+
     private fun loadGold(): List<GoldEntry> {
         val path = System.getenv("SUBLEARN_GOLD_JSONL")
             ?: "tools/eval/gold_en_v1.jsonl"
         val file = java.io.File(path)
         Assume.assumeTrue("Gold set not found at $path", file.exists())
         return file.readLines().filter { it.isNotBlank() }.map { line ->
-            val obj = com.google.gson.JsonParser.parseString(line).asJsonObject
-            GoldEntry(
-                id = obj.get("id").asString,
-                type = obj.get("type").asString,
-                text = obj.get("text")?.asString,
-                cues = obj.getAsJsonArray("cues")?.map { it.asString },
-                expected = obj.getAsJsonArray("expected")?.map { it.asString },
-                notExpected = obj.getAsJsonArray("not_expected")?.map { it.asString },
-                notExpectedPhrases = obj.get("not_expected_phrases")?.asBoolean ?: false,
-            )
+            parseGoldLine(line)
         }
     }
 
