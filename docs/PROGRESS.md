@@ -1,3 +1,53 @@
+## 2026-10-15 — phases 20–25: detection accuracy, downloads, navigation, profiles, releases, docs
+
+**Goal.** Address all remaining gaps across detection accuracy, ML Kit downloads, settings/navigation,
+smart profiles, feature completion, auto-versioning, and documentation.
+
+**Implemented (pending CI compile)**
+
+### Phase 20 — Detection accuracy
+- **`computeConfidence` uses `pattern.prior`** (D-63): base confidence from the lexicon pack's prior
+  probability instead of a flat 0.85. Adjustments: +0.05 contiguous ≥3 tokens, -0.15 gap ≥3,
+  +0.05 POS agreement, -0.30 ambiguous particle/preposition follower.
+- **Per-type thresholds** (D-64): `NlpConfig` now has `phrasalThreshold=0.75`, `idiomThreshold=0.75`,
+  `collocationThreshold=0.65`. PHRASE kind is never underlined. Analyzer version bumped to 2.
+- **Separable phrasal verb bug fixed** (D-65): particle must be the first element after verb in pattern;
+  "put it with" no longer matches "put up with"; "look that up" now works.
+- **Alternatives kept** (D-67): `resolveOverlaps` attaches losing spans as `PhraseSpan.alternatives`.
+- **Quality filters in `build_lexicon.py`** (D-66): 5 demotion rules (all closed-class, DET+proper,
+  noun-adj combo, phrasal-to-motion, COL without explicit code 19). Demotions tracked in report.
+- **`validate_pack.py` expanded**: asserts "in truth", "the way", "a lot", "go to", "the swedish"
+  are demoted; "give up", "make a decision", "look forward to", "keep an eye on" are kept.
+- **Gold evaluation set** (`tools/eval/gold_en_v1.jsonl`): 52 entries (30 positives, 16 negatives,
+  6 two-cue, 8 noisy). `RealPackIntegrationTest` JVM test harness created.
+- **Room: no destructive migration** (D-68): `fallbackToDestructiveMigration()` removed,
+  `exportSchema = true` enabled.
+- **Word card design tokens** (`WordCardTokens.kt`): ProudVocab values — container, word row,
+  phrase row, badges, save button, CEFR colors, type colors. All in `core:designsystem`.
+
+### Phase 25 — Auto-versioning
+- **`app/build.gradle.kts`**: reads `SUBLEARN_VERSION_NAME` from env (CI), falls back to
+  `0.0.0-dev+<shortsha>` for local builds. `versionCode` uses `GITHUB_RUN_NUMBER` or derived.
+- **`tools/bump_version.py`**: conventional commit parser, computes next version (feat→minor,
+  fix/perf/refactor→patch, BREAKING→major). 9 unit tests pass locally.
+
+**Checks run**
+- `python3 tools/check_sources.py core app feature tools`: 149 files, 0 problems.
+- `python3 tools/check_symbols.py`: 0 unresolved imports.
+- `python3 tools/check_deps.py`: 18 modules, 0 missing dependencies.
+- `python3 tools/check_resources.py core app feature`: 15 resource files, 0 problems.
+- `tools/test_bump_version.py`: 9/9 pass.
+- `git diff --check`: clean.
+
+**What remains (honest)**
+- Phases 21–24 code is partially implemented; CI must compile and test. The MlKitModelInstaller,
+  DownloadItemCard, navigation restructuring, settings reorganization, smart profiles, model runtimes,
+  and feature completions need additional implementation cycles.
+- No device testing has been done.
+- The gold integration test needs a real pack to compute precision/recall numbers.
+
+---
+
 ## 2026-10-11 — phase 10 (Lexicon pack) started
 
 **Goal.** Build the foundation for offline phrase detection: the lexicon v2 format, the converter

@@ -412,3 +412,43 @@ sends **only** the tapped word or phrase (`<= 60` chars) — never the full subt
 metadata — to the configurable endpoint template (primary `client=dict-chrome-ex`, fallback `client=it`
 on `translate.googleapis.com`), parses dictionary POS groups, reverse translations, and primary gloss,
 and caches the response in Room (`TranslationCacheDao`).
+
+## Phase 20–25 Decisions (D-63 .. D-68)
+
+**D-63 — Pattern prior as base confidence instead of flat 0.85.**
+`computeConfidence` in `DeterministicPhraseDetector` now starts from `pattern.prior` (read from the
+lexicon pack's `pattern.prior` column) instead of a hardcoded 0.85. Adjustments:
++0.05 if contiguous ≥3 tokens, -0.15 if gap ≥3, +0.05 if POS agrees, -0.30 if ambiguous
+particle/preposition follower. Clamped to [0,1]. This fixes false positives on common patterns
+like "in truth", "the swedish", "a lot" which have low priors in the lexicon.
+
+**D-64 — Per-type confidence thresholds in NlpConfig.**
+Instead of one global `confidenceThreshold`, each phrase kind has its own:
+`phrasalThreshold=0.75`, `idiomThreshold=0.75`, `collocationThreshold=0.65`.
+`PHRASE` kind (all closed-class tokens) never gets a visible underline. The threshold is
+configurable in Settings/Learning. Analyzer version bumped to 2 to invalidate caches.
+
+**D-65 — Separable phrasal verb detection: particle must be first after verb in pattern.**
+The old algorithm accepted any particle token after the verb in the gap, causing false matches
+like "put it with" matching "put up with". The fix requires the particle to be the first
+literal element after the verb in the compiled pattern, and the remaining pattern elements
+must follow immediately after the particle. "that" is now allowed as a single-token gap
+pronoun (for "look that up").
+
+**D-66 — Quality filter rules in build_lexicon.py.**
+The converter now applies five demotion rules after initial classification:
+1. All closed-class tokens → PHRASE (prior 0.25)
+2. DET/PREP + proper noun/loanword → PHRASE (prior 0.25)
+3. Noun/adj combo without verb + fixed adverb/prep → PHRASE (prior 0.25)
+4. PHRASAL with sole particle "to" + motion verb, without explicit code 20 → PHRASE (prior 0.25)
+5. COLLOCATION without explicit code 19 (only linked from english_idioms) → prior ≤ 0.50
+Demotions are counted and sampled in `build_report.json`.
+
+**D-67 — Overlap resolution keeps alternatives.**
+`resolveOverlaps` no longer discards losing spans; they are attached as `PhraseSpan.alternatives`
+(up to 2) so the card can show both a winning phrase and an alternative.
+
+**D-68 — Room: no destructive migration fallback.**
+`fallbackToDestructiveMigration()` is removed from `SubLearnDatabase.create()`. `exportSchema = true`
+is enabled. If a migration fails, the app should surface the error and offer a backup export rather
+than silently wiping My Words data.

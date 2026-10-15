@@ -124,7 +124,14 @@ data class LexiconEntry(
     val patterns: List<LexiconPattern> = emptyList(),
 )
 
-/** A pattern for matching multi-word expressions. */
+/**
+ * A pattern for matching multi-word expressions.
+ *
+ * @property prior prior probability from the lexicon pack (`pattern.prior` column).
+ *   Used as the base confidence score instead of a flat 0.85 (§2.1 of current phase).
+ *   Formula: confidence = prior, then +/- adjustments for contiguous tokens, gap size,
+ *   ambiguous particles and POS agreement.
+ */
 data class LexiconPattern(
     val entryId: Long,
     val pattern: String,
@@ -132,4 +139,5 @@ data class LexiconPattern(
     val separable: Boolean,
     val minTokens: Int,
     val maxTokens: Int,
+    val prior: Float = 0.70f,
 )

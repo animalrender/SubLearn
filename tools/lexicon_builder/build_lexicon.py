@@ -1289,8 +1289,11 @@ def build_lexicon(
         "entry_extra_created": 0,
         "colloc_created": 0,
         "rejected_patterns": 0,
+        "demotions": 0,
+        "demotion_reasons": {},
     }
     rejected_samples = []
+    demotion_samples = {}
 
     # 0. Load category_names from DB (all 82 categories) + fallback
     cat_map: dict[int, tuple[str, str]] = dict(CATEGORIES_FALLBACK)
@@ -1547,6 +1550,70 @@ def build_lexicon(
             all_pos_codes.update(pos_by_did.get(d["english_detail_id"], []))
 
         kind, entry_prior = classify_entry(key, w_rows, all_pos_codes)
+
+        # --- Quality filters (§2.3) ---
+        # Demote noise patterns that the classifier gets wrong.
+        demotion_reason = None
+        is_multi = " " in key
+        in_idioms = any(r["english_word_id"] in idiom_word_ids for r in w_rows)
+        tokens = [t for t in key.split() if t]
+        token_pos_set = set()
+        for tok in tokens:
+            p = word_to_primary_pos.get(tok.lower())
+            if p:
+                token_pos_set.add(p)
+
+        # Rule 1: ALL tokens are closed-class (determiner/prep/pron/aux/conj)
+        # → PHRASE without pattern ("at that", "have to", "the way", "a lot")
+        closed_class = {"DET", "PREP", "PRON", "AUX", "CONJ", "PART"}
+        if kind != "WORD" and tokens and token_pos_set and token_pos_set.issubset(closed_class):
+            kind = "PHRASE"
+            entry_prior = 0.25
+            demotion_reason = "all_closed_class"
+
+        # Rule 2: 2-token pattern: first is DET/PREP, second is proper/loanword
+        # → PHRASE ("the swedish", "pas seul")
+        if kind != "WORD" and len(tokens) == 2 and not demotion_reason:
+            first_pos = word_to_primary_pos.get(tokens[0].lower())
+            if first_pos in ("DET", "PREP") and tokens[1][0].isupper():
+                kind = "PHRASE"
+                entry_prior = 0.25
+                demotion_reason = "det_prep_proper"
+
+        # Rule 3: Noun combination (all NOUN/ADJ, no verb) + fixed adverb/prep
+        # → PHRASE ("in truth", "year by year")
+        if kind != "WORD" and tokens and not demotion_reason:
+            noun_adj = {"NOUN", "ADJ"}
+            has_verb = "VERB" in token_pos_set
+            if not has_verb and token_pos_set and token_pos_set.issubset(noun_adj | {"ADV", "PREP", "DET"}):
+                if len(tokens) >= 2 and token_pos_set.intersection(noun_adj):
+                    kind = "PHRASE"
+                    entry_prior = 0.25
+                    demotion_reason = "noun_adj_combo"
+
+        # Rule 4: PHRASAL with sole particle "to" + motion/linking verb
+        # → remove from PHRASAL ("go to", "come to", "going to", "get to")
+        # UNLESS DB has code 20 explicitly
+        if kind == "PHRASAL" and len(tokens) == 2 and not demotion_reason:
+            if tokens[-1].lower() == "to" and 20 not in all_pos_codes:
+                motion_linking = {"go", "come", "get", "turn", "lead", "switch", "amount"}
+                verb_lemma = lemma_map.get(tokens[0].lower(), tokens[0].lower())
+                if verb_lemma in motion_linking:
+                    kind = "PHRASE"
+                    entry_prior = 0.25
+                    demotion_reason = "phrasal_to_motion"
+
+        # Rule 5: COLLOCATION without explicit code 19 (only linked from english_idioms)
+        # → prior ≤ 0.50 (below threshold)
+        if kind == "COLLOCATION" and 19 not in all_pos_codes and in_idioms:
+            entry_prior = min(entry_prior, 0.50)
+
+        # Track demotions for the build report
+        if demotion_reason:
+            stats["demotions"] += 1
+            stats["demotion_reasons"][demotion_reason] = stats["demotion_reasons"].get(demotion_reason, 0) + 1
+            if len(demotion_samples.get(demotion_reason, [])) < 5:
+                demotion_samples.setdefault(demotion_reason, []).append(key)
 
         # Pick best headword (prefer one with parentheses if it's an idiom/phrasal so pattern expansion sees "(or ...)")
         headword = w_rows[0]["english_word"].strip()
@@ -1857,6 +1924,7 @@ def build_lexicon(
         "gzip_sha256": gz_sha256,
         "stats": stats,
         "rejected_samples": rejected_samples,
+        "demotion_samples": demotion_samples,
     }
 
 

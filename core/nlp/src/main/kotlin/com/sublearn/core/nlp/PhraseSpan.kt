@@ -27,6 +27,7 @@ enum class PhraseKind {
  * @property confidence a score between 0.0 and 1.0; higher means more certain
  * @property separable true for phrasal verbs that can split ("turn the offer down")
  * @property parts when the span crosses blocks, one part per block; single-element for in-block spans
+ * @property alternatives non-winning spans that overlapped this one (for showing up to 2 phrases in the card)
  */
 data class PhraseSpan(
     val startChar: Int,
@@ -38,11 +39,15 @@ data class PhraseSpan(
     val confidence: Float,
     val separable: Boolean = false,
     val parts: List<SpanPart> = listOf(SpanPart(blockId = 0, startChar = startChar, endChar = endChar)),
+    val alternatives: List<PhraseSpan> = emptyList(),
 ) {
     val isCrossBlock: Boolean get() = parts.size > 1
 
     /** Whether this span should be displayed with an underline (confidence above threshold). */
     fun isAboveThreshold(threshold: Float): Boolean = confidence >= threshold
+
+    /** Whether this span meets the per-type threshold for visible underline. */
+    fun isAboveTypeThreshold(config: NlpConfig): Boolean = confidence >= config.thresholdFor(kind)
 }
 
 /**
