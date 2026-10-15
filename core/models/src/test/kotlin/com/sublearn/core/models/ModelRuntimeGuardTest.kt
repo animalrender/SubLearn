@@ -1,6 +1,7 @@
 package com.sublearn.core.models
 
 import com.sublearn.core.settings.AccuracyProfileToken
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -109,18 +110,22 @@ class ModelRuntimeGuardTest {
     }
 
     @Test
-    fun `runGuarded falls back when the block needs a profile that is not there`() = runBlocking {
-        // CALCULATED: a LiteRT profile would exceed a 50ms budget, so a slow block must not be
-        // allowed to stutter playback; the fallback value wins.
+    fun `runGuarded falls back when the block outruns the profile budget`() = runBlocking {
+        // BASIC is allowed 50 ms, so a block that takes 200 ms must be abandoned rather than
+        // allowed to stutter playback. The block suspends, which is how the timeout cancels it.
         val guard = ModelRuntimeGuard()
+        var reported: Pair<AccuracyProfileToken, String>? = null
         val value = guard.runGuarded(
             profile = AccuracyProfileToken.BASIC,
+            onDowngrade = { profile, reason -> reported = profile to reason },
             fallbackValue = { 0 },
         ) {
-            Thread.sleep(200)
+            delay(200)
             1
         }
         assertEquals(0, value)
+        assertEquals(AccuracyProfileToken.BASIC, reported?.first)
+        assertTrue(reported?.second?.contains("timed out") == true)
     }
 }
 
