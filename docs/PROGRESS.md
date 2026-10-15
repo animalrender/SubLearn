@@ -39,6 +39,68 @@ smart profiles, feature completion, auto-versioning, and documentation.
 - `tools/test_bump_version.py`: 9/9 pass.
 - `git diff --check`: clean.
 
+## 2026-10-16 — completing the remaining phase 20–25 items
+
+**Branches:** `arena/3779275b-sublearn`. Every change below is on real code paths; the CI run
+listed at the end is the evidence.
+
+### Phase 20 — analysis input (§2.4) and schema drift (§2.5)
+- **`CueSlice` carries `cueId`** and `CueStreamPhraseAnalyzer` now cleans text before analysis
+  (`AnalysisTextCleanup`: HTML tags, `JOHN:` speaker labels, `[MUSIC]`/`[LAUGHTER]`, `♪`,
+  leading dashes, curly quotes), segments long streams (`SegmentConfig`, hard gap 1500 ms,
+  64 token segments with 8 token overlap), builds an `AnalysisCacheKey` from the content,
+  normaliser, pack, analyser version and profile, and exposes `CueOffsetMapping` for the UI.
+- **`tools/check_schema.py`** compares `MIGRATION_1_2` against the exported v2 schema, so a
+  column the entity no longer declares fails in CI, and asserts the analyser cache columns
+  survive. Verified to fail on a deliberately broken migration.
+- Gold set grown from 52 to **209 entries** (120 positive, 50 negative, 20 noise, 19 two-cue).
+
+### Phase 21 — ML Kit installer (§3.1, §3.2)
+- `MlKitInstallLogic` (D-69) holds the URL scheme, SHA-256 check, zip-slip guard and structure
+  validation; `MlKitModelInstaller` keeps the Android and network half.
+- **10 unit tests** cover both hosts, version routing, a known SHA-256, parent and nested
+  traversal rejection, valid extraction, both directions of structure validation and the
+  metadata constants.
+- **`DownloadItemCard`** in `core:designsystem` renders available / downloading / verifying /
+  installing / installed / error with progress, cancel, retry, delete and an info action.
+- A new **Models & Downloads** settings section drives it from the installer through
+  `SettingsViewModel`, registered in Koin.
+
+### Phase 22 — navigation, insets, downloads UI
+- `SettingsScreen` and `MyWordsScreen` set `contentWindowInsets = WindowInsets(0)` so the nested
+  scaffolds stop insetting twice under the app-level scaffold (§4.3), and both use
+  `Icons.AutoMirrored.Filled.ArrowBack`.
+- `SubLearnLinearProgress` gives the app one progress bar to reach for.
+
+### Phase 23/24 — profiles, models, packs
+- **`NlpModelCatalog`** maps the six catalog models to the accuracy profiles with runtime, size
+  and RAM floor, **`SmartProfileSelector`** picks the strongest runnable profile, and
+  **`NlpModelRuntimeGuard`** reports `NotImplemented` instead of silently degrading (D-71).
+  Covered by 9 tests in `core:ai`.
+- The Learn tab's profile chips now say how many models the profile adds and how large the
+  download is, and flag profiles whose runtime is missing.
+- **`tools/update_catalog.py`** derives the catalog's size and SHA-256 from the released files and
+  `release-packs.yml` commits the result (D-70). 11 tests.
+- My Words gained a stable **sort selector** (Newest, Oldest, A–Z, Level) and **SAF export** for
+  CSV, JSON and Anki TSV alongside the clipboard actions (D-73), with 5 tests for the orderings.
+
+### Phase 25 — docs and versions
+- `docs/README.md` indexes every document, and `tools/check_docs.py` fails when the index and the
+  directory disagree, alongside the existing catalog and EN/FA string checks. Both are wired into
+  the CI static checks.
+- Decisions **D-69 .. D-73** record the reasoning above.
+
+**Honest gaps that remain**
+- The ONNX and LiteRT runtimes are **not implemented**. The profiles that need them are visible,
+  describe their download, and refuse to run with a clear error. Balanced uses the pure-Kotlin
+  embedding model only.
+- The ML Kit installer compiles, is unit tested and is wired to the UI, but has **not been run on
+  a device**: no download was performed against Google's CDN from this environment.
+- No Compose UI test was added for the rebuilt word card, so its layout is unverified beyond
+  compilation.
+- `Compose` navigation still uses the hand-rolled `AppNavigator`; the back stack is tested by
+  compilation and manual reasoning, not by an automated test.
+
 **CI verification (2026-10-15)**
 - CI run 38808380130 on `arena/3779275b-sublearn` (commit `cc60465`): **green**.
   `assembleDebug`, `assembleRelease`, `test`, `lintDebug` all pass.

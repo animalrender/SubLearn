@@ -452,3 +452,38 @@ Demotions are counted and sampled in `build_report.json`.
 `fallbackToDestructiveMigration()` is removed from `SubLearnDatabase.create()`. `exportSchema = true`
 is enabled. If a migration fails, the app should surface the error and offer a backup export rather
 than silently wiping My Words data.
+
+**D-69 — Android-free install logic lives beside the Android wrapper.**
+`MlKitModelInstaller` keeps only what needs a `Context` (paths, HTTP transfer, progress) and
+delegates the URL scheme, SHA-256 verification, zip-slip guard and archive validation to
+`MlKitInstallLogic`, whose inputs and outputs are plain files and `AppResult`. That is what makes
+those rules testable on a JVM: the previous single-class layout could only be exercised on a
+device. The metadata type moved out of the class as `MlKitModelMetadata` so both halves, and the
+`EN_FA_METADATA` constant, can name it.
+
+**D-70 — The catalog is written from the released bytes, never by hand.**
+`tools/update_catalog.py` computes size and SHA-256 from the files the pack workflow just built
+and writes them into `docs/catalog/catalog-v2.json`, which the workflow then commits. A hand-typed
+hash can silently point at other bytes; deriving it cannot. `tools/check_docs.py` and
+`tools/check_schema.py` run in CI for the same reason — the documentation and the exported Room
+schema are checked against the code rather than trusted.
+
+**D-71 — Accuracy profiles carry their model requirements as data.**
+`NlpModelCatalog` in `core:ai` maps each `AccuracyProfileToken` to the models it adds, with the
+runtime, size and RAM floor of each one, and `SmartProfileSelector` never returns a profile whose
+runtime this build lacks. The honest consequence is that PRECISE, ADVANCED and SMART are offered,
+explain what they need, and refuse to run; `NlpModelRuntimeGuard.check` returns a
+`NotImplemented` error instead of quietly falling back to a weaker profile the user did not pick.
+
+**D-72 — The word card has no header and no close button.**
+The card is anchored to the word the learner touched, so a title ("Word"/"Line"/"Block") and a
+close button were both redundant: the level badge and source chips moved onto the word row and a
+tap outside dismisses the card. Losing overlaps from `PhraseSpan.alternatives` became at most two
+extra phrase rows, each in its own type colour, and "more" continues into the AI sheet instead of
+growing the card.
+
+**D-73 — Sorting and export follow the list, not the screen.**
+`WordSort` lives next to `WordFilter` in `WordsViewModel` and every order is stable, with the
+marked-at timestamp as the tie-break, so the list cannot reshuffle between recompositions. Export
+writes through `ActivityResultContracts.CreateDocument` per format rather than a shared launcher
+with a guessed MIME type, which is also why each format gets its own filename.

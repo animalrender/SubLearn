@@ -2,6 +2,7 @@
 """check_docs.py — Verify documentation consistency.
 
 Checks:
+0. Every document in docs/ is listed in docs/README.md and every listed one exists.
 1. Every catalog ID referenced in PACKS.md exists in docs/catalog/catalog-v2.json
 2. Decision numbers in DECISIONS.md are unique and sequential
 3. Every pack/model in PACKS.md is in the catalog and vice versa
@@ -17,6 +18,33 @@ import os
 import re
 import sys
 from xml.etree import ElementTree
+
+
+def check_docs_index(repo_root: str) -> list[str]:
+    """Every markdown file in docs/ must be listed in docs/README.md, and vice versa."""
+    errors = []
+    docs_dir = os.path.join(repo_root, "docs")
+    index_path = os.path.join(docs_dir, "README.md")
+    if not os.path.isdir(docs_dir):
+        return ["docs/ directory not found"]
+
+    if not os.path.exists(index_path):
+        present = sorted(f for f in os.listdir(docs_dir) if f.endswith(".md"))
+        return [f"docs/README.md is missing; it must index {len(present)} document(s)"]
+
+    on_disk = {
+        name for name in os.listdir(docs_dir)
+        if name.endswith(".md") and name != "README.md"
+    }
+    index_text = open(index_path, encoding="utf-8").read()
+    linked = set(re.findall(r"\]\(([A-Za-z0-9_./-]+\.md)\)", index_text))
+
+    for name in sorted(on_disk - linked):
+        errors.append(f"docs/{name} is not listed in docs/README.md")
+    for name in sorted(linked - on_disk):
+        errors.append(f"docs/README.md links to {name}, which does not exist")
+
+    return errors
 
 
 def check_catalog_vs_packs(repo_root: str) -> list[str]:
@@ -111,6 +139,7 @@ def main():
 
     all_errors = []
 
+    all_errors.extend(check_docs_index(args.repo_root))
     all_errors.extend(check_catalog_vs_packs(args.repo_root))
     all_errors.extend(check_decision_numbers(args.repo_root))
     all_errors.extend(check_string_sync(args.repo_root))

@@ -103,3 +103,24 @@ TODO comment; each entry has a route to being fixed.
     an external audio source with its selected video; it is intentionally attached only to that video.
     Different stream lengths, provider MIME metadata and unusual codec containers may need device-level
     handling. Route: exercise common MP3/AAC/FLAC + video pairs after CI, then document unsupported formats.
+24. **The ONNX and LiteRT accuracy profiles cannot run yet.** `NlpModelCatalog` describes the
+    models for Balanced, Precise, Advanced and Smart, and the settings and library screens show
+    what each one downloads, but only the pure-Kotlin runtime (`NONE`) exists in this build.
+    `NlpModelRuntimeGuard.check` returns `NotImplemented` for the profiles that need ONNX or
+    LiteRT, and `SmartProfileSelector` never selects them, so a user cannot end up silently on a
+    weaker profile. Route: add `onnxruntime-android` with the int8 encoders, then a LiteRT runner
+    for the LLM tier.
+25. **The ML Kit model installer has not downloaded anything on a real device.** The URL scheme,
+    checksum, zip-slip guard and archive validation are unit tested, and the UI is wired to the
+    installer, but no end-to-end download has been performed. The catalog's SHA-256 for the pair
+    is deliberately empty, which skips verification rather than failing on a guessed hash; fill it
+    in when the URL is confirmed against Google's CDN. Route: one device run through
+    Settings → Models & Downloads, then record the hash.
+26. **The rebuilt word card is verified by compilation only.** The header and close button were
+    removed (§7) and the alternative phrase rows were added, but no Compose UI test pins the
+    layout, so a regression in the card's arrangement would only show up visually. Route: a
+    Robolectric Compose test once the popup's state is constructible in a test.
+27. **The Room migration is checked statically, not executed.** `tools/check_schema.py` compares
+    `MIGRATION_1_2` with the exported v2 schema, but no test opens a v1 database and upgrades it,
+    so a SQL statement that is valid DDL yet wrong at runtime would still pass. Route: a
+    `MigrationTestHelper` test in `core/data` with `room-testing` on the instrumented test path.
