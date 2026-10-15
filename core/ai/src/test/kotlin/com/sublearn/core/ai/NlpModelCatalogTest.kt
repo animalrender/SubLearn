@@ -77,10 +77,14 @@ class NlpModelCatalogTest {
     }
 
     @Test
-    fun `only base and light are runnable in this build`() {
+    fun `profiles up to balanced are runnable in this build`() {
+        // BASIC and LIGHT add nothing; BALANCED adds only the pure-Kotlin potion model.
         assertTrue(NlpModelCatalog.isRunnableInThisBuild(ProfileTier.BASIC))
         assertTrue(NlpModelCatalog.isRunnableInThisBuild(ProfileTier.LIGHT))
-        assertFalse(NlpModelCatalog.isRunnableInThisBuild(ProfileTier.BALANCED))
+        assertTrue(NlpModelCatalog.isRunnableInThisBuild(ProfileTier.BALANCED))
+        // PRECISE and above need ONNX, ADVANCED/SMART additionally need LiteRT.
+        assertFalse(NlpModelCatalog.isRunnableInThisBuild(ProfileTier.PRECISE))
+        assertFalse(NlpModelCatalog.isRunnableInThisBuild(ProfileTier.ADVANCED))
         assertFalse(NlpModelCatalog.isRunnableInThisBuild(ProfileTier.SMART))
     }
 
