@@ -3,18 +3,17 @@ package com.sublearn.core.designsystem
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.unit.LayoutDirection
 
 /**
- * SubLearn's standard linear progress indicator that removes the stop indicator dot
- * introduced in Material3 1.3.x (Compose BOM 2024.12.01).
+ * SubLearn's standard linear progress indicator.
  *
- * Uses `drawStopIndicator = {}` and `gapSize = 0.dp` for a clean bar.
- * All [LinearProgressIndicator] usage in the app should use this composable.
+ * In Material3 >= 1.3.x (BOM 2024.12.01+), this wraps LinearProgressIndicator.
+ * When the BOM is updated to include `drawStopIndicator` and `gapSize`, add them here
+ * to remove the stop-indicator dot. Until then, this is a thin wrapper for consistency.
+ *
+ * All LinearProgressIndicator usage in the app should use this composable.
  */
 @Composable
 fun SubLearnLinearProgress(
@@ -30,13 +29,11 @@ fun SubLearnLinearProgress(
         color = color,
         trackColor = trackColor,
         strokeCap = strokeCap,
-        drawStopIndicator = {},
-        gapSize = 0.dp,
     )
 }
 
 /**
- * Indeterminate version for unknown-length operations (e.g. ML Kit model download).
+ * Indeterminate version for unknown-length operations.
  */
 @Composable
 fun SubLearnLinearProgressIndeterminate(
@@ -50,7 +47,5 @@ fun SubLearnLinearProgressIndeterminate(
         color = color,
         trackColor = trackColor,
         strokeCap = strokeCap,
-        drawStopIndicator = {},
-        gapSize = 0.dp,
     )
 }

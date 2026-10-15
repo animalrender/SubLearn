@@ -74,7 +74,8 @@ data class SegmentConfig(
  */
 object AnalysisTextCleanup {
 
-    private val SPEAKER_LABEL = Regex("^[A-Z][A-Z ]*:\\s*", RegexOption.MULTILINE)
+    // Match speaker labels like "JOHN:" at line start or after whitespace (after HTML tag removal)
+    private val SPEAKER_LABEL = Regex("(?m)^\\s*[A-Z][A-Z ]*:\\s*|\\s+[A-Z][A-Z ]*:\\s+")
     private val STAGE_DIRECTION_SQ = Regex("\\[[^\\]]*\\]")
     private val STAGE_DIRECTION_RND = Regex("\\([^)]*\\.\\.\\.[^)]*\\)")
     private val MUSIC_SYMBOL = Regex("[♪♫♬\uD83C\uDFB5\uD83C\uDFB6]")
