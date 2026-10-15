@@ -6,6 +6,7 @@ import com.sublearn.core.common.SubLearnError
 import com.sublearn.core.common.SubLearnLogger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -211,7 +212,7 @@ class MlKitModelInstaller(
                     while (true) {
                         bytesRead = input.read(buffer)
                         if (bytesRead == -1) break
-                        ensureActive()
+                        currentCoroutineContext().ensureActive()
                         out.write(buffer, 0, bytesRead)
                         downloaded += bytesRead
                         onProgress(InstallState.Downloading(downloaded, totalBytes))
