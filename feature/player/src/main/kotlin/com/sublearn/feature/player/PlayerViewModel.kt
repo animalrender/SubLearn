@@ -12,6 +12,7 @@ import com.sublearn.core.data.MarkedWord
 import com.sublearn.core.data.MyWordsRepository
 import com.sublearn.core.data.RecentVideoRepository
 import com.sublearn.core.data.WordStatus
+import com.sublearn.core.designsystem.WordCardTokens
 import com.sublearn.core.designsystem.R
 import com.sublearn.core.lexicon.WordLevelSource
 import com.sublearn.core.player.MediaTarget
@@ -1141,6 +1142,15 @@ class PlayerViewModel(
                 kind = span.kind,
                 marked = span.lemmaKey.lowercase() in _ui.value.savedPhraseKeys ||
                     span.headword.lowercase() in _ui.value.savedPhraseKeys,
+                // §7: at most two losing overlaps travel with the winning span, so the card can
+                // show "in truth" next to "in the truth of it" without becoming a list.
+                alternatives = span.alternatives.take(WordCardTokens.MAX_PHRASE_ROWS).map { alt ->
+                    PopupPhraseAlternative(
+                        headword = alt.headword,
+                        kind = alt.kind,
+                        level = lexiconAccessProvider()?.lookupWord(alt.lemmaKey.lowercase())?.cefr,
+                    )
+                },
             )
         }
 

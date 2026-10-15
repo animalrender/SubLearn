@@ -2,6 +2,7 @@ package com.sublearn.feature.player
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,6 +51,7 @@ import com.sublearn.core.designsystem.LocalAppFontScale
 import com.sublearn.core.designsystem.LocalReduceMotion
 import com.sublearn.core.designsystem.Motion
 import com.sublearn.core.designsystem.Palette
+import com.sublearn.core.designsystem.WordCardTokens
 import com.sublearn.core.designsystem.R
 import com.sublearn.core.designsystem.badgeColorArgb
 import com.sublearn.core.designsystem.toTextStyle
@@ -112,32 +114,17 @@ internal fun PopupLayer(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(Dimens.sm),
                 ) {
+                    // §7: no card header and no close button. The card is anchored to the word the
+                    // learner touched, so the level badge and the sources sit on the word row and a
+                    // tap anywhere outside dismisses it.
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = stringResource(
-                                when (current.kind) {
-                                    PopupKind.WORD -> R.string.translate_word
-                                    PopupKind.LINE -> R.string.translate_line
-                                    PopupKind.BLOCK -> R.string.translate_block
-                                },
-                            ),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                        current.level?.let { level ->
-                            Spacer(Modifier.size(Dimens.sm))
-                            LevelBadge(level)
-                        }
+                        current.level?.let { level -> LevelBadge(level) }
                         if (current.sourcesUsed.isNotEmpty()) {
                             Spacer(Modifier.size(Dimens.xs))
                             current.sourcesUsed.forEach { src ->
                                 PopupSourceChip(src)
                                 Spacer(Modifier.size(Dimens.xxs))
                             }
-                        }
-                        Spacer(Modifier.weight(1f))
-                        IconButton(onClick = onDismiss) {
-                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_close))
                         }
                     }
 
@@ -257,21 +244,17 @@ internal fun PopupLayer(
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = onToggleMark) {
+                        SaveWordButton(marked = current.marked, onClick = onToggleMark)
+                        // "more" continues into the AI sheet rather than cramming every meaning
+                        // onto the card (§7).
+                        IconButton(
+                            onClick = { onAskAi(current.sourceText) },
+                            modifier = Modifier.size(WordCardTokens.SAVE_TOUCH_TARGET),
+                        ) {
                             Icon(
-                                imageVector = if (current.marked) Icons.Default.Star else Icons.Default.StarBorder,
-                                contentDescription = stringResource(
-                                    if (current.marked) R.string.word_remove else R.string.word_add,
-                                ),
-                                tint = if (current.marked) {
-                                    Color(Palette.PROUD_WORD_SAVED)
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = stringResource(R.string.ai_explain),
                             )
-                        }
-                        IconButton(onClick = { onAskAi(current.sourceText) }) {
-                            Icon(Icons.Default.AutoAwesome, contentDescription = stringResource(R.string.ai_explain))
                         }
                         Spacer(Modifier.weight(1f))
                         Text(
@@ -292,6 +275,38 @@ internal fun PopupLayer(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * The card's save control (§7): a rounded 28dp chip with a 40dp touch target, drawn from
+ * [WordCardTokens] so the popup, My Words and the settings previews cannot drift apart.
+ */
+@Composable
+private fun SaveWordButton(marked: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(WordCardTokens.SAVE_TOUCH_TARGET)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Surface(
+            shape = RoundedCornerShape(WordCardTokens.SAVE_BUTTON_RADIUS),
+            color = Color(WordCardTokens.SAVE_BUTTON_BG),
+            border = BorderStroke(Dimens.strokeWidth, Color(WordCardTokens.SAVE_BUTTON_BORDER)),
+        ) {
+            Box(
+                modifier = Modifier.size(WordCardTokens.SAVE_BUTTON_SIZE),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = if (marked) Icons.Default.Star else Icons.Default.StarBorder,
+                    contentDescription = stringResource(if (marked) R.string.word_remove else R.string.word_add),
+                    tint = if (marked) Color(Palette.PROUD_WORD_SAVED) else Color(WordCardTokens.SAVE_ICON_COLOR),
+                    modifier = Modifier.size(WordCardTokens.SAVE_ICON_SIZE),
+                )
             }
         }
     }
@@ -336,16 +351,11 @@ private fun PopupPhraseCardSection(
                 LevelBadge(lvl)
             }
             Spacer(Modifier.weight(1f))
-            IconButton(onClick = onTogglePhraseMark) {
-                Icon(
-                    imageVector = if (phrase.marked) Icons.Default.Star else Icons.Default.StarBorder,
-                    contentDescription = stringResource(
-                        if (phrase.marked) R.string.popup_unbookmark_phrase else R.string.popup_bookmark_phrase,
-                    ),
-                    tint = if (phrase.marked) Color(Palette.PROUD_WORD_SAVED) else kindColor,
-                )
-            }
-            IconButton(onClick = { onAskAi(phrase.headword) }) {
+            SaveWordButton(marked = phrase.marked, onClick = onTogglePhraseMark)
+            IconButton(
+                onClick = { onAskAi(phrase.headword) },
+                modifier = Modifier.size(WordCardTokens.SAVE_TOUCH_TARGET),
+            ) {
                 Icon(Icons.Default.AutoAwesome, contentDescription = stringResource(R.string.ai_explain), tint = kindColor)
             }
         }
@@ -363,6 +373,32 @@ private fun PopupPhraseCardSection(
                 style = nativeSpec.toTextStyle(LocalAppFontScale.current),
                 color = Color(Palette.PROUD_WORD_NORMAL),
             )
+        }
+
+        // §7: up to MAX_PHRASE_ROWS losing overlaps, each on its own row with its own type colour.
+        phrase.alternatives.take(WordCardTokens.MAX_PHRASE_ROWS).forEach { alternative ->
+            HorizontalDivider(color = Color(WordCardTokens.PHRASE_DIVIDER_COLOR))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val altColor = when (alternative.kind) {
+                    PhraseKind.PHRASAL -> Color(WordCardTokens.COLOR_PHRASAL)
+                    PhraseKind.IDIOM -> Color(WordCardTokens.COLOR_IDIOM)
+                    PhraseKind.COLLOCATION -> Color(WordCardTokens.COLOR_COLLOC)
+                }
+                Text(
+                    text = alternative.headword,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = altColor,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                alternative.translation?.takeIf { it.isNotBlank() }?.let { altTrans ->
+                    Spacer(Modifier.size(Dimens.xs))
+                    Text(
+                        text = altTrans,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
         }
 
         if (phrase.examples.isNotEmpty()) {
