@@ -13,8 +13,8 @@
     <string name="menu_settings">Settings</string>
     <string name="coming_soon">Coming soon</string>
     <string name="coming_soon_body">This section is planned but not built yet. The rest of the app works without it.</string>
-    <string name="learn_placeholder_title">Learning from PDF, Browser &amp; Image</string>
-    <string name="learn_placeholder_body">Coming soon — subtitle-based learning, smart profiles, and dictionary tools are available in Settings.</string>
+    <string name="profile_needs_models">This profile adds %1$d download(s), about %2$d MB, and runs only after they are installed.</string>
+    <string name="profile_runtime_missing">The runtime this profile needs is not part of this build, so analysis stays on the previous profile.</string>
 
     <!-- Home -->
     <string name="home_open_file">Open a video</string>

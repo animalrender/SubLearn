@@ -11,8 +11,8 @@
     <string name="menu_settings">تنظیمات</string>
     <string name="coming_soon">به‌زودی</string>
     <string name="coming_soon_body">این بخش هنوز ساخته نشده است. بقیه‌ی برنامه بدون آن کار می‌کند.</string>
-    <string name="learn_placeholder_title">یادگیری از PDF، مرورگر و تصویر</string>
-    <string name="learn_placeholder_body">به‌زودی — یادگیری مبتنی بر زیرنویس، پروفایل‌های هوشمند و ابزارهای لغت‌نامه در تنظیمات در دسترس هستند.</string>
+    <string name="profile_needs_models">این پروفایل %1$d دانلود، حدود %2$d مگابایت، اضافه می‌کند و تنها پس از نصب آن‌ها اجرا می‌شود.</string>
+    <string name="profile_runtime_missing">موتور لازم برای این پروفایل در این نسخه وجود ندارد؛ بنابراین تحلیل روی پروفایل قبلی می‌ماند.</string>
     <string name="home_open_file">باز کردن ویدیو</string>
     <string name="home_open_url">باز کردن پیوند</string>
     <string name="home_recent_title">ادامه‌ی تماشا</string>

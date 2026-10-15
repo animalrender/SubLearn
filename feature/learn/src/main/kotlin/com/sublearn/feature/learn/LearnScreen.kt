@@ -46,6 +46,8 @@ import com.sublearn.core.designsystem.R
 import com.sublearn.core.models.ModelCatalogEntry
 import com.sublearn.core.models.PackDownloadState
 import com.sublearn.core.player.OpenDocumentContract
+import com.sublearn.core.ai.NlpModelCatalog
+import com.sublearn.core.ai.ProfileTier
 import com.sublearn.core.settings.AccuracyProfileToken
 import com.sublearn.core.settings.CefrLevel
 import com.sublearn.core.settings.LearningMode
@@ -189,6 +191,26 @@ fun LearnScreen(
                             label = { Text(profile.name) },
                         )
                     }
+                }
+                // §5.1: say what the selected profile needs before the user switches to it. The
+                // catalog is the same data the settings downloads screen uses, so the number here
+                // is the size of the download that screen offers.
+                val tier = ProfileTier.fromToken(smart.accuracyProfile.name)
+                val neededModels = NlpModelCatalog.modelsFor(tier)
+                if (neededModels.isNotEmpty()) {
+                    val downloadMb = (NlpModelCatalog.downloadBytesFor(tier) + 1_048_575L) / 1_048_576L
+                    Text(
+                        text = stringResource(R.string.profile_needs_models, neededModels.size, downloadMb),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (!NlpModelCatalog.isRunnableInThisBuild(tier)) {
+                    Text(
+                        text = stringResource(R.string.profile_runtime_missing),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
                 }
                 benchmarkReport?.let { rep ->
                     Text(
