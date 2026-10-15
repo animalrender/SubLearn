@@ -84,11 +84,20 @@ listed at the end is the evidence.
 - My Words gained a stable **sort selector** (Newest, Oldest, A–Z, Level) and **SAF export** for
   CSV, JSON and Anki TSV alongside the clipboard actions (D-73), with 5 tests for the orderings.
 
-### Phase 25 — docs and versions
+### Phase 25 — docs, versions, checks
 - `docs/README.md` indexes every document, and `tools/check_docs.py` fails when the index and the
   directory disagree, alongside the existing catalog and EN/FA string checks. Both are wired into
   the CI static checks.
 - Decisions **D-69 .. D-73** record the reasoning above.
+- `tools/check_catalog.py` cross-checks `catalog-v2.json` against the Kotlin model table (ids,
+  sizes, RAM floors, runtimes, profile placement) and runs on every build and every catalog
+  change. Writing it found a real gap — two alternative SMART LLMs the app did not name — now
+  recorded as `NlpModelCatalog.smartAlternatives`.
+- The library rows gained a **details dialog** (version, size, runtime, RAM, profile, licence,
+  source, hash prefix, and an explicit warning when no hash is published).
+- `build-extra-packs.yml` no longer **discards its own output** when the release is missing.
+- A 20k-token **throughput tripwire** for the cue analyser, and tests for the runtime guard's
+  budgets, downgrade ladder, guarded-call fallbacks and the two profile scorers.
 
 **Honest gaps that remain**
 - The ONNX and LiteRT runtimes are **not implemented**. The profiles that need them are visible,
@@ -100,6 +109,14 @@ listed at the end is the evidence.
   compilation.
 - `Compose` navigation still uses the hand-rolled `AppNavigator`; the back stack is tested by
   compilation and manual reasoning, not by an automated test.
+
+**CI verification (2026-10-16)**
+- CI green on `86cd5fc`: `assembleDebug`, `assembleRelease`, `test`, `lintDebug` and
+  `assembleDebugAndroidTest` all pass, with the new static checks (`check_docs`, `check_schema`,
+  `check_catalog` and the 20 new python tests) running inside the same job.
+- Two failures were found and fixed by CI in this round: a missing type argument on the
+  `WordSort` comparator, and a test that assumed a blocking sleep could be cancelled by
+  `withTimeoutOrNull` (it cannot — the test now suspends).
 
 **CI verification (2026-10-15)**
 - CI run 38808380130 on `arena/3779275b-sublearn` (commit `cc60465`): **green**.
