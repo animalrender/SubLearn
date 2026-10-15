@@ -439,7 +439,8 @@ private fun CatalogEntryRow(
                         text = stringResource(R.string.library_entry_source, entry.source.host),
                         style = MaterialTheme.typography.labelSmall,
                     )
-                    if (entry.sha256.isNullOrBlank()) {
+                    val hash = entry.sha256
+                    if (hash.isNullOrBlank()) {
                         Text(
                             text = stringResource(R.string.library_entry_no_hash),
                             style = MaterialTheme.typography.labelSmall,
@@ -447,7 +448,7 @@ private fun CatalogEntryRow(
                         )
                     } else {
                         Text(
-                            text = stringResource(R.string.library_entry_hash, entry.sha256.take(16)),
+                            text = stringResource(R.string.library_entry_hash, hash.take(16)),
                             style = MaterialTheme.typography.labelSmall,
                         )
                     }
