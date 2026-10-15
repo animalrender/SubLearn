@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileOutputStream
 import java.io.RandomAccessFile
 import java.net.HttpURLConnection
 import java.net.URL
@@ -206,17 +205,27 @@ class MlKitModelInstaller(
                 val totalBytes = meta.downloadSize
                 var downloaded = existingBytes
 
-                conn.inputStream.use { input ->
-                    FileOutputStream(partFile, isResume).use { fos ->
-                        val buffer = ByteArray(8192)
-                        var bytesRead: Int
-                        while (input.read(buffer).also { bytesRead = it } != -1) {
-                            ensureActive()
-                            fos.write(buffer, 0, bytesRead)
-                            downloaded += bytesRead
-                            onProgress(InstallState.Downloading(downloaded, totalBytes))
+                val outputStream = if (isResume) {
+                    java.io.RandomAccessFile(partFile, "rw").apply { seek(existingBytes) }
+                } else {
+                    null
+                }
+                try {
+                    conn.inputStream.use { input ->
+                        val sink = outputStream ?: partFile.outputStream()
+                        sink.use { out ->
+                            val buffer = ByteArray(8192)
+                            var bytesRead: Int
+                            while (input.read(buffer).also { bytesRead = it } != -1) {
+                                ensureActive()
+                                out.write(buffer, 0, bytesRead)
+                                downloaded += bytesRead
+                                onProgress(InstallState.Downloading(downloaded, totalBytes))
+                            }
                         }
                     }
+                } finally {
+                    outputStream?.close()
                 }
                 conn.disconnect()
                 return AppResult.success(Unit)
@@ -251,8 +260,8 @@ class MlKitModelInstaller(
                         outFile.mkdirs()
                     } else {
                         outFile.parentFile?.mkdirs()
-                        FileOutputStream(outFile).use { fos ->
-                            zis.copyTo(fos)
+                        outFile.outputStream().use { out ->
+                            zis.copyTo(out)
                         }
                     }
                     zis.closeEntry()
