@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.RandomAccessFile
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
@@ -201,31 +200,20 @@ class MlKitModelInstaller(
                     )
                 }
 
-                val isResume = code == HttpURLConnection.HTTP_PARTIAL && existingBytes > 0
                 val totalBytes = meta.downloadSize
-                var downloaded = existingBytes
+                var downloaded = 0L
 
-                val outputStream = if (isResume) {
-                    java.io.RandomAccessFile(partFile, "rw").apply { seek(existingBytes) }
-                } else {
-                    null
-                }
-                try {
-                    conn.inputStream.use { input ->
-                        val sink = outputStream ?: partFile.outputStream()
-                        sink.use { out ->
-                            val buffer = ByteArray(8192)
-                            var bytesRead: Int
-                            while (input.read(buffer).also { bytesRead = it } != -1) {
-                                ensureActive()
-                                out.write(buffer, 0, bytesRead)
-                                downloaded += bytesRead
-                                onProgress(InstallState.Downloading(downloaded, totalBytes))
-                            }
+                conn.inputStream.use { input ->
+                    partFile.outputStream().use { out ->
+                        val buffer = ByteArray(8192)
+                        var bytesRead: Int
+                        while (input.read(buffer).also { bytesRead = it } != -1) {
+                            ensureActive()
+                            out.write(buffer, 0, bytesRead)
+                            downloaded += bytesRead
+                            onProgress(InstallState.Downloading(downloaded, totalBytes))
                         }
                     }
-                } finally {
-                    outputStream?.close()
                 }
                 conn.disconnect()
                 return AppResult.success(Unit)
