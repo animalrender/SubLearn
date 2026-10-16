@@ -4,26 +4,31 @@ import com.sublearn.core.common.AppResult
 import com.sublearn.core.common.SubLearnError
 
 /**
- * Runtime an optional NLP model needs. The app ships only the `NONE` tier; the others require
- * a native runtime that is not part of this build yet (see [NlpModelRuntime.isAvailable]).
+ * Runtime an optional NLP model needs.
+ *
+ * `NONE` is pure Kotlin and always present. The other two are native engines in separate modules;
+ * [isAvailable] reports whether the running build registered them (`D-74`).
  */
 enum class NlpModelRuntime {
     /** Pure-Kotlin inference: rankers over the lexicon pack, lookup-table embeddings. */
     NONE,
 
-    /** ONNX Runtime via `com.microsoft.onnxruntime:onnxruntime-android`. */
+    /** ONNX Runtime via `com.microsoft.onnxruntime:onnxruntime-android` (`core:nlp-onnx`). */
     ONNX,
 
-    /** LiteRT / MediaPipe GenAI LLM runner. */
+    /** LiteRT-LM bundles through MediaPipe's GenAI LLM Inference API (`core:nlp-llm`). */
     LITERT,
     ;
 
     /**
-     * Whether this build can actually execute the runtime. `false` is the honest answer for
-     * ONNX and LiteRT: the dependencies and model loaders are not part of this build, so the
-     * profiles that need them are offered but refuse to start instead of failing silently.
+     * Whether this build can actually execute the runtime.
+     *
+     * Answered by [NlpRuntimeRegistry] rather than by a constant, because the engines live in
+     * modules that depend on this one. The app registers the runtimes it was built with during
+     * dependency injection setup (`D-74`); anything that never registers — a unit test, a tool —
+     * reports `false` for ONNX and LiteRT, so a profile is never claimed to work without proof.
      */
-    val isAvailable: Boolean get() = this == NONE
+    val isAvailable: Boolean get() = NlpRuntimeRegistry.isAvailable(this)
 }
 
 /**
@@ -54,7 +59,7 @@ object NlpModelCatalog {
         id = "emb-potion-base-8m",
         name = "potion-base-8M",
         runtime = NlpModelRuntime.NONE,
-        sizeBytes = 30_212_096L,
+        sizeBytes = 30_456_450L,
         minRamMb = 128,
     )
 
@@ -62,7 +67,7 @@ object NlpModelCatalog {
         id = "emb-minilm-l6-int8",
         name = "all-MiniLM-L6-v2 (int8)",
         runtime = NlpModelRuntime.ONNX,
-        sizeBytes = 23_068_672L,
+        sizeBytes = 23_203_878L,
         minRamMb = 256,
     )
 
@@ -70,7 +75,7 @@ object NlpModelCatalog {
         id = "wsd-distilbert-int8",
         name = "distilbert-base-uncased (int8)",
         runtime = NlpModelRuntime.ONNX,
-        sizeBytes = 67_895_296L,
+        sizeBytes = 67_942_134L,
         minRamMb = 512,
     )
 
@@ -78,7 +83,7 @@ object NlpModelCatalog {
         id = "llm-qwen25-05b",
         name = "Qwen2.5-0.5B-Instruct",
         runtime = NlpModelRuntime.LITERT,
-        sizeBytes = 524_288_000L,
+        sizeBytes = 546_660_344L,
         minRamMb = 1536,
     )
 
@@ -86,7 +91,7 @@ object NlpModelCatalog {
         id = "llm-smollm2-360m",
         name = "SmolLM2-360M-Instruct",
         runtime = NlpModelRuntime.LITERT,
-        sizeBytes = 377_487_360L,
+        sizeBytes = 373_719_040L,
         minRamMb = 1024,
     )
 
@@ -94,7 +99,7 @@ object NlpModelCatalog {
         id = "llm-gemma3-270m",
         name = "Gemma3-270M-IT",
         runtime = NlpModelRuntime.LITERT,
-        sizeBytes = 283_115_520L,
+        sizeBytes = 303_950_933L,
         minRamMb = 1024,
     )
 
@@ -130,6 +135,26 @@ object NlpModelCatalog {
 
     /** Total download a profile adds, in bytes. */
     fun downloadBytesFor(profile: ProfileTier): Long = modelsFor(profile).sumOf { it.sizeBytes }
+
+    /**
+     * The subset of [modelsFor] that has to be *resident* for the profile to do its job.
+     *
+     * The download list and the runtime list differ on purpose. A SMART device downloads all four
+     * models so it can upgrade or downgrade without another transfer, but it only keeps the
+     * word-sense encoder and the prompt model in memory: 640 MB of weights resident on a phone
+     * would be an out-of-memory crash, not a feature.
+     *
+     * Every runtime model appears in [modelsFor], which a unit test asserts.
+     */
+    fun runtimeModelsFor(profile: ProfileTier): List<NlpModel> = when (profile) {
+        ProfileTier.BASIC, ProfileTier.LIGHT, ProfileTier.CUSTOM -> emptyList()
+        ProfileTier.BALANCED -> listOf(POTION_BASE_8M)
+        ProfileTier.PRECISE -> listOf(MINILM_L6_INT8)
+        // Order matters: [ProfiledNlpEngine] walks this list and keeps the first embedder it opens,
+        // so the strongest encoder comes first.
+        ProfileTier.ADVANCED -> listOf(DISTILBERT_INT8)
+        ProfileTier.SMART -> listOf(DISTILBERT_INT8, QWEN25_05B)
+    }
 
     /** True when every runtime the profile needs exists in this build. */
     fun isRunnableInThisBuild(profile: ProfileTier): Boolean =
