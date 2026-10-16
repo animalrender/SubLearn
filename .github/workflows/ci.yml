@@ -36,6 +36,9 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # The whole history and every tag: the version of a `main` build is computed from the
+          # release tags (tools/next_version.py), so a shallow clone would name every build 3.0.0.
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
@@ -63,21 +66,52 @@ jobs:
           python3 tools/check_docs.py --repo-root .
           python3 tools/check_schema.py --repo-root .
           python3 tools/check_catalog.py --repo-root .
+          python3 tools/check_workflows.py --repo-root .
           python3 -m unittest tools/test_update_catalog.py
           python3 -m unittest tools/test_check_catalog.py
+          python3 -m unittest tools/test_next_version.py
           python3 -m unittest tools/lexicon_builder/test_lexicon_builder.py
+
+      - name: Work out the version this build carries
+        # The same rule the release workflow uses (tools/next_version.py): on `main` the build
+        # carries the version that is about to be released, everywhere else it carries the
+        # rolling dev version. The file written here is what the release workflow reads to decide
+        # whether it may publish these exact APKs or has to build them again (D-82).
+        id: version
+        shell: bash
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [ "$BRANCH" = "main" ]; then
+            version=$(python3 tools/next_version.py)
+          else
+            shortsha=$(echo "$GITHUB_SHA" | head -c 7)
+            version="0.0.0-dev-${BRANCH//\//-}+${shortsha}"
+          fi
+          echo "name=$version" >> "$GITHUB_OUTPUT"
+          echo "version: $version" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Assemble, unit test, lint
         # --continue so a broken module does not hide the errors of the modules after it: one run
         # should produce the whole list of compile errors, since each CI round trip is slow here.
         shell: bash
         env:
-          SUBLEARN_VERSION_NAME: "0.0.0-ci+${{ github.sha }}"
-          SUBLEARN_VERSION_CODE: ${{ github.run_number }}
+          SUBLEARN_VERSION_NAME: ${{ steps.version.outputs.name }}
         run: |
           set -o pipefail
           ./gradlew assembleDebug assembleRelease test lintDebug assembleDebugAndroidTest \
             --continue --stacktrace --console=plain 2>&1 | tee "$RUNNER_TEMP/gradle.log"
+
+      - name: Record the version in the artifact
+        # The release workflow publishes these APKs unchanged, so it has to be able to check that
+        # they carry the version it is about to publish. A build whose version does not match is
+        # rebuilt rather than published under the wrong number.
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p app/build/outputs/apk/release
+          printf '%s\n' "${{ steps.version.outputs.name }}" > app/build/outputs/apk/release/version.txt
 
       - name: Report the failure as annotations
         # The agent sandbox cannot read the Actions log host, so the interesting lines are published as
@@ -147,11 +181,14 @@ jobs:
           retention-days: 14
 
       - name: Upload release APKs
-        # The same four files the release workflow publishes, so a shrunk build is checked on every push.
+        # The same four files the release workflow publishes, so a shrunk build is checked on every
+        # push, plus the version file the release workflow reads before publishing them.
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: SubLearn-release-apk
-          path: app/build/outputs/apk/release/*.apk
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/apk/release/version.txt
           if-no-files-found: error
           retention-days: 14
 

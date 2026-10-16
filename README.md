@@ -20,8 +20,9 @@ of the settings, string and font layers does not assume either: see [docs/ARCHIT
 
 **Settings → Player learning** controls the video's Learning/Entertainment mode, CEFR level and card
 appearance. Learning adds automatic offline word/phrase translations in a quiet corner; Entertainment
-keeps manual subtitle lookup without automatic cards. Packs, imports and accuracy profiles are under
-**Settings → Library & Resources**, with a link to model downloads. The **Learn tab** is reserved for
+keeps manual subtitle lookup without automatic cards. Everything that has to be downloaded — the
+offline translation model, the lexicon and dictionary packs, the accuracy models and the accuracy
+profile — is under **Settings → Downloads**. The **Learn tab** is reserved for
 future browser/PDF/image learning and currently shows only Coming soon.
 
 ## What works today

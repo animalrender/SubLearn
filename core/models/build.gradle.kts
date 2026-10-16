@@ -36,6 +36,9 @@ android {
 dependencies {
     api(project(":core:common"))
     api(project(":core:settings"))
+    // The accuracy-profile tiers and the device capabilities they are checked against live in
+    // `core:ai`; this module owns the catalog and the downloader that feed them.
+    api(project(":core:ai"))
     api(libs.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)

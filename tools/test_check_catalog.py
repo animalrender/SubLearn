@@ -85,6 +85,42 @@ class CheckTest(unittest.TestCase):
         problems = check(self._broken_copy(mutate))
         self.assertTrue(any("missing from the catalog" in problem for problem in problems), problems)
 
+    def _copy_with_bundled_mutation(self, mutate):
+        """A copy of the repository whose app-side catalog (ModelCatalog.kt) is changed."""
+        tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tmp, True)
+        shutil.copytree(os.path.join(REPO_ROOT, "core"), os.path.join(tmp, "core"))
+        shutil.copytree(os.path.join(REPO_ROOT, "docs"), os.path.join(tmp, "docs"))
+        bundled = os.path.join(
+            tmp, "core", "models", "src", "main", "kotlin", "com", "sublearn", "core", "models",
+            "ModelCatalog.kt",
+        )
+        with open(bundled, encoding="utf-8") as handle:
+            source = handle.read()
+        with open(bundled, "w", encoding="utf-8") as handle:
+            handle.write(mutate(source))
+        return tmp
+
+    def test_detects_a_bundled_hash_that_drifted(self):
+        # The app's own copy of the catalog is what the download is verified against. A SHA-256
+        # there that is not the published one is exactly what made every pack download fail with
+        # "SHA-256 mismatch" (D-83), so the checker has to notice it.
+        def mutate(source):
+            return source.replace(
+                'sha256 = "1957c0afbf7e7b7c42d5453f91120a5726a53747b67132b8005851118001b95e"',
+                'sha256 = "500696765c0d5339c5c4d0823604d8d53fec9abff96bd1dd1b0bf1b4504669ef"',
+            )
+
+        problems = check(self._copy_with_bundled_mutation(mutate))
+        self.assertTrue(any("sha256 differs" in problem for problem in problems), problems)
+
+    def test_detects_a_bundled_size_that_drifted(self):
+        def mutate(source):
+            return source.replace("sizeBytes = 35_648_482L", "sizeBytes = 35_863_515L")
+
+        problems = check(self._copy_with_bundled_mutation(mutate))
+        self.assertTrue(any("sizeBytes differs" in problem for problem in problems), problems)
+
     def test_detects_a_pack_with_a_non_release_url(self):
         def mutate(catalog):
             for entry in catalog["entries"]:

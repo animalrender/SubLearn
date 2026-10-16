@@ -111,15 +111,16 @@ fun SettingsScreen(
                     "shadowing" -> ShadowingSection(settings, viewModel)
                     "learning" -> {
                         LearningSection(settings, viewModel)
-                        SectionCard(stringResource(R.string.library_title)) {
-                            ActionRow(stringResource(R.string.library_title), onClick = { section = "resources" }, showArrow = true)
+                        // My Words is the one place outside this screen the user keeps their own
+                        // words. The old "Library" row next to it pointed at the library screen
+                        // that the downloads screen replaced, so it is gone (D-81).
+                        SectionCard(stringResource(R.string.words_title)) {
                             ActionRow(stringResource(R.string.words_title), onClick = onOpenWords, showArrow = true)
                         }
                     }
-                    "models" -> ModelsSection(viewModel)
-                    "resources" -> ResourcesSection(onOpenModels = { section = "models" })
+                    "downloads" -> DownloadsSection()
+                    "translation" -> TranslationSection(settings, viewModel, onOpenDownloads = { section = "downloads" })
                     "ai" -> AiSection(settings, viewModel, onOpenPrompt = { section = "prompt" })
-                    "translation" -> TranslationSection(settings, viewModel)
                     "dictionary" -> DictionarySection(settings, viewModel)
                     "quick" -> QuickActionsSection(settings, viewModel)
                     "prompt" -> PromptSection(settings, viewModel, onDone = { section = "ai" })
@@ -170,13 +171,14 @@ private enum class Sections(val id: String, val titleRes: Int, val hintRes: Int,
         "تکرار")),
     Learning("learning", R.string.settings_category_learning, R.string.settings_hint_learning, listOf("level", "cefr", "popup", "word",
         "سطح")),
-    Resources("resources", R.string.library_title, R.string.library_subtitle,
-        listOf("library", "pack", "import", "profile", "resource", "منابع", "بسته", "دقت")),
+    // One section for everything that is downloaded: the translation model, the offline packs,
+    // the accuracy models and the profile that uses them. The old "Library & Resources" and
+    // "Models & Downloads" split was the reason the same model appeared twice with two sizes.
+    Downloads("downloads", R.string.settings_category_downloads, R.string.settings_hint_downloads, listOf("download", "model", "pack",
+        "library", "resource", "profile", "ml kit", "storage", "دانلود", "مدل", "بسته", "منابع", "دقت")),
+    Translation("translation", R.string.settings_category_translation, R.string.settings_hint_translation, listOf("ml kit", "engine",
+        "source", "cache", "ترجمه")),
     Ai("ai", R.string.settings_category_ai, R.string.settings_hint_ai, listOf("openai", "gemini", "anthropic", "key", "prompt")),
-    Translation("translation", R.string.settings_category_translation, R.string.settings_hint_translation, listOf("ml kit", "model",
-        "cache")),
-    Models("models", R.string.settings_category_models, R.string.settings_hint_models, listOf("download", "model", "pack", "ml kit",
-        "storage", "دانلود", "مدل")),
     Dictionary("dictionary", R.string.settings_category_dictionary, R.string.settings_hint_dictionary, listOf("dictionary", "offline",
         "فرهنگ")),
     QuickActions("quick", R.string.settings_category_quick_actions, R.string.settings_hint_quick_actions, listOf("button", "dock", "icon")),

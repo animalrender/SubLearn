@@ -10,9 +10,9 @@ plugins {
 // the release build falls back to the debug key so that anyone can reproduce the build (REQ-6).
 val releaseKeystorePath: String? = System.getenv("SUBLEARN_KEYSTORE_PATH")?.takeIf { it.isNotBlank() }
 
-// 0.2.1 → 201. The code is derived from the name so that a release only ever edits one number, which
-// is what lets `auto-release.yml` publish a version bump without touching the build file (D-28). A
-// pre-release suffix (0.3.0-rc1) maps to the code of the version it leads to.
+// 3.0.0 → 30000. The code is derived from the name so that a release only ever edits one number, which
+// is what lets `auto-release.yml` publish a version bump without touching the build file (D-82). A
+// pre-release suffix (3.0.1-rc1) maps to the code of the version it leads to.
 // Phase 25: SUBLEARN_VERSION_NAME / SUBLEARN_VERSION_CODE from CI; default for local/dev builds.
 fun versionCodeOf(name: String): Int {
     val parts = name.substringBefore('-').split('.').map { part -> part.takeWhile(Char::isDigit).toIntOrNull() ?: 0 }
@@ -20,12 +20,23 @@ fun versionCodeOf(name: String): Int {
 }
 
 /**
- * Resolve the version name from the environment or fall back to a dev placeholder.
- * CI sets `SUBLEARN_VERSION_NAME` (e.g. "0.3.0"); local builds get "0.0.0-dev+<shortsha>".
+ * Resolve the version name.
+ *
+ * The order is: the environment (the release workflows set `SUBLEARN_VERSION_NAME` to the exact
+ * version they publish), then the repository's `VERSION` file, then a dev placeholder. The `VERSION`
+ * file is the single source of truth for what the next release will be called, and `tools/
+ * next_version.py` reads the same file, so the build and the release pipeline can never disagree
+ * about the number that ends up on the About screen (D-82).
  */
 fun resolveVersionName(): String {
     val env = System.getenv("SUBLEARN_VERSION_NAME")?.takeIf { it.isNotBlank() }
     if (env != null) return env
+    val committed = rootProject.file("VERSION")
+        .takeIf { it.isFile }
+        ?.readText()
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
+    if (committed != null) return committed
     // Try to get the short SHA from git; fall back to "dev"
     val sha = try {
         val p = ProcessBuilder("git", "rev-parse", "--short", "HEAD").redirectErrorStream(true).start()
@@ -45,8 +56,10 @@ android {
         // Phase 25: version is resolved from SUBLEARN_VERSION_NAME (CI) or git sha (local dev).
         // The release workflows set SUBLEARN_VERSION_NAME; no manual version editing is needed.
         versionName = resolveVersionName()
-        versionCode = System.getenv("SUBLEARN_VERSION_CODE")?.toIntOrNull()
-            ?: System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()
+        // The code follows the name, never the build run: a release that was built by a later
+        // workflow run than the CI run that tested it must still be installable over the build the
+        // user already has, and a run counter would not be (D-82).
+        versionCode = System.getenv("SUBLEARN_VERSION_CODE")?.toIntOrNull()?.takeIf { it > 0 }
             ?: versionCodeOf(versionName!!)
         resourceConfigurations += listOf("en", "fa")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

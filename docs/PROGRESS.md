@@ -1,3 +1,56 @@
+## 2026-10-16 — one downloads screen, automatic releases, and the catalog that matches the bytes
+
+**Implemented on `arena/40fc4e81-sublearn`; CI compile pending, device verification pending.**
+
+The owner reported that the released builds are broken, that the offline translation model download
+fails in three places, that the pack download ends in "SHA mismatched", and that the accuracy
+profiles do not work. The causes turned out to be four separate ones, all confirmed in the code:
+
+1. **The translation model had two implementations.** A hand-written installer unpacked Google's
+   archive itself, demanded `translate_enfa/` at the extraction root, had the wrong size and an
+   empty SHA-256, and wrote a layout ML Kit does not read — which is what produced "missing
+   translation_model.pb" while the UI said "installed". The SDK path existed too, but it required
+   Wi-Fi and only fetched the target language.
+2. **The catalog described bytes that were never published.** The pack entries carried a size and a
+   SHA-256 that did not match the assets in the `packs-v2.0.0` release, so the verifier rejected
+   every pack download.
+3. **The profile guard compared the profile's floor with the app's heap.** A phone with 8 GB of RAM
+   gives the app a few hundred MB, so every profile was downgraded and the chips showed raw enum
+   names.
+4. **No release had ever happened.** The version was a literal in `app/build.gradle.kts` and the
+   only automation was a conventional-commit rule that needed a tag that did not exist.
+
+**What changed**
+
+- **Settings → Downloads** replaces "Library & Resources" and "Models & Downloads" (D-81). One
+  screen holds the offline translation model, the offline packs, the accuracy models and the
+  accuracy profile; `DownloadsViewModel` owns all four. The library screen's hardcoded English
+  status strings, the models screen and their view model are deleted.
+- **One model, one state, one download.** `TranslationModelManager` (new, in `core:translate`) is the
+  single source of truth for the offline translation model; the player popup, the translation
+  settings and the downloads screen all go through it. The custom `MlKitModelInstaller`,
+  `MlKitInstallLogic` and their test are deleted, and the SDK path no longer requires Wi-Fi.
+- **The accuracy models are installed by the installer that can open them.** The library screen
+  downloaded them through the *pack* downloader — one file into the wrong folder — so they never
+  loaded. `NlpModelInstaller` fetches every asset the model needs.
+- **Profiles are advised, not enforced.** `ModelRuntimeGuard` (and its test) is deleted.
+  `SmartProfileSelector` compares the profile with the device's memory, storage and installed
+  models, `DeviceCapabilityReader` (new, in `core:models`) reads the device, and the screen says
+  what a profile still needs instead of switching the user's choice. The chip labels are real names
+  in both languages.
+- **The catalog matches the published bytes** (D-83): the pack sizes and SHA-256 are the digests
+  the release API reports, `ModelCatalogParser.bundledDefault()` is generated from the same file,
+  `tools/check_catalog.py` compares the two field by field, and `verify-catalog.yml` asks the GitHub
+  API for the digest of every published asset.
+- **Releases bump themselves by a patch** (D-82): `VERSION` holds the floor, `tools/next_version.py`
+  computes the next version from the highest stable tag, `auto-release.yml` publishes `v3.0.0`,
+  `v3.0.1`, `v3.0.2` … from `main`, and `versionCode` is derived from the name. The old
+  `tools/bump_version.py` is deleted.
+
+**Checks so far:** all seven static checkers pass, `tools/test_next_version.py` is green (15 cases),
+and `git diff --check` is clean. Local Gradle cannot start (no JVM, no Android SDK), so the compile
+is CI's job and no device run is claimed.
+
 ## 2026-10-16 — Settings entry, Learn scope and automatic player cards
 
 **Implemented on `arena/89bec83d-sublearn`; CI green on `a65db3e`, device verification pending.**

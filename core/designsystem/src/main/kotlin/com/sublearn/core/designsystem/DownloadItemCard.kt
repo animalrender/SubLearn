@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
  * Unified download item card for ML Kit models, packs, and NLP models (§3.2).
  *
  * Shows different states: available, downloading, verifying, installed, error.
- * All download types in Settings → Models & Downloads use this component.
+ * Every download type in Settings → Downloads uses this component.
  *
  * @param name display name of the item
  * @param description one-line description of what it does

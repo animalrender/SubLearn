@@ -535,7 +535,7 @@ exactly those shapes and are what the learner wants underlined. The demotion rea
 the source carried the phrasal code, so `build_report.json` shows how often it happens.
 
 
-**D-78 — Learn is a future reading surface; learning mode belongs to the player.**
+**D-78 — Learn is a future reading surface; learning mode belongs to the player. (Revised by D-81.)**
 The owner clarified that Learn is only for browser/PDF/image learning and must stay a Coming soon
 surface. Pack onboarding, imports, integrity checks, downloads and accuracy profiles move to
 `feature:settings/ResourcesSection` and `ResourcesViewModel`; mode, level and popup controls stay in
@@ -563,3 +563,41 @@ snapping and the interactive thumb). Settings entry also fixes a Koin runtime fa
 `NlpModelInstaller` downloader is a function, not a `ModelDownloader` instance; pass the registered
 instance's `::download` rather than asking Koin for an unregistered function. `SettingsGraphTest`
 resolves the real production graph to guard this failure, which source checks cannot catch.
+
+**D-81 — One downloads screen, one state for every model.**
+Settings had three places that claimed to manage downloads: "Library & Resources" (packs, profile
+chips, a benchmark report), "Models & Downloads" (the ML Kit model *and* the six accuracy models)
+and the translation settings (a second ML Kit button). The same ML Kit model was listed twice with
+two different sizes, the accuracy models were offered by the library screen through the *pack*
+downloader — one file into the wrong folder, so the runtime could not open them — and the profile
+chips showed raw enum names next to a benchmark that silently replaced the user's choice with
+whatever the app's *heap* could afford. The screen is now one: **Settings → Downloads** holds the
+offline translation model, the offline packs, the accuracy models and the accuracy profile, and
+`DownloadsViewModel` owns all four. The state of the translation model comes from one shared
+`TranslationModelManager`, so the player, the translation settings and the downloads screen show
+the same thing and start the same download. The custom `MlKitModelInstaller` is deleted: ML Kit
+downloads, verifies and stores its own models, and a hand-written installer that unpacked the
+archive into a directory the SDK does not read is what produced "missing translation_model.pb" while
+reporting success. The profile is now *advised*, not enforced — `SmartProfileSelector` compares the
+profile with the device's memory, storage and installed models and the screen says what is missing
+instead of downgrading the choice behind the user's back.
+
+**D-82 — The version is a file, and the release bumps it by a patch.**
+`VERSION` holds the version the next release carries (`3.0.0`). `tools/next_version.py` reads the
+highest stable tag and the file, and returns the next patch version, so every merge to `main`
+releases `3.0.0 → 3.0.1 → 3.0.2` without anybody editing a build file. `versionCode` is derived
+from the name (3.0.0 → 30000), so two releases can never claim the same code. `auto-release.yml`
+computes the version, builds it and publishes the stable tag only when that tag is free and the
+commit has no stable tag yet; `release.yml` refuses a tag below the `VERSION` floor. The old
+`tools/bump_version.py` (a conventional-commit version rule) is deleted: it needed a tag that did
+not exist yet, which is the reason no release ever happened.
+
+**D-83 — The catalog describes the published bytes, and the app's copy is checked against it.**
+The pack entries in `docs/catalog/catalog-v2.json` carried a size and a SHA-256 that did not match
+the assets in the `packs-v2.0.0` release, so every pack download ended in "SHA-256 mismatch" and
+the pack could never be installed. The catalog now holds the digests the release API reports for
+those assets, `ModelCatalogParser.bundledDefault()` — the copy the app actually reads — is generated
+from the same file, and `tools/check_catalog.py` compares the two field by field, so a hand-edited
+catalog can no longer drift from the app. `verify-catalog.yml` additionally asks the GitHub API
+for the digest of every published asset and fails the build when the catalog disagrees, which turns
+the defect the user hit into a red check instead of a broken download.

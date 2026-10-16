@@ -54,7 +54,7 @@ integrity, performance, UX consistency, and reference repositories (`dictionaryp
 ## 5. Lifecycle Reload, Room Span Cache & Release Verification (`core:lexicon`, `feature:player`, `core:models`)
 - **Lazy startup initialization and pack toggle reload (`PackLexiconAccess.ensureInitialized`)**:
   Automatically loads active packs from `InstalledPackRepository` on first query after app launch and
-  reloads immediately when packs are toggled or deleted in `ResourcesViewModel`.
+  reloads immediately when packs are toggled or deleted in `DownloadsViewModel`.
 - **Rich Dictionary Screen FTS suggestions and extended fields (`LearnScreen`)**: Displays clickable
   prefix/FTS search result chips alongside English glosses, antonyms, word family, and related phrasal
   verbs/idioms/collocations.
@@ -62,7 +62,11 @@ integrity, performance, UX consistency, and reference repositories (`dictionaryp
   and `AppModule` so analyzed subtitle spans are persisted keyed by `(sourceKey, packId, packVersion, analyzerVersion, spanId)`.
 - **Verified `packs-v2.0.0` SHA-256 digests in `catalog-v2.json` and `ModelCatalog.kt`**: Populated exact
   byte sizes and SHA-256 hashes from the full 98 MB `main_db.sqlite` (`db1.0.0`) build and added live HTTP
-  HEAD verification in `verify-catalog.yml`.
+  HEAD verification in `verify-catalog.yml`. (Corrected 2026-10-16: the digests in the repository were
+  the digests of the *local* build, not of the published assets, so every pack download failed with
+  "SHA-256 mismatch". The values are now read from the release API — the digest GitHub reports for
+  the uploaded asset — and the two copies of the catalog are checked against each other and against
+  the release. See D-83.)
 
 
 ## 2026-10-16 — Settings and unobtrusive player learning
@@ -74,3 +78,27 @@ integrity, performance, UX consistency, and reference repositories (`dictionaryp
 - All linear progress and slider tracks share no-dot drawing; localized settings search and nested
   back behaviour make the existing categories usable in both UI languages.
 - Device checks are still necessary for animation, compact landscape geometry and native translations.
+
+
+## 2026-10-16 — one downloads screen, honest profiles, automatic releases
+
+- **One screen instead of three download systems.** "Library & Resources", "Models & Downloads" and
+  the translation settings each had their own idea of what "installed" meant; the same model was
+  listed twice with two sizes, and the accuracy models were fetched by the *pack* downloader, which
+  puts one file in the wrong folder and leaves the runtime unable to open it. Settings → Downloads
+  now holds the translation model, the packs, the accuracy models and the profile, with one view
+  model and one state per item (D-81).
+- **The offline model is the SDK's job, not the app's.** The hand-written installer is deleted: ML
+  Kit downloads, verifies and stores its own models, and an archive unpacked into a directory the
+  SDK does not read is exactly what produced "missing translation_model.pb" while the UI reported
+  success. The Wi-Fi requirement is gone as well — the user asked for a 30 MB model once.
+- **The profile advice is honest.** The guard compared the profile's floor with the app's *heap*, so
+  every choice was downgraded and the profiles never ran. The advice now uses the phone's memory,
+  storage and installed models, and the screen states what a profile still needs instead of
+  silently choosing another one.
+- **The catalog cannot drift from the published bytes again.** The app's bundled catalog is
+  generated from the published one, `tools/check_catalog.py` compares them field by field, and the
+  CI catalog check asks GitHub for the digest of every asset (D-83).
+- **The release bumps itself.** `VERSION` plus `tools/next_version.py` turn every merge to `main`
+  into the next patch release, and `versionCode` follows the name, so two releases can never claim
+  the same code (D-82).

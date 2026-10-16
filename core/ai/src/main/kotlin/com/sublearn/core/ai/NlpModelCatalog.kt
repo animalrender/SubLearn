@@ -224,8 +224,11 @@ object SmartProfileSelector {
     /**
      * Highest-rung profile that fits the device. Never throws: the smallest profile is always
      * runnable because it needs no model.
+     *
+     * @param installedModelIds the models that are on the device. Without them only the profiles
+     * that need no model at all can be ready, which is why the caller passes what it has.
      */
-    fun select(device: DeviceCapabilities): ProfileTier {
+    fun select(device: DeviceCapabilities, installedModelIds: Set<String> = emptySet()): ProfileTier {
         val candidates = listOf(
             ProfileTier.ADVANCED,
             ProfileTier.PRECISE,
@@ -233,7 +236,7 @@ object SmartProfileSelector {
         )
         for (profile in candidates) {
             if (!NlpModelCatalog.isRunnableInThisBuild(profile)) continue
-            if (availability(profile, device, emptySet()) is ProfileAvailability.Ready) return profile
+            if (availability(profile, device, installedModelIds) is ProfileAvailability.Ready) return profile
         }
         return if (device.cpuCores >= 4) ProfileTier.LIGHT else ProfileTier.BASIC
     }

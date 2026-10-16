@@ -10,8 +10,8 @@
       "version": "2.0.0",
       "direction": "en-fa",
       "license": "ODbL-1.0 / CC-BY-SA-4.0",
-      "sizeBytes": 35863515,
-      "sha256": "500696765c0d5339c5c4d0823604d8d53fec9abff96bd1dd1b0bf1b4504669ef",
+      "sizeBytes": 35648482,
+      "sha256": "1957c0afbf7e7b7c42d5453f91120a5726a53747b67132b8005851118001b95e",
       "source": {
         "host": "github.com",
         "url": "https://github.com/animalrender/SubLearn/releases/download/packs-v2.0.0/sublearn-lexicon-en-fa-v2.sqlite.gz"
@@ -30,8 +30,8 @@
       "version": "2.0.0",
       "direction": "fa-en",
       "license": "ODbL-1.0 / CC-BY-SA-4.0",
-      "sizeBytes": 14044817,
-      "sha256": "917e10115883394d5faa80a21ca1b39ceb6da2173f2c279f98dea84d44086f72",
+      "sizeBytes": 14044816,
+      "sha256": "88597dbd0a977953061fde6f351519f759b1dff43ca509fb81b4bb2c20ece1b2",
       "source": {
         "host": "github.com",
         "url": "https://github.com/animalrender/SubLearn/releases/download/packs-v2.0.0/sublearn-dict-fa-en-v1.sqlite.gz"
@@ -221,7 +221,7 @@
       "minRamMb": 1024,
       "profile": "SMART",
       "verified": true,
-      "notes": "Requires Hugging Face Gemma license acceptance; import .task file manually. Requires accepting the model licence on huggingface.co first.",
+      "notes": "Requires Hugging Face Gemma licence acceptance: accept it on huggingface.co before the download can start.",
       "files": [
         {
           "name": "gemma3-270m-it.task",

@@ -21,7 +21,7 @@ import kotlin.coroutines.resumeWithException
  * On-device translation through the official ML Kit Translate client.
  *
  * ML Kit downloads and owns its own models, so the app never handles a model file itself: no
- * extracted `.bipe` packs, no custom model loader (docs/DECISIONS.md D-014). Model files live in the
+ * extracted `.bipe` packs, no custom model loader (docs/DECISIONS.md D-14). Model files live in the
  * app's private storage and are never copied into the repository.
  *
  * ML Kit stores one model per language (English is the pivot and ships with the SDK), so a "pair"
@@ -108,6 +108,10 @@ class MlKitTranslationProvider(
     /**
      * Downloads the pair's models with ML Kit's own task API.
      *
+     * ML Kit only ever downloads the *target* language of a translator, so the language that is
+     * actually missing is fetched with a translator that has it as its target. English is part of
+     * the SDK and is never downloaded.
+     *
      * Progress is reported as coarse states rather than bytes: the `translate` client exposes no
      * byte counts, and the app prefers a stable indeterminate indicator (docs/KNOWN_ISSUES.md).
      */
@@ -124,7 +128,9 @@ class MlKitTranslationProvider(
         }
         onProgress(TranslationProgress(TranslationProgress.Status.PENDING))
         return try {
-            obtainTranslator(source, target).downloadModelIfNeeded(downloadConditions()).awaitTask()
+            for (language in missingLanguages(source, target)) {
+                downloadLanguage(language)
+            }
             onProgress(TranslationProgress(TranslationProgress.Status.SUCCESS))
             AppResult.success(Unit)
         } catch (cancelled: CancellationException) {
@@ -137,9 +143,30 @@ class MlKitTranslationProvider(
         }
     }
 
-    private fun downloadConditions(): DownloadConditions = DownloadConditions.Builder()
-        .requireWifi()
-        .build()
+    /** The languages of the pair that the SDK does not ship and that are not on the device. */
+    private suspend fun missingLanguages(source: String, target: String): List<String> =
+        listOf(source, target)
+            .distinct()
+            .filter { it != TranslateLanguage.ENGLISH }
+            .filter { !isModelDownloaded(it) }
+
+    /** Fetches one language model through a translator that has it as its target. */
+    private suspend fun downloadLanguage(language: String) {
+        val options = TranslatorOptions.Builder()
+            .setSourceLanguage(TranslateLanguage.ENGLISH)
+            .setTargetLanguage(language)
+            .build()
+        Translation.getClient(options).downloadModelIfNeeded(downloadConditions()).awaitTask()
+    }
+
+    /**
+     * The conditions the download runs under.
+     *
+     * No Wi-Fi requirement: the user asked for the model, the download is about 30 MB and it
+     * happens once. Requiring Wi-Fi made the button look broken on a phone that was online over
+     * mobile data, which is the common case (D-81).
+     */
+    private fun downloadConditions(): DownloadConditions = DownloadConditions.Builder().build()
 
     /** Removes the non-English model(s) of the pair; the English pivot is part of the SDK. */
     override suspend fun deleteModel(sourceLanguage: String, targetLanguage: String): AppResult<Unit> {
@@ -213,7 +240,7 @@ class MlKitTranslationProvider(
         return when {
             t.errorCode == MlKitException.NETWORK_ISSUE -> SubLearnError(
                 SubLearnError.Kind.NetworkUnavailable,
-                "the model needs to be fetched once before it can work offline",
+                "the model could not be fetched; check the connection and try again",
                 t,
             )
 
@@ -222,7 +249,8 @@ class MlKitTranslationProvider(
                 message.contains("download", ignoreCase = true) ||
                 message.contains("model", ignoreCase = true) -> SubLearnError(
                 SubLearnError.Kind.ModelMissing,
-                "translation model $source->$target is not downloaded",
+                "the translation model for $source → $target is not on the device; " +
+                    "download it in Settings → Downloads",
                 t,
             )
 

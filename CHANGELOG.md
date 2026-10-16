@@ -4,10 +4,42 @@ All notable changes to SubLearn are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses semantic versioning.
 Unreleased work lands on phase branches; `main` only ever contains merged, CI-green phases.
 
-[Unreleased]: https://github.com/animalrender/SubLearn/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/animalrender/SubLearn/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/animalrender/SubLearn/compare/v0.2.1...v3.0.0
 [0.2.1]: https://github.com/animalrender/SubLearn/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/animalrender/SubLearn/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/animalrender/SubLearn/releases/tag/v0.1.0
+
+## [3.0.0] - 2026-10-16
+
+### Fixed
+- The offline translation model now downloads through ML Kit's own API everywhere. The hand-written
+  installer that unpacked Google's archive into a directory the SDK never reads — the cause of
+  "missing translation_model.pb" while the UI said "installed" — is gone, and the download no
+  longer requires Wi-Fi.
+- The offline packs download again: the catalog carried a size and a SHA-256 that did not match the
+  published assets, so every download ended in "SHA-256 mismatch".
+- The accuracy models are installed by the installer that fetches every file a model needs; the
+  library screen used the pack downloader, which left them unloadable.
+- The accuracy profiles work: the guard compared the profile's floor with the app's heap, so every
+  choice was downgraded and the profiles never ran. The advice now uses the phone's own memory,
+  storage and installed models, and the profile names are real names in both languages.
+
+### Changed
+- Settings has one downloads section instead of two: "Library & Resources" and "Models & Downloads"
+  are now **Settings → Downloads**, holding the offline translation model, the offline packs, the
+  accuracy models and the accuracy profile, with one state per item.
+- The translation settings keep their behaviour and point at the downloads screen; the player popup
+  starts the same download.
+- The version lives in the `VERSION` file and every release to `main` bumps it by a patch
+  (3.0.0 → 3.0.1 → 3.0.2). `versionCode` is derived from the name.
+
+### Added
+- A check that compares the app's bundled catalog with the published one field by field, and a CI
+  step that asks GitHub for the digest of every published asset, so a stale catalog fails the build
+  instead of the download.
+- Profile advice in the downloads screen: what each profile still needs, and the strongest profile
+  the device can run.
 
 ## [Unreleased]
 
@@ -19,7 +51,7 @@ Unreleased work lands on phase branches; `main` only ever contains merged, CI-gr
 
 ### Changed
 - Learn now shows only Coming soon for browser/PDF/image learning; onboarding, resources and accuracy
-  profiles moved to Settings → Library & Resources, separate from Settings → Player learning.
+  profiles moved to Settings → Downloads, separate from Settings → Player learning.
 
 ### Added
 - Passive offline above-level word/phrase cards in the player Learning mode, with strict level/known

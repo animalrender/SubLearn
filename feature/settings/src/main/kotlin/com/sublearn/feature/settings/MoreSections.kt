@@ -49,6 +49,7 @@ import com.sublearn.core.settings.TranslationOrchestrationMode
 import com.sublearn.core.settings.TranslationProviderToken
 import com.sublearn.core.settings.TranslationSourceKind
 import com.sublearn.core.ai.AiPromptBuilder
+import com.sublearn.core.translate.TranslationModelState
 import kotlinx.coroutines.launch
 
 private fun ImportMode.labelRes(): Int = when (this) {
@@ -359,9 +360,10 @@ fun PromptSection(settings: AppSettings, viewModel: SettingsViewModel, onDone: (
 }
 
 @Composable
-fun TranslationSection(settings: AppSettings, viewModel: SettingsViewModel) {
+fun TranslationSection(settings: AppSettings, viewModel: SettingsViewModel, onOpenDownloads: () -> Unit) {
     val translation = settings.translation
     val modelProgress by viewModel.modelProgress.collectAsStateWithLifecycle()
+    val modelState by viewModel.translationModelState.collectAsStateWithLifecycle()
     var showOnlinePrivacyDialog by remember { mutableStateOf(false) }
 
     SectionCard(stringResource(R.string.settings_category_translation)) {
@@ -406,6 +408,31 @@ fun TranslationSection(settings: AppSettings, viewModel: SettingsViewModel) {
             value = translation.translateWholeBlockFirst,
             onChange = { value -> viewModel.update { it.copy(translation = it.translation.copy(translateWholeBlockFirst = value)) } },
         )
+        Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Dimens.sm)) {
+            TextButton(onClick = viewModel::clearTranslationCache) { Text(stringResource(R.string.settings_translation_clear_cache)) }
+        }
+    }
+
+    // The model itself is managed in one place — Settings → Downloads — but the shortcut here
+    // starts the same download through the same manager, so the button the user is looking at
+    // works (D-81).
+    SectionCard(stringResource(R.string.downloads_translation_header)) {
+        Text(
+            text = stringResource(R.string.settings_trans_model_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = stringResource(
+                when (modelState) {
+                    TranslationModelState.Installed -> R.string.settings_trans_model_installed
+                    TranslationModelState.Downloading -> R.string.translate_downloading
+                    is TranslationModelState.Failed -> R.string.settings_trans_model_failed
+                    else -> R.string.settings_trans_model_missing
+                },
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+        )
         val progress = modelProgress
         if (progress != null) {
             if (progress > 0f) {
@@ -413,11 +440,20 @@ fun TranslationSection(settings: AppSettings, viewModel: SettingsViewModel) {
             } else {
                 SubLearnLinearProgressIndeterminate(modifier = Modifier.fillMaxWidth())
             }
-            Text(stringResource(R.string.translate_downloading), style = MaterialTheme.typography.labelSmall)
         }
         Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Dimens.sm)) {
-            TextButton(onClick = viewModel::downloadModel) { Text(stringResource(R.string.translate_download)) }
-            TextButton(onClick = viewModel::clearTranslationCache) { Text(stringResource(R.string.settings_translation_clear_cache)) }
+            if (modelState is TranslationModelState.Installed) {
+                TextButton(onClick = viewModel::removeTranslationModel) {
+                    Text(stringResource(R.string.action_delete))
+                }
+            } else {
+                TextButton(onClick = viewModel::downloadTranslationModel) {
+                    Text(stringResource(R.string.translate_download))
+                }
+            }
+            TextButton(onClick = onOpenDownloads) {
+                Text(stringResource(R.string.settings_trans_model_manage))
+            }
         }
     }
 

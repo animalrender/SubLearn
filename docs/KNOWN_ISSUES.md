@@ -68,7 +68,8 @@ TODO comment; each entry has a route to being fixed.
 15. **Some status text is still English outside the player**: `Sources.kt`'s file errors (`cannot read …`,
     `the file could not be opened`), `SettingsViewModel`'s import and export status lines and the
     `LaterCapabilities` descriptions. The player's own messages and its quick-action labels have been
-    resources since the 2026-10-10 rebuild. Route: a `UiText` (resource id + arguments) carried in the
+    resources since the 2026-10-10 rebuild, and the new Downloads screen resolves its own status
+    text from `core:designsystem` in both languages. Route: a `UiText` (resource id + arguments) carried in the
     UI state and resolved in the composable, so the strings move into `core:designsystem` without the
     view models touching `Context`.
 16. **The About section's "feedback" row is a no-op.** There is no destination yet, so the row does
@@ -80,8 +81,10 @@ TODO comment; each entry has a route to being fixed.
     yet a Room table keyed by media URI, so returning later to an older video does not restore its own
     set. Route: move per-media source assignments into a Room table keyed by the media URI.
 18. **ML Kit model download progress is coarse.** `RemoteModelManager.download` only reports
-    start/success/failure, so the Settings → Translation row shows an indeterminate bar while the
-    model downloads. Route: none in the public ML Kit API; revisit if a progress callback appears.
+    start/success/failure, so the Settings → Downloads card shows an indeterminate bar while the
+    model downloads. The card states the published size of the English–Persian package (about 30 MB)
+    instead of a percentage that the SDK cannot produce. Route: none in the public ML Kit API;
+    revisit if a progress callback appears.
 19. **Repeat-block hold does not invert the auto-repeat setting until release.** A hold runs the
     auto-repeat count once. The chrome button has no release callback, so the setting is not
     temporarily inverted as SHD-2 describes. Route: a release callback on `ChromeIconButton`, and a
@@ -111,12 +114,14 @@ TODO comment; each entry has a route to being fixed.
     has no Android SDK and the models are hundreds of megabytes. The selection, layout, pooling,
     tokenizer and installer logic is unit tested; the native call paths are not. Route: install a
     model on a device, run `ProfiledNlpEngine` against a known sentence, and record the output.
-25. **The ML Kit model installer has not downloaded anything on a real device.** The URL scheme,
-    checksum, zip-slip guard and archive validation are unit tested, and the UI is wired to the
-    installer, but no end-to-end download has been performed. The catalog's SHA-256 for the pair
-    is deliberately empty, which skips verification rather than failing on a guessed hash; fill it
-    in when the URL is confirmed against Google's CDN. Route: one device run through
-    Settings → Models & Downloads, then record the hash.
+25. **The offline translation model has not been downloaded on a real device.** The hand-written
+    installer that unpacked the model archive itself is gone (D-81): ML Kit downloads, verifies and
+    stores its own models, and the app asks the SDK for the language models of the current pair
+    through `RemoteModelManager` and `Translator.downloadModelIfNeeded`. The screen is wired to that
+    one path from three places (the player popup, the translation settings, Settings → Downloads),
+    but no end-to-end download has been performed on a phone, so the "it works" claim rests on the
+    SDK's documented behaviour rather than on an observed run. Route: one device run through
+    Settings → Downloads, then record the result in PROGRESS.md.
 26. **The rebuilt word card is verified by compilation only.** The header and close button were
     removed (§7) and the alternative phrase rows were added, but no Compose UI test pins the
     layout, so a regression in the card's arrangement would only show up visually. Route: a
@@ -142,3 +147,19 @@ TODO comment; each entry has a route to being fixed.
     reduced-motion animations need phone verification in portrait/landscape and EN/FA. The production
     settings graph and seven selection tests pass in CI run 38923376453 (`a65db3e`); the instrumented
     visibility/overlap tests compile but have not executed. No local Android toolchain exists.
+
+30. **The new Downloads screen has not run on a device.** The screen replaces two older sections and
+    three download paths with one (D-81), and it is verified by the static checkers and by reading
+    the SDK calls, not by a phone. What still needs a device run: the ML Kit download itself (see
+    issue 25), the pack download and import from the release (the catalog now matches the published
+    digests, D-83), and the profile chips, which show the advice of `SmartProfileSelector` for the
+    memory and storage the device reports. Route: the 2026-10-16 checklist in PROGRESS.md.
+
+31. **The accuracy profile can now be chosen above what the device can run.** The old guard
+    compared the profile's floor with the app's *heap*, which is a fraction of the phone's memory,
+    so every choice was downgraded and the profiles never ran. The advice now uses the device's own
+    memory, storage and installed models, and the screen states what a profile still needs instead
+    of switching the choice. That means a user can still pick a profile their phone cannot run: the
+    engine then falls back to what it can open, which is the documented behaviour, but the screen
+    does not block the choice. Route: if a profile turns out to be too slow on real hardware, gate
+    the chip behind the advice rather than the advice behind the chip.

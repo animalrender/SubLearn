@@ -2,6 +2,7 @@ package com.sublearn.feature.settings
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import com.sublearn.core.ai.ProfileAvailability
 import com.sublearn.core.designsystem.R
 import com.sublearn.core.settings.AspectMode
 import com.sublearn.core.settings.CefrLevel
@@ -204,13 +205,47 @@ fun TranslationOrchestrationMode.labelRes(): Int = when (this) {
 }
 
 fun AccuracyProfileToken.labelRes(): Int = when (this) {
-    AccuracyProfileToken.BASIC -> R.string.settings_mode_entertainment
-    AccuracyProfileToken.LIGHT -> R.string.settings_mode_learning
-    AccuracyProfileToken.BALANCED -> R.string.level_b1
-    AccuracyProfileToken.PRECISE -> R.string.level_b2
-    AccuracyProfileToken.ADVANCED -> R.string.level_c1
-    AccuracyProfileToken.SMART_EXPERIMENTAL -> R.string.level_c2
-    AccuracyProfileToken.CUSTOM -> R.string.player_aspect_custom
+    AccuracyProfileToken.BASIC -> R.string.profile_basic
+    AccuracyProfileToken.LIGHT -> R.string.profile_light
+    AccuracyProfileToken.BALANCED -> R.string.profile_balanced
+    AccuracyProfileToken.PRECISE -> R.string.profile_precise
+    AccuracyProfileToken.ADVANCED -> R.string.profile_advanced
+    AccuracyProfileToken.SMART_EXPERIMENTAL -> R.string.profile_smart
+    AccuracyProfileToken.CUSTOM -> R.string.profile_custom
+}
+
+/**
+ * What a profile still needs before it can run.
+ *
+ * The sentence is the honest one: the profile is chosen, the app says what is missing and what
+ * it will fall back to. Nothing is decided for the user behind their back (D-81).
+ */
+@Composable
+fun profileStatusText(availability: ProfileAvailability?, deviceRamMb: Int): String = when (availability) {
+    null -> stringResource(R.string.profile_status_unknown)
+
+    ProfileAvailability.Ready -> stringResource(R.string.profile_status_ready)
+
+    is ProfileAvailability.NeedsRam -> stringResource(
+        R.string.profile_status_needs_ram,
+        availability.requiredMb,
+        deviceRamMb,
+    )
+
+    is ProfileAvailability.NeedsStorage -> stringResource(
+        R.string.profile_status_needs_storage,
+        availability.requiredMb,
+    )
+
+    is ProfileAvailability.NeedsModel -> stringResource(
+        R.string.profile_status_needs_model,
+        availability.modelId,
+    )
+
+    is ProfileAvailability.RuntimeMissing -> stringResource(
+        R.string.profile_status_runtime_missing,
+        availability.runtime.name,
+    )
 }
 
 /** The section list entry for a route key. */
@@ -222,10 +257,9 @@ fun String.settingsTitleRes(): Int = when (this) {
     "gestures" -> R.string.settings_category_gestures
     "shadowing" -> R.string.settings_category_shadowing
     "learning" -> R.string.settings_category_learning
-    "ai" -> R.string.settings_category_ai
+    "downloads" -> R.string.settings_category_downloads
     "translation" -> R.string.settings_category_translation
-    "models" -> R.string.settings_category_models
-    "resources" -> R.string.library_title
+    "ai" -> R.string.settings_category_ai
     "dictionary" -> R.string.settings_category_dictionary
     "quick" -> R.string.settings_category_quick_actions
     "prompt" -> R.string.settings_prompt_title

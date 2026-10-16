@@ -15,7 +15,7 @@ data class NlpModelRow(
     val state: NlpModelState,
 )
 
-/** What the Models & Downloads card shows for one accuracy model. */
+/** What the Downloads card shows for one accuracy model. */
 sealed interface NlpModelState {
     /** Not on the device yet. */
     data object Available : NlpModelState
