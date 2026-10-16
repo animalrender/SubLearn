@@ -9,6 +9,7 @@ import com.sublearn.core.ai.NlpModelInstaller
 import com.sublearn.core.ai.NlpModelSelfTest
 import com.sublearn.core.ai.ProfileAvailability
 import com.sublearn.core.ai.ProfileTier
+import com.sublearn.core.ai.ProfiledNlpEngineCache
 import com.sublearn.core.ai.SmartProfileSelector
 import com.sublearn.core.data.InstalledPackEntity
 import com.sublearn.core.data.InstalledPackRepository
@@ -60,6 +61,7 @@ import java.util.concurrent.ConcurrentHashMap
  * @property lexiconAccess the open lexicon, reloaded after a pack changes
  * @property modelInstaller downloads and removes the optional accuracy models
  * @property modelSelfTest opens an installed accuracy model and runs one probe through it (D-86)
+ * @property engineCache the player's open profile engine, dropped when the installed models change
  * @property translationModels the offline translation model, shared with the whole app
  * @property deviceCapabilities what the phone can do, for the profile advice
  * @property context used to resolve the status messages
@@ -73,6 +75,7 @@ class DownloadsViewModel(
     private val lexiconAccess: PackLexiconAccess,
     private val modelInstaller: NlpModelInstaller,
     private val modelSelfTest: NlpModelSelfTest,
+    private val engineCache: ProfiledNlpEngineCache,
     private val translationModels: TranslationModelManager,
     private val deviceCapabilities: DeviceCapabilityReader,
     private val context: Context,
@@ -255,6 +258,7 @@ class DownloadsViewModel(
 
             result.fold(
                 onSuccess = {
+                    engineCache.invalidate()
                     _nlpModels.value = nlpModelRows()
                     updateProfileAdvice()
                     _statusMessage.value = context.getString(R.string.downloads_model_installed, name)
@@ -291,7 +295,12 @@ class DownloadsViewModel(
         val name = NlpModelCatalog.byId[modelId]?.name ?: modelId
         viewModelScope.launch {
             _selfTest.value = SelfTestUi.Running(modelId, name)
-            val report = withContext(Dispatchers.Default) { modelSelfTest.run(modelId) }
+            val report = withContext(Dispatchers.Default) {
+                // The player's engine may hold this very model; two copies of a 500 MB bundle is
+                // the out-of-memory the test is meant to catch, not cause. The next tap reopens it.
+                engineCache.invalidate()
+                modelSelfTest.run(modelId)
+            }
             _selfTest.value = SelfTestUi.Done(name, report)
         }
     }
@@ -300,7 +309,10 @@ class DownloadsViewModel(
     fun deleteNlpModel(modelId: String) {
         viewModelScope.launch {
             val name = NlpModelCatalog.byId[modelId]?.name ?: modelId
-            val removed = withContext(Dispatchers.IO) { modelInstaller.delete(modelId) }
+            val removed = withContext(Dispatchers.IO) {
+                engineCache.invalidate()
+                modelInstaller.delete(modelId)
+            }
             _nlpModels.value = nlpModelRows()
             updateProfileAdvice()
             _statusMessage.value = context.getString(

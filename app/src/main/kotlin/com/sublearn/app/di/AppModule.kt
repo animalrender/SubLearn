@@ -289,6 +289,7 @@ private fun featureModule(): Module = module {
             lexiconAccess = get(),
             modelInstaller = get(),
             modelSelfTest = get(),
+            engineCache = get(),
             translationModels = get(),
             deviceCapabilities = get(),
             context = androidContext(),

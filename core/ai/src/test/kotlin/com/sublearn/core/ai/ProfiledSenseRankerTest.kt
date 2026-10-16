@@ -7,6 +7,7 @@ import com.sublearn.core.nlp.SenseCandidate
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -197,6 +198,24 @@ class ProfiledSenseRankerTest {
         cache.senseRanker()
         assertEquals("ADVANCED opens its own encoder", 2, loader.loads)
         assertEquals("but only one session is resident", 1, loader.open)
+        cache.close()
+    }
+
+    @Test
+    fun `invalidating closes the open model and the next call reopens it`() = runTest {
+        NlpRuntimeRegistry.register(NlpModelRuntime.ONNX)
+        val loader = CountingLoader()
+        val cache = cacheFor(ProfileTier.PRECISE, setOf("emb-minilm-l6-int8"), loader)
+        cache.senseRanker()
+        assertEquals(1, loader.open)
+
+        cache.invalidate()
+
+        assertEquals("the model must be released, not merely forgotten", 0, loader.open)
+        assertNull(cache.lastReport)
+        cache.senseRanker()
+        assertEquals(2, loader.loads)
+        assertEquals(1, loader.open)
         cache.close()
     }
 

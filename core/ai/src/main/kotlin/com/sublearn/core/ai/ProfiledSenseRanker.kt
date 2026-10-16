@@ -220,6 +220,25 @@ class ProfiledNlpEngineCache(
         }
     }
 
+    /**
+     * Drops the open engine so the next [senseRanker] call opens the profile again against what is
+     * installed *now*.
+     *
+     * The cache otherwise keeps a partial engine (profile PRECISE, only the BALANCED model present)
+     * until the profile changes, so a model installed or deleted from Settings → Downloads would not
+     * be seen until then. The downloads screen calls this after an install or a delete, and before
+     * a self-test so the model under test is not held open twice (D-86). Cheap when nothing is
+     * open; the next tapped word pays for the reopen, which is the same price as the first tap.
+     */
+    fun invalidate() {
+        synchronized(lock) {
+            engine?.close()
+            engine = null
+            report = null
+            openProfile = null
+        }
+    }
+
     override fun close() {
         if (!closed.compareAndSet(false, true)) return
         synchronized(lock) {
