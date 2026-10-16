@@ -544,6 +544,10 @@ class BuildReportTest(unittest.TestCase):
         lines = build_report_lines(self.base_report({}), "en-fa")
         self.assertTrue(lines[0].startswith("Build complete (en-fa)"))
 
+    def test_reports_the_output_size_and_hash(self):
+        lines = build_report_lines(self.base_report({}), "fa-en")
+        self.assertIn("35,863,515 bytes", lines[1])
+
     def test_prints_the_quality_audit_lines(self):
         """The audit is how a rule that read the wrong source data explains itself."""
         report = self.base_report({"entries_created": 5})
@@ -565,7 +569,6 @@ class BuildReportTest(unittest.TestCase):
 
     def test_a_report_without_an_audit_still_prints(self):
         self.assertTrue(build_report_lines(self.base_report({}), "fa-en"))
-        self.assertIn("35,863,515 bytes", lines[1])
 
 
 if __name__ == "__main__":
