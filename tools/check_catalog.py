@@ -174,6 +174,7 @@ def parse_kotlin_models(repo_root: str) -> dict[str, dict]:
         models[id_match.group("value")] = {
             "sizeBytes": int(size_match.group("value").replace("_", "")),
             "minRamMb": int(ram_match.group("value")),
+            "requiresTermsAcceptance": bool(re.search(r"requiresTermsAcceptance\s*=\s*true", body)),
             "runtime": runtime_match.group("value"),
             "constant": block.group("name"),
         }
@@ -209,6 +210,11 @@ def check(repo_root: str) -> list[str]:
         if entry.get("sizeBytes") != model["sizeBytes"]:
             problems.append(
                 f"{model_id} size differs: catalog {entry.get('sizeBytes')} vs Kotlin {model['sizeBytes']}",
+            )
+        if bool(entry.get("requiresTermsAcceptance")) != model.get("requiresTermsAcceptance", False):
+            problems.append(
+                f"{model_id} licence gate differs: catalog {bool(entry.get('requiresTermsAcceptance'))} "
+                f"vs Kotlin {model.get('requiresTermsAcceptance', False)}",
             )
         if entry.get("minRamMb") != model["minRamMb"]:
             problems.append(

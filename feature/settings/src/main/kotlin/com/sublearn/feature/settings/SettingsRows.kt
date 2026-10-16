@@ -33,6 +33,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.sublearn.core.designsystem.Dimens
+import com.sublearn.core.designsystem.R
 
 /**
  * The setting controls of the app.

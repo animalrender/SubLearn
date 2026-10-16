@@ -46,6 +46,11 @@ data class NlpModel(
     val runtime: NlpModelRuntime,
     val sizeBytes: Long,
     val minRamMb: Int,
+    /**
+     * The publisher answers an unauthenticated request with 401 until the licence is accepted, so
+     * the settings card states that instead of offering a download that cannot finish.
+     */
+    val requiresTermsAcceptance: Boolean = false,
 )
 
 /**
@@ -101,6 +106,8 @@ object NlpModelCatalog {
         runtime = NlpModelRuntime.LITERT,
         sizeBytes = 303_950_933L,
         minRamMb = 1024,
+        // `litert-community/gemma-3-270m-it` is `gated: auto` on the model host.
+        requiresTermsAcceptance = true,
     )
 
     /** Every model the catalog knows, in profile order. */
