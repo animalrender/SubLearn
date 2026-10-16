@@ -594,6 +594,8 @@
     <string name="downloads_profile_header">پروفایل دقت</string>
     <string name="downloads_profile_desc">پروفایل تعیین می‌کند برای هر واژه‌ای که لمس می‌کنید چه‌قدر کار انجام شود. پروفایل قوی‌تر حافظه و دانلود بیشتری می‌خواهد.</string>
     <string name="downloads_profile_recommended">قوی‌ترین پروفایلی که این گوشی اجرا می‌کند: %1$s</string>
+    <string name="downloads_pack_meta">%1$s &#183; %2$d مدخل &#183; %3$d کیلوبایت</string>
+    <string name="downloads_catalog_meta">%1$s &#183; %2$d مگابایت</string>
     <string name="downloads_pack_imported">%1$s وارد شد (%2$d مدخل)</string>
     <string name="downloads_pack_downloaded">%1$s دانلود شد</string>
     <string name="downloads_pack_verified">SHA-256 تأیید شد (%1$s&#8230;)</string>

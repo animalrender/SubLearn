@@ -610,6 +610,8 @@
     <string name="downloads_profile_header">Accuracy profile</string>
     <string name="downloads_profile_desc">The profile decides how much work the app does for every word you tap. A stronger profile needs more memory and more downloads.</string>
     <string name="downloads_profile_recommended">Strongest profile this device can run: %1$s</string>
+    <string name="downloads_pack_meta">%1$s &#183; %2$d entries &#183; %3$d KB</string>
+    <string name="downloads_catalog_meta">%1$s &#183; %2$d MB</string>
     <string name="downloads_pack_imported">%1$s imported (%2$d entries)</string>
     <string name="downloads_pack_downloaded">%1$s downloaded</string>
     <string name="downloads_pack_verified">SHA-256 verified (%1$s&#8230;)</string>

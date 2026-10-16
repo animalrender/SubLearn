@@ -402,7 +402,12 @@ private fun InstalledPackRow(
             Column(Modifier.weight(1f)) {
                 Text(pack.titleEn, style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    text = "${pack.kind} · ${pack.entryCount} entries · ${pack.sizeBytes / 1024} KB",
+                    text = stringResource(
+                        R.string.downloads_pack_meta,
+                        pack.kind,
+                        pack.entryCount,
+                        pack.sizeBytes / 1024,
+                    ),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -445,7 +450,11 @@ private fun CatalogEntryRow(
             Column(Modifier.weight(1f)) {
                 Text(entry.nameEn, style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    text = "${entry.nameFa} · ${entry.sizeBytes / (1024 * 1024)} MB",
+                    text = stringResource(
+                        R.string.downloads_catalog_meta,
+                        entry.nameFa,
+                        entry.sizeBytes / (1024 * 1024),
+                    ),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
