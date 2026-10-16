@@ -506,3 +506,15 @@ would be a crash, not a feature. `ProfiledNlpEngine` walks the resident list str
 the first embedder that opens, and reports `meetsProfile` — the caller, not the engine, decides
 whether a weaker model is acceptable, so "PRECISE is running" is never a claim the engine makes on
 its own.
+
+**D-76 — The profile chooses the sense ranker, and the ranker is asked for per lookup.**
+`ProfiledSenseRanker.forProfile` is the whole tier table in one place: BASIC/LIGHT/CUSTOM keep
+`PriorSenseRanker`, BALANCED/PRECISE/ADVANCED rank with the encoder that `ProfiledNlpEngine`
+opened, and SMART puts the prompt model on top through `LlmSenseRanker`. `ModelSenseRanker` scores
+the subtitle line against each candidate's *English* gloss, because every encoder in the catalog is
+an English WordPiece model — a candidate with no English side is left in prior order instead of
+being given a number the model never produced, and any failure (no model, no glosses, a dead
+session) falls back to the lexical order rather than hiding the meanings. The ranker itself comes
+from `ProfiledNlpEngineCache`, which holds the profile's resident models open across subtitle lines
+and reopens them when the profile changes; a profile whose models are absent is *not* cached as a
+failure, so installing a model takes effect on the next tap instead of on the next launch.

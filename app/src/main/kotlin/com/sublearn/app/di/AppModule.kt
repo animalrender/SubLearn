@@ -7,7 +7,8 @@ import com.sublearn.core.ai.LlmLoader
 import com.sublearn.core.ai.ModelDownloader
 import com.sublearn.core.ai.ModelStore
 import com.sublearn.core.ai.NlpModelInstaller
-import com.sublearn.core.ai.ProfiledNlpEngine
+import com.sublearn.core.ai.ProfileTier
+import com.sublearn.core.ai.ProfiledNlpEngineCache
 import com.sublearn.core.ai.AnthropicProvider
 import com.sublearn.core.ai.GeminiProvider
 import com.sublearn.core.ai.HttpJsonClient
@@ -129,6 +130,21 @@ private fun coreModule(): Module = module {
     // device where it does not keeps the pure-Kotlin ranker and never offers a profile it cannot run.
     single<EmbedderLoader> { OnnxEmbedderLoader(preferNnapi = false, maxTokens = 256) }
     single<LlmLoader> { LiteRtLlmLoader(androidContext(), preferGpu = false, maxTokens = 256) }
+
+    // The ranker an accuracy profile promises (Phase 23, D-76). The cache keeps that profile's
+    // resident models open across subtitle lines and reopens them when the profile changes, so a
+    // tapped word never pays for an ONNX session.
+    single {
+        val settings: SettingsRepository = get()
+        ProfiledNlpEngineCache(
+            store = get(),
+            profileProvider = {
+                ProfileTier.fromToken(settings.settings.value.smartLearning.accuracyProfile.name)
+            },
+            embedderLoader = get(),
+            llmLoader = get(),
+        )
+    }
     // Which engines this process can run is decided in `NlpRuntimeBootstrap`, called from
     // `SubLearnApplication.onCreate`: a lazy Koin `single` would make the answer depend on whether
     // something happened to request a dependency first.
@@ -253,6 +269,7 @@ private fun featureModule(): Module = module {
             ai = get(),
             secrets = get(),
             lexiconAccessProvider = { get<LexiconAccess>() },
+            senseRankerProvider = { get<ProfiledNlpEngineCache>().senseRanker() },
             orchestrator = get(),
             phraseSpanCacheDao = get<SubLearnDatabase>().phraseSpans(),
         )

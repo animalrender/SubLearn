@@ -153,6 +153,19 @@ listed at the end is the evidence.
   15 resource files, 0 problems. EN/FA strings in sync.
 - Auto-release pre-release should be published at `dev-arena-3779275b-sublearn`.
 
+**Sense ranking per profile (2026-10-16, D-76)**
+- `ProfiledSenseRanker` implements the D-33 tier table over the engines `ProfiledNlpEngine` opens:
+  `ModelSenseRanker` scores the line against each sense's English gloss with the encoder, SMART's
+  `LlmSenseRanker` adds the prompt model's choice, and every failure path falls back to
+  `PriorSenseRanker` instead of hiding the word's meanings.
+- `ProfiledNlpEngineCache` keeps the selected profile's resident models open between popups and
+  reopens them when the profile changes; a missing model is retried next call, so installing one
+  takes effect immediately.
+- The player's phrase section now asks for the ranker before it shows a headword's glosses; with no
+  model installed the order is unchanged. `core:ai` gained a dependency on `core:nlp` (one-way) for
+  the `SenseRanker` contract, and `tools/check_sources.py` learned to skip backticked identifiers,
+  which had made it swallow the rest of any file whose test name contained an apostrophe.
+
 **What remains (honest)**
 - Phases 21–24 code is partially implemented. The MlKitModelInstaller compiles but has not been
   tested on a real device. DownloadItemCard (unified download UI), settings reorganization,

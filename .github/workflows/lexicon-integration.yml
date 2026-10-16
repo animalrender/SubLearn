@@ -88,17 +88,37 @@ jobs:
       - name: Report the reason a build failed
         if: failure()
         run: |
-          # One annotation per line: an annotation shows a single line, and the validator's first line
-          # is only the headline ("VALIDATION FAILED (5 errors)") without the five reasons.
-          failed=0
-          for log in /tmp/build_en_fa.log /tmp/build_fa_en.log /tmp/validate_en_fa.log /tmp/validate_fa_en.log; do
+          # The Actions log host is not reachable from the agent sandbox, so the reason a run failed
+          # is published as an annotation, which the REST API exposes. This runs last so it catches a
+          # failure from any earlier step, not only the one it follows.
+          #
+          # One annotation per line, because an annotation carries a single line and the validator's
+          # headline ("VALIDATION FAILED (5 errors)") says nothing on its own: the reasons follow it
+          # as "  - <reason>" lines, which is why the bullet pattern is part of the filter.
+          PATTERN='error|fail|traceback|exception|assert|^[[:space:]]*-[[:space:]]'
+          LOGS="/tmp/build_en_fa.log /tmp/build_fa_en.log /tmp/validate_en_fa.log /tmp/validate_fa_en.log"
+          reported=0
+          for log in $LOGS; do
             [ -f "$log" ] || continue
+            matches=$(grep -icE "$PATTERN" "$log" || true)
+            [ "${matches:-0}" -gt 0 ] || continue
+            reported=1
             while IFS= read -r line; do
-              failed=1
               echo "::error title=$(basename "$log")::${line:0:280}"
-            done < <(grep -iE 'error|fail|traceback|exception|assert' "$log" | tail -8)
+            done < <(grep -iE "$PATTERN" "$log" | tail -12)
           done
-          [ "$failed" -eq 1 ] || echo "::error::no log explained the failure"
+
+          # Nothing captured matched: report the tail that exists, plus a marker that the filter
+          # found nothing, so the next look at a red run starts from a real line.
+          if [ "$reported" -eq 0 ]; then
+            for log in $LOGS; do
+              [ -f "$log" ] || continue
+              while IFS= read -r line; do
+                echo "::error title=$(basename "$log") tail::${line:0:280}"
+              done < <(tail -3 "$log")
+            done
+            echo "::warning::no captured log matched the failure patterns"
+          fi
 
       - name: Summary
         if: always()
