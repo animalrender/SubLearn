@@ -20,7 +20,8 @@ class ParseKotlinTest(unittest.TestCase):
         models = parse_kotlin_models(REPO_ROOT)
         self.assertEqual(6, len(models))
         potion = models["emb-potion-base-8m"]
-        self.assertEqual(30_212_096, potion["sizeBytes"])
+        # Weights plus the WordPiece vocabulary, as published (tools/refresh_model_catalog.py).
+        self.assertEqual(30_456_450, potion["sizeBytes"])
         self.assertEqual(128, potion["minRamMb"])
         self.assertEqual("NONE", potion["runtime"])
         self.assertEqual("POTION_BASE_8M", potion["constant"])

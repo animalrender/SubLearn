@@ -38,6 +38,97 @@ RUNTIME_FIELD = re.compile(r"runtime\s*=\s*NlpModelRuntime\.(?P<value>[A-Z_]+)")
 
 MODEL_PROFILES = ("BALANCED", "PRECISE", "ADVANCED", "SMART")
 
+# `ModelStore.LAYOUTS` is the second copy of the catalog's file list: the installer downloads from
+# it and the runtimes open files through it. It is checked field by field below.
+LAYOUT_FILE = os.path.join(
+    "core", "ai", "src", "main", "kotlin", "com", "sublearn", "core", "ai", "ModelStore.kt",
+)
+# The closing parenthesis is anchored to its indentation: an asset closes at 20 spaces and the
+# layout at 12, so a looser pattern would cut the first asset's `),` and lose the rest of the list.
+LAYOUT_BLOCK = re.compile(
+    r"^ {12}ModelFileLayout\(\s*id\s*=\s*\"(?P<id>[^\"]+)\"(?P<body>.*?)\n {12}\),",
+    re.DOTALL | re.MULTILINE,
+)
+ASSET_BLOCK = re.compile(
+    r"ModelAsset\(\s*name\s*=\s*\"(?P<name>[^\"]+)\",\s*"
+    r"sizeBytes\s*=\s*(?P<size>[\d_]+)L,\s*"
+    r"sha256\s*=\s*(?P<sha>\"[^\"]*\"|null),\s*"
+    r"url\s*=\s*\"(?P<url>[^\"]+)\",",
+    re.DOTALL,
+)
+LAYOUT_VOCAB = re.compile(r'vocabularyFile\s*=\s*"(?P<name>[^"]+)"')
+LAYOUT_GATED = re.compile(r"requiresTermsAcceptance\s*=\s*true")
+
+
+def parse_kotlin_layouts(repo_root: str) -> dict[str, dict]:
+    """The file layout table from `ModelStore.kt`, as {id: {assets: [...], ...}}."""
+    path = os.path.join(repo_root, LAYOUT_FILE)
+    if not os.path.exists(path):
+        raise SystemExit(f"error: {path} not found")
+    with open(path, encoding="utf-8") as handle:
+        text = handle.read()
+
+    layouts: dict[str, dict] = {}
+    for block in LAYOUT_BLOCK.finditer(text):
+        body = block.group("body")
+        vocabulary = LAYOUT_VOCAB.search(body)
+        layouts[block.group("id")] = {
+            "assets": [
+                {
+                    "name": asset.group("name"),
+                    "sizeBytes": int(asset.group("size").replace("_", "")),
+                    "sha256": None if asset.group("sha") == "null" else asset.group("sha").strip('"'),
+                    "url": asset.group("url"),
+                }
+                for asset in ASSET_BLOCK.finditer(body)
+            ],
+            "vocabularyFile": vocabulary.group("name") if vocabulary else None,
+            "requiresTermsAcceptance": bool(LAYOUT_GATED.search(body)),
+        }
+    return layouts
+
+
+def check_layouts(catalog: dict, layouts: dict[str, dict]) -> list[str]:
+    """Every catalog model's files must match the Kotlin layout, field by field."""
+    problems: list[str] = []
+    for entry in catalog.get("entries", []):
+        model_id = entry.get("id")
+        files = entry.get("files") or []
+        if not files:
+            continue
+
+        layout = layouts.get(model_id)
+        if layout is None:
+            problems.append(f"{model_id} has files in the catalog but no ModelStore layout")
+            continue
+
+        recorded = layout["assets"]
+        if [asset["name"] for asset in recorded] != [item["name"] for item in files]:
+            problems.append(
+                f"{model_id} file names differ: catalog {[i['name'] for i in files]} "
+                f"vs ModelStore {[a['name'] for a in recorded]}",
+            )
+            continue
+
+        for asset, item in zip(recorded, files):
+            if asset["sizeBytes"] != item.get("sizeBytes"):
+                problems.append(
+                    f"{model_id}/{item['name']} size differs: catalog {item.get('sizeBytes')} "
+                    f"vs ModelStore {asset['sizeBytes']}",
+                )
+            if asset["sha256"] != item.get("sha256"):
+                problems.append(f"{model_id}/{item['name']} SHA-256 differs from the catalog")
+            if asset["url"] != item.get("url"):
+                problems.append(f"{model_id}/{item['name']} URL differs from the catalog")
+
+        if layout["requiresTermsAcceptance"] != bool(entry.get("requiresTermsAcceptance")):
+            problems.append(f"{model_id} licence-gating differs between the catalog and ModelStore")
+
+        vocabulary = layout["vocabularyFile"]
+        if vocabulary and vocabulary not in [item["name"] for item in files]:
+            problems.append(f"{model_id} declares vocabulary {vocabulary} but never downloads it")
+    return problems
+
 # Mirrors ProfileTier in the Kotlin file: the models each tier adds on top of the previous one.
 PROFILE_MODEL_IDS = {
     "BALANCED": ["emb-potion-base-8m"],
@@ -46,8 +137,10 @@ PROFILE_MODEL_IDS = {
     "SMART": ["emb-potion-base-8m", "emb-minilm-l6-int8", "wsd-distilbert-int8", "llm-qwen25-05b"],
 }
 
-# Runtimes that exist in this build, mirroring NlpModelRuntime.isAvailable.
-AVAILABLE_RUNTIMES = {"NONE"}
+# Runtimes this build links. ONNX and LiteRT ship as dependencies of `core:nlp-onnx` and
+# `core:nlp-llm`, which `app` depends on; whether a given *device* can load their native library is
+# decided at startup by `NlpRuntimeBootstrap` and is not something a repository check can know.
+AVAILABLE_RUNTIMES = {"NONE", "ONNX", "LITERT"}
 
 
 def parse_smart_alternatives(repo_root: str, by_constant: dict[str, str]) -> list[str]:
@@ -100,6 +193,7 @@ def check(repo_root: str) -> list[str]:
     catalog = load_catalog(repo_root)
     entries = {entry["id"]: entry for entry in catalog.get("entries", [])}
     models = parse_kotlin_models(repo_root)
+    problems += check_layouts(catalog, parse_kotlin_layouts(repo_root))
 
     if not models:
         return ["no NlpModel declarations were found in NlpModelCatalog.kt"]
