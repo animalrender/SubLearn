@@ -21,8 +21,16 @@ class WordPieceTokenizerTest {
 
     private val tokenizer = WordPieceTokenizer(vocabulary, maxLength = 12)
 
-    private fun idsOf(text: String): List<Int> =
-        tokenizer.encode(text).inputIds.takeWhile { vocabulary[it] != "[SEP]" }.toList()
+    /**
+     * The real tokens, `[CLS] … [SEP]` without the padding.
+     *
+     * This used to stop at the `[SEP]`, which silently dropped the token every test then expected
+     * to see; [WordPieceEncoding.tokenCount] is what the encoder actually produces.
+     */
+    private fun idsOf(text: String): List<Int> {
+        val encoding = tokenizer.encode(text)
+        return encoding.inputIds.take(encoding.tokenCount)
+    }
 
     private fun tokensOf(text: String): List<String> = idsOf(text).map { vocabulary[it] }
 
@@ -82,7 +90,8 @@ class WordPieceTokenizerTest {
     @Test
     fun `empty text still produces a valid CLS SEP pair`() {
         val encoding = tokenizer.encode("   ")
-        assertEquals(3, encoding.tokenCount)
+        // `[CLS]` and `[SEP]` and nothing between them, which is what a single segment is.
+        assertEquals(2, encoding.tokenCount)
         assertEquals(listOf("[CLS]", "[SEP]"), idsOf("   ").map { vocabulary[it] })
     }
 

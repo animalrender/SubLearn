@@ -29,12 +29,33 @@ class NlpModelCatalogTest {
 
     @Test
     fun `sizes match the catalog file`() {
-        assertEquals(30_212_096L, NlpModelCatalog.POTION_BASE_8M.sizeBytes)
-        assertEquals(23_068_672L, NlpModelCatalog.MINILM_L6_INT8.sizeBytes)
-        assertEquals(67_895_296L, NlpModelCatalog.DISTILBERT_INT8.sizeBytes)
-        assertEquals(524_288_000L, NlpModelCatalog.QWEN25_05B.sizeBytes)
-        assertEquals(377_487_360L, NlpModelCatalog.SMOLLM2_360M.sizeBytes)
-        assertEquals(283_115_520L, NlpModelCatalog.GEMMA3_270M.sizeBytes)
+        // Read from `docs/catalog/catalog-v2.json` rather than repeated here: the literals that
+        // used to sit in this test were round numbers nobody could check, and the real published
+        // sizes are what the download card shows.
+        for (model in NlpModelCatalog.all) {
+            assertEquals(model.id, TestCatalog.sizeOf(model.id), model.sizeBytes)
+        }
+    }
+
+    @Test
+    fun `no profile offers a model the catalog labels above it`() {
+        val tiers = ProfileTier.entries.map { it.name }
+        for (tier in ProfileTier.entries) {
+            for (model in NlpModelCatalog.modelsFor(tier)) {
+                val labelled = tiers.indexOf(TestCatalog.profileOf(model.id))
+                assertTrue("$tier offers ${model.id}, which the catalog labels ${TestCatalog.profileOf(model.id)}", labelled <= tiers.indexOf(tier.name))
+            }
+        }
+    }
+
+    @Test
+    fun `each model is listed under the profile that first offers it`() {
+        assertEquals("BALANCED", TestCatalog.profileOf(NlpModelCatalog.POTION_BASE_8M.id))
+        assertEquals("PRECISE", TestCatalog.profileOf(NlpModelCatalog.MINILM_L6_INT8.id))
+        assertEquals("ADVANCED", TestCatalog.profileOf(NlpModelCatalog.DISTILBERT_INT8.id))
+        assertEquals("SMART", TestCatalog.profileOf(NlpModelCatalog.QWEN25_05B.id))
+        assertEquals("SMART", TestCatalog.profileOf(NlpModelCatalog.SMOLLM2_360M.id))
+        assertEquals("SMART", TestCatalog.profileOf(NlpModelCatalog.GEMMA3_270M.id))
     }
 
     @Test
@@ -70,10 +91,21 @@ class NlpModelCatalogTest {
     @Test
     fun `download totals add up`() {
         assertEquals(0L, NlpModelCatalog.downloadBytesFor(ProfileTier.BASIC))
-        assertEquals(30_212_096L, NlpModelCatalog.downloadBytesFor(ProfileTier.BALANCED))
-        assertEquals(53_280_768L, NlpModelCatalog.downloadBytesFor(ProfileTier.PRECISE))
-        assertEquals(121_176_064L, NlpModelCatalog.downloadBytesFor(ProfileTier.ADVANCED))
-        assertEquals(645_464_064L, NlpModelCatalog.downloadBytesFor(ProfileTier.SMART))
+        for (tier in listOf(ProfileTier.BALANCED, ProfileTier.PRECISE, ProfileTier.ADVANCED, ProfileTier.SMART)) {
+            // The total is the sum of the published sizes of the models the tier offers, so a
+            // literal that drifts from the catalog file cannot pass this.
+            val expected = NlpModelCatalog.modelsFor(tier).sumOf { TestCatalog.sizeOf(it.id) }
+            assertEquals("download total for $tier", expected, NlpModelCatalog.downloadBytesFor(tier))
+        }
+        // A profile's total is its own models plus every smaller profile's, never a subset.
+        assertTrue(
+            NlpModelCatalog.downloadBytesFor(ProfileTier.PRECISE) >
+                NlpModelCatalog.downloadBytesFor(ProfileTier.BALANCED),
+        )
+        assertTrue(
+            NlpModelCatalog.downloadBytesFor(ProfileTier.SMART) >
+                NlpModelCatalog.downloadBytesFor(ProfileTier.ADVANCED),
+        )
     }
 
     @Test
@@ -187,8 +219,9 @@ class SmartProfileSelectorTest {
             batterySaver = false,
             freeStorageMb = 10,
         )
+        val balancedMb = TestCatalog.sizeOf(NlpModelCatalog.POTION_BASE_8M.id) / 1_048_576L
         assertEquals(
-            ProfileAvailability.NeedsStorage(28L),
+            ProfileAvailability.NeedsStorage(balancedMb),
             SmartProfileSelector.availability(ProfileTier.BALANCED, cramped, emptySet()),
         )
     }

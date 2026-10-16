@@ -187,8 +187,10 @@ class ProfiledNlpEngineCache(
         if (engine == null || openProfile != profile || usable == null) {
             open(profile)
         }
+        // Nothing opened: the lexical order, which is what a device with no models should get.
+        // Returning a model ranker with no model would behave the same and say the wrong thing.
         val current = report
-        if (current == null) return PriorSenseRanker()
+        if (current == null || current.isEmpty) return PriorSenseRanker()
         ProfiledSenseRanker.forProfile(profile, current.embedder, current.llm)
     }
 
