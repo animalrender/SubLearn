@@ -1306,6 +1306,7 @@ def apply_quality_filters(
     kind: str,
     entry_prior: float,
     token_tags: list[set[str]],
+    token_primary: list[str | None],
     token_lemmas: list[str],
     in_idioms: bool,
     all_pos_codes: set[int],
@@ -1313,64 +1314,78 @@ def apply_quality_filters(
     """Demote the multi-word entries the classifier reads as phrases but a learner must not see.
 
     Kept as a pure function of the entry's own data so the rules can be tested against the cases
-    that reached the real pack (`tools/lexicon_builder/test_lexicon_builder.py`); the full build
-    needs the 98 MB source database, which is not available everywhere the tests are.
+    that reached the real pack (`tools/lexicon_builder/test_lexicon_builder.py`); a full build needs
+    the 98 MB source database, which is not available everywhere the tests are.
 
-    The tags decide membership, not a single "primary" tag: a word like "look" is a noun and a
-    verb, and reading only its most frequent tag demoted the real phrasal verb "look forward to".
+    Two shapes of source data make this harder than it looks, and the `quality_audit` lines in the
+    build log are where both were found:
+
+    * a token's tag *set* is the union over every sense of the word, so `in`, `at`, `that` and `an`
+      all carry a verb tag — a key containing one of them would never look verb-free;
+    * the *primary* tag is what the source uses most, and for `look` that is the noun, so a rule
+      reading only the primary tag demoted the real phrasal verb `look forward to`.
+
+    So membership tests use the primary tag, the "is there a verb here" test uses the lemma (which
+    is what `look` has and `truth` does not), and the audit records both.
 
     @param token_tags every POS tag recorded for each token, in key order
-    @param token_lemmas each token's lemma, used to recognise verbs the word table does not tag
+    @param token_primary the most frequent tag per token, or None when the source tags none
+    @param token_lemmas each token's lemma
     @return the kind, the prior and the reason, or None when nothing was demoted
     """
     tokens = [t for t in key.split() if t]
     if not tokens or kind == "WORD":
         return kind, entry_prior, None
 
+    primary = list(token_primary)
     tags_per_token = [set(tags) for tags in token_tags]
-    all_tags: set[str] = set()
-    for tags in tags_per_token:
-        all_tags |= tags
 
     def is_verb(index: int) -> bool:
-        if "VERB" in tags_per_token[index]:
+        if primary[index] == "VERB":
             return True
         return token_lemmas[index] in COMMON_PHRASAL_VERBS
 
-    verb_present = any(is_verb(i) for i in range(len(tokens)))
+    verb_present = any(is_verb(index) for index in range(len(tokens)))
 
-    # Rule 1: every token is closed-class → grammar, not vocabulary.
-    if tags_per_token and all(tags and tags <= CLOSED_CLASS_TAGS for tags in tags_per_token):
+    # Rule 2 (checked before rule 1 so each case gets its own reason): determiner or preposition in
+    # front of a token the dictionary does not tag at all → a name or a loanword, not a phrase
+    # ("the swedish").
+    if len(tokens) == 2 and primary[0] in ("DET", "PREP") and not tags_per_token[1]:
+        return "PHRASE", 0.25, "det_prep_untagged"
+
+    # Rule 1: every token is a closed-class word → grammar, not vocabulary ("at that", "the way",
+    # "a lot"). Only tokens the source tagged at all take part: an untagged token is unknown, which
+    # is rule 2's case, not this one.
+    if primary and all(tag in CLOSED_CLASS_TAGS for tag in primary if tag) and not verb_present:
         return "PHRASE", 0.25, "all_closed_class"
 
-    # Rule 2: DET/PREP + a name or loanword → part of a name, not a phrase.
-    if len(tokens) == 2:
-        first_tags = tags_per_token[0] if tags_per_token else set()
-        if first_tags & {"DET", "PREP"} and tokens[1][:1].isupper():
-            return "PHRASE", 0.25, "det_prep_proper"
-
-    # Rule 3: no verb anywhere and every tag is a content or fixed-function tag → a fixed
-    # combination ("year by year", "in fact"). An entry the classifier already read as an idiom is
-    # left alone: "a piece of cake" has the same shape and is exactly what the learner wants
-    # underlined.
-    if kind != "IDIOM" and not verb_present and all_tags and all_tags <= {"NOUN", "ADJ", "ADV", "PREP", "DET"}:
-        if all_tags & {"NOUN", "ADJ"}:
-            return "PHRASE", 0.25, "noun_adj_combo"
-
-    # Rule 3b: opens with a preposition that is not a verb → a prepositional phrase. "in truth"
-    # reached the pack as a COLLOCATION because the source gives "truth" a verb among its senses,
-    # and a later homograph must not make the key's head a verb: the heading preposition decides.
-    # Idioms are exempt for the same reason as above: most of them open with a preposition
-    # ("in the nick of time", "on the other hand") and are not what this rule is aimed at.
-    if kind != "IDIOM" and tokens[0].lower() in LEADING_PREPOSITIONS and not is_verb(0):
+    # Rule 3b: the key opens with a preposition that is not a verb → a prepositional phrase. A
+    # two-token entry is included even when the source calls it an idiom, because "at that" is not
+    # vocabulary; longer idioms ("in the nick of time") are, and are left alone.
+    if (
+        (kind != "IDIOM" or len(tokens) == 2)
+        and tokens[0].lower() in LEADING_PREPOSITIONS
+        and not is_verb(0)
+    ):
         return "PHRASE", 0.25, "prepositional_phrase"
+
+    # Rule 3: no verb and every primary tag is a content or fixed-function tag → a fixed
+    # combination ("year by year", "in fact"). An entry the classifier already read as an idiom is
+    # left alone: "a piece of cake" has this shape and is exactly what the learner wants underlined.
+    if (
+        kind != "IDIOM"
+        and not verb_present
+        and any(primary)
+        and all(tag in {"NOUN", "ADJ", "ADV", "PREP", "DET"} for tag in primary if tag)
+        and any(tag in ("NOUN", "ADJ") for tag in primary)
+    ):
+        return "PHRASE", 0.25, "noun_adj_combo"
 
     # Rule 4: PHRASAL whose only "particle" is "to" after a verb of motion → not a phrasal verb.
     # The source database labels some of these with the phrasal code; the label is wrong for
     # exactly these keys, and an underline on "go to" is the kind of error D-34 exists to prevent.
     if kind == "PHRASAL" and len(tokens) == 2 and tokens[1].lower() == "to":
-        verb_lemma = token_lemmas[0]
-        if verb_lemma in MOTION_LINKING_VERBS:
+        if token_lemmas[0] in MOTION_LINKING_VERBS:
             reason = "phrasal_to_motion_db" + ("20" if 20 in all_pos_codes else "none")
             return "PHRASE", 0.25, reason
 
@@ -1703,11 +1718,13 @@ def build_lexicon(
             for tok in tokens
         ]
         token_lemmas = [lemma_map.get(tok.lower(), tok.lower()) for tok in tokens]
+        token_primary = [word_to_primary_pos.get(tok.lower()) for tok in tokens]
         kind, entry_prior, demotion_reason = apply_quality_filters(
             key=key,
             kind=kind,
             entry_prior=entry_prior,
             token_tags=token_tags,
+            token_primary=token_primary,
             token_lemmas=token_lemmas,
             in_idioms=in_idioms,
             all_pos_codes=all_pos_codes,
@@ -1723,7 +1740,9 @@ def build_lexicon(
                 "idioms": in_idioms,
                 "codes": sorted(all_pos_codes),
                 "tokens": " | ".join(
-                    f"{tok}: {{{', '.join(sorted(tags)) or 'no tags'}}}/lemma={token_lemmas[i]}"
+                    f"{tok}: {token_primary[i] or 'untagged'}"
+                    f"/{{{', '.join(sorted(tags)) or 'no tags'}}}"
+                    f"/lemma={token_lemmas[i]}"
                     for i, (tok, tags) in enumerate(zip(tokens, token_tags))
                 ),
             }

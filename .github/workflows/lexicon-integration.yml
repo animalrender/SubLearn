@@ -92,27 +92,27 @@ jobs:
           # is published as an annotation, which the REST API exposes. This runs last so it catches a
           # failure from any earlier step, not only the one it follows.
           #
-          # One annotation per line, because an annotation carries a single line and the validator's
-          # headline ("VALIDATION FAILED (5 errors)") says nothing on its own: the reasons follow it
-          # as "  - <reason>" lines, which is why the bullet pattern is part of the filter.
-          # `quality_audit` lines are what the builder's demotion rules decided for the keys the
-          # validator checks; without them a misread rule is invisible in the pack.
-          PATTERN='error|fail|traceback|exception|assert|quality_audit|^[[:space:]]*-[[:space:]]'
+          # One annotation per line: an annotation carries a single line, and GitHub keeps only ten
+          # of them per step. The validator's reasons ("  - <reason>") and the builder's audit lines
+          # ("quality_audit <key>: ...") are therefore emitted first, and the budget is spent on
+          # them rather than on whatever else matched.
           LOGS="/tmp/build_en_fa.log /tmp/build_fa_en.log /tmp/validate_en_fa.log /tmp/validate_fa_en.log"
-          reported=0
+          BUDGET=9
+          REASONS='^[[:space:]]*-[[:space:]]|error|fail|traceback|exception|assert'
+          found=/tmp/lexicon_report_lines.txt
+          : > "$found"
+
           for log in $LOGS; do
             [ -f "$log" ] || continue
-            matches=$(grep -icE "$PATTERN" "$log" || true)
-            [ "${matches:-0}" -gt 0 ] || continue
-            reported=1
-            while IFS= read -r line; do
-              echo "::error title=$(basename "$log")::${line:0:280}"
-            done < <(grep -iE "$PATTERN" "$log" | tail -12)
+            grep -iE "$REASONS" "$log" | tail -12 | sed "s|^|$(basename "$log"): |" >> "$found"
+          done
+          for log in $LOGS; do
+            [ -f "$log" ] || continue
+            grep -iE 'quality_audit' "$log" | sed "s|^|$(basename "$log"): |" >> "$found"
           done
 
-          # Nothing captured matched: report the tail that exists, plus a marker that the filter
-          # found nothing, so the next look at a red run starts from a real line.
-          if [ "$reported" -eq 0 ]; then
+          total=$(wc -l < "$found")
+          if [ "${total:-0}" -eq 0 ]; then
             for log in $LOGS; do
               [ -f "$log" ] || continue
               while IFS= read -r line; do
@@ -120,6 +120,14 @@ jobs:
               done < <(tail -3 "$log")
             done
             echo "::warning::no captured log matched the failure patterns"
+            exit 0
+          fi
+
+          head -n "$BUDGET" "$found" | while IFS= read -r line; do
+            echo "::error title=lexicon::${line:0:280}"
+          done
+          if [ "$total" -gt "$BUDGET" ]; then
+            echo "::warning::$((total - BUDGET)) more matching lines are in the step logs"
           fi
 
       - name: Summary

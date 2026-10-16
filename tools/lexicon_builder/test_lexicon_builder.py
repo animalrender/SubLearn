@@ -401,6 +401,7 @@ class QualityFiltersTest(unittest.TestCase):
         kind: str,
         prior: float,
         tags: list[set[str]],
+        primary: list[str | None] | None = None,
         lemmas: list[str] | None = None,
         in_idioms: bool = False,
         codes: set[int] | None = None,
@@ -410,35 +411,93 @@ class QualityFiltersTest(unittest.TestCase):
             kind=kind,
             entry_prior=prior,
             token_tags=tags,
+            token_primary=primary if primary is not None else [None] * len(key.split()),
             token_lemmas=lemmas or [token.lower() for token in key.split()],
             in_idioms=in_idioms,
             all_pos_codes=codes or set(),
         )
 
     def test_a_real_phrase_keeps_its_prior_when_a_token_is_also_a_noun(self) -> None:
-        # "look" is tagged NOUN as well as VERB; the key must not be read as a noun combo.
+        # "look" is tagged NOUN as well as VERB, and the source's most frequent tag for it is the
+        # noun; the key must not be read as a noun combo, which is what the first version did.
         kind, prior, reason = self.call(
             "look forward to",
             "PHRASAL",
             0.80,
-            [{"NOUN", "VERB"}, {"ADV"}, {"PREP"}],
+            [{"NOUN", "VERB"}, {"ADJ", "ADV", "NOUN", "VERB"}, {"ADV", "PREP"}],
+            primary=["NOUN", "ADV", "PREP"],
+            lemmas=["look", "forward", "to"],
         )
         self.assertEqual("PHRASAL", kind)
         self.assertGreaterEqual(prior, 0.60)
         self.assertIsNone(reason)
 
-    def test_prepositional_phrase_is_demoted_even_when_the_source_tags_a_verb(self) -> None:
-        # The source lists a verb among "truth"'s senses, which is why rule 3 alone missed it.
+    def test_prepositional_phrase_is_demoted_even_when_a_verb_tag_is_present(self) -> None:
+        # Real audit data: the source gives "in" a verb tag among its senses, so a rule reading the
+        # tag *set* would never see this key as verb-free, and it stayed a COLLOCATION at 0.70.
         kind, prior, reason = self.call(
             "in truth",
             "COLLOCATION",
             0.70,
-            [{"PREP", "NOUN"}, {"NOUN", "VERB"}],
+            [{"ADJ", "ADV", "DET", "NOUN", "PART", "PREP", "VERB"}, {"NOUN"}],
+            primary=["PREP", "NOUN"],
+            lemmas=["in", "truth"],
+            in_idioms=True,
             codes={19},
         )
         self.assertEqual("PHRASE", kind)
         self.assertLess(prior, 0.65)
         self.assertEqual("prepositional_phrase", reason)
+
+    def test_a_two_token_idiom_of_function_words_is_demoted(self) -> None:
+        # Real audit data: "at that" carries the source's idiom code and reached the pack as an
+        # IDIOM with prior 0.85, so the validator saw a phrase that should never be underlined.
+        kind, prior, reason = self.call(
+            "at that",
+            "IDIOM",
+            0.85,
+            [{"NOUN", "PREP"}, {"ADJ", "ADV", "CONJ", "DET", "INTJ", "NOUN", "PART", "PRON"}],
+            primary=["PREP", "DET"],
+            lemmas=["at", "that"],
+            in_idioms=True,
+            codes={18},
+        )
+        self.assertEqual("PHRASE", kind)
+        self.assertEqual(0.25, prior)
+        self.assertEqual("all_closed_class", reason)
+
+    def test_a_two_token_idiom_headed_by_a_preposition_is_demoted(self) -> None:
+        # The same key when the source's most frequent tag for "that" is a noun: rule 3b still
+        # catches it, which is why the idiom exemption is limited to longer keys.
+        kind, prior, reason = self.call(
+            "at that",
+            "IDIOM",
+            0.85,
+            [{"PREP"}, {"NOUN", "PRON"}],
+            primary=["PREP", "NOUN"],
+            lemmas=["at", "that"],
+            in_idioms=True,
+            codes={18},
+        )
+        self.assertEqual("PHRASE", kind)
+        self.assertEqual(0.25, prior)
+        self.assertEqual("prepositional_phrase", reason)
+
+    def test_a_determiner_before_an_untagged_token_is_demoted(self) -> None:
+        # Real audit data: the dictionary has no entry for "swedish", so it carries no tag at all
+        # and every tag-set rule missed the key.
+        kind, prior, reason = self.call(
+            "the swedish",
+            "COLLOCATION",
+            0.70,
+            [{"DET"}, set()],
+            primary=["DET", None],
+            lemmas=["the", "swedish"],
+            codes={19},
+        )
+        self.assertEqual("PHRASE", kind)
+        self.assertEqual(0.25, prior)
+        self.assertEqual("det_prep_untagged", reason)
 
     def test_motion_verb_plus_to_is_demoted_even_with_the_phrasal_code(self) -> None:
         for key in ("go to", "come to", "get to"):
@@ -447,7 +506,9 @@ class QualityFiltersTest(unittest.TestCase):
                     key,
                     "PHRASAL",
                     0.90,
-                    [{"VERB"}, {"PREP"}],
+                    [{"ADJ", "NOUN", "VERB"}, {"ADV", "PREP"}],
+                    primary=["VERB", "PREP"],
+                    lemmas=[key.split()[0], "to"],
                     codes={20},
                 )
                 self.assertEqual("PHRASE", kind, "the source's phrasal code is wrong for this key")
@@ -455,35 +516,92 @@ class QualityFiltersTest(unittest.TestCase):
                 self.assertEqual("phrasal_to_motion_db20", reason)
 
     def test_the_reason_records_whether_the_source_labelled_it(self) -> None:
-        _, _, reason = self.call("go to", "PHRASAL", 0.90, [{"VERB"}, {"PREP"}])
+        _, _, reason = self.call("go to", "PHRASAL", 0.90, [{"VERB"}, {"ADV", "PREP"}], primary=["VERB", "PREP"])
         self.assertEqual("phrasal_to_motion_dbnone", reason)
 
     def test_a_phrasal_verb_with_a_real_particle_is_left_alone(self) -> None:
-        kind, prior, reason = self.call("give up", "PHRASAL", 0.90, [{"VERB"}, {"ADP", "PART"}])
+        kind, prior, reason = self.call(
+            "give up",
+            "PHRASAL",
+            0.90,
+            [{"NOUN", "VERB"}, {"ADJ", "ADV", "PART", "PREP", "VERB"}],
+            primary=["VERB", "PART"],
+            lemmas=["give", "up"],
+        )
         self.assertEqual("PHRASAL", kind)
         self.assertEqual(0.90, prior)
         self.assertIsNone(reason)
 
-    def test_an_idiom_is_not_demoted_by_the_shape_rules(self) -> None:
+    def test_a_longer_idiom_is_not_demoted_by_the_shape_rules(self) -> None:
         # "a piece of cake" has the noun-combo shape and "in the nick of time" opens with a
         # preposition; both are idioms the learner wants to see underlined.
-        for key, kind, tags in (
-            ("a piece of cake", "IDIOM", [{"DET"}, {"NOUN"}, {"PREP"}, {"NOUN"}]),
-            ("in the nick of time", "IDIOM", [{"PREP"}, {"DET"}, {"NOUN"}, {"PREP"}, {"NOUN"}]),
+        for key, kind, tags, primary in (
+            ("a piece of cake", "IDIOM", [{"DET"}, {"NOUN"}, {"PREP"}, {"NOUN"}], ["DET", "NOUN", "PREP", "NOUN"]),
+            (
+                "in the nick of time",
+                "IDIOM",
+                [{"PREP"}, {"DET"}, {"NOUN"}, {"PREP"}, {"NOUN"}],
+                ["PREP", "DET", "NOUN", "PREP", "NOUN"],
+            ),
         ):
             with self.subTest(key=key):
-                stayed_kind, prior, reason = self.call(key, kind, 0.75, tags)
+                stayed_kind, prior, reason = self.call(key, kind, 0.75, tags, primary=primary)
                 self.assertEqual(kind, stayed_kind)
                 self.assertEqual(0.75, prior)
                 self.assertIsNone(reason)
 
-    def test_closed_class_keys_stay_demoted(self) -> None:
-        for key in ("at that", "the way", "a lot"):
+    def test_demoted_keys_are_never_left_as_phrases_worth_underlining(self) -> None:
+        # What the validator checks is the outcome, not which rule produced it: PHRASE, and a prior
+        # below the 0.65 collocation threshold.
+        cases = (
+            ("the way", ["DET", "NOUN"]),
+            ("a lot", ["DET", "NOUN"]),
+            ("at that", ["PREP", "DET"]),
+        )
+        for key, primary in cases:
             with self.subTest(key=key):
-                kind, prior, reason = self.call(key, "COLLOCATION", 0.70, [{"DET", "PRON"}, {"PRON"}])
+                kind, prior, reason = self.call(
+                    key,
+                    "COLLOCATION",
+                    0.70,
+                    [{"DET", "PRON", "NOUN"}, {"NOUN", "PRON", "DET"}],
+                    primary=primary,
+                )
                 self.assertEqual("PHRASE", kind)
                 self.assertEqual(0.25, prior)
-                self.assertEqual("all_closed_class", reason)
+                self.assertIsNotNone(reason)
+
+    def test_a_labelled_collocation_keeps_its_prior(self) -> None:
+        # Real audit data: "make a decision" carries the collocation code and must keep >= 0.60.
+        kind, prior, reason = self.call(
+            "make a decision",
+            "COLLOCATION",
+            0.70,
+            [{"NOUN", "VERB"}, {"DET", "NOUN", "PART"}, {"NOUN"}],
+            primary=["VERB", "DET", "NOUN"],
+            lemmas=["make", "a", "decision"],
+            in_idioms=True,
+            codes={19},
+        )
+        self.assertEqual("COLLOCATION", kind)
+        self.assertEqual(0.70, prior)
+        self.assertIsNone(reason)
+
+    def test_an_audited_long_phrase_with_a_labelled_phrasal_code_keeps_its_prior(self) -> None:
+        # "look forward to" carries the phrasal code and is a real phrasal verb: it must survive.
+        kind, prior, reason = self.call(
+            "look forward to",
+            "PHRASAL",
+            0.90,
+            [{"ADJ", "NOUN", "VERB"}, {"ADJ", "ADV", "NOUN", "VERB"}, {"ADV", "PREP"}],
+            primary=["NOUN", "ADV", "PREP"],
+            lemmas=["look", "forward", "to"],
+            in_idioms=True,
+            codes={20},
+        )
+        self.assertEqual("PHRASAL", kind)
+        self.assertEqual(0.90, prior)
+        self.assertIsNone(reason)
 
     def test_single_words_are_never_demoted(self) -> None:
         kind, prior, reason = self.call("truth", "WORD", 0.50, [{"NOUN"}])
@@ -491,10 +609,11 @@ class QualityFiltersTest(unittest.TestCase):
 
     def test_a_collocation_only_linked_from_the_idiom_table_loses_its_prior(self) -> None:
         kind, prior, reason = self.call(
-            "make a decision",
+            "sing a song",
             "COLLOCATION",
             0.70,
             [{"VERB"}, {"DET"}, {"NOUN"}],
+            primary=["VERB", "DET", "NOUN"],
             in_idioms=True,
         )
         self.assertEqual("COLLOCATION", kind)
