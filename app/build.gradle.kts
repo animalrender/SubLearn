@@ -141,6 +141,10 @@ dependencies {
     implementation(project(":core:security"))
     implementation(project(":core:lexicon"))
     implementation(project(":core:nlp"))
+    // The optional inference engines. They are Android libraries because both ship a native
+    // runtime; `core:ai` stays pure JVM and reaches them only through its loader interfaces.
+    implementation(project(":core:nlp-onnx"))
+    implementation(project(":core:nlp-llm"))
     implementation(project(":core:models"))
     implementation(project(":feature:home"))
     implementation(project(":feature:player"))

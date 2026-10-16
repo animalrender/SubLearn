@@ -34,10 +34,12 @@ android {
 
 dependencies {
     api(project(":core:common"))
+    api(project(":core:ai"))
     api(project(":core:nlp"))
     api(libs.coroutines.core)
     implementation(libs.koin.core)
-    // LLM runtime will be added when the module is activated in phase 15
+    // MediaPipe's LLM Inference API runs the LiteRT-LM `.task` bundles from the SMART profile.
+    implementation(libs.mediapipe.tasks.genai)
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
 }
