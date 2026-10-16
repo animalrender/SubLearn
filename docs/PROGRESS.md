@@ -125,16 +125,26 @@ listed at the end is the evidence.
   compilation and manual reasoning, not by an automated test.
 
 **CI verification (2026-10-16, engines)**
-- Static checks on `820f359`: 180 files, 0 problems; 0 unresolved imports; 20 modules, 0 missing
-  dependencies; catalog, schema, resources and docs checks all pass; 25 python tests pass.
-- The engines are **not yet green in CI**: run 38831415790 (`CI`, commit `01368b6`) failed to
-  compile `core:nlp-llm` and `core:nlp-onnx` against the real MediaPipe and ONNX Runtime APIs.
-  Both are fixed in the working tree (nested `LlmInference.LlmInferenceOptions`, and the ONNX
-  embedder now implements `TextEmbedder` with the tokenizer/pooling APIs the module actually has).
-- `tools/check_symbols.py` gained an enum-entry check after a real bug: `SubLearnError.Kind
-  .ModelFailure` was written and used in seven places, and it did not exist — nothing offline could
-  have caught it, and only CI would have. It is now a `Kind` of its own, and the checker rejects
-  the next one, with 5 tests of its own.
+- Both workflows are green on `7264aac`: `CI` ("Build, test, lint") run 38838624639 and
+  `Lexicon Integration Test` run 38838624586, both **success**, plus the same two checks on the
+  pull request. `assembleDebug`, `assembleRelease`, `test`, `lintDebug` and
+  `assembleDebugAndroidTest` all pass with the ONNX and LiteRT engines, the profile-selected sense
+  ranker and the settings UI changes in the tree.
+- Getting there took four rounds, and each round's reason came from a check-run annotation rather
+  than from the log (the Actions log host is unreachable from the agent sandbox):
+  1. `LlmInferenceOptions` is nested inside `LlmInference`, and the ONNX embedder did not match
+     `TextEmbedder` or the tokenizer/pooling APIs the module actually has;
+  2. `SettingsRows` was missing the design system's `R`, and `NlpModel` had no
+     `requiresTermsAcceptance` for the models card to read;
+  3. two test sources followed the old contracts (`embed()` returning `AppResult`, `File.setLength`);
+  4. twelve unit-test failures: eleven were tests asserting values the code no longer has (round
+     model sizes now read from the catalog, a tokenizer helper that dropped `[SEP]`), and one was
+     real — the engine cache returned a model ranker with no model loaded.
+- `tools/check_sources.py` gained the backtick case after a real miss: an apostrophe in a test name
+  made it swallow the rest of the file, so a broken test file passed the check that exists to catch
+  broken test files.
+- Static checks on `7264aac`: 182 files, 0 problems; 0 unresolved imports; 20 modules, 0 missing
+  dependencies; catalog, schema, resources and docs checks all pass; 36 python tests pass.
 
 **CI verification (2026-10-16)**
 - CI green on `86cd5fc`: `assembleDebug`, `assembleRelease`, `test`, `lintDebug` and
@@ -176,9 +186,14 @@ listed at the end is the evidence.
   reasons became visible: the previous version only published the headline.
 
 **What remains (honest)**
-- Phases 21–24 code is partially implemented. The MlKitModelInstaller compiles but has not been
-  tested on a real device. DownloadItemCard (unified download UI), settings reorganization,
-  smart profiles, model runtimes, and feature completions need additional implementation cycles.
+- Phases 21–24 are implemented and compile, and what is *not* proven is device behaviour: no ONNX
+  or LiteRT model has ever been executed (KNOWN_ISSUES 24), the ML Kit installer has never
+  completed a real download (25), and the new UI has been verified by compilation, static checks
+  and code review rather than on a screen.
+- The lexicon pack's validator passes on the full database in CI, which is the only place the 98 MB
+  source database is reachable; the five errors it reported came from demotion rules that read the
+  wrong field, and the build now prints a `quality_audit` line per asserted key so the next one
+  explains itself.
 - No device testing has been done.
 - The gold integration test needs a real pack to compute precision/recall numbers.
 - The `build-lexicon-pack.yml` workflow needs the quality filters tested against the real DB.
