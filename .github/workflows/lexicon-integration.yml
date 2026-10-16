@@ -40,20 +40,40 @@ jobs:
       - name: Download main_db.sqlite
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          curl -L -o /tmp/main_db.sqlite \
+          # `-f` matters: without it a 404 saves the error page as main_db.sqlite and the next step
+          # fails with "file is not a database", which says nothing about the real cause.
+          curl -fL -o /tmp/main_db.sqlite \
             https://github.com/melonityhub/dictionaryproject/releases/download/db1.0.0/main_db.sqlite
+          ls -l /tmp/main_db.sqlite
+          head -c 16 /tmp/main_db.sqlite | grep -q "SQLite format 3" || {
+            echo "::error::the download is not a SQLite database"
+            exit 1
+          }
 
       - name: Build lexicon packs
         run: |
+          # `tee` is how the next step gets the log; without pipefail it would also hide a failure.
+          set -o pipefail
           mkdir -p /tmp/lexicon_out
           python3 tools/lexicon_builder/build_lexicon.py \
             --input /tmp/main_db.sqlite \
             --output-dir /tmp/lexicon_out \
-            --direction en-fa --gzip
+            --direction en-fa --gzip 2>&1 | tee /tmp/build_en_fa.log
           python3 tools/lexicon_builder/build_lexicon.py \
             --input /tmp/main_db.sqlite \
             --output-dir /tmp/lexicon_out \
-            --direction fa-en --gzip
+            --direction fa-en --gzip 2>&1 | tee /tmp/build_fa_en.log
+
+      # The Actions log host is not reachable from the agent sandbox, so the reason a run failed is
+      # published as annotations and as the text of a check run, both of which the REST API exposes.
+      - name: Report the reason a build failed
+        if: failure()
+        run: |
+          for log in /tmp/build_en_fa.log /tmp/build_fa_en.log; do
+            [ -f "$log" ] || continue
+            echo "::error::$(grep -iE 'error|traceback|exception|assert' "$log" | tail -3 | tr '\n' ' ' | cut -c1-280)"
+            grep -iE 'error|traceback|exception|assert' "$log" | tail -20 || true
+          done
 
       - name: Validate packs
         run: |
