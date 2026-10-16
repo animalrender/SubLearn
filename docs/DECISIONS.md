@@ -592,6 +592,13 @@ commit has no stable tag yet; `release.yml` refuses a tag below the `VERSION` fl
 `tools/bump_version.py` (a conventional-commit version rule) is deleted: it needed a tag that did
 not exist yet, which is the reason no release ever happened.
 
+A development build is called `0.0.0-dev-<branch>+<sha>`, so its name carries no number and the
+code derived from it is 0 — which the Android plugin refuses outright ("versionCode is set to 0").
+A development build therefore uses the number of commits as its code: it grows with the history,
+so a newer build installs over an older one, it is the same for every build of the same commit,
+and it stays below the release codes, so a release can always be installed over a development
+build without uninstalling first.
+
 **D-83 — The catalog describes the published bytes, and the app's copy is checked against it.**
 The pack entries in `docs/catalog/catalog-v2.json` carried a size and a SHA-256 that did not match
 the assets in the `packs-v2.0.0` release, so every pack download ended in "SHA-256 mismatch" and

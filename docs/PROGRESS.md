@@ -47,9 +47,17 @@ profiles do not work. The causes turned out to be four separate ones, all confir
   `v3.0.1`, `v3.0.2` … from `main`, and `versionCode` is derived from the name. The old
   `tools/bump_version.py` is deleted.
 
-**Checks so far:** all seven static checkers pass, `tools/test_next_version.py` is green (15 cases),
+**Checks so far:** all eight static checkers pass, `tools/test_next_version.py` is green (15 cases),
 and `git diff --check` is clean. Local Gradle cannot start (no JVM, no Android SDK), so the compile
 is CI's job and no device run is claimed.
+
+CI found two real problems in the first build of this branch, and both are fixed here:
+
+- A development build is called `0.0.0-dev-<branch>+<sha>`, so the `versionCode` derived from the
+  name was 0 and the Android plugin refused to configure the project. A development build uses the
+  number of commits instead (D-82).
+- The new profile test described "a 512 MB phone" and built a device with 2048 MB, so the RAM
+  floor was never crossed. The devices are named for what they are now: 64 MB, 2 GB and 8 GB.
 
 ## 2026-10-16 — Settings entry, Learn scope and automatic player cards
 
