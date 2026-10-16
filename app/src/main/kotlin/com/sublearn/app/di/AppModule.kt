@@ -2,6 +2,12 @@ package com.sublearn.app.di
 
 import com.sublearn.app.AndroidLogcatLogger
 import com.sublearn.core.ai.AiAssistant
+import com.sublearn.core.ai.EmbedderLoader
+import com.sublearn.core.ai.LlmLoader
+import com.sublearn.core.ai.ModelDownloader
+import com.sublearn.core.ai.ModelStore
+import com.sublearn.core.ai.NlpModelInstaller
+import com.sublearn.core.ai.ProfiledNlpEngine
 import com.sublearn.core.ai.AnthropicProvider
 import com.sublearn.core.ai.GeminiProvider
 import com.sublearn.core.ai.HttpJsonClient
@@ -25,6 +31,8 @@ import com.sublearn.core.lexicon.TextResourceReader
 import com.sublearn.core.lexicon.WordLevelSource
 import com.sublearn.core.models.PackDownloader
 import com.sublearn.core.nlp.LexiconAccess
+import com.sublearn.core.nlp.llm.LiteRtLlmLoader
+import com.sublearn.core.nlp.onnx.OnnxEmbedderLoader
 import com.sublearn.core.player.Media3PlayerController
 import com.sublearn.core.player.PlayerController
 import com.sublearn.core.player.PositionSink
@@ -111,6 +119,19 @@ private fun coreModule(): Module = module {
     // translation
     single<TranslationProvider> { MlKitTranslationProvider(logger = get()) }
     single { MlKitModelInstaller(androidContext(), get()) }
+
+    // optional nlp models: one store, one downloader, one installer (Phase 23, D-74)
+    single { ModelStore(androidContext().filesDir.resolve("ai-models")) }
+    single { ModelDownloader() }
+    single { NlpModelInstaller(get(), get()) }
+
+    // The engines are registered by asking them whether their native library loads. A build or a
+    // device where it does not keeps the pure-Kotlin ranker and never offers a profile it cannot run.
+    single<EmbedderLoader> { OnnxEmbedderLoader(preferNnapi = false, maxTokens = 256) }
+    single<LlmLoader> { LiteRtLlmLoader(androidContext(), preferGpu = false, maxTokens = 256) }
+    // Which engines this process can run is decided in `NlpRuntimeBootstrap`, called from
+    // `SubLearnApplication.onCreate`: a lazy Koin `single` would make the answer depend on whether
+    // something happened to request a dependency first.
     single {
         val settings: SettingsRepository = get()
         TranslationService(
@@ -217,7 +238,7 @@ private fun featureModule(): Module = module {
     viewModel { HomeViewModel(get()) }
     viewModel { WordsViewModel(get(), get(), get()) }
     viewModel { LearnViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-    viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), androidContext(), get()) }
+    viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), androidContext(), get(), get()) }
     viewModel {
         PlayerViewModel(
             application = get(),
