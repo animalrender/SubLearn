@@ -115,7 +115,7 @@ fun DownloadsSection(
         verticalArrangement = Arrangement.spacedBy(Dimens.md),
     ) {
         statusMessage?.takeIf { it.isNotBlank() }?.let { message ->
-            StatusBanner(message = message, onDismiss = viewModel::clearStatus)
+            DownloadsStatusBanner(message = message, onDismiss = viewModel::clearStatus)
         }
 
         // --- 1. the offline translation model
@@ -366,7 +366,7 @@ fun DownloadsSection(
 
 /** The one-line status under the title, dismissible so an old message does not sit there all day. */
 @Composable
-private fun StatusBanner(message: String, onDismiss: () -> Unit) {
+private fun DownloadsStatusBanner(message: String, onDismiss: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(Dimens.radiusSm),
         color = MaterialTheme.colorScheme.tertiaryContainer,

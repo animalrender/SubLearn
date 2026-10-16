@@ -1,6 +1,6 @@
 ## 2026-10-16 — the Downloads screen made usable, the player made quiet, and a lab for the packs
 
-**Implemented on `arena/6da9d669-sublearn`; static checks green, CI pending, no device run claimed.**
+**Implemented on `arena/6da9d669-sublearn`; CI green on `917bd34` ([run 38975245322](https://github.com/animalrender/SubLearn/actions/runs/38975245322)); no device run claimed.**
 
 The owner's second report, after the downloads fix: the Downloads screen's words were all over the
 place; the player should open in landscape, turn over with the phone even when the system rotation
