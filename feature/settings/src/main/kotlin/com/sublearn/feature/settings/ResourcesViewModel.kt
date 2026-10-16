@@ -26,6 +26,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import java.io.File
 
+/** Settings owns optional resources so the future reading tab never initializes download or model controls. */
 class ResourcesViewModel(
     private val settingsRepository: SettingsRepository,
     private val installedPacksRepo: InstalledPackRepository,

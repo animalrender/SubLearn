@@ -14,12 +14,15 @@
   embedded). Strict above-level filtering, lemma deduplication, known-word exclusion and bounded
   counts are unit tested. Cue/settings/media changes and seeks cancel stale work. At most two small
   hints animate in a corner; UI suppresses them while other controls/popups/PiP need the picture.
+- Hints try alternative corners when measured subtitle plates overlap the requested area; compact
+  video regions show only one hint, and buffering/opening suppresses drawing.
 - Shared no-dot progress and slider components now cover Home, Settings, downloads and player seek.
   Motion is reduced-motion-aware; appearance uses existing settings and design tokens, EN/FA strings.
 - Resources integrity checks no longer claim verification when no reference hash exists; checksums
   run on IO and failed catalog imports/deletions no longer report success.
 
-**Checks so far:** all four documented static checkers and `git diff --check` pass. Local Gradle
+**Checks so far:** all seven source/resource/dependency/docs/schema/catalog checks and `git diff --check` pass.
+Python tooling tests: 61 run, 59 passed, 2 intentionally skipped. Local Gradle
 cannot start: no Java/JAVA_HOME or Android SDK. Added seven selection tests, the production-graph
 regression test and an instrumented card visibility smoke test; execution is pending CI/device.
 No device verification or final-build success is claimed here. See D-78..D-80 and KNOWN_ISSUES 29.

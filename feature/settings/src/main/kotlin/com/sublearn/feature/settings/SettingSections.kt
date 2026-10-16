@@ -582,6 +582,11 @@ fun LearningSection(settings: AppSettings, viewModel: SettingsViewModel) {
         )
     }
     SectionCard(stringResource(R.string.settings_learning_cards)) {
+        SwitchRow(
+            title = stringResource(R.string.settings_automatic_phrases),
+            value = learning.showPhraseTranslation,
+            onChange = { value -> viewModel.update { it.copy(learning = it.learning.copy(showPhraseTranslation = value)) } },
+        )
         StepperRow(
             title = stringResource(R.string.settings_popup_count),
             value = learning.maxPopupCards,
@@ -668,6 +673,13 @@ fun LearningSection(settings: AppSettings, viewModel: SettingsViewModel) {
         )
     }
     SectionCard(stringResource(R.string.settings_subtitle_lookup)) {
+        SliderRow(
+            title = stringResource(R.string.settings_multitap_window),
+            value = learning.multiTapWindowMs.toFloat(),
+            range = 150f..700f,
+            valueLabel = "${learning.multiTapWindowMs} ms",
+            onValueChange = { value -> viewModel.update { it.copy(learning = it.learning.copy(multiTapWindowMs = value.toLong())) } },
+        )
         SwitchRow(
             title = stringResource(R.string.settings_tap_counts),
             value = learning.tapCountsForLineAndBlock,
@@ -686,7 +698,7 @@ fun LearningSection(settings: AppSettings, viewModel: SettingsViewModel) {
             onSelect = { value -> viewModel.update { it.copy(learning = it.learning.copy(openDetailsWith = value)) } },
         )
         ChoiceRow(
-            title = stringResource(R.string.settings_word_colors),
+            title = stringResource(R.string.settings_category_dictionary),
             options = DictionaryPreference.entries,
             selected = learning.dictionaryPreference,
             label = { stringResource(it.labelRes()) },

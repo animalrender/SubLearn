@@ -53,8 +53,8 @@ class LearnViewModel(
             return
         }
         viewModelScope.launch {
-            val exact = runCatching { dictionaryProvider?.lookup(trimmed)?.getOrNull() }.getOrNull()
-            val results = runCatching { dictionaryProvider?.search(trimmed, 20)?.getOrNull().orEmpty() }.getOrDefault(emptyList())
+            val exact = runCatching { dictionaryProvider.lookup(trimmed)?.getOrNull() }.getOrNull()
+            val results = runCatching { dictionaryProvider.search(trimmed, 20)?.getOrNull().orEmpty() }.getOrDefault(emptyList())
             _dictEntry.value = exact ?: results.firstOrNull()
             _dictSearchResults.value = results
         }
@@ -63,13 +63,13 @@ class LearnViewModel(
     fun selectDictionaryEntry(entry: DictionaryEntry) {
         _dictQuery.value = entry.headword
         viewModelScope.launch {
-            val full = runCatching { dictionaryProvider?.lookup(entry.headword)?.getOrNull() }.getOrNull()
+            val full = runCatching { dictionaryProvider.lookup(entry.headword)?.getOrNull() }.getOrNull()
             _dictEntry.value = full ?: entry
         }
     }
 
     fun bookmarkDictionaryEntry(entry: DictionaryEntry) {
-        val repo = myWords ?: return
+        val repo = myWords
         viewModelScope.launch {
             val primaryGloss = entry.meanings.firstOrNull()
             val firstEx = entry.examples.firstOrNull()

@@ -20,9 +20,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextDirection as ComposeTextDirection
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,22 +51,22 @@ import com.sublearn.core.subtitles.TrackRole
 
 /** Passive, bounded hints: no click target, no focus, and no control or subtitle panel underneath. */
 @Composable
-internal fun LearningCardsOverlay(ui: PlayerUi, inPip: Boolean, modifier: Modifier = Modifier) {
+internal fun LearningCardsOverlay(
+    ui: PlayerUi,
+    inPip: Boolean,
+    subtitleBounds: List<Rect> = emptyList(),
+    modifier: Modifier = Modifier,
+) {
     val learning = ui.settings.learning
     val show = learning.mode == LearningMode.LEARNING && ui.playback.isPlaying && !inPip &&
-        !ui.controlsVisible && !ui.locked && !ui.layoutMode && !ui.scrubbing && !ui.list.open &&
+        !ui.opening && !ui.playback.isBuffering && !ui.controlsVisible && !ui.locked && !ui.layoutMode && !ui.scrubbing && !ui.list.open &&
         ui.sheet == Sheet.NONE && !ui.menuOpen && ui.popup == null && ui.ai.state == AiState.IDLE &&
         ui.layer(TrackRole.LEARNING).visible
     val cards = if (show) ui.learningCards.take(VISIBLE_LEARNING_CARDS) else emptyList()
     val placement = learning.popupCorner
     val top = placement.vertical == SubtitleVerticalAnchor.TOP
     val start = placement.horizontal != SubtitleHorizontalAnchor.END
-    val anchor = when {
-        top && start -> Alignment.TopStart
-        top -> Alignment.TopEnd
-        start -> Alignment.BottomStart
-        else -> Alignment.BottomEnd
-    }
+
     val colors = LocalSubLearnColors.current
     val scale = LocalAppFontScale.current
     val reduceMotion = LocalReduceMotion.current
@@ -68,18 +77,43 @@ internal fun LearningCardsOverlay(ui: PlayerUi, inPip: Boolean, modifier: Modifi
     val nativeStyle = ui.settings.fontFor(FontSurface.LEARNING_POPUP, SubtitleLayerRole.NATIVE).toTextStyle(scale)
         .copy(textDirection = ComposeTextDirection.ContentOrRtl)
 
-    BoxWithConstraints(modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(Dimens.lg)) {
+    var viewport by remember { mutableStateOf(Rect.Zero) }
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    BoxWithConstraints(
+        modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(Dimens.lg)
+            .onGloballyPositioned { viewport = it.boundsInRoot() },
+    ) {
+        val compact = maxHeight < Dimens.learningCardCompactHeight
         val cardWidth = minOf(Dimens.learningCardWidth, maxWidth * Dimens.learningCardWidthShare)
         // Legacy/imported offsets are bounded to this viewport; cards cannot drift outside a short landscape video.
         val x = placement.offsetXDp.coerceAtLeast(0f).dp.coerceAtMost(maxWidth / 4)
         val y = placement.offsetYDp.coerceAtLeast(0f).dp.coerceAtMost(maxHeight / 4)
-        val cornerPadding = if (start) {
-            Modifier.padding(start = x, top = if (top) y else Dimens.xxs, bottom = if (top) Dimens.xxs else y)
+        // Try the configured corner first, then alternatives. Measured subtitle plates always win.
+        val corners = listOf(top to start, !top to start, top to !start, !top to !start)
+        val safeCorner = with(density) {
+            val w = cardWidth.toPx()
+            val h = (maxHeight * Dimens.learningCardHeightShare).toPx()
+            corners.firstOrNull { (atTop, atStart) ->
+                val left = if (atStart != rtl) viewport.left + x.toPx() else viewport.right - x.toPx() - w
+                val upper = if (atTop) viewport.top + y.toPx() else viewport.bottom - y.toPx() - h
+                val proposed = Rect(left, upper, left + w, upper + h)
+                subtitleBounds.none { it.overlaps(proposed) }
+            }
+        }
+        val (atTop, atStart) = safeCorner ?: (top to start)
+        val anchor = when {
+            atTop && atStart -> Alignment.TopStart
+            atTop -> Alignment.TopEnd
+            atStart -> Alignment.BottomStart
+            else -> Alignment.BottomEnd
+        }
+        val cornerPadding = if (atStart) {
+            Modifier.padding(start = x, top = if (atTop) y else Dimens.xxs, bottom = if (atTop) Dimens.xxs else y)
         } else {
-            Modifier.padding(end = x, top = if (top) y else Dimens.xxs, bottom = if (top) Dimens.xxs else y)
+            Modifier.padding(end = x, top = if (atTop) y else Dimens.xxs, bottom = if (atTop) Dimens.xxs else y)
         }
         AnimatedContent(
-            targetState = cards,
+            targetState = if (safeCorner != null) cards.take(if (compact) 1 else VISIBLE_LEARNING_CARDS) else emptyList(),
             modifier = Modifier.align(anchor).then(cornerPadding).width(cardWidth)
                 .heightIn(max = maxHeight * Dimens.learningCardHeightShare).clipToBounds(),
             contentAlignment = anchor,
@@ -105,7 +139,7 @@ internal fun LearningCardsOverlay(ui: PlayerUi, inPip: Boolean, modifier: Modifi
                                     modifier = Modifier.weight(1f))
                                 card.level?.let { LevelBadge(it) }
                             }
-                            Text(card.translation, style = nativeStyle, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                            Text(card.translation, style = nativeStyle, maxLines = if (compact) 1 else 2, overflow = TextOverflow.Ellipsis)
                         }
                     }
                 }

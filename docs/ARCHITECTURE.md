@@ -180,6 +180,8 @@ It checks real lexicon CEFR or the configured level provider and My Words before
 translations. `selectLearningCandidates` implements strict above-level, known-word and lemma filters;
 `LearningCardsOverlay` draws at most two bounded, non-interactive hints, suppressed behind controls,
 tap popups, lists, sheets and PiP. It never pauses the controller or calls the online translation flow.
+The geometry-only hit registry publishes measured subtitle plate bounds; hints try other corners
+rather than covering either layer, and compact video regions draw only one hint.
 `LEARNING_POPUP` fonts are isolated from the tapped word card's fonts. Cross-cue automatic phrases
 remain a documented limitation; live tracks are never merged into an invented sentence.
 

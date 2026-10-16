@@ -1445,7 +1445,8 @@ class PlayerViewModel(
         val layer = ui.layer(TrackRole.LEARNING)
         val lines = layer.lines
         val allowed = settings.learning.mode == LearningMode.LEARNING && settings.learning.maxPopupCards > 0 &&
-            state.target != null && state.isPlaying && layer.visible && !ui.scrubbing && lines.isNotEmpty()
+            state.target != null && state.isPlaying && !ui.opening && !state.isBuffering &&
+            layer.visible && !ui.scrubbing && lines.isNotEmpty()
         if (!allowed) {
             learningCardsJob?.cancel()
             learningCardsKey = null

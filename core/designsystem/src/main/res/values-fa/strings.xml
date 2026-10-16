@@ -597,4 +597,5 @@
     <string name="settings_learning_cards">کارت‌های خودکار یادگیری</string>
     <string name="settings_subtitle_lookup">جستجوی زیرنویس</string>
     <string name="settings_popup_vertical_distance">فاصلهٔ عمودی از گوشه</string>
+    <string name="settings_automatic_phrases">نمایش خودکار کارت ترکیب‌ها</string>
 </resources>

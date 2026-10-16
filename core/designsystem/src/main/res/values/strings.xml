@@ -613,4 +613,5 @@
     <string name="settings_learning_cards">Automatic learning cards</string>
     <string name="settings_subtitle_lookup">Subtitle lookup</string>
     <string name="settings_popup_vertical_distance">Vertical distance from the corner</string>
+    <string name="settings_automatic_phrases">Show automatic phrase hints</string>
 </resources>

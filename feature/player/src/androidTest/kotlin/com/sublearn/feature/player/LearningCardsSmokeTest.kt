@@ -1,6 +1,7 @@
 package com.sublearn.feature.player
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -56,4 +57,23 @@ class LearningCardsSmokeTest {
         }
         rule.onNodeWithText("reluctant").assertDoesNotExist()
     }
+
+    @Test
+    fun noHintCoversSubtitlesWhenAllCornersAreOccupied() {
+        val base = AppSettings.DEFAULT
+        val settings = base.copy(learning = base.learning.copy(mode = LearningMode.LEARNING))
+        val ui = PlayerUi(
+            settings = settings,
+            playback = PlaybackState(isPlaying = true),
+            controlsVisible = false,
+            learningCards = listOf(LearningCardUi("word", "reluctant", "بی‌میل", "B2")),
+        )
+        rule.setContent {
+            SubLearnTheme(settings = settings) {
+                LearningCardsOverlay(ui, inPip = false, subtitleBounds = listOf(Rect(-10_000f, -10_000f, 10_000f, 10_000f)))
+            }
+        }
+        rule.onNodeWithText("reluctant").assertDoesNotExist()
+    }
+
 }
