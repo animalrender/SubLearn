@@ -2,8 +2,6 @@ package com.sublearn.core.nlp.llm
 
 import android.content.Context
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
-import android.content.Context
-import com.google.mediapipe.tasks.genai.llminference.LlmInferenceOptions
 import com.sublearn.core.ai.LlmRunner
 import com.sublearn.core.ai.ModelFileLayout
 import com.sublearn.core.common.AppResult
@@ -130,11 +128,13 @@ class LiteRtLlmRunner private constructor(
             }
 
             return try {
-                val options = LlmInferenceOptions.builder()
+                // `LlmInferenceOptions` is a nested class of `LlmInference`, not a sibling: the
+                // options type is only ever used to build the engine it configures.
+                val options = LlmInference.LlmInferenceOptions.builder()
                     .setModelPath(bundle.absolutePath)
                     .setMaxTokens(maxTokens)
                     .setPreferredBackend(
-                        if (preferGpu) LlmInferenceOptions.Backend.GPU else LlmInferenceOptions.Backend.CPU,
+                        if (preferGpu) LlmInference.Backend.GPU else LlmInference.Backend.CPU,
                     )
                     .build()
 

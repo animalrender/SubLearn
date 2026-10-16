@@ -5,17 +5,15 @@ import ai.onnxruntime.OnnxTensorLike
 import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
 import ai.onnxruntime.TensorInfo
-import com.sublearn.core.ai.EmbedderLoader
 import com.sublearn.core.ai.EmbeddingMath
 import com.sublearn.core.ai.ModelFileLayout
-import com.sublearn.core.ai.NlpModel
+import com.sublearn.core.ai.StaticTokenEmbedder
 import com.sublearn.core.ai.TextEmbedder
 import com.sublearn.core.ai.WordPieceTokenizer
 import com.sublearn.core.common.AppResult
 import com.sublearn.core.common.SubLearnError
 import java.io.File
 import java.nio.LongBuffer
-import java.util.EnumSet
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -24,19 +22,17 @@ import java.util.concurrent.atomic.AtomicBoolean
  * The models are the `Xenova` ONNX exports of `all-MiniLM-L6-v2` (embedding ranker) and
  * `distilbert-base-uncased` (word-sense disambiguation). Both take `input_ids` /
  * `attention_mask` as `int64[1, n]` and are exported with a `last_hidden_state` output; the mean
- * of that state, pooled and L2-normalised, is the sentence embedding.
+ * of that state over the real tokens, L2-normalised, is the sentence embedding.
  *
- * This is the PRECISE runtime. It is deliberately *not* given a `NotImplemented` fallback: if the
- * session cannot be created, [load] reports why, and the caller keeps using the lexical ranker
- * instead of pretending the model ran.
+ * This is the PRECISE and ADVANCED runtime. It is deliberately *not* given a `NotImplemented`
+ * fallback: if the session cannot be created, [load] reports why, and the caller keeps using the
+ * lexical ranker instead of pretending a model ran.
  *
- * @property layout where the graph and its vocabulary live on disk
- * @property interpreter the loaded runtime, or null before [load]
- * @property dimensions the width of the embedding, read from the graph itself
+ * @property environment the ORT environment, which owns the native runtime
+ * @property session the loaded graph
+ * @property dimensions the embedding width, read from the graph's own output metadata
  */
 class OnnxTextEmbedder private constructor(
-    private val layout: ModelFileLayout,
-    private val root: File,
     private val environment: OrtEnvironment,
     private val session: OrtSession,
     override val dimensions: Int,
@@ -44,27 +40,42 @@ class OnnxTextEmbedder private constructor(
     private val attentionMaskName: String,
     private val outputName: String,
     private val tokenizer: WordPieceTokenizer,
-    private val maxTokens: Int,
 ) : TextEmbedder {
 
     override val runtimeName: String = RUNTIME_NAME
 
     private val closed = AtomicBoolean(false)
 
-    override fun embed(text: String): AppResult<FloatArray> {
+    /**
+     * Embeds one text.
+     *
+     * Throws only when the session itself fails — a text that encodes to nothing is a zero vector,
+     * not an error, matching [TextEmbedder]'s contract. [tryEmbed] is the non-throwing form used by
+     * the ranking path, which prefers to fall back to the lexical ranker rather than crash a
+     * subtitle overlay.
+     */
+    override fun embed(text: String): FloatArray = when (val result = tryEmbed(text)) {
+        is AppResult.Success -> result.value
+        is AppResult.Failure -> throw IllegalStateException(result.error.message, result.error.cause)
+    }
+
+    /** [embed] without the exception, for callers that have a fallback. */
+    fun tryEmbed(text: String): AppResult<FloatArray> {
         if (closed.get()) return failure("the ONNX session is closed")
 
-        val encoding = tokenizer.encode(text, maxTokens)
-        if (encoding.isEmpty) return failure("the text produced no tokens")
+        val encoding = tokenizer.encode(text)
+        if (encoding.tokenCount == 0) return AppResult.Success(FloatArray(dimensions))
 
-        return runSession(encoding.ids, encoding.attentionMask)
+        val ids = LongArray(encoding.inputIds.size) { encoding.inputIds[it].toLong() }
+        val mask = IntArray(encoding.attentionMask.size) { encoding.attentionMask[it] }
+        return runSession(ids, mask)
     }
 
     /** Embeds several texts with one session, which is how batch ranking calls into it. */
     fun embedAll(texts: List<String>): AppResult<List<FloatArray>> {
         val out = ArrayList<FloatArray>(texts.size)
         for (text in texts) {
-            when (val result = embed(text)) {
+            when (val result = tryEmbed(text)) {
                 is AppResult.Success -> out += result.value
                 is AppResult.Failure -> return result
             }
@@ -72,22 +83,25 @@ class OnnxTextEmbedder private constructor(
         return AppResult.Success(out)
     }
 
-    private fun runSession(ids: LongArray, mask: LongArray): AppResult<FloatArray> {
+    private fun runSession(ids: LongArray, mask: IntArray): AppResult<FloatArray> {
         val shape = longArrayOf(1L, ids.size.toLong())
         return try {
             OnnxTensor.createTensor(environment, LongBuffer.wrap(ids), shape).use { idTensor ->
-                OnnxTensor.createTensor(environment, LongBuffer.wrap(mask), shape).use { maskTensor ->
-                    val inputs: Map<String, OnnxTensorLike> = mapOf(
-                        inputIdsName to idTensor as OnnxTensorLike,
-                        attentionMaskName to maskTensor as OnnxTensorLike,
-                    )
-                    session.run(inputs).use { result ->
-                        val tensor = result.get(0)
-                        AppResult.Success(meanPool(tensor.value, mask))
+                OnnxTensor.createTensor(environment, LongBuffer.wrap(asLongs(mask)), shape)
+                    .use { maskTensor ->
+                        val inputs: Map<String, OnnxTensorLike> = mapOf(
+                            inputIdsName to idTensor,
+                            attentionMaskName to maskTensor,
+                        )
+                        session.run(inputs).use { result ->
+                            val tensor = result.get(0)
+                            AppResult.Success(meanPool(tensor.value, mask))
+                        }
                     }
-                }
             }
-        } catch (error: Exception) {
+        } catch (error: Throwable) {
+            // The native runtime reports device-level failures as Error subclasses too, so both are
+            // caught here rather than only Exception.
             AppResult.Failure(
                 SubLearnError(
                     SubLearnError.Kind.ModelFailure,
@@ -98,31 +112,31 @@ class OnnxTextEmbedder private constructor(
         }
     }
 
+    /** ONNX Runtime's int64 inputs need `long[]`, while the tokenizer works in `int[]`. */
+    private fun asLongs(values: IntArray): LongArray = LongArray(values.size) { values[it].toLong() }
+
     /**
-     * Mean-pools the last hidden state over the tokens the mask selects, then normalises.
+     * Mean-pools the hidden state over the tokens the mask selects, then normalises.
      *
      * ONNX Runtime's Java binding hands a 3-D float output back as `float[][][]` and a 2-D one as
      * `float[][]`, and Kotlin sees those as `Array<Array<FloatArray>>` and `Array<FloatArray>`. The
      * flattening below walks whatever nesting arrives instead of casting to one of them, so a graph
-     * that returns `[1, n, d]` or `[n, d]` is handled by the same code. Pooling itself lives in
+     * that returns `[1, n, d]` or `[n, d]` is handled by the same code. The pooling itself lives in
      * [EmbeddingMath] so the ONNX and pure-Kotlin runtimes round identically.
      */
-    private fun meanPool(value: Any?, mask: LongArray): FloatArray {
-        val flat = ArrayList<Float>(mask.size * dimensions)
-        appendFloats(value, flat, mask.size * dimensions)
+    private fun meanPool(value: Any?, mask: IntArray): FloatArray {
+        val limit = mask.size * dimensions
+        val flat = ArrayList<Float>(limit)
+        appendFloats(value, flat, limit)
         if (flat.isEmpty()) return FloatArray(dimensions)
 
-        val rows = ArrayList<FloatArray>(mask.size)
-        val stride = flat.size / mask.size
-        for (index in mask.indices) {
-            if (mask[index] == 0L) continue
-            val start = index * stride
-            if (start + stride > flat.size) break
-            val row = FloatArray(stride)
-            for (position in 0 until stride) row[position] = flat[start + position]
-            rows += row
-        }
-        return EmbeddingMath.meanPoolNormalized(rows)
+        val rows = flat.size / dimensions
+        // A graph that already pooled returns a single row; anything else is `[tokens, hidden]`.
+        if (rows <= 1) return EmbeddingMath.l2Normalize(flat.toFloatArray().copyOf(dimensions))
+
+        val activations = FloatArray(rows * dimensions)
+        for (index in activations.indices) activations[index] = flat[index]
+        return EmbeddingMath.meanPoolNormalized(activations, mask.copyOf(rows), dimensions)
     }
 
     /** Flattens a nested float output in row-major order, stopping once [limit] values are read. */
@@ -138,7 +152,7 @@ class OnnxTextEmbedder private constructor(
                 out += value.toFloat()
             }
 
-            is Number -> out += source.toFloat()
+            is Number -> if (out.size < limit) out += source.toFloat()
 
             is Array<*> -> for (element in source) {
                 if (out.size >= limit) return
@@ -171,8 +185,12 @@ class OnnxTextEmbedder private constructor(
          */
         fun isUsable(): Boolean = runCatching { OrtEnvironment.getEnvironment() }.isSuccess
 
-        /** The MiniLM/DistilBERT exports accept at most 512 positions; 256 keeps the cost sane. */
-        private const val DEFAULT_MAX_TOKENS = 256
+        /**
+         * The MiniLM/DistilBERT exports accept at most 512 positions; 256 covers a subtitle line
+         * with room to spare and keeps the quadratic attention cost of a 512-position window off
+         * the phone.
+         */
+        const val DEFAULT_MAX_TOKENS = 256
 
         /**
          * Opens a model directory and builds the ONNX session.
@@ -187,9 +205,10 @@ class OnnxTextEmbedder private constructor(
             preferNnapi: Boolean = false,
             maxTokens: Int = DEFAULT_MAX_TOKENS,
         ): AppResult<OnnxTextEmbedder> {
-            val graph = layout.fileUnder(root, layout.sessionFile ?: "")
+            val graphName = layout.sessionFile ?: return loadFailure("the layout has no primary file")
+            val graph = layout.fileUnder(root, graphName)
             if (!graph.isFile || graph.length() == 0L) {
-                return loadFailure("model file ${graph.name} is missing; download the model first")
+                return loadFailure("model file $graphName is missing; download the model first")
             }
             val vocabularyName = layout.vocabularyFile ?: return loadFailure("model has no vocabulary")
             val vocabulary = layout.fileUnder(root, vocabularyName)
@@ -198,9 +217,14 @@ class OnnxTextEmbedder private constructor(
             }
 
             val tokenizer = try {
-                WordPieceTokenizer.fromFile(vocabulary)
+                // The vocabulary reader is the one the pure-Kotlin embedder already uses, so both
+                // runtimes agree on what the file means, including the trailing newline.
+                WordPieceTokenizer(StaticTokenEmbedder.readVocabulary(vocabulary), maxTokens)
             } catch (error: Exception) {
                 return loadFailure("could not read $vocabularyName: ${error.message}")
+            }
+            if (!tokenizer.isUsable) {
+                return loadFailure("$vocabularyName has no [CLS]/[SEP] tokens; it is not a WordPiece vocabulary")
             }
 
             val environment = try {
@@ -216,11 +240,10 @@ class OnnxTextEmbedder private constructor(
                     ?: return loadFailure("the ONNX graph has no int64 input pair (input_ids/attention_mask)")
                 val dimensions = readDimensions(session, names.outputName)
                     ?: return loadFailure("could not read the embedding width from the ONNX graph")
+                if (dimensions <= 0) return loadFailure("the ONNX graph reports a width of $dimensions")
 
                 AppResult.Success(
                     OnnxTextEmbedder(
-                        layout = layout,
-                        root = root,
                         environment = environment,
                         session = session,
                         dimensions = dimensions,
@@ -228,11 +251,10 @@ class OnnxTextEmbedder private constructor(
                         attentionMaskName = names.attentionMask,
                         outputName = names.outputName,
                         tokenizer = tokenizer,
-                        maxTokens = maxTokens,
                     ),
                 )
-            } catch (error: Exception) {
-                loadFailure("could not open ${graph.name}: ${error.message ?: error.javaClass.simpleName}")
+            } catch (error: Throwable) {
+                loadFailure("could not open $graphName: ${error.message ?: error.javaClass.simpleName}")
             }
         }
 
@@ -244,13 +266,14 @@ class OnnxTextEmbedder private constructor(
             runCatching { options.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT) }
             if (preferNnapi) {
                 // NNAPI is only an accelerator: a device without the delegate keeps running on the
-                // CPU provider, so a failure here must not fail the load.
-                runCatching { options.addNnapi(EnumSet.noneOf(OrtSession.SessionOptions.NNAPIFlags::class.java)) }
+                // CPU provider, so a failure here must not fail the load. The no-argument overload
+                // means the default flag set.
+                runCatching { options.addNnapi() }
             }
             return options
         }
 
-        /** The shapes of the graph's inputs and outputs, from the model's own metadata. */
+        /** The names of the graph's inputs and outputs, from the model's own metadata. */
         private class Signatures(
             val inputIds: String,
             val attentionMask: String,
@@ -275,10 +298,8 @@ class OnnxTextEmbedder private constructor(
 
         /** The embedding width, read from the output tensor's last dimension. */
         private fun readDimensions(session: OrtSession, outputName: String): Int? {
-            val info = session.outputInfo[outputName] ?: return null
-            val tensor = info as? TensorInfo ?: return null
-            val shape = tensor.shape ?: return null
-            val last = shape.lastOrNull() ?: return null
+            val info = session.outputInfo[outputName] as? TensorInfo ?: return null
+            val last = info.shape?.lastOrNull() ?: return null
             return if (last > 0) last.toInt() else null
         }
 

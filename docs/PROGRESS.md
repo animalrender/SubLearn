@@ -127,6 +127,10 @@ listed at the end is the evidence.
 **CI verification (2026-10-16, engines)**
 - Static checks on `820f359`: 180 files, 0 problems; 0 unresolved imports; 20 modules, 0 missing
   dependencies; catalog, schema, resources and docs checks all pass; 25 python tests pass.
+- The engines are **not yet green in CI**: run 38831415790 (`CI`, commit `01368b6`) failed to
+  compile `core:nlp-llm` and `core:nlp-onnx` against the real MediaPipe and ONNX Runtime APIs.
+  Both are fixed in the working tree (nested `LlmInference.LlmInferenceOptions`, and the ONNX
+  embedder now implements `TextEmbedder` with the tokenizer/pooling APIs the module actually has).
 - `tools/check_symbols.py` gained an enum-entry check after a real bug: `SubLearnError.Kind
   .ModelFailure` was written and used in seven places, and it did not exist — nothing offline could
   have caught it, and only CI would have. It is now a `Kind` of its own, and the checker rejects
