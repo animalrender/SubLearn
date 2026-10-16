@@ -461,9 +461,17 @@ class PlayerViewModel(
             }
         ) pendingEmbeddedDefaultAssignment = false
         val current = _ui.value
+        if (current.settings.learning != settings.learning || current.settings.level != settings.level ||
+            current.settings.smartLearning != settings.smartLearning || current.settings.wordStyles != settings.wordStyles
+        ) {
+            wordStateJob?.cancel()
+            wordStateKey = emptyList()
+        }
         _ui.value = current.copy(
             settings = settings,
             learningMode = settings.learning.mode,
+            wordStates = if (settings.learning.mode == LearningMode.OFF) emptyMap() else current.wordStates,
+            lineSpans = if (settings.learning.mode == LearningMode.OFF) emptyMap() else current.lineSpans,
             shadowing = current.shadowing.copy(
                 autoRepeat = settings.shadowing.autoRepeatEnabled || settings.shadowing.repeatOnEveryBlock,
                 stopAtEnd = settings.shadowing.stopAtEndOfBlock,
@@ -473,6 +481,7 @@ class PlayerViewModel(
         )
         syncEmbeddedTextTracks(settings)
         publish()
+        refreshWordStates(controller.state.value, settings)
     }
 
     fun updateSettings(transform: (AppSettings) -> AppSettings) {
@@ -1578,9 +1587,8 @@ class PlayerViewModel(
             val level = provider?.let { runCatching { it.level(word) }.getOrNull() }
             when {
                 isMarked -> WordVisualState.MARKED
-                level != null && level.ordinal >= settings.learning.manualLevel.ordinal &&
-                    settings.learning.showAboveLevelOnly -> WordVisualState.ABOVE_LEVEL
-                level != null && level.ordinal >= settings.level.assumedLevelOfUnknownWords.ordinal -> WordVisualState.ABOVE_LEVEL
+                level != null && level != CefrLevel.UNKNOWN &&
+                    level.ordinal > settings.learning.manualLevel.ordinal -> WordVisualState.ABOVE_LEVEL
                 else -> WordVisualState.NONE
             }
         }

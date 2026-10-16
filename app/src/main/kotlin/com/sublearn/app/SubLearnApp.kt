@@ -148,7 +148,8 @@ private fun AppScaffold(nav: AppNavigator, versionName: String) {
     }) {
         Scaffold(
             topBar = {
-                if (nav.route != AppRoute.PLAYER) {
+                // These destinations own their toolbar; do not stack a second back/title row above it.
+                if (nav.route !in setOf(AppRoute.PLAYER, AppRoute.SETTINGS, AppRoute.LEVEL, AppRoute.WORDS)) {
                     TopAppBar(
                         title = { Text(stringResource(nav.route.titleRes()), style = MaterialTheme.typography.titleMedium) },
                         navigationIcon = {

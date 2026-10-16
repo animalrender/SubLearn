@@ -15,6 +15,7 @@ Unreleased work lands on phase branches; `main` only ever contains merged, CI-gr
 - Settings entry crash from an unresolved Koin downloader-function dependency.
 - Decorative stop/tick dots on progress bars and slider tracks throughout the app.
 - Localized settings search, nested back handling and section/search restoration.
+- Duplicate Settings/My Words toolbars and stale subtitle styling after level/mode changes.
 
 ### Changed
 - Learn now shows only Coming soon for browser/PDF/image learning; onboarding, resources and accuracy

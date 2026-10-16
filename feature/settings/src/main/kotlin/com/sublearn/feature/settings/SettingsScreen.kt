@@ -74,6 +74,7 @@ fun SettingsScreen(
         contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0),
                 title = { Text(stringResource(section.settingsTitleRes())) },
                 navigationIcon = {
                     // One step back: a section returns to the list, the list leaves settings. The

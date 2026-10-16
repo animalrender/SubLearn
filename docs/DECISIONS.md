@@ -542,6 +542,7 @@ surface. Pack onboarding, imports, integrity checks, downloads and accuracy prof
 Settings → Player learning, with a My Words shortcut. The Dictionary screen remains independent in
 `feature:learn`; no feature depends on another feature. Settings search matches localized titles and
 hints as well as keywords, nested back stays inside Settings, and section/search survive recreation.
+Settings/My Words own their toolbar; the app shell must not stack a second toolbar above them.
 
 **D-79 — Automatic cards are passive, offline and scoped to the current learning cues.**
 `PlayerViewModel.publish` resolves all active external and embedded lines before scheduling hints.

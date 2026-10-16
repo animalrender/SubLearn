@@ -25,6 +25,9 @@ class LearnViewModel(
     val installedPacks: StateFlow<List<InstalledPackEntity>> = installedPacksRepo.observeAll()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    private val _statusMessage = MutableStateFlow<String?>(null)
+    val statusMessage: StateFlow<String?> = _statusMessage.asStateFlow()
+
     // Dictionary search state (D-55, D-58)
     private val _dictQuery = MutableStateFlow("")
     val dictQuery: StateFlow<String> = _dictQuery.asStateFlow()

@@ -109,6 +109,7 @@ fun MyWordsScreen(
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0),
                 title = { Text(stringResource(R.string.words_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

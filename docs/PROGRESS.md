@@ -8,6 +8,8 @@
   catalog/installed packs and accuracy profiles to Settings → Library & Resources; model downloads
   have a direct link there. Player learning retains level, word styles, popup and lookup settings,
   with separate cards for mode, automatic card appearance, interactions, level source and colours.
+- Removed duplicated app/feature toolbars on Settings and My Words.
+- Word styling now refreshes when level/settings change, excludes equal/unknown levels and clears in Off.
 - Settings search now includes localized titles/hints. Section and query survive recreation;
   Android back returns to the root, prompt back returns to AI, and section scrolling is scoped.
 - Added automatic offline translated word/phrase hints for the current learning subtitles (file and
@@ -25,6 +27,8 @@
 Python tooling tests: 61 run, 59 passed, 2 intentionally skipped. Local Gradle
 cannot start: no Java/JAVA_HOME or Android SDK. Added seven selection tests, the production-graph
 regression test and an instrumented card visibility smoke test; execution is pending CI/device.
+The first CI compile caught the split Dictionary status field and an invalid test import; both were
+fixed. All new player/settings production code compiled in that run. A follow-up CI run is pending.
 No device verification or final-build success is claimed here. See D-78..D-80 and KNOWN_ISSUES 29.
 
 ## 2026-10-15 — phases 20–25: detection accuracy, downloads, navigation, profiles, releases, docs
