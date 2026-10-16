@@ -79,6 +79,8 @@ data class SubLearnError(
         RateLimited,
         Unauthorized,
         ModelMissing,
+        /** The model file is there but the engine could not run it: corrupt weights, bad ABI. */
+        ModelFailure,
         Timeout,
         NotImplemented,
         Unknown,

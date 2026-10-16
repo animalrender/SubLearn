@@ -127,10 +127,113 @@ def missing_imports(root: Path) -> list[str]:
     return problems
 
 
+ENUM_BLOCK = re.compile(r"\benum\s+class\s+`?(\w+)`?\s*(?:\([^)]*\))?\s*\{")
+# `ENTRY,` for the ALL_CAPS style and `Entry,` for the CamelCase style.
+ENUM_ENTRY_CAPS = re.compile(r"^\s*([A-Z][A-Z0-9_]{2,})\s*[,;(]", re.M)
+ENUM_ENTRY_CAMEL = re.compile(r"^\s*([A-Z]\w*)\s*(?=[,;(]|$)", re.M)
+ENUM_MEMBER = re.compile(r"\b(?:fun|val|var)\s+`?(\w+)`?")
+# Members every Kotlin enum inherits, so `Kind.entries` is never reported as missing.
+ENUM_INHERITED = {
+    "values", "valueOf", "entries", "name", "ordinal", "compareTo", "equals",
+    "hashCode", "toString", "declaringJavaClass", "javaClass",
+}
+# A reference to an enum entry: the type name, a dot, then a capitalized member.
+ENUM_REF = re.compile(r"(?<![\w.$])([A-Z]\w*)\.([A-Z]\w*)\b")
+
+
+def kotlin_files(root: Path):
+    """Every Kotlin source in the repository, tests included, in a stable order."""
+    return [
+        path
+        for path in sorted(list(root.glob("*/src/**/*.kt")) + list(root.glob("*/*/src/**/*.kt")))
+        if "/build/" not in str(path)
+    ]
+
+
+def braces_from(text: str, start: int) -> tuple[str, int]:
+    """Text between the brace at [start] and its match, plus the index just past the match."""
+    depth = 0
+    index = start
+    while index < len(text):
+        char = text[index]
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start + 1:index], index + 1
+        index += 1
+    return text[start + 1:], len(text)
+
+
+def enum_entries(root: Path) -> dict[str, set[str]]:
+    """Every enum class's entries and declared members, for enums whose name is unique.
+
+    A duplicate name is dropped rather than guessed at: two enums called `Level` in one repository
+    would make every reference ambiguous, and a checker that guesses produces noise, not signal.
+    """
+    seen: dict[str, set[str]] = {}
+    # Every type name in the repository, with how many declarations claim it. `Sections` is both an
+    # `object` in core:settings and a private `enum` in feature:settings, and `Sections.ALL` means the
+    # object's constant — so a name that is not exactly one enum declaration is not judged at all.
+    claimants: dict[str, int] = {}
+    kinds: dict[str, set[str]] = {}
+    sources: list[tuple[Path, str]] = []
+    for path in kotlin_files(root):
+        text = strip_noise(path.read_text(encoding="utf-8", errors="replace"))
+        sources.append((path, text))
+        for declared in TOP_TYPE.finditer(text):
+            name = declared.group(1)
+            # `enum class Kind` is one declaration of kind "enum", not of kind "class".
+            keyword = re.search(r"\b(class|interface|object|typealias|enum)\b", declared.group(0))
+            claimants[name] = claimants.get(name, 0) + 1
+            kinds.setdefault(name, set()).add(keyword.group(1) if keyword else "?")
+
+    for path, text in sources:
+        for match in ENUM_BLOCK.finditer(text):
+            name = match.group(1)
+            body, _ = braces_from(text, match.end() - 1)
+            entries = set(ENUM_ENTRY_CAPS.findall(body))
+            entries.update(ENUM_ENTRY_CAMEL.findall(body))
+            entries.update(ENUM_MEMBER.findall(body))
+            if "\n" not in body:
+                # A one-line enum such as `enum class X { A, B }` has no line start for the
+                # line regexes, so its capitalized tokens are collected directly. Extra names
+                # only make the check more forgiving, never falsely accusing.
+                entries.update(re.findall(r"[\w]+", body))
+            entries |= ENUM_INHERITED
+            if name in seen or claimants.get(name, 0) != 1 or kinds.get(name) != {"enum"}:
+                seen.pop(name, None)
+                continue
+            seen.setdefault(name, set()).update(entries)
+    return seen
+
+
+def unknown_enum_entries(root: Path) -> list[str]:
+    """Enum entries that are referenced but never declared.
+
+    `SubLearnError.Kind.ModelFailure` is the real example this was written for: a constant that
+    reads as if it exists, that nothing in this sandbox can reject, and that would otherwise have
+    been discovered by a red CI build.
+    """
+    enums = enum_entries(root)
+    problems: list[str] = []
+    for path in kotlin_files(root):
+        body = strip_noise(path.read_text(encoding="utf-8", errors="replace"))
+        for match in ENUM_REF.finditer(body):
+            enum_name, entry = match.group(1), match.group(2)
+            known = enums.get(enum_name)
+            if known is None or entry in known:
+                continue
+            problems.append(f"{path}: {enum_name}.{entry} is not a declared entry of that enum")
+    return problems
+
+
 def main(argv: list[str]) -> int:
     root = Path(".")
     decls = declarations(root)
     problems: list[str] = missing_imports(root)
+    problems += unknown_enum_entries(root)
     for path in sorted(list(root.glob("*/src/**/*.kt")) + list(root.glob("*/*/src/**/*.kt"))):
         if "/build/" in str(path):
             continue
