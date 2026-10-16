@@ -112,7 +112,7 @@ Rules that keep those boundaries:
 
 - A feature depends on `core:*` only. Shared UI code goes to `core:designsystem`, shared logic to the
   owning `core:*` module.
-- Only `core:designsystem` owns `strings.xml` (`values/` + `values-fa/`, 622 keys, kept in sync by
+- Only `core:designsystem` owns `strings.xml` (`values/` + `values-fa/`, 624 keys, kept in sync by
   hand and by CI review). Features import `com.sublearn.core.designsystem.R`.
 - `core:settings` and `core:subtitles`/`core:lexicon`/`core:common` have **no Compose dependency**;
   keep them JVM-testable.

@@ -1,6 +1,6 @@
 ## 2026-10-16 — one downloads screen, automatic releases, and the catalog that matches the bytes
 
-**Implemented on `arena/40fc4e81-sublearn`; CI compile pending, device verification pending.**
+**Implemented on `arena/40fc4e81-sublearn`; CI green on `345f763`, device verification pending.**
 
 The owner reported that the released builds are broken, that the offline translation model download
 fails in three places, that the pack download ends in "SHA mismatched", and that the accuracy
@@ -51,6 +51,11 @@ profiles do not work. The causes turned out to be four separate ones, all confir
 and `git diff --check` is clean. Local Gradle cannot start (no JVM, no Android SDK), so the compile
 is CI's job and no device run is claimed.
 
+CI is green on `345f763`: [run 38942626135](https://github.com/animalrender/SubLearn/actions/runs/38942626135)
+(push) and [run 38942617914](https://github.com/animalrender/SubLearn/actions/runs/38942617914)
+(pull request) both passed `assembleDebug`, `assembleRelease`, `test`, `lintDebug` and
+`assembleDebugAndroidTest`.
+
 CI found two real problems in the first build of this branch, and both are fixed here:
 
 - A development build is called `0.0.0-dev-<branch>+<sha>`, so the `versionCode` derived from the
@@ -58,6 +63,10 @@ CI found two real problems in the first build of this branch, and both are fixed
   number of commits instead (D-82).
 - The new profile test described "a 512 MB phone" and built a device with 2048 MB, so the RAM
   floor was never crossed. The devices are named for what they are now: 64 MB, 2 GB and 8 GB.
+
+**Still to verify by hand, on a device:** the translation model download (all three entry points
+now share one manager), a pack download with the published digests, and the profile advice on a
+phone with little memory.
 
 ## 2026-10-16 — Settings entry, Learn scope and automatic player cards
 
