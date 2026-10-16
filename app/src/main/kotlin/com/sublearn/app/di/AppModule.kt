@@ -30,6 +30,7 @@ import com.sublearn.core.lexicon.PackImporter
 import com.sublearn.core.lexicon.PackLexiconAccess
 import com.sublearn.core.lexicon.TextResourceReader
 import com.sublearn.core.lexicon.WordLevelSource
+import com.sublearn.core.models.DeviceCapabilityReader
 import com.sublearn.core.models.PackDownloader
 import com.sublearn.core.nlp.LexiconAccess
 import com.sublearn.core.nlp.llm.LiteRtLlmLoader
@@ -49,13 +50,13 @@ import com.sublearn.core.subtitles.SubtitleFileSource
 import com.sublearn.core.subtitles.SubtitleRepository
 import com.sublearn.core.translate.LegacyV1TranslationEngine
 import com.sublearn.core.translate.MlKitTranslationEngine
-import com.sublearn.core.translate.MlKitModelInstaller
 import com.sublearn.core.translate.MlKitTranslationProvider
 import com.sublearn.core.translate.OnlineGoogleTranslationEngine
 import com.sublearn.core.translate.PackGlossaryResult
 import com.sublearn.core.translate.PackTranslationEngine
 import com.sublearn.core.translate.RoomTranslationCacheStore
 import com.sublearn.core.translate.TranslationCacheStore
+import com.sublearn.core.translate.TranslationModelManager
 import com.sublearn.core.translate.TranslationOptions
 import com.sublearn.core.translate.TranslationOrchestrator
 import com.sublearn.core.translate.TranslationProvider
@@ -65,7 +66,7 @@ import com.sublearn.feature.learn.LearnViewModel
 import com.sublearn.feature.player.PlayerViewModel
 import com.sublearn.feature.player.SafSubtitleFileSource
 import com.sublearn.feature.player.SafTextResourceReader
-import com.sublearn.feature.settings.ResourcesViewModel
+import com.sublearn.feature.settings.DownloadsViewModel
 import com.sublearn.feature.settings.SettingsViewModel
 import com.sublearn.feature.words.WordsViewModel
 import org.koin.android.ext.koin.androidContext
@@ -120,12 +121,27 @@ private fun coreModule(): Module = module {
 
     // translation
     single<TranslationProvider> { MlKitTranslationProvider(logger = get()) }
-    single { MlKitModelInstaller(androidContext(), get()) }
+    // One manager for the offline translation model, shared by the settings screen, the downloads
+    // screen and the player: the model is downloaded once and every screen shows the same state
+    // (D-81).
+    single {
+        val settings: SettingsRepository = get()
+        TranslationModelManager(
+            provider = get(),
+            pair = {
+                val languages = settings.settings.value.languages
+                languages.learningLanguage to languages.nativeLanguage
+            },
+        )
+    }
 
     // optional nlp models: one store, one downloader, one installer (Phase 23, D-74)
     single { ModelStore(androidContext().filesDir.resolve("ai-models")) }
     single { ModelDownloader() }
     single { NlpModelInstaller(store = get(), downloader = get<ModelDownloader>()::download) }
+
+    // What the phone can do; the accuracy profiles are checked against it (D-81).
+    single { DeviceCapabilityReader(androidContext()) }
 
     // The engines are registered by asking them whether their native library loads. A build or a
     // device where it does not keeps the pure-Kotlin ranker and never offers a profile it cannot run.
@@ -255,8 +271,21 @@ private fun featureModule(): Module = module {
     viewModel { HomeViewModel(get()) }
     viewModel { WordsViewModel(get(), get(), get()) }
     viewModel { LearnViewModel(get(), get(), get()) }
-    viewModel { ResourcesViewModel(get(), get(), get(), get(), get(), get()) }
-    viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), androidContext(), get(), get()) }
+    viewModel {
+        DownloadsViewModel(
+            settingsRepository = get(),
+            installedPacksRepo = get(),
+            packImporter = get(),
+            legacyImporter = get(),
+            downloader = get(),
+            lexiconAccess = get(),
+            modelInstaller = get(),
+            translationModels = get(),
+            deviceCapabilities = get(),
+            context = androidContext(),
+        )
+    }
+    viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), androidContext(), get()) }
     viewModel {
         PlayerViewModel(
             application = get(),
@@ -265,6 +294,7 @@ private fun featureModule(): Module = module {
             subtitles = get(),
             fileSource = get(),
             translation = get(),
+            translationModels = get(),
             myWords = get(),
             recentVideos = get(),
             wordLevels = get(),

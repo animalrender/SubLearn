@@ -104,14 +104,17 @@ blocking, the workaround used in the meantime is stated too.
 
 ---
 
-### REQ-10 — Lexicon pack hosting URL
+### REQ-10 — Lexicon pack hosting URL — **resolved 2026-10-16**
 - **Phase/task**: 10 (Lexicon pack).
 - **Needed**: the URL where the owner will host `sublearn-lexicon-en-fa-v2.sqlite` after running the
   converter. The Model Manager catalog will point at this URL as the default download source.
-- **Workaround**: until the URL is provided, the catalog entry for the lexicon only shows "Import from
-  file / paste link". No placeholder URL is invented.
-- **Next step**: owner uploads the file (e.g. to a GitHub Release on their own repo) and provides the
-  URL.
+- **Resolution**: the packs are published in the `packs-v2.0.0` release of this repository, and the
+  catalog now carries their real size and SHA-256, read from the release API. Settings → Downloads
+  downloads them from there and verifies them (D-83).
+- **What remains**: the catalog's pack entries must keep matching the published assets. That is
+  checked by `tools/check_catalog.py` (the app's copy against the catalog) and by
+  `verify-catalog.yml` (the catalog against the release), so a re-published pack that changes its
+  bytes fails the build instead of failing on the user's phone.
 
 ### REQ-12 — Verify catalog entries for models
 - **Phase/task**: 11 (Model manager).
@@ -138,6 +141,10 @@ blocking, the workaround used in the meantime is stated too.
   each catalog entry's URL and checks its size and hash, and produces two artifacts:
   - `catalog_verification_report.json` — summary of what was verified and what wasn't
   - `catalog-v1.verified.json` — the catalog with updated `verified` flags
+- **Update (2026-10-16)**: the workflow now also asks the GitHub API for the digest of every
+  published release asset and fails when the catalog disagrees with it. That check is what turned
+  the "SHA mismatched" download into a red build (D-83), and it runs on every push that touches
+  `docs/catalog/catalog-v2.json`.
 - **Next step**: download the artifacts and share the report with the agent so it can update
   the catalog entries that were verified.
 - **Severity**: medium (needed before models can be shown as available in release builds).

@@ -167,12 +167,13 @@ action of each `GestureSlot`, so every slot is remappable (PLY-4), and a double 
 limits it to plate drags in layout mode. The system bars are hidden for the whole player screen
 (D-27), so the edges need no exclusion beyond `playerEdgeInset`.
 
-## Settings-owned resources and automatic learning hints (D-78..D-80)
+## Settings-owned resources and automatic learning hints (D-78..D-83)
 
 Learn is a localized Coming soon destination for browser/PDF/image learning. Player mode, level and
-popup appearance belong to Settings → Player learning. `feature:settings/ResourcesViewModel` owns
-pack imports/downloads/verification and profile selection; the Dictionary screen keeps its own
-`LearnViewModel`, and neither feature imports the other. No settings schema change is needed.
+popup appearance belong to Settings → Player learning. `feature:settings/DownloadsViewModel` owns
+the offline translation model, the packs, the accuracy models and the accuracy profile; the
+Dictionary screen keeps its own `LearnViewModel`, and neither feature imports the other. No
+settings schema change is needed.
 
 After resolving live subtitle lines, `PlayerViewModel.publish` schedules passive learning hints.
 The cancelable job is keyed by media URI, line source/timing/text and settings, and resets on seeks.
@@ -188,6 +189,27 @@ remain a documented limitation; live tracks are never merged into an invented se
 The shared design-system linear progress/slider wrappers disable Material stop/tick dots. The Koin
 model installer receives `get<ModelDownloader>()::download` explicitly, not an unresolved function
 binding; a Robolectric production-graph test covers Settings entry.
+
+## The downloads screen (D-81)
+
+```
+Settings → Downloads
+  ├── offline translation model   ── TranslationModelManager (core:translate)
+  │      └── TranslationProvider ── MlKitTranslationProvider ── ML Kit (RemoteModelManager)
+  ├── offline packs                ── PackDownloader (core:models) ── GitHub release
+  │      └── PackImporter / LegacyV1Importer (core:lexicon) ── InstalledPackRepository
+  ├── accuracy models              ── NlpModelInstaller (core:ai) ── ModelStore layout
+  └── accuracy profile             ── SmartProfileSelector (core:ai) + DeviceCapabilityReader
+```
+
+One rule runs through the screen: **one state per item, and one place that changes it.** The
+translation model's state lives in `TranslationModelManager`, which every screen reads and every
+download button calls; the packs' state lives in `PackDownloader`; the accuracy models' state is
+read from `ModelStore` through `NlpModelInstaller`; the profile's advice is computed by
+`SmartProfileSelector` from the device's memory, storage and the installed models. The catalog the
+screen offers is `ModelCatalogParser.bundledDefault()`, which is generated from
+`docs/catalog/catalog-v2.json` and checked against it by `tools/check_catalog.py` — so the size and
+the SHA-256 the user is shown are the ones the download is verified against (D-83).
 
 ## Settings, storage and migration
 

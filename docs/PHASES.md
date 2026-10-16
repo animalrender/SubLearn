@@ -38,6 +38,29 @@ CI run 38923376453 (`a65db3e`); the on-device RTL/animation pass remains pending
 This pass corrects earlier completion claims for the automatic-card rendering path, which was absent.
 See D-78..D-80 and the current entry in PROGRESS.md.
 
+## 2026-10-16 corrective pass (phases 11, 15, 18 and 19)
+
+The owner's report about broken releases, the broken translation-model download, the "SHA
+mismatched" pack download and the profiles that do nothing is answered by one pass on
+`arena/40fc4e81-sublearn`:
+
+- **Phase 18 → one downloads screen.** "Library & Resources" and "Models & Downloads" become
+  **Settings → Downloads**: the offline translation model, the offline packs, the accuracy models
+  and the accuracy profile, in that order, with one view model and one state per item (D-81).
+- **Phase 11 → the catalog describes the published bytes.** The pack entries carry the size and
+  SHA-256 that the release API reports, the app's bundled copy is generated from the same file and
+  checked against it, and `verify-catalog.yml` fails the build when the catalog and the release
+  disagree (D-83).
+- **Phase 15 → profiles are advised, not enforced.** `ModelRuntimeGuard` and the heap-based
+  downgrade are gone; the advice uses the device's memory, storage and installed models, and the
+  screen names what a profile still needs (D-81).
+- **Phase 19 → the release bumps itself.** `VERSION`, `tools/next_version.py` and the updated
+  `auto-release.yml` publish `v3.0.0`, `v3.0.1`, `v3.0.2` … from `main` with no manual tag
+  (D-82).
+
+The phase statuses above are not changed by this pass; it corrects what the earlier phases claimed
+to deliver. See D-81..D-83 and the current entry in PROGRESS.md.
+
 ## Execution Order for Phases 10–19
 
 Phases 10 through 19 execute in dependency order:

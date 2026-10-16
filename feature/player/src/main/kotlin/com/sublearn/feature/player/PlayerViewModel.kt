@@ -48,7 +48,6 @@ import com.sublearn.core.subtitles.SubtitleDocument
 import com.sublearn.core.subtitles.SubtitleFile
 import com.sublearn.core.subtitles.SubtitleLanguage
 import com.sublearn.core.subtitles.TrackRole
-import com.sublearn.core.translate.TranslationProgress
 import com.sublearn.core.translate.TranslationService
 import com.sublearn.core.translate.WordTranslation
 import kotlinx.coroutines.CancellationException
@@ -89,6 +88,8 @@ class PlayerViewModel(
     private val subtitles: com.sublearn.core.subtitles.SubtitleRepository,
     private val fileSource: SafSubtitleFileSource,
     private val translation: TranslationService,
+    /** The shared offline-model manager, so the player and the settings agree (D-81). */
+    private val translationModels: com.sublearn.core.translate.TranslationModelManager,
     private val myWords: MyWordsRepository,
     private val recentVideos: RecentVideoRepository,
     private val wordLevels: WordLevelSource,
@@ -1424,13 +1425,19 @@ class PlayerViewModel(
         }
     }
 
-    /** Downloads the missing ML Kit model; ML Kit reports no byte counts, so the status is coarse. */
+    /**
+     * Downloads the missing offline translation model.
+     *
+     * The download goes through the shared [TranslationModelManager], so the button in the popup,
+     * the one in the translation settings and the one in the downloads screen are the same
+     * download, and the state they show is the same state (D-81).
+     */
     fun downloadModel() {
         viewModelScope.launch {
             message(application.getString(R.string.translate_downloading))
-            translation.downloadModel { progress ->
-                if (progress.status == TranslationProgress.Status.RUNNING && progress.fraction > 0f) {
-                    message(application.getString(R.string.translate_downloading) + " " + (progress.fraction * PERCENT).toInt() + "%")
+            translationModels.download { fraction ->
+                if (fraction != null && fraction > 0f) {
+                    message(application.getString(R.string.translate_downloading) + " " + (fraction * PERCENT).toInt() + "%")
                 }
             }.fold(
                 onSuccess = {

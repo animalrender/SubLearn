@@ -66,6 +66,8 @@ jobs:
           # head SHA of the CI run is what has to be read and later released.
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           persist-credentials: false
+          # The tags decide the version: a shallow clone would name every release 3.0.0.
+          fetch-depth: 0
 
       - name: Look for the signing secret
         id: keystore
@@ -92,21 +94,13 @@ jobs:
           HAS_KEYSTORE: ${{ steps.keystore.outputs.present }}
         run: |
           set -euo pipefail
-          # Compute version from conventional commits (Phase 25)
-          last_tag=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || echo "")
-          version=""
+          # The version comes from one place (tools/next_version.py): the highest stable release
+          # plus one patch, with the repository's VERSION file as the floor. From v3.0.0 on, every
+          # merge to main is a release and the patch number goes up by one (D-82).
           if [ "$BRANCH" = "main" ]; then
-            # Try bump_version.py for conventional commit versioning
-            if [ -n "$last_tag" ]; then
-              version=$(python3 tools/bump_version.py --last-tag "$last_tag" 2>/dev/null || echo "")
-            fi
-            if [ -z "$version" ]; then
-              # Fallback: read from build.gradle.kts or use 0.1.0
-              version=$(sed -n 's/^[[:space:]]*versionName = "\([^"]*\)"/\1/p' app/build.gradle.kts | head -1)
-              version=${version:-0.1.0}
-            fi
+            version=$(python3 tools/next_version.py)
           else
-            # Dev channel: branch + short sha
+            # Dev channel: branch + short sha, the same string CI built the artifact with.
             shortsha=$(echo "$SHA" | head -c 7)
             version="0.0.0-dev-${BRANCH//\//-}+${shortsha}"
           fi
@@ -120,10 +114,15 @@ jobs:
           esac
 
           # Stable only on main, and only while `v<version>` does not exist yet: the first green run
-          # after a version bump releases it, every later run of the same version is a dev build.
+          # after a commit reaches main releases it, every later run of the same commit is a dev
+          # build. A commit that already carries a stable tag is never released a second time.
           channel=dev
           if [ "$BRANCH" = "main" ] && ! gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/v$version" >/dev/null 2>&1; then
-            channel=stable
+            already=$(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/v" --jq '.[].object.sha' 2>/dev/null \
+              | grep -Fx "$SHA" || true)
+            if [ -z "$already" ]; then
+              channel=stable
+            fi
           fi
 
           short="${SHA:0:7}"
@@ -203,11 +202,13 @@ jobs:
           persist-credentials: false
 
       - name: Take the APKs from the CI run that just passed
+        id: reuse
         if: needs.plan.outputs.mode == 'reuse'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           CI_RUN_ID: ${{ needs.plan.outputs.ci_run_id }}
+          VERSION: ${{ needs.plan.outputs.version }}
         run: |
           set -euo pipefail
           mkdir -p app/build/outputs/apk/release
@@ -218,30 +219,43 @@ jobs:
             exit 1
           fi
           ls -l app/build/outputs/apk/release
+          # The APKs are only published unchanged when they carry the version this release is
+          # about. CI writes the version it built into the artifact; if it is a different number
+          # (a release happened between the two runs), the build is redone here instead.
+          built=""
+          if [ -f app/build/outputs/apk/release/version.txt ]; then
+            built=$(tr -d '[:space:]' < app/build/outputs/apk/release/version.txt)
+          fi
+          if [ "$built" != "$VERSION" ]; then
+            echo "::warning::CI built version '$built' but this release is '$VERSION'; rebuilding"
+            echo "rebuild=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "rebuild=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Set up JDK 17
-        if: needs.plan.outputs.mode == 'build'
+        if: needs.plan.outputs.mode == 'build' || steps.reuse.outputs.rebuild == 'true'
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
           java-version: "17"
 
       - name: Set up Android SDK
-        if: needs.plan.outputs.mode == 'build'
+        if: needs.plan.outputs.mode == 'build' || steps.reuse.outputs.rebuild == 'true'
         uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
 
       - name: Install platform and build tools
-        if: needs.plan.outputs.mode == 'build'
+        if: needs.plan.outputs.mode == 'build' || steps.reuse.outputs.rebuild == 'true'
         run: yes | sdkmanager --licenses >/dev/null 2>&1 || true; sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle
-        if: needs.plan.outputs.mode == 'build'
+        if: needs.plan.outputs.mode == 'build' || steps.reuse.outputs.rebuild == 'true'
         uses: gradle/actions/setup-gradle@b9bee63ef481cc545e4517ec730544a4d8b1dfa0 # v6.4.0
         with:
           cache-read-only: true
 
       - name: Prepare the signing key
-        if: needs.plan.outputs.mode == 'build'
+        if: needs.plan.outputs.mode == 'build' || steps.reuse.outputs.rebuild == 'true'
         shell: bash
         env:
           KEYSTORE_BASE64: ${{ secrets.SUBLEARN_KEYSTORE_BASE64 }}
@@ -253,16 +267,18 @@ jobs:
           fi
 
       - name: Build the release APKs
-        if: needs.plan.outputs.mode == 'build'
+        if: needs.plan.outputs.mode == 'build' || steps.reuse.outputs.rebuild == 'true'
         shell: bash
         env:
           SUBLEARN_KEYSTORE_PASSWORD: ${{ secrets.SUBLEARN_KEYSTORE_PASSWORD }}
           SUBLEARN_KEY_ALIAS: ${{ secrets.SUBLEARN_KEY_ALIAS }}
           SUBLEARN_KEY_PASSWORD: ${{ secrets.SUBLEARN_KEY_PASSWORD }}
           SUBLEARN_VERSION_NAME: ${{ needs.plan.outputs.version }}
-          SUBLEARN_VERSION_CODE: ${{ github.run_number }}
         run: |
           set -o pipefail
+          # The APKs that came from the CI artifact are removed first, so a rebuild cannot leave a
+          # stale file of an older build in the set that is published.
+          rm -f app/build/outputs/apk/release/app-*-release.apk
           ./gradlew :app:assembleRelease --stacktrace --console=plain 2>&1 | tee "$RUNNER_TEMP/gradle.log"
 
       - name: Collect and name the APKs
@@ -394,7 +410,7 @@ jobs:
             done
 
       - name: Publish the failure report as a check run
-        if: failure() && needs.plan.outputs.mode == 'build'
+        if: failure() && (needs.plan.outputs.mode == 'build' || steps.reuse.outputs.rebuild == 'true')
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}

@@ -59,6 +59,120 @@ ASSET_BLOCK = re.compile(
 LAYOUT_VOCAB = re.compile(r'vocabularyFile\s*=\s*"(?P<name>[^"]+)"')
 LAYOUT_GATED = re.compile(r"requiresTermsAcceptance\s*=\s*true")
 
+# The catalog the app ships with. `docs/catalog/catalog-v2.json` is the published catalog and
+# `ModelCatalogParser.bundledDefault()` is the copy the downloads screen reads; when the two
+# disagree the app offers a download whose SHA-256 can never match (D-29).
+BUNDLED_FILE = os.path.join(
+    "core", "models", "src", "main", "kotlin", "com", "sublearn", "core", "models", "ModelCatalog.kt",
+)
+BUNDLED_ENTRY = re.compile(
+    r"ModelCatalogEntry\(\s*(?P<body>.*?)\n {12}\),",
+    re.DOTALL,
+)
+BUNDLED_FILEINFO = re.compile(
+    r"FileInfo\(\s*name\s*=\s*\"(?P<name>[^\"]+)\",\s*"
+    r"sizeBytes\s*=\s*(?P<size>[\d_]+)L,\s*"
+    r"(?:sha256\s*=\s*\"(?P<sha>[^\"]*)\",\s*)?",
+    re.DOTALL,
+)
+
+
+def parse_bundled_default(repo_root: str) -> dict[str, dict]:
+    """The `bundledDefault()` table from `ModelCatalog.kt`, as {id: {field: value}}."""
+    path = os.path.join(repo_root, BUNDLED_FILE)
+    if not os.path.exists(path):
+        raise SystemExit(f"error: {path} not found")
+    with open(path, encoding="utf-8") as handle:
+        text = handle.read()
+
+    entries: dict[str, dict] = {}
+    for block in BUNDLED_ENTRY.finditer(text):
+        body = block.group("body")
+        identifier = ID_FIELD.search(body)
+        if not identifier:
+            continue
+        size = SIZE_FIELD.search(body)
+        runtime = re.search(r"runtime\s*=\s*ModelRuntime\.(?P<value>[A-Z_]+)", body)
+        kind = re.search(r"kind\s*=\s*ModelKind\.(?P<value>[A-Z_]+)", body)
+        profile = re.search(r"profile\s*=\s*AccuracyProfile\.(?P<value>[A-Z_]+)", body)
+        ram = RAM_FIELD.search(body)
+        url = re.search(r"url\s*=\s*\"(?P<value>[^\"]+)\"", body)
+        sha = re.search(r"sha256\s*=\s*\"(?P<value>[^\"]+)\"", body)
+        entries[identifier.group("value")] = {
+            "kind": kind.group("value") if kind else None,
+            "sizeBytes": int(size.group("value").replace("_", "")) if size else None,
+            "sha256": sha.group("value") if sha else None,
+            "runtime": runtime.group("value") if runtime else None,
+            "minRamMb": int(ram.group("value")) if ram else None,
+            "profile": profile.group("value") if profile else None,
+            "url": url.group("value") if url else None,
+            "verified": bool(re.search(r"verified\s*=\s*true", body)),
+            "requiresTermsAcceptance": bool(re.search(r"requiresTermsAcceptance\s*=\s*true", body)),
+            "texts": {
+                field: (match.group("value") if match else None)
+                for field, match in (
+                    ("nameEn", re.search(r"nameEn\s*=\s*\"(?P<value>[^\"]*)\"", body)),
+                    ("nameFa", re.search(r"nameFa\s*=\s*\"(?P<value>[^\"]*)\"", body)),
+                    ("version", re.search(r"version\s*=\s*\"(?P<value>[^\"]*)\"", body)),
+                    ("direction", re.search(r"direction\s*=\s*\"(?P<value>[^\"]*)\"", body)),
+                    ("license", re.search(r"license\s*=\s*\"(?P<value>[^\"]*)\"", body)),
+                )
+            },
+            "notes": (re.search(r"notes\s*=\s*\"(?P<value>[^\"]*)\"", body).group("value")
+                      if re.search(r"notes\s*=\s*\"(?P<value>[^\"]*)\"", body) else None),
+            "files": [
+                {
+                    "name": item.group("name"),
+                    "sizeBytes": int(item.group("size").replace("_", "")),
+                    "sha256": item.group("sha"),
+                }
+                for item in BUNDLED_FILEINFO.finditer(body)
+            ],
+        }
+    return entries
+
+
+def check_bundled_default(catalog: dict, bundled: dict[str, dict]) -> list[str]:
+    """The app's own catalog must be the published catalog, field by field."""
+    problems: list[str] = []
+    entries = {entry["id"]: entry for entry in catalog.get("entries", [])}
+
+    for model_id, entry in sorted(entries.items()):
+        copy = bundled.get(model_id)
+        if copy is None:
+            problems.append(f"{model_id} is in the catalog but not in the app's bundled catalog")
+            continue
+        for field in ("sizeBytes", "sha256", "runtime", "minRamMb", "profile", "kind"):
+            if copy.get(field) != entry.get(field):
+                problems.append(
+                    f"{model_id} {field} differs: catalog {entry.get(field)} vs bundled {copy.get(field)}",
+                )
+        if copy.get("url") != entry.get("source", {}).get("url"):
+            problems.append(f"{model_id} download URL differs from the catalog")
+        if copy.get("verified") != bool(entry.get("verified")):
+            problems.append(f"{model_id} verified flag differs from the catalog")
+        if copy.get("requiresTermsAcceptance") != bool(entry.get("requiresTermsAcceptance")):
+            problems.append(f"{model_id} licence gate differs from the catalog")
+        for field, value in copy.get("texts", {}).items():
+            if value != entry.get(field):
+                problems.append(f"{model_id} {field} differs: catalog {entry.get(field)!r} vs bundled {value!r}")
+        if copy.get("notes") != entry.get("notes"):
+            problems.append(f"{model_id} notes differ from the catalog")
+        catalog_files = [
+            (item["name"], item.get("sizeBytes"), item.get("sha256"))
+            for item in (entry.get("files") or [])
+        ]
+        bundled_files = [
+            (item["name"], item["sizeBytes"], item["sha256"]) for item in copy.get("files", [])
+        ]
+        if catalog_files != bundled_files:
+            problems.append(f"{model_id} file list differs: catalog {catalog_files} vs bundled {bundled_files}")
+
+    for model_id in sorted(set(bundled) - set(entries)):
+        problems.append(f"{model_id} is in the app's bundled catalog but not in the published catalog")
+
+    return problems
+
 
 def parse_kotlin_layouts(repo_root: str) -> dict[str, dict]:
     """The file layout table from `ModelStore.kt`, as {id: {assets: [...], ...}}."""
@@ -195,6 +309,7 @@ def check(repo_root: str) -> list[str]:
     entries = {entry["id"]: entry for entry in catalog.get("entries", [])}
     models = parse_kotlin_models(repo_root)
     problems += check_layouts(catalog, parse_kotlin_layouts(repo_root))
+    problems += check_bundled_default(catalog, parse_bundled_default(repo_root))
 
     if not models:
         return ["no NlpModel declarations were found in NlpModelCatalog.kt"]

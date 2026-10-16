@@ -1,7 +1,9 @@
 package com.sublearn.core.models
 
-import com.sublearn.core.settings.AccuracyProfileToken
-import kotlinx.coroutines.runBlocking
+import com.sublearn.core.ai.DeviceCapabilities
+import com.sublearn.core.ai.ProfileAvailability
+import com.sublearn.core.ai.ProfileTier
+import com.sublearn.core.ai.SmartProfileSelector
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -28,21 +30,45 @@ class ModelCatalogTest {
     }
 
     @Test
-    fun `runtime guard downgrades profile when heap is below threshold or block throws`() = runBlocking {
-        val guardLowRam = ModelRuntimeGuard(availableHeapMbProvider = { 100 })
-        val report = guardLowRam.benchmark(AccuracyProfileToken.SMART_EXPERIMENTAL)
-        assertEquals(AccuracyProfileToken.LIGHT, report.recommendedProfile)
+    fun `profile advice is decided by the device and the installed models`() {
+        val tinyPhone = DeviceCapabilities(totalRamMb = 64, cpuCores = 2, batterySaver = true, freeStorageMb = 512)
+        val smallPhone = DeviceCapabilities(totalRamMb = 2048, cpuCores = 4, batterySaver = true, freeStorageMb = 512)
+        val bigPhone = DeviceCapabilities(totalRamMb = 8192, cpuCores = 8, batterySaver = false, freeStorageMb = 8192)
 
-        var downgradedTo: AccuracyProfileToken? = null
-        val res = guardLowRam.runGuarded(
-            profile = AccuracyProfileToken.PRECISE,
-            onDowngrade = { next, _ -> downgradedTo = next },
-            fallbackValue = { "fallback" },
-        ) {
-            throw OutOfMemoryError("simulated OOM")
-        }
-        assertEquals("fallback", res)
-        assertEquals(AccuracyProfileToken.BALANCED, downgradedTo)
+        // A profile that needs no model is always ready.
+        assertEquals(ProfileAvailability.Ready, SmartProfileSelector.availability(ProfileTier.BASIC, tinyPhone, emptySet()))
+
+        // The RAM floor is the device's memory, not the app's heap: a 64 MB phone is told the
+        // profile needs 128 MB of RAM, and 2 GB is enough.
+        assertEquals(
+            ProfileAvailability.NeedsRam(128),
+            SmartProfileSelector.availability(ProfileTier.BALANCED, tinyPhone, setOf("emb-potion-base-8m")),
+        )
+        assertEquals(
+            ProfileAvailability.Ready,
+            SmartProfileSelector.availability(ProfileTier.BALANCED, smallPhone, setOf("emb-potion-base-8m")),
+        )
+
+        // A model that is not on the device is named, so the screen can point at it.
+        assertEquals(
+            ProfileAvailability.NeedsModel("emb-potion-base-8m"),
+            SmartProfileSelector.availability(ProfileTier.BALANCED, bigPhone, emptySet()),
+        )
+
+        // A runtime this build does not have is reported, never pretended away.
+        val precise = SmartProfileSelector.availability(ProfileTier.PRECISE, bigPhone, setOf("emb-minilm-l6-int8"))
+        assertTrue(
+            "a missing runtime must be reported, got $precise",
+            precise is ProfileAvailability.RuntimeMissing || precise is ProfileAvailability.Ready,
+        )
+
+        // The automatic choice never promises a tier the device cannot hold: with 64 MB of RAM no
+        // model tier is possible, so the choice stays with the profiles that need no model.
+        val chosen = SmartProfileSelector.select(tinyPhone, setOf("emb-potion-base-8m"))
+        assertTrue("the automatic profile must stay within the device's reach, got $chosen", chosen <= ProfileTier.LIGHT)
+
+        // With the model on the device and room to hold it, the automatic choice reaches BALANCED.
+        assertEquals(ProfileTier.BALANCED, SmartProfileSelector.select(smallPhone, setOf("emb-potion-base-8m")))
     }
 
     @Test

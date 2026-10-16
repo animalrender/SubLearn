@@ -72,3 +72,56 @@ jobs:
                   with urllib.request.urlopen(req, timeout=20) as resp:
                       print(f"Verified asset {e['id']}: HTTP {resp.status}, Content-Length={resp.headers.get('Content-Length')}")
           EOF
+
+      - name: The catalog must describe the bytes that are actually published
+        # A pack whose SHA-256 in the catalog is not the digest of the published asset can never
+        # be installed: the downloader refuses it and the user only sees "SHA mismatched". The
+        # release API reports the digest of every asset, so the two are compared here instead of
+        # on the user's phone (§6.1).
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, re, sys, urllib.request
+
+          with open("docs/catalog/catalog-v2.json", "r", encoding="utf-8") as f:
+              data = json.load(f)
+
+          tag_re = re.compile(r"releases/download/(?P<tag>[^/]+)/(?P<name>[^/]+)$")
+          api = "https://api.github.com/repos/animalrender/SubLearn/releases/tags/{tag}"
+          headers = {
+              "User-Agent": "SubLearn-Catalog-Verifier",
+              "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
+              "Accept": "application/vnd.github+json",
+          }
+          problems = []
+          for entry in data["entries"]:
+              url = entry["source"]["url"]
+              match = tag_re.search(url)
+              if not match:
+                  continue
+              tag, name = match.group("tag"), match.group("name")
+              request = urllib.request.Request(api.format(tag=tag), headers=headers)
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  release = json.load(response)
+              assets = {asset["name"]: asset for asset in release.get("assets", [])}
+              asset = assets.get(name)
+              if asset is None:
+                  problems.append(f"{entry['id']}: {name} is not published in {tag}")
+                  continue
+              if asset["size"] != entry["sizeBytes"]:
+                  problems.append(
+                      f"{entry['id']}: catalog says {entry['sizeBytes']} bytes, the release has {asset['size']}"
+                  )
+              digest = (asset.get("digest") or "").removeprefix("sha256:")
+              if digest and digest != entry.get("sha256"):
+                  problems.append(f"{entry['id']}: catalog SHA-256 differs from the published asset")
+              print(f"{entry['id']}: {name} {asset['size']} bytes, digest matches the catalog")
+
+          if problems:
+              print("CATALOG ASSET CHECK FAILED:", file=sys.stderr)
+              for problem in problems:
+                  print(f"  - {problem}", file=sys.stderr)
+              sys.exit(1)
+          print("the catalog describes the published assets")
+          EOF

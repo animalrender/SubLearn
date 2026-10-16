@@ -46,6 +46,8 @@ python3 tools/check_deps.py                             # no module imports an A
                                                         # without a project() dependency
 python3 tools/check_resources.py core app feature       # aapt2 text rules: escapes, placeholders,
                                                         # duplicates, translations without a default
+python3 tools/check_workflows.py --repo-root .          # the workflows are valid YAML and their
+                                                        # run blocks are valid shell
 ```
 
 These are name and shape checks, **not** type checking. They will not catch a wrong argument type, a
@@ -53,6 +55,12 @@ non-exhaustive `when` or a missing `@Composable`. After writing code in a module
 symbols you assumed: enum entry names, data class field names and function arities in `core:*` are
 easy to get wrong from memory. Then push, watch `gh run watch`, and fix until green. Report honestly
 that local compilation was not possible.
+
+The release workflows have their own trap: a `run:` block whose indentation is broken is not a
+shell error, it is a **YAML** error, and a workflow with invalid YAML never runs at all — the
+release simply does not happen and there is no log to read. `tools/check_workflows.py` parses every
+workflow file and hands every `run:` block to `bash -n`, so that class of mistake fails the build
+instead of the release.
 
 Two routes exist beyond the static checks (both documented in `docs/AGENT_REQUESTS.md`, REQ-3):
 
@@ -64,16 +72,20 @@ Two routes exist beyond the static checks (both documented in `docs/AGENT_REQUES
   `gh api repos/<owner>/<repo>/commits/<sha>/check-runs` → `.output.text`. Do not loop on
   `gh run view --log` / `gh run download`; they fail here.
 
-Releases happen on their own (D-28). When CI goes green, `auto-release.yml` publishes the APKs CI
-just built: on `main` whose `versionName` has no tag yet it creates the stable release `v<version>`;
-any other green push (`main` at an already-released version, `phase/**`, `arena/**`) refreshes the
-rolling pre-release `dev-<branch>`, which is also how an agent gets an installable APK without
-reaching the artifact host. So **releasing is bumping `versionName` in `app/build.gradle.kts`, adding
-the matching `## [x.y.z]` section to `CHANGELOG.md`, and merging to `main`** — do not push tags by
-hand; `versionCode` is derived from the name. `release.yml` still builds a `v*` tag manually (one APK
+Releases happen on their own (D-28, D-82). When CI goes green, `auto-release.yml` publishes the
+APKs CI just built: on `main` it computes the next version with `tools/next_version.py` (the highest
+stable tag, plus a patch, floored by the `VERSION` file) and creates the stable release `v<version>`
+when that tag is free and the commit has no stable tag yet; any other green push (`main` at an
+already-released version, `phase/**`, `arena/**`) refreshes the rolling pre-release `dev-<branch>`,
+which is also how an agent gets an installable APK without reaching the artifact host. So
+**releasing is merging to `main`** — the version is computed, the tag is created and the APK is
+attached. Do not push tags by hand; `versionCode` is derived from the name (`3.0.0` → `30000`).
+`VERSION` holds the floor for the next release and is the only file a human has to touch when a
+release has to carry a different number. `release.yml` still builds a `v*` tag manually (one APK
 per ABI plus universal, R8 shrink without obfuscation, debug-signed unless the `SUBLEARN_KEYSTORE_*`
-secrets exist, in which case `auto-release.yml` rebuilds and signs too). See D-21 and D-28. Pipeline
-changes only take effect once they are on `main`: `workflow_run` always runs the default-branch copy.
+secrets exist, in which case `auto-release.yml` rebuilds and signs too). See D-21, D-28 and D-82.
+Pipeline changes only take effect once they are on `main`: `workflow_run` always runs the
+default-branch copy.
 
 ## Module map and boundaries
 
@@ -84,12 +96,12 @@ core:subtitles      parsers (SRT/VTT/ASS), SubtitleFormat, normalizer, blocks, c
 core:settings       AppSettings (typed, @Serializable, versioned), SettingsRepository, DataStore — no Compose
 core:designsystem   tokens, motion, typography, theme, SubtitleBackdrop, BadgePill, ALL UI strings
 core:player         PlayerController interface + Media3 impl + FakePlayerController
-core:translate      ML Kit wrapper, model download state, cache
+core:translate      ML Kit wrapper, TranslationModelManager (one state for the offline model), cache
 core:ai             AiProvider interface (Gemini/OpenAI/Anthropic/custom), prompt builder, answer parser
 core:security       Keystore-backed SecretStore
 core:lexicon        WordLevelSource, FrequencyListImporter, LexiconV2 types
 core:nlp            pure Kotlin: PhraseSpan, Lemmatiser, PatternCompiler, PhraseDetector, SenseRanker
-core:models         ModelCatalog, ModelKind, download/verify interfaces
+core:models         ModelCatalog, ModelKind, download/verify interfaces, DeviceCapabilityReader
 core:nlp-onnx       ONNX Runtime wrapper, WordPiece tokenizer (Android)
 core:nlp-llm        LLM adapter for on-device selection (Android)
 core:data           Room database: My Words, recent videos, translation cache
@@ -100,7 +112,7 @@ Rules that keep those boundaries:
 
 - A feature depends on `core:*` only. Shared UI code goes to `core:designsystem`, shared logic to the
   owning `core:*` module.
-- Only `core:designsystem` owns `strings.xml` (`values/` + `values-fa/`, 472 keys, kept in sync by
+- Only `core:designsystem` owns `strings.xml` (`values/` + `values-fa/`, 624 keys, kept in sync by
   hand and by CI review). Features import `com.sublearn.core.designsystem.R`.
 - `core:settings` and `core:subtitles`/`core:lexicon`/`core:common` have **no Compose dependency**;
   keep them JVM-testable.

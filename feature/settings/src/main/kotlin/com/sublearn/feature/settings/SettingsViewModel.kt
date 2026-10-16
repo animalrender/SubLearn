@@ -7,10 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sublearn.core.ai.AiAssistant
 import com.sublearn.core.ai.AiRequest
-import com.sublearn.core.ai.NlpModelCatalog
-import com.sublearn.core.ai.NlpModelInstaller
-import com.sublearn.core.ai.NlpModelProgress
-import com.sublearn.core.data.MyWordsRepository
+import com.sublearn.core.designsystem.R
 import com.sublearn.core.lexicon.FrequencyListFormat
 import com.sublearn.core.lexicon.FrequencyListImporter
 import com.sublearn.core.lexicon.WordLevelSource
@@ -20,14 +17,13 @@ import com.sublearn.core.settings.AiProviderToken
 import com.sublearn.core.settings.ImportMode
 import com.sublearn.core.settings.ImportReport
 import com.sublearn.core.settings.SettingsRepository
-import com.sublearn.core.translate.MlKitModelInstaller
+import com.sublearn.core.translate.TranslationModelManager
+import com.sublearn.core.translate.TranslationModelState
 import com.sublearn.core.translate.TranslationService
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * Everything the settings screens do beyond reading and writing the tree: importing a word list,
@@ -45,8 +41,7 @@ class SettingsViewModel(
     private val secrets: SecretStore,
     private val ai: AiAssistant,
     private val context: Context,
-    private val mlKitInstaller: MlKitModelInstaller,
-    private val modelInstaller: NlpModelInstaller,
+    private val translationModels: TranslationModelManager,
 ) : ViewModel() {
     val settings: StateFlow<AppSettings> = settingsRepository.settings
 
@@ -60,115 +55,54 @@ class SettingsViewModel(
     val modelProgress: StateFlow<Float?> = _modelProgress.asStateFlow()
 
     /**
-     * State of the manually installed ML Kit translation model (§3.1), independent of the
-     * SDK-managed download shown on the Translation screen.
+     * The offline translation model.
+     *
+     * The state comes from the shared [TranslationModelManager], so the translation screen, the
+     * downloads screen and the player always show the same thing: one model, one download, one
+     * state (D-81).
      */
-    private val _mlKitState = MutableStateFlow<MlKitModelInstaller.InstallState>(
-        if (mlKitInstaller.isInstalled(MlKitModelInstaller.EN_FA_METADATA.pair)) {
-            MlKitModelInstaller.InstallState.Installed
-        } else {
-            MlKitModelInstaller.InstallState.NotInstalled
-        },
-    )
-    val mlKitState: StateFlow<MlKitModelInstaller.InstallState> = _mlKitState.asStateFlow()
+    val translationModelState: StateFlow<TranslationModelState> = translationModels.state
 
-    /** Download and install the EN↔FA ML Kit model from Google's CDN (§3.1). */
-    fun installMlKitModel() {
+    /** Download the offline translation model; the same action the player offers. */
+    fun downloadTranslationModel() {
         viewModelScope.launch {
-            mlKitInstaller.install(MlKitModelInstaller.EN_FA_METADATA) { state ->
-                _mlKitState.value = state
-            }.fold(
-                onSuccess = { _status.value = SettingsStatus.Info("the translation model is installed") },
+            _modelProgress.value = null
+            translationModels.download { fraction -> _modelProgress.value = fraction }.fold(
+                onSuccess = {
+                    _modelProgress.value = null
+                    _status.value = SettingsStatus.Info(context.getString(R.string.downloads_translation_installed))
+                },
                 onFailure = { error ->
-                    _mlKitState.value = MlKitModelInstaller.InstallState.Error(
-                        error.message ?: "the download failed",
+                    _modelProgress.value = null
+                    _status.value = SettingsStatus.Error(
+                        context.getString(R.string.downloads_translation_failed, error.message.orEmpty()),
                     )
-                    _status.value = SettingsStatus.Error(error.message ?: "the download failed")
+                },
+            )
+        }
+    }
+
+    /** Remove the offline translation model from the device. */
+    fun removeTranslationModel() {
+        viewModelScope.launch {
+            translationModels.remove().fold(
+                onSuccess = { _status.value = SettingsStatus.Info(context.getString(R.string.downloads_translation_removed)) },
+                onFailure = { error ->
+                    _status.value = SettingsStatus.Error(
+                        context.getString(R.string.downloads_translation_failed, error.message.orEmpty()),
+                    )
                 },
             )
         }
     }
 
     /**
-     * The six optional accuracy models (Phase 23), each with the state the settings card shows.
+     * The accuracy models live in the downloads screen now.
      *
-     * The list is rebuilt from the catalog and the filesystem, never from a cached copy of the
-     * settings tree: a model deleted from another screen or by the system's storage cleaner
-     * disappears from here on the next read, which is what the user expects.
+     * They used to be managed here *and* in the library screen, which is how the same model ended
+     * up listed twice with two different sizes. One screen owns them: `DownloadsViewModel`
+     * (D-81).
      */
-    private val _nlpModels = MutableStateFlow(nlpModelRows())
-    val nlpModels: StateFlow<List<NlpModelRow>> = _nlpModels.asStateFlow()
-
-    /** Download and install one accuracy model, reporting progress as it arrives. */
-    fun installNlpModel(modelId: String) {
-        viewModelScope.launch {
-            val name = NlpModelCatalog.byId[modelId]?.name ?: modelId
-            setNlpState(modelId) { NlpModelState.Downloading(null) }
-
-            val result = withContext(Dispatchers.IO) {
-                modelInstaller.install(modelId) { progress -> setNlpState(modelId) { NlpModelState.Downloading(progress) } }
-            }
-
-            result.fold(
-                onSuccess = {
-                    _nlpModels.value = nlpModelRows()
-                    _status.value = SettingsStatus.Info("$name is installed")
-                },
-                onFailure = { error ->
-                    val message = error.message ?: "the model could not be installed"
-                    setNlpState(modelId) { NlpModelState.Error(message) }
-                    _status.value = SettingsStatus.Error(message)
-                },
-            )
-        }
-    }
-
-    /** Remove one accuracy model from the device. */
-    fun deleteNlpModel(modelId: String) {
-        viewModelScope.launch {
-            val name = NlpModelCatalog.byId[modelId]?.name ?: modelId
-            val removed = withContext(Dispatchers.IO) { modelInstaller.delete(modelId) }
-            _nlpModels.value = nlpModelRows()
-            _status.value = if (removed) {
-                SettingsStatus.Info("$name was removed")
-            } else {
-                SettingsStatus.Error("$name could not be removed")
-            }
-        }
-    }
-
-    /** Read every model's state from the filesystem, so the cards never show a stale value. */
-    private fun nlpModelRows(): List<NlpModelRow> = modelInstaller.availableModels().map { model ->
-        val state = if (modelInstaller.isInstalled(model.id)) {
-            NlpModelState.Installed(modelInstaller.installedBytes(model.id))
-        } else {
-            NlpModelState.Available
-        }
-        NlpModelRow(model, state)
-    }
-
-    /** Replace one card's state while a download runs, leaving every other row untouched. */
-    private fun setNlpState(modelId: String, transform: (NlpModelState) -> NlpModelState) {
-        _nlpModels.value = _nlpModels.value.map { row ->
-            if (row.model.id == modelId) row.copy(state = transform(row.state)) else row
-        }
-    }
-
-    /** Remove the manually installed model copy. */
-    fun deleteMlKitModel() {
-        viewModelScope.launch {
-            mlKitInstaller.delete(MlKitModelInstaller.EN_FA_METADATA.pair).fold(
-                onSuccess = {
-                    _mlKitState.value = MlKitModelInstaller.InstallState.NotInstalled
-                    _status.value = SettingsStatus.Info("the translation model was removed")
-                },
-                onFailure = { error ->
-                    _status.value = SettingsStatus.Error(error.message ?: "the model could not be removed")
-                },
-            )
-        }
-    }
-
     sealed interface SettingsStatus {
         data object Idle : SettingsStatus
         data class Info(val text: String) : SettingsStatus
@@ -267,24 +201,6 @@ class SettingsViewModel(
             _status.value = SettingsStatus.Info("the translation cache is empty")
         }
     }
-
-    fun downloadModel() {
-        viewModelScope.launch {
-            _modelProgress.value = 0f
-            translation.downloadModel { progress -> _modelProgress.value = progress.fraction }.fold(
-                onSuccess = {
-                    _modelProgress.value = null
-                    _status.value = SettingsStatus.Info("the model is ready")
-                },
-                onFailure = { error ->
-                    _modelProgress.value = null
-                    _status.value = SettingsStatus.Error(error.message ?: "the download failed")
-                },
-            )
-        }
-    }
-
-    suspend fun modelReady(): Boolean = runCatching { translation.isModelReady() }.getOrDefault(false)
 
     // ---------------------------------------------------------------- import / export (SET-6)
 

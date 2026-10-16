@@ -61,9 +61,13 @@ jobs:
             *) echo "tag must look like v0.1.0, got '$tag'"; exit 1 ;;
           esac
           version="${tag#v}"
-          declared=$(sed -n 's/^[[:space:]]*versionName = "\([^"]*\)"/\1/p' app/build.gradle.kts | head -1)
-          if [ "$declared" != "$version" ]; then
-            echo "versionName in app/build.gradle.kts is '$declared' but the tag says '$version'"
+          # The `VERSION` file is the floor the release pipeline works from, not the exact next
+          # number: a hand-made tag may be any version at or above it.
+          declared=$(tr -d '[:space:]' < VERSION)
+          # One line on purpose: a multi-line `python3 -c "..."` inside this block scalar would
+          # break the indentation of the YAML, and a broken workflow file never runs.
+          if ! python3 -c 'import sys; floor = tuple(int(p) for p in sys.argv[1].split(".")); tag = tuple(int(p) for p in sys.argv[2].split(".")); sys.exit(0 if tag >= floor else 1)' "$declared" "$version"; then
+            echo "the VERSION file says '$declared' but the tag says '$version'"
             exit 1
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
@@ -111,6 +115,8 @@ jobs:
           SUBLEARN_KEYSTORE_PASSWORD: ${{ secrets.SUBLEARN_KEYSTORE_PASSWORD }}
           SUBLEARN_KEY_ALIAS: ${{ secrets.SUBLEARN_KEY_ALIAS }}
           SUBLEARN_KEY_PASSWORD: ${{ secrets.SUBLEARN_KEY_PASSWORD }}
+          # The APK has to carry the version of the tag, not the floor the pipeline starts from.
+          SUBLEARN_VERSION_NAME: ${{ steps.meta.outputs.version }}
         run: |
           set -o pipefail
           ./gradlew :app:assembleRelease --stacktrace --console=plain 2>&1 | tee "$RUNNER_TEMP/gradle.log"
