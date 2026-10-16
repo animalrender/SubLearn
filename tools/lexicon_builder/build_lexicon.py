@@ -472,6 +472,15 @@ LEADING_PREPOSITIONS = {
     "under", "over", "about", "after", "before", "between", "against", "across", "among",
 }
 
+# The keys the pack validator asserts on. The build records what the rules decided for each of
+# them, because a rule that reads the wrong data is otherwise invisible: the pack only shows the
+# resulting kind and prior. Printed in the build log as `quality_audit <key>: ...`.
+QUALITY_AUDIT_KEYS = (
+    "at that", "the way", "a lot", "in truth", "the swedish",
+    "go to", "come to", "going to", "get to",
+    "give up", "make a decision", "look forward to", "keep an eye on",
+)
+
 # Verbs of motion or linking. "to" after one of these is the infinitive marker or a
 # preposition, not a particle: "I go to school" is not a phrasal verb (§2.3 rule 4).
 MOTION_LINKING_VERBS = {"go", "come", "get", "turn", "lead", "switch", "amount"}
@@ -1272,6 +1281,15 @@ def build_report_lines(report: dict, direction: str) -> list[str]:
             lines.append(f"  {key}: {value:,}")
         else:
             lines.append(f"  {key}: {value}")
+
+    audit = report.get("quality_audit") or {}
+    for key in sorted(audit):
+        info = audit[key]
+        lines.append(
+            f"  quality_audit {key}: kind={info['kind']} prior={info['prior']} "
+            f"reason={info['reason']} idioms={info['idioms']} codes={info['codes']} "
+            f"tokens=[{info['tokens']}]"
+        )
     return lines
 
 
@@ -1417,6 +1435,7 @@ def build_lexicon(
     }
     rejected_samples = []
     demotion_samples = {}
+    quality_audit = {}
 
     # 0. Load category_names from DB (all 82 categories) + fallback
     cat_map: dict[int, tuple[str, str]] = dict(CATEGORIES_FALLBACK)
@@ -1693,6 +1712,21 @@ def build_lexicon(
             in_idioms=in_idioms,
             all_pos_codes=all_pos_codes,
         )
+
+        # What the rules saw, for the keys the validator has an opinion about. A wrong reading of
+        # the source data shows up nowhere else: the pack keeps only the resulting kind and prior.
+        if key in QUALITY_AUDIT_KEYS:
+            quality_audit[key] = {
+                "kind": kind,
+                "prior": round(float(entry_prior), 3),
+                "reason": demotion_reason or "none",
+                "idioms": in_idioms,
+                "codes": sorted(all_pos_codes),
+                "tokens": " | ".join(
+                    f"{tok}: {{{', '.join(sorted(tags)) or 'no tags'}}}/lemma={token_lemmas[i]}"
+                    for i, (tok, tags) in enumerate(zip(tokens, token_tags))
+                ),
+            }
 
         # Track demotions for the build report
         if demotion_reason:
@@ -2011,6 +2045,7 @@ def build_lexicon(
         "stats": stats,
         "rejected_samples": rejected_samples,
         "demotion_samples": demotion_samples,
+        "quality_audit": quality_audit,
     }
 
 

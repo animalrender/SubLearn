@@ -95,7 +95,9 @@ jobs:
           # One annotation per line, because an annotation carries a single line and the validator's
           # headline ("VALIDATION FAILED (5 errors)") says nothing on its own: the reasons follow it
           # as "  - <reason>" lines, which is why the bullet pattern is part of the filter.
-          PATTERN='error|fail|traceback|exception|assert|^[[:space:]]*-[[:space:]]'
+          # `quality_audit` lines are what the builder's demotion rules decided for the keys the
+          # validator checks; without them a misread rule is invisible in the pack.
+          PATTERN='error|fail|traceback|exception|assert|quality_audit|^[[:space:]]*-[[:space:]]'
           LOGS="/tmp/build_en_fa.log /tmp/build_fa_en.log /tmp/validate_en_fa.log /tmp/validate_fa_en.log"
           reported=0
           for log in $LOGS; do
