@@ -33,7 +33,8 @@ phase: the listed deliverables exist on the real code path, CI is green, `docs/C
 
 Settings dependency wiring, a settings-owned resource library, a Coming soon-only Learn tab, passive
 above-level player cards and no-dot tracks are implemented on `arena/89bec83d-sublearn`.
-Static checks pass; compilation/unit tests and the on-device RTL/animation pass remain pending.
+Static checks, Debug/Release assembly, unit tests, lint and instrumented-source compilation passed in
+CI run 38923376453 (`a65db3e`); the on-device RTL/animation pass remains pending.
 This pass corrects earlier completion claims for the automatic-card rendering path, which was absent.
 See D-78..D-80 and the current entry in PROGRESS.md.
 

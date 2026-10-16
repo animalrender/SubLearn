@@ -140,4 +140,5 @@ TODO comment; each entry has a route to being fixed.
     words are intentionally omitted; with the Manual provider all unlisted words equal the chosen
     level, so import a CEFR list or use My Words for fallback hints. The compact corner bounds and
     reduced-motion animations need phone verification in portrait/landscape and EN/FA. The production
-    settings graph and selection tests are added but require CI; no local Android toolchain exists.
+    settings graph and seven selection tests pass in CI run 38923376453 (`a65db3e`); the instrumented
+    visibility/overlap tests compile but have not executed. No local Android toolchain exists.
