@@ -217,6 +217,28 @@ class ModelDownloaderTest {
     }
 
     @Test
+    fun `a progress callback that throws deletes the partial file and propagates`() {
+        val payload = ByteArray(500_000) { 7 }
+        serve("/stopped.bin", payload)
+
+        var chunks = 0
+        val downloader = ModelDownloader(bufferSize = 8 * 1024)
+        val thrown = runCatching {
+            downloader.download(planFor("/stopped.bin")) { _ ->
+                // The Downloads screen's stop button cancels the coroutine, and `ensureActive`
+                // throws from inside this callback.
+                if (++chunks > 2) throw IllegalStateException("stopped by the user")
+            }
+        }.exceptionOrNull()
+
+        assertTrue("the caller's exception must reach the caller", thrown is IllegalStateException)
+        assertFalse(
+            "a stopped download must not be left on disk",
+            File(File(root, "minilm-l6-int8"), "download.part").exists(),
+        )
+    }
+
+    @Test
     fun `an empty URL list is a configuration failure`() {
         val result = ModelDownloader().download(
             DownloadPlan(urls = emptyList(), expectedSha256 = "", targetDirectory = File(root, "x")),

@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sublearn.core.ai.NlpModelCatalog
+import com.sublearn.core.ai.ModelFileLayout
 import com.sublearn.core.ai.NlpModelInstaller
+import com.sublearn.core.ai.NlpModelSelfTest
 import com.sublearn.core.ai.ProfileAvailability
 import com.sublearn.core.ai.ProfileTier
 import com.sublearn.core.ai.SmartProfileSelector
@@ -13,6 +15,7 @@ import com.sublearn.core.data.InstalledPackRepository
 import com.sublearn.core.designsystem.R
 import com.sublearn.core.lexicon.LegacyV1Importer
 import com.sublearn.core.lexicon.PackImporter
+import com.sublearn.core.lexicon.PackKind
 import com.sublearn.core.lexicon.PackLexiconAccess
 import com.sublearn.core.models.DeviceCapabilityReader
 import com.sublearn.core.models.ModelCatalogEntry
@@ -25,15 +28,20 @@ import com.sublearn.core.settings.AppSettings
 import com.sublearn.core.settings.SettingsRepository
 import com.sublearn.core.translate.TranslationModelManager
 import com.sublearn.core.translate.TranslationModelState
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Everything the Downloads screen shows: the offline translation model, the offline lexicon
@@ -51,6 +59,7 @@ import java.io.File
  * @property downloader fetches the pack files from the release
  * @property lexiconAccess the open lexicon, reloaded after a pack changes
  * @property modelInstaller downloads and removes the optional accuracy models
+ * @property modelSelfTest opens an installed accuracy model and runs one probe through it (D-86)
  * @property translationModels the offline translation model, shared with the whole app
  * @property deviceCapabilities what the phone can do, for the profile advice
  * @property context used to resolve the status messages
@@ -63,6 +72,7 @@ class DownloadsViewModel(
     private val downloader: PackDownloader,
     private val lexiconAccess: PackLexiconAccess,
     private val modelInstaller: NlpModelInstaller,
+    private val modelSelfTest: NlpModelSelfTest,
     private val translationModels: TranslationModelManager,
     private val deviceCapabilities: DeviceCapabilityReader,
     private val context: Context,
@@ -96,6 +106,27 @@ class DownloadsViewModel(
     private val _statusMessage = MutableStateFlow<String?>(null)
     val statusMessage: StateFlow<String?> = _statusMessage.asStateFlow()
 
+    /**
+     * Catalog entries whose file has arrived and is being imported into the database. The
+     * downloader's own state says COMPLETED at that point, and a card that says "installed" while
+     * the import is still writing is the kind of early success AGENTS.md forbids.
+     */
+    private val _importingEntries = MutableStateFlow<Set<String>>(emptySet())
+    val importingEntries: StateFlow<Set<String>> = _importingEntries.asStateFlow()
+
+    /** The self-test of one accuracy model: running, or its report (D-86). */
+    private val _selfTest = MutableStateFlow<SelfTestUi?>(null)
+    val selfTest: StateFlow<SelfTestUi?> = _selfTest.asStateFlow()
+
+    /**
+     * The running download of each catalog entry, so the stop button can cancel it. Concurrent
+     * because a job's completion handler runs on whichever thread finished it.
+     */
+    private val packJobs = ConcurrentHashMap<String, Job>()
+
+    /** The running install of each accuracy model, so the stop button can cancel it. */
+    private val nlpJobs = ConcurrentHashMap<String, Job>()
+
     /** What each accuracy profile needs before it can run on this device. */
     private val _profileAvailability = MutableStateFlow<Map<AccuracyProfileToken, ProfileAvailability>>(emptyMap())
     val profileAvailability: StateFlow<Map<AccuracyProfileToken, ProfileAvailability>> = _profileAvailability.asStateFlow()
@@ -110,6 +141,35 @@ class DownloadsViewModel(
 
     /** The size of the translation model download, when the pair's size is known. */
     fun translationModelSize(): Long? = translationModels.downloadSizeBytes()
+
+    /** The user dismissed the status line. */
+    fun clearStatus() {
+        _statusMessage.value = null
+    }
+
+    /** The files an accuracy model is made of, with their URLs, for the details dialog. */
+    fun modelLayout(modelId: String): ModelFileLayout? = modelInstaller.layoutFor(modelId)
+
+    /** The user closed the self-test dialog. */
+    fun dismissSelfTest() {
+        if (_selfTest.value is SelfTestUi.Done) _selfTest.value = null
+    }
+
+    /**
+     * The installed pack a catalog entry corresponds to, if any.
+     *
+     * Catalog ids and installed pack ids are different namespaces (the catalog names a release
+     * file, the pack's own metadata names the pack), so the match is by kind: one lexicon pack and
+     * one Persian→English dictionary are all the catalog offers.
+     */
+    fun installedPackFor(entry: ModelCatalogEntry, installed: List<InstalledPackEntity>): InstalledPackEntity? {
+        val kind = when (entry.kind) {
+            ModelKind.LEXICON -> PackKind.LEXICON_EN_FA
+            ModelKind.DICT_FA_EN -> PackKind.DICT_FA_EN
+            else -> return null
+        }
+        return installed.firstOrNull { it.kind == kind.id }
+    }
 
     init {
         viewModelScope.launch {
@@ -165,14 +225,32 @@ class DownloadsViewModel(
 
     // ---------------------------------------------------------------- the accuracy models
 
-    /** Download and install one accuracy model, reporting progress as it arrives. */
+    /**
+     * Download and install one accuracy model, reporting progress as it arrives.
+     *
+     * The job is kept so [cancelNlpModel] can stop it. The installer runs on IO and reports
+     * through a callback; `ensureActive` inside that callback is how a cancel reaches a blocking
+     * download, and the installer deletes the half-written directory on the way out.
+     */
     fun installNlpModel(modelId: String) {
-        viewModelScope.launch {
-            val name = NlpModelCatalog.byId[modelId]?.name ?: modelId
+        if (nlpJobs[modelId]?.isActive == true) return
+        val name = NlpModelCatalog.byId[modelId]?.name ?: modelId
+        val job = viewModelScope.launch {
             setNlpState(modelId) { NlpModelState.Downloading(null) }
-
-            val result = withContext(Dispatchers.IO) {
-                modelInstaller.install(modelId) { progress -> setNlpState(modelId) { NlpModelState.Downloading(progress) } }
+            val result = try {
+                withContext(Dispatchers.IO) {
+                    // The callback is not suspending, so the context is captured here and checked
+                    // there; cancelling the job throws out of the installer on the next chunk.
+                    val downloadContext = coroutineContext
+                    modelInstaller.install(modelId) { progress ->
+                        downloadContext.ensureActive()
+                        setNlpState(modelId) { NlpModelState.Downloading(progress) }
+                    }
+                }
+            } catch (cancelled: CancellationException) {
+                setNlpState(modelId) { NlpModelState.Available }
+                _statusMessage.value = context.getString(R.string.downloads_model_stopped, name)
+                throw cancelled
             }
 
             result.fold(
@@ -190,6 +268,31 @@ class DownloadsViewModel(
                     )
                 },
             )
+        }
+        nlpJobs[modelId] = job
+        job.invokeOnCompletion { if (nlpJobs[modelId] === job) nlpJobs.remove(modelId) }
+    }
+
+    /** Stop a running accuracy-model download; the partial files are removed. */
+    fun cancelNlpModel(modelId: String) {
+        nlpJobs[modelId]?.cancel()
+    }
+
+    /**
+     * Open an installed accuracy model and run one probe through it (D-86).
+     *
+     * The run happens on the default dispatcher, not Main: loading an ONNX session or a LiteRT
+     * model takes seconds and the dialog has to keep drawing its spinner. Only one test runs at a
+     * time; the loaders own native memory and two at once is the out-of-memory case the test is
+     * meant to catch, not cause.
+     */
+    fun testNlpModel(modelId: String) {
+        if (_selfTest.value is SelfTestUi.Running) return
+        val name = NlpModelCatalog.byId[modelId]?.name ?: modelId
+        viewModelScope.launch {
+            _selfTest.value = SelfTestUi.Running(modelId, name)
+            val report = withContext(Dispatchers.Default) { modelSelfTest.run(modelId) }
+            _selfTest.value = SelfTestUi.Done(name, report)
         }
     }
 
@@ -342,15 +445,30 @@ class DownloadsViewModel(
         }
     }
 
-    /** Downloads a pack from the release and imports it. */
+    /**
+     * Downloads a pack from the release and imports it. Resumes a stopped download from its
+     * partial file; the downloader keeps the `.part` on cancel for exactly that.
+     */
     fun downloadCatalogEntry(entry: ModelCatalogEntry) {
+        if (packJobs[entry.id]?.isActive == true) return
         val dl = downloader
-        viewModelScope.launch {
-            val res = dl.download(entry)
+        val job = viewModelScope.launch {
+            val res = try {
+                dl.download(entry)
+            } catch (cancelled: CancellationException) {
+                // The downloader has already marked the entry PAUSED and kept the partial file.
+                _statusMessage.value = context.getString(R.string.downloads_pack_stopped, entry.nameEn)
+                throw cancelled
+            }
             val downloadedFile = res.getOrNull()
             if (downloadedFile != null) {
                 if (entry.kind == ModelKind.LEXICON || entry.kind == ModelKind.DICT_FA_EN) {
-                    val imported = packImporter.importFile(downloadedFile)
+                    _importingEntries.update { it + entry.id }
+                    val imported = try {
+                        packImporter.importFile(downloadedFile)
+                    } finally {
+                        _importingEntries.update { it - entry.id }
+                    }
                     if (imported.getOrNull() == null) {
                         _statusMessage.value = imported.errorOrNull()?.message
                         return@launch
@@ -362,6 +480,13 @@ class DownloadsViewModel(
                 _statusMessage.value = res.errorOrNull()?.message
             }
         }
+        packJobs[entry.id] = job
+        job.invokeOnCompletion { if (packJobs[entry.id] === job) packJobs.remove(entry.id) }
+    }
+
+    /** Stop a running pack download. The partial file stays, and "Resume" continues it. */
+    fun cancelCatalogDownload(entry: ModelCatalogEntry) {
+        packJobs[entry.id]?.cancel()
     }
 
     private fun update(transform: (AppSettings) -> AppSettings) {

@@ -66,7 +66,7 @@ fun SettingsScreen(
     val status by viewModel.status.collectAsStateWithLifecycle()
     var section by rememberSaveable(startSection) { mutableStateOf(startSection) }
     var query by rememberSaveable { mutableStateOf("") }
-    BackHandler(section != "root") { section = if (section == "prompt") "ai" else "root" }
+    BackHandler(section != "root") { section = section.settingsParent() }
 
     // Use WindowInsets(0) to avoid double-insets when nested inside the app-level Scaffold (§4.3)
     Scaffold(
@@ -80,7 +80,7 @@ fun SettingsScreen(
                     // One step back: a section returns to the list, the list leaves settings. The
                     // arrow says both, so there is no second icon to keep in step.
                     val atRoot = section == "root"
-                    IconButton(onClick = { if (atRoot) onBack() else section = "root" }) {
+                    IconButton(onClick = { if (atRoot) onBack() else section = section.settingsParent() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.action_back),
@@ -118,7 +118,8 @@ fun SettingsScreen(
                             ActionRow(stringResource(R.string.words_title), onClick = onOpenWords, showArrow = true)
                         }
                     }
-                    "downloads" -> DownloadsSection()
+                    "downloads" -> DownloadsSection(onOpenLab = { section = "lab" })
+                    "lab" -> LabSection()
                     "translation" -> TranslationSection(settings, viewModel, onOpenDownloads = { section = "downloads" })
                     "ai" -> AiSection(settings, viewModel, onOpenPrompt = { section = "prompt" })
                     "dictionary" -> DictionarySection(settings, viewModel)

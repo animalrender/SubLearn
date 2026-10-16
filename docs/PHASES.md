@@ -61,6 +61,22 @@ mismatched" pack download and the profiles that do nothing is answered by one pa
 The phase statuses above are not changed by this pass; it corrects what the earlier phases claimed
 to deliver. See D-81..D-83 and the current entry in PROGRESS.md.
 
+## 2026-10-16 corrective pass (phases 2, 15 and 18)
+
+The owner's follow-up on the same day — the Downloads screen's layout, the player's orientation and
+pausing, the drawer width, the exact file name, the download sources, stopping downloads, testing a
+model, and a sandbox for packs and profiles — is answered on `arena/6da9d669-sublearn`:
+
+- **Phase 2 → the player opens in landscape, flips with the device under a system rotation lock,
+  and pauses when left or when the audio route changes** (D-84, D-85).
+- **Phase 18 → one card for every download, with Stop, Resume, full URLs and a Test button**
+  (D-86, D-87).
+- **Phase 15 → the subtitle lab** runs the profile engine on a real subtitle and shows what it
+  costs, which is the measurement the profile advice was waiting for (D-87).
+
+The phase statuses above are not changed by this pass. See D-84..D-87 and the current entry in
+PROGRESS.md.
+
 ## Execution Order for Phases 10–19
 
 Phases 10 through 19 execute in dependency order:

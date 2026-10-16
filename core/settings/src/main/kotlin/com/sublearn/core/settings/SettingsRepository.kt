@@ -13,6 +13,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -127,7 +128,22 @@ object SettingsMigrator {
         2 to { it },
         3 to { it },
         4 to ::migrateV3ToV4,
+        5 to ::migrateV4ToV5,
     )
+
+    /**
+     * v5: the player opens in landscape by default (D-85). Installs that never chose an
+     * orientation carry `AUTO` only because that was the old default, so `AUTO` becomes the new
+     * default; an explicit portrait, landscape or sensor choice is kept.
+     */
+    private fun migrateV4ToV5(root: JsonObject): JsonObject {
+        val playerObj = root["player"] as? JsonObject ?: return root
+        val lock = playerObj["orientationLock"]?.jsonPrimitive?.contentOrNull
+        if (lock != null && lock != OrientationLock.AUTO.name) return root
+        val patched = root.toMutableMap()
+        patched["player"] = JsonObject(playerObj + ("orientationLock" to JsonPrimitive(OrientationLock.LANDSCAPE.name)))
+        return JsonObject(patched)
+    }
 
     private fun migrateV3ToV4(root: JsonObject): JsonObject {
         val patched = root.toMutableMap()

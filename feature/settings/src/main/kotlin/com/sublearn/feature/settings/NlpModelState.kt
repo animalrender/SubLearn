@@ -1,6 +1,7 @@
 package com.sublearn.feature.settings
 
 import com.sublearn.core.ai.NlpModel
+import com.sublearn.core.ai.ModelSelfTestReport
 import com.sublearn.core.ai.NlpModelProgress
 
 /**
@@ -28,4 +29,15 @@ sealed interface NlpModelState {
 
     /** The download or the file check failed. */
     data class Error(val message: String) : NlpModelState
+}
+
+/** The self-test of one accuracy model as the Downloads screen shows it (D-86). */
+sealed interface SelfTestUi {
+    val modelName: String
+
+    /** The model is being opened and probed; the dialog shows a spinner and cannot be dismissed. */
+    data class Running(val modelId: String, override val modelName: String) : SelfTestUi
+
+    /** The probe finished, one way or the other. */
+    data class Done(override val modelName: String, val report: ModelSelfTestReport) : SelfTestUi
 }

@@ -105,6 +105,7 @@ fun PlayerScreen(
     val viewRef = remember { arrayOfNulls<PlayerView>(1) }
     val currentOpenWords by rememberUpdatedState(onOpenWords)
     val currentOpenSettings by rememberUpdatedState(onOpenSettings)
+    val currentInPip by rememberUpdatedState(inPip)
     var subtitlePickerRole by remember { mutableStateOf<TrackRole?>(null) }
     val audioPicker = rememberLauncherForActivityResult(OpenDocumentContract(AUDIO_MIMES)) { picked ->
         if (picked != null) {
@@ -160,7 +161,9 @@ fun PlayerScreen(
             when (event) {
                 Lifecycle.Event.ON_STOP -> {
                     stopped = true
-                    viewModel.onLeave()
+                    // The Activity owns the PiP case (it knows whether the window is still visible);
+                    // a stop while PiP is active is a stop of the full-screen window only.
+                    viewModel.onLeave(pausePlayback = !currentInPip)
                 }
                 Lifecycle.Event.ON_START -> if (stopped) viewModel.onReturn()
                 else -> Unit
@@ -172,7 +175,8 @@ fun PlayerScreen(
 
     DisposableEffect(viewModel) {
         onDispose {
-            viewModel.onLeave()
+            // Leaving the player screen (settings, My Words, back) pauses the film (D-84).
+            viewModel.onLeave(pausePlayback = true)
             viewRef[0]?.let { viewModel.controller.detachView(it) }
         }
     }
@@ -193,7 +197,8 @@ fun PlayerScreen(
     // Back closes the innermost thing first; only with nothing open does it leave the player.
     BackHandler { handleBackFrom(ui, viewModel, onBack) }
 
-    val rotationLocked = ui.settings.player.orientationLock != OrientationLock.AUTO
+    val rotationLocked = ui.settings.player.orientationLock != OrientationLock.AUTO &&
+        ui.settings.player.orientationLock != OrientationLock.SENSOR
     val gestureMode = when {
         inPip || ui.locked -> GestureMode.OFF
         ui.layoutMode -> GestureMode.LAYOUT
@@ -502,10 +507,19 @@ private fun Context.currentVolumeFraction(): Float {
     return manager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat() / max
 }
 
+/**
+ * The Activity orientation for a lock (D-85).
+ *
+ * The `SENSOR_*` constants are the point: `SCREEN_ORIENTATION_LANDSCAPE` would pin the picture to
+ * one landscape and ignore the phone being turned over, and `USER_LANDSCAPE` would stop following
+ * the sensor as soon as the system's auto-rotate is off — which is exactly when a user watching a
+ * film in bed turns the phone around. `SENSOR_LANDSCAPE` keeps the picture landscape and flips it
+ * with the device whatever the system setting says; `SENSOR_PORTRAIT` does the same for portrait.
+ */
 private fun orientationFor(lock: OrientationLock): Int = when (lock) {
     OrientationLock.AUTO -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-    OrientationLock.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-    OrientationLock.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+    OrientationLock.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+    OrientationLock.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
     OrientationLock.REVERSE_LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
     OrientationLock.SENSOR -> ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
 }

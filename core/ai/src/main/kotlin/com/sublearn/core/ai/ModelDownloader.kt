@@ -94,6 +94,12 @@ class ModelDownloader(
                 return AppResult.failure(
                     SubLearnError(SubLearnError.Kind.Timeout, "the download was cancelled", cancelled),
                 )
+            } catch (aborted: Throwable) {
+                // A caller that cancels from inside `onProgress` (a coroutine's `ensureActive`, the
+                // user's stop button) throws through the transfer loop. The partial file must not
+                // survive that any more than it survives a failure, so clean up and let it propagate.
+                partial.delete()
+                throw aborted
             }
         }
 

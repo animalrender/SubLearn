@@ -164,7 +164,11 @@ data class PlayerSettings(
     val twoFingerSpeedShortcut: Boolean = true,
     /** Speed while a long press on the video fast-forwards (PLY-4); released back to the previous speed. */
     val longPressSpeedPercent: Int = 200,
-    val orientationLock: OrientationLock = OrientationLock.AUTO,
+    /**
+     * The player opens in landscape and follows the sensor between the two landscapes, even when
+     * the system's auto-rotate is off (D-85). `AUTO` hands the decision to the system.
+     */
+    val orientationLock: OrientationLock = OrientationLock.LANDSCAPE,
     val keepScreenOn: Boolean = true,
     val rememberPosition: Boolean = true,
     val resumeOnOpen: Boolean = true,
@@ -510,7 +514,7 @@ data class AppSettings(
     fun subtitleLayer(role: TrackRole): SubtitleLayerSettings = subtitles.layer(role)
 
     companion object {
-        const val SCHEMA_VERSION = 4
+        const val SCHEMA_VERSION = 5
 
         val DEFAULT = AppSettings()
     }

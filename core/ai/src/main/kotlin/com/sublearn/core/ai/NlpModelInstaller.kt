@@ -103,6 +103,25 @@ class NlpModelInstaller(
         directory.mkdirs()
         val total = layout.downloadBytes
 
+        try {
+            return installAssets(layout, directory, total, onProgress)
+        } catch (aborted: Throwable) {
+            // The caller stopped the install from inside the progress callback (the Downloads
+            // screen's stop button cancels the coroutine, and `ensureActive` throws here). A model
+            // that is half-present must never be offered as ready, so the directory goes the same
+            // way it goes on a failed download.
+            directory.deleteRecursively()
+            throw aborted
+        }
+    }
+
+    private fun installAssets(
+        layout: ModelFileLayout,
+        directory: File,
+        total: Long,
+        onProgress: (NlpModelProgress) -> Unit,
+    ): AppResult<ModelFileLayout> {
+        val modelId = layout.id
         var completedBytes = 0L
         for ((index, asset) in layout.assets.withIndex()) {
             val target = File(directory, asset.name)

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -121,7 +122,9 @@ private fun AppScaffold(nav: AppNavigator, versionName: String) {
     val activeTab = nav.activeTabIndex
 
     ModalNavigationDrawer(drawerState = drawerState, drawerContent = {
-        ModalDrawerSheet {
+        // Half the screen, not Material's 360 dp: the menu has three entries and the owner wants
+        // the screen behind it to stay visible (D-85).
+        ModalDrawerSheet(modifier = Modifier.fillMaxWidth(DRAWER_WIDTH_SHARE)) {
             Column(Modifier.padding(vertical = 20.dp)) {
                 Text(
                     stringResource(R.string.app_name),
@@ -222,6 +225,9 @@ private fun AppScaffold(nav: AppNavigator, versionName: String) {
         }
     }
 }
+
+/** The side menu covers this share of the screen width. */
+private const val DRAWER_WIDTH_SHARE = 0.5f
 
 private fun AppRoute.titleRes(): Int = when (this) {
     AppRoute.HOME -> R.string.tab_home
