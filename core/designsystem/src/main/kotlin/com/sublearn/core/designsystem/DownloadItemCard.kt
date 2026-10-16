@@ -29,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -52,6 +51,7 @@ import androidx.compose.ui.unit.dp
  * @param onInfo called when user taps info icon
  * @param progress download progress 0.0..1.0 (only used in Downloading state)
  * @param progressText optional text like "45% • 12 MB/s"
+ * @param detail optional line under the state row, e.g. the size an installed model occupies
  */
 @Composable
 fun DownloadItemCard(
@@ -67,6 +67,7 @@ fun DownloadItemCard(
     onInfo: () -> Unit = {},
     progress: Float = 0f,
     progressText: String? = null,
+    detail: String? = null,
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -90,7 +91,10 @@ fun DownloadItemCard(
                         text = description,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
+                        // Two lines, not one: the accuracy-model cards name the profile the model
+                        // unlocks, and truncating that sentence removes the only thing that makes
+                        // one encoder distinguishable from another.
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
@@ -107,6 +111,24 @@ fun DownloadItemCard(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 when (state) {
+                    is DownloadItemState.UNAVAILABLE -> {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = state.reason,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+
                     DownloadItemState.AVAILABLE -> {
                         sizeBytes?.let {
                             Text(
@@ -146,23 +168,28 @@ fun DownloadItemCard(
                         CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (state == DownloadItemState.VERIFYING) "Verifying..." else "Installing...",
+                            text = if (state == DownloadItemState.VERIFYING) {
+                                stringResource(R.string.status_verifying)
+                            } else {
+                                stringResource(R.string.status_installing)
+                            },
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
 
                     DownloadItemState.INSTALLED -> {
+                        val installedColor = MaterialTheme.colorScheme.tertiary
                         Icon(
                             Icons.Default.CheckCircle,
                             contentDescription = null,
-                            tint = Color(0xFF22C55E),
+                            tint = installedColor,
                             modifier = Modifier.size(18.dp),
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = stringResource(R.string.status_installed),
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF22C55E),
+                            color = installedColor,
                         )
                         Spacer(modifier = Modifier.weight(1f))
                         OutlinedButton(onClick = onDelete) {
@@ -205,6 +232,15 @@ sealed class DownloadItemState {
     object INSTALLING : DownloadItemState()
     object INSTALLED : DownloadItemState()
     data class ERROR(val message: String, val retryable: Boolean = true) : DownloadItemState()
+
+    /**
+     * The item cannot run in this build, so it is listed but not offered.
+     *
+     * [reason] is shown in place of a download button. An engine that is missing from a build is a
+     * fact about the build, not an error the user caused, so it is stated in the neutral body
+     * colour rather than the error colour: nothing has gone wrong and there is nothing to retry.
+     */
+    data class UNAVAILABLE(val reason: String) : DownloadItemState()
 }
 
 private fun formatBytes(bytes: Long): String = when {

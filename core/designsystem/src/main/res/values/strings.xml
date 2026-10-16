@@ -26,6 +26,23 @@
     <string name="profile_needs_models">This profile adds %1$d download(s), about %2$d MB, and runs only after they are installed.</string>
     <string name="profile_runtime_missing">The runtime this profile needs is not part of this build, so analysis stays on the previous profile.</string>
 
+    <string name="settings_models_nlp_header">Accuracy models</string>
+    <string name="settings_models_nlp_desc">Optional on-device models. Each profile runs only what it can load; nothing is downloaded until you ask.</string>
+    <string name="settings_models_nlp_balancer">Adds meaning-aware ranking to the BALANCED profile</string>
+    <string name="settings_models_nlp_precise">Adds sentence-embedding ranking to the PRECISE profile</string>
+    <string name="settings_models_nlp_advanced">Adds span-in-context ranking to the ADVANCED profile</string>
+    <string name="settings_models_nlp_smart">Adds prompt-based sense selection to the SMART profile</string>
+    <string name="settings_models_nlp_runtime_none">Runs in pure Kotlin, on any device</string>
+    <string name="settings_models_nlp_runtime_onnx">Runs on ONNX Runtime, on every device with a 64-bit ABI</string>
+    <string name="settings_models_nlp_runtime_litert">Runs on the LiteRT prompt engine, needs a recent device</string>
+    <string name="settings_models_nlp_gated">This model is published under a licence you have to accept on huggingface.co before it can be downloaded.</string>
+    <string name="settings_models_nlp_runtime_missing">The %1$s engine is not part of this build, so this model cannot run here and is not offered for download.</string>
+    <string name="settings_models_nlp_installed_detail">%1$s on the device</string>
+    <string name="settings_models_nlp_progress">%1$s of %2$s</string>
+    <string name="settings_models_name">Model</string>
+    <string name="settings_models_nlp_delete_title">Remove %1$s?</string>
+    <string name="settings_models_nlp_delete_body">Removing the model frees %1$s. The profile that needs it falls back to the models still installed.</string>
+
     <!-- Home -->
     <string name="home_open_file">Open a video</string>
     <string name="home_open_url">Open URL or stream</string>
@@ -516,6 +533,8 @@
     <string name="settings_trans_mode">Translation orchestration</string>
     <string name="settings_trans_mode_priority">Priority chain (stop at first hit)</string>
     <string name="settings_trans_mode_merge">Merge all enabled sources</string>
+    <string name="status_verifying">Verifying&#8230;</string>
+    <string name="status_installing">Installing&#8230;</string>
     <string name="settings_models_installed_header">Downloads</string>
     <string name="settings_models_mlkit_name">Offline translation model (EN &#8596; FA)</string>
     <string name="settings_models_mlkit_desc">Google ML Kit neural translation, stored on the device</string>

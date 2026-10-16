@@ -500,6 +500,25 @@
     <string name="settings_trans_mode">شیوهٔ ترکیب منابع ترجمه</string>
     <string name="settings_trans_mode_priority">زنجیرهٔ اولویت (توقف در اولین پاسخ)</string>
     <string name="settings_trans_mode_merge">ترکیب تمام منابع فعال</string>
+    <string name="settings_models_nlp_header">مدل‌های دقت</string>
+    <string name="settings_models_nlp_desc">مدل‌های اختیاری روی دستگاه. هر پروفایل فقط چیزی را اجرا می‌کند که بتواند بارگذاری کند؛ تا درخواست نکنید چیزی دانلود نمی‌شود.</string>
+    <string name="settings_models_nlp_balancer">رتبه‌بندی معنایی را به پروفایل BALANCED اضافه می‌کند</string>
+    <string name="settings_models_nlp_precise">رتبه‌بندی جاسازی جمله را به پروفایل PRECISE اضافه می‌کند</string>
+    <string name="settings_models_nlp_advanced">رتبه‌بندی در بافت عبارت را به پروفایل ADVANCED اضافه می‌کند</string>
+    <string name="settings_models_nlp_smart">انتخاب معنا بر پایهٔ درخواست را به پروفایل SMART اضافه می‌کند</string>
+    <string name="settings_models_nlp_runtime_none">با کاتلین خالص روی هر دستگاهی اجرا می‌شود</string>
+    <string name="settings_models_nlp_runtime_onnx">با ONNX Runtime روی هر دستگاه دارای ABI ۶۴بیتی اجرا می‌شود</string>
+    <string name="settings_models_nlp_runtime_litert">با موتور درخواست LiteRT اجرا می‌شود و به دستگاهی نسبتاً جدید نیاز دارد</string>
+    <string name="settings_models_nlp_gated">این مدل با پروانه‌ای منتشر شده که باید نخست آن را در huggingface.co بپذیرید تا دانلود ممکن شود.</string>
+    <string name="settings_models_nlp_runtime_missing">موتور %1$s بخشی از این ساخت نیست، پس این مدل اینجا اجرا نمی‌شود و برای دانلود پیشنهاد نمی‌شود.</string>
+    <string name="settings_models_nlp_installed_detail">%1$s روی دستگاه</string>
+    <string name="settings_models_nlp_progress">%1$s از %2$s</string>
+    <string name="settings_models_name">مدل</string>
+    <string name="settings_models_nlp_delete_title">حذف %1$s؟</string>
+    <string name="settings_models_nlp_delete_body">حذف این مدل %1$s آزاد می‌کند. پروفایلی که به آن نیاز دارد به مدل‌های نصب‌شدهٔ دیگر بازمی‌گردد.</string>
+
+    <string name="status_verifying">بررسی&#8230;</string>
+    <string name="status_installing">نصب&#8230;</string>
     <string name="settings_models_installed_header">دانلودها</string>
     <string name="settings_models_mlkit_name">مدل ترجمهٔ آفلاین (انگلیسی &#8596; فارسی)</string>
     <string name="settings_models_mlkit_desc">ترجمهٔ عصبی گوگل ML Kit، ذخیره‌شده روی دستگاه</string>

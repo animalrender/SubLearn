@@ -7,6 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sublearn.core.ai.AiAssistant
 import com.sublearn.core.ai.AiRequest
+import com.sublearn.core.ai.NlpModelCatalog
+import com.sublearn.core.ai.NlpModelInstaller
+import com.sublearn.core.ai.NlpModelProgress
 import com.sublearn.core.data.MyWordsRepository
 import com.sublearn.core.lexicon.FrequencyListFormat
 import com.sublearn.core.lexicon.FrequencyListImporter
@@ -19,10 +22,12 @@ import com.sublearn.core.settings.ImportReport
 import com.sublearn.core.settings.SettingsRepository
 import com.sublearn.core.translate.MlKitModelInstaller
 import com.sublearn.core.translate.TranslationService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Everything the settings screens do beyond reading and writing the tree: importing a word list,
@@ -41,6 +46,7 @@ class SettingsViewModel(
     private val ai: AiAssistant,
     private val context: Context,
     private val mlKitInstaller: MlKitModelInstaller,
+    private val modelInstaller: NlpModelInstaller,
 ) : ViewModel() {
     val settings: StateFlow<AppSettings> = settingsRepository.settings
 
@@ -80,6 +86,71 @@ class SettingsViewModel(
                     _status.value = SettingsStatus.Error(error.message ?: "the download failed")
                 },
             )
+        }
+    }
+
+    /**
+     * The six optional accuracy models (Phase 23), each with the state the settings card shows.
+     *
+     * The list is rebuilt from the catalog and the filesystem, never from a cached copy of the
+     * settings tree: a model deleted from another screen or by the system's storage cleaner
+     * disappears from here on the next read, which is what the user expects.
+     */
+    private val _nlpModels = MutableStateFlow(nlpModelRows())
+    val nlpModels: StateFlow<List<NlpModelRow>> = _nlpModels.asStateFlow()
+
+    /** Download and install one accuracy model, reporting progress as it arrives. */
+    fun installNlpModel(modelId: String) {
+        viewModelScope.launch {
+            val name = NlpModelCatalog.byId[modelId]?.name ?: modelId
+            setNlpState(modelId) { NlpModelState.Downloading(null) }
+
+            val result = withContext(Dispatchers.IO) {
+                modelInstaller.install(modelId) { progress -> setNlpState(modelId) { NlpModelState.Downloading(progress) } }
+            }
+
+            result.fold(
+                onSuccess = {
+                    _nlpModels.value = nlpModelRows()
+                    _status.value = SettingsStatus.Info("$name is installed")
+                },
+                onFailure = { error ->
+                    val message = error.message ?: "the model could not be installed"
+                    setNlpState(modelId) { NlpModelState.Error(message) }
+                    _status.value = SettingsStatus.Error(message)
+                },
+            )
+        }
+    }
+
+    /** Remove one accuracy model from the device. */
+    fun deleteNlpModel(modelId: String) {
+        viewModelScope.launch {
+            val name = NlpModelCatalog.byId[modelId]?.name ?: modelId
+            val removed = withContext(Dispatchers.IO) { modelInstaller.delete(modelId) }
+            _nlpModels.value = nlpModelRows()
+            _status.value = if (removed) {
+                SettingsStatus.Info("$name was removed")
+            } else {
+                SettingsStatus.Error("$name could not be removed")
+            }
+        }
+    }
+
+    /** Read every model's state from the filesystem, so the cards never show a stale value. */
+    private fun nlpModelRows(): List<NlpModelRow> = modelInstaller.availableModels().map { model ->
+        val state = if (modelInstaller.isInstalled(model.id)) {
+            NlpModelState.Installed(modelInstaller.installedBytes(model.id))
+        } else {
+            NlpModelState.Available
+        }
+        NlpModelRow(model, state)
+    }
+
+    /** Replace one card's state while a download runs, leaving every other row untouched. */
+    private fun setNlpState(modelId: String, transform: (NlpModelState) -> NlpModelState) {
+        _nlpModels.value = _nlpModels.value.map { row ->
+            if (row.model.id == modelId) row.copy(state = transform(row.state)) else row
         }
     }
 
