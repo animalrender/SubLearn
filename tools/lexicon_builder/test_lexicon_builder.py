@@ -13,6 +13,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_lexicon import (
+    apply_quality_filters,
     build_lexicon,
     build_report_lines,
     convert_to_pattern,
@@ -383,6 +384,122 @@ class TestBuildLexicon(unittest.TestCase):
             self.assertIn("builder_version", report)
             self.assertIn("output_sha256", report)
             self.assertIn("rejected_samples", report)
+
+
+class QualityFiltersTest(unittest.TestCase):
+    """The demotion rules of §2.3, against the entries that reached the real pack.
+
+    The full build needs the 98 MB source database, so these cases are pinned here instead: each
+    one failed the pack validator (five errors on the en-fa pack, 2026-10-16) and the rule below is
+    the fix. `token_tags` is every POS tag the source records for a token, not just the most
+    frequent one — reading only that demoted the real phrasal verb "look forward to".
+    """
+
+    def call(
+        self,
+        key: str,
+        kind: str,
+        prior: float,
+        tags: list[set[str]],
+        lemmas: list[str] | None = None,
+        in_idioms: bool = False,
+        codes: set[int] | None = None,
+    ):
+        return apply_quality_filters(
+            key=key,
+            kind=kind,
+            entry_prior=prior,
+            token_tags=tags,
+            token_lemmas=lemmas or [token.lower() for token in key.split()],
+            in_idioms=in_idioms,
+            all_pos_codes=codes or set(),
+        )
+
+    def test_a_real_phrase_keeps_its_prior_when_a_token_is_also_a_noun(self) -> None:
+        # "look" is tagged NOUN as well as VERB; the key must not be read as a noun combo.
+        kind, prior, reason = self.call(
+            "look forward to",
+            "PHRASAL",
+            0.80,
+            [{"NOUN", "VERB"}, {"ADV"}, {"PREP"}],
+        )
+        self.assertEqual("PHRASAL", kind)
+        self.assertGreaterEqual(prior, 0.60)
+        self.assertIsNone(reason)
+
+    def test_prepositional_phrase_is_demoted_even_when_the_source_tags_a_verb(self) -> None:
+        # The source lists a verb among "truth"'s senses, which is why rule 3 alone missed it.
+        kind, prior, reason = self.call(
+            "in truth",
+            "COLLOCATION",
+            0.70,
+            [{"PREP", "NOUN"}, {"NOUN", "VERB"}],
+            codes={19},
+        )
+        self.assertEqual("PHRASE", kind)
+        self.assertLess(prior, 0.65)
+        self.assertEqual("prepositional_phrase", reason)
+
+    def test_motion_verb_plus_to_is_demoted_even_with_the_phrasal_code(self) -> None:
+        for key in ("go to", "come to", "get to"):
+            with self.subTest(key=key):
+                kind, prior, reason = self.call(
+                    key,
+                    "PHRASAL",
+                    0.90,
+                    [{"VERB"}, {"PREP"}],
+                    codes={20},
+                )
+                self.assertEqual("PHRASE", kind, "the source's phrasal code is wrong for this key")
+                self.assertLess(prior, 0.65)
+                self.assertEqual("phrasal_to_motion_db20", reason)
+
+    def test_the_reason_records_whether_the_source_labelled_it(self) -> None:
+        _, _, reason = self.call("go to", "PHRASAL", 0.90, [{"VERB"}, {"PREP"}])
+        self.assertEqual("phrasal_to_motion_dbnone", reason)
+
+    def test_a_phrasal_verb_with_a_real_particle_is_left_alone(self) -> None:
+        kind, prior, reason = self.call("give up", "PHRASAL", 0.90, [{"VERB"}, {"ADP", "PART"}])
+        self.assertEqual("PHRASAL", kind)
+        self.assertEqual(0.90, prior)
+        self.assertIsNone(reason)
+
+    def test_an_idiom_is_not_demoted_by_the_shape_rules(self) -> None:
+        # "a piece of cake" has the noun-combo shape and "in the nick of time" opens with a
+        # preposition; both are idioms the learner wants to see underlined.
+        for key, kind, tags in (
+            ("a piece of cake", "IDIOM", [{"DET"}, {"NOUN"}, {"PREP"}, {"NOUN"}]),
+            ("in the nick of time", "IDIOM", [{"PREP"}, {"DET"}, {"NOUN"}, {"PREP"}, {"NOUN"}]),
+        ):
+            with self.subTest(key=key):
+                stayed_kind, prior, reason = self.call(key, kind, 0.75, tags)
+                self.assertEqual(kind, stayed_kind)
+                self.assertEqual(0.75, prior)
+                self.assertIsNone(reason)
+
+    def test_closed_class_keys_stay_demoted(self) -> None:
+        for key in ("at that", "the way", "a lot"):
+            with self.subTest(key=key):
+                kind, prior, reason = self.call(key, "COLLOCATION", 0.70, [{"DET", "PRON"}, {"PRON"}])
+                self.assertEqual("PHRASE", kind)
+                self.assertEqual(0.25, prior)
+                self.assertEqual("all_closed_class", reason)
+
+    def test_single_words_are_never_demoted(self) -> None:
+        kind, prior, reason = self.call("truth", "WORD", 0.50, [{"NOUN"}])
+        self.assertEqual(("WORD", 0.50, None), (kind, prior, reason))
+
+    def test_a_collocation_only_linked_from_the_idiom_table_loses_its_prior(self) -> None:
+        kind, prior, reason = self.call(
+            "make a decision",
+            "COLLOCATION",
+            0.70,
+            [{"VERB"}, {"DET"}, {"NOUN"}],
+            in_idioms=True,
+        )
+        self.assertEqual("COLLOCATION", kind)
+        self.assertLessEqual(prior, 0.50)
+        self.assertIsNone(reason)
 
 
 class BuildReportTest(unittest.TestCase):

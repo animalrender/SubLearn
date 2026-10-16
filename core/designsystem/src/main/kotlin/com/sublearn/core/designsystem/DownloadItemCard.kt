@@ -98,8 +98,14 @@ fun DownloadItemCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                IconButton(onClick = onInfo, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.Info, contentDescription = "Info", modifier = Modifier.size(18.dp))
+                // No size override: Material's own touch target is the 48 dp minimum, and a
+                // 32 dp box around an 18 dp glyph is a miss on a phone held one-handed.
+                IconButton(onClick = onInfo) {
+                    Icon(
+                        Icons.Default.Info,
+                        contentDescription = stringResource(R.string.action_info),
+                        modifier = Modifier.size(18.dp),
+                    )
                 }
             }
 
@@ -175,6 +181,9 @@ fun DownloadItemCard(
                             },
                             style = MaterialTheme.typography.bodySmall,
                         )
+                        // The row lays its children out with SpaceBetween, so without this the
+                        // spinner and its label would sit at opposite ends of the card.
+                        Spacer(modifier = Modifier.weight(1f))
                     }
 
                     DownloadItemState.INSTALLED -> {

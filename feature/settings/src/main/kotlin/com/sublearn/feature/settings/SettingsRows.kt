@@ -2,9 +2,11 @@ package com.sublearn.feature.settings
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.sublearn.core.designsystem.Dimens
@@ -116,21 +119,48 @@ fun StepperRow(title: String, value: Int, range: IntRange, step: Int, onChange: 
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-        StepButton(label = "${(value - step).coerceIn(range)}", onClick = { onChange((value - step).coerceIn(range)) })
+        StepButton(
+            label = "${(value - step).coerceIn(range)}",
+            decrease = true,
+            onClick = { onChange((value - step).coerceIn(range)) },
+        )
         Text("$value$suffix", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = 10.dp))
-        StepButton(label = "${(value + step).coerceIn(range)}", onClick = { onChange((value + step).coerceIn(range)) })
+        StepButton(
+            label = "${(value + step).coerceIn(range)}",
+            decrease = false,
+            onClick = { onChange((value + step).coerceIn(range)) },
+        )
     }
 }
 
+/**
+ * One end of a stepper.
+ *
+ * The label is the value the tap produces, which is not enough on its own for a screen reader, so
+ * the action is named and the role is a button. The box is at least [MIN_TOUCH_TARGET] in both
+ * directions: a bare digit with 10 dp of padding is a target that is easy to miss.
+ *
+ * @param decrease true for the "value - step" end, which is only used to name the action
+ */
 @Composable
-private fun StepButton(label: String, onClick: () -> Unit) {
-    Text(
-        text = label,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.clickable(onClick = onClick).padding(10.dp),
-    )
+private fun StepButton(label: String, decrease: Boolean, onClick: () -> Unit) {
+    val action = stringResource(if (decrease) R.string.action_decrease else R.string.action_increase)
+    Box(
+        modifier = Modifier
+            .defaultMinSize(minWidth = MIN_TOUCH_TARGET, minHeight = MIN_TOUCH_TARGET)
+            .clickable(onClickLabel = action, role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
 }
+
+/** Material's minimum interactive size, in dp. */
+private val MIN_TOUCH_TARGET = 48.dp
 
 @Composable
 fun TextRow(

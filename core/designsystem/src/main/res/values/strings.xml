@@ -67,6 +67,9 @@
     <string name="action_download">Download</string>
     <string name="action_delete">Delete</string>
     <string name="action_retry">Retry</string>
+    <string name="action_info">Details</string>
+    <string name="action_decrease">Decrease</string>
+    <string name="action_increase">Increase</string>
     <string name="status_installed">Installed</string>
     <string name="action_search">Search</string>
     <string name="action_apply">Apply</string>

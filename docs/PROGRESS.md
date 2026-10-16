@@ -166,6 +166,15 @@ listed at the end is the evidence.
   the `SenseRanker` contract, and `tools/check_sources.py` learned to skip backticked identifiers,
   which had made it swallow the rest of any file whose test name contained an apostrophe.
 
+**Pack validation (2026-10-16, second round)**
+- The lexicon workflow's five `VALIDATION FAILED` errors are fixed in `apply_quality_filters`
+  (D-77): `look forward to` keeps a real prior, `in truth` is demoted as a prepositional phrase, and
+  `go to`/`come to`/`get to` are demoted even though the source labels them with the phrasal code.
+  The rules are a pure function with 9 tests in `test_lexicon_builder.py` (33 in the file), because
+  the real pack needs the 98 MB source database, which this sandbox cannot download.
+- The workflow's reporter now matches the validator's `  - <reason>` lines, which is how the five
+  reasons became visible: the previous version only published the headline.
+
 **What remains (honest)**
 - Phases 21–24 code is partially implemented. The MlKitModelInstaller compiles but has not been
   tested on a real device. DownloadItemCard (unified download UI), settings reorganization,

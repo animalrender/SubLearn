@@ -518,3 +518,18 @@ session) falls back to the lexical order rather than hiding the meanings. The ra
 from `ProfiledNlpEngineCache`, which holds the profile's resident models open across subtitle lines
 and reopens them when the profile changes; a profile whose models are absent is *not* cached as a
 failure, so installing a model takes effect on the next tap instead of on the next launch.
+
+**D-77 — The quality filters read every tag a token has, and know three more shapes.**
+The five demotion rules of D-66 were applied through one "primary" POS tag per token, and the five
+errors the pack validator reported on 2026-10-16 all came from that: `look`'s most frequent tag is
+NOUN, so `look forward to` was read as a noun combination and its prior dropped to 0.25, while
+`truth` carries a verb sense, so `in truth` was not read as a fixed combination at all. The rules
+now live in `apply_quality_filters`, a pure function of the entry's data with its own tests, and
+they decide on the whole tag set plus the known-verb lemmas. Two shapes were added: a key that opens
+with a preposition (and whose head is not a verb) is a prepositional phrase, however its later
+tokens are tagged, and a two-token `PHRASAL` whose only "particle" is `to` after a verb of motion is
+demoted *even when the source labels it with the phrasal code* — that label is wrong for
+`go to`/`come to`/`get to`, and D-34 says a wrong underline is worse than a missing one. Idioms are
+exempt from the two shape heuristics, because `a piece of cake` and `in the nick of time` have
+exactly those shapes and are what the learner wants underlined. The demotion reason records whether
+the source carried the phrasal code, so `build_report.json` shows how often it happens.

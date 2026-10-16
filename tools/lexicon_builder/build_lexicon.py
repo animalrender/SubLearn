@@ -459,6 +459,23 @@ COMMON_PHRASAL_VERBS = {
 }
 
 # Not verbs when appearing at start of 2-word phrase
+# Tokens that carry no meaning of their own. A multi-word key made only of these is a
+# grammatical fragment ("at that", "the way"), never something to underline (§2.3 rule 1).
+CLOSED_CLASS_TAGS = {"DET", "PREP", "PRON", "AUX", "CONJ", "PART"}
+
+# Prepositions that can open a fixed phrase. A key that starts with one of these and contains no
+# verb is a prepositional phrase ("in truth", "on time"), which is looked up but not underlined
+# (§2.3 rule 3b). The list is deliberately short: a preposition the dictionary uses as a noun
+# ("the ins and outs") is not here.
+LEADING_PREPOSITIONS = {
+    "in", "on", "at", "by", "for", "with", "without", "of", "from", "to", "into", "onto",
+    "under", "over", "about", "after", "before", "between", "against", "across", "among",
+}
+
+# Verbs of motion or linking. "to" after one of these is the infinitive marker or a
+# preposition, not a particle: "I go to school" is not a phrasal verb (§2.3 rule 4).
+MOTION_LINKING_VERBS = {"go", "come", "get", "turn", "lead", "switch", "amount"}
+
 NON_VERB_FIRST_WORDS = {
     "a", "an", "the", "as", "at", "by", "for", "from", "in", "inside", "outside",
     "into", "of", "off", "on", "onto", "out", "over", "prior", "up", "down",
@@ -1266,6 +1283,87 @@ def _compute_sha256(path: str) -> str:
     return h.hexdigest()
 
 
+def apply_quality_filters(
+    key: str,
+    kind: str,
+    entry_prior: float,
+    token_tags: list[set[str]],
+    token_lemmas: list[str],
+    in_idioms: bool,
+    all_pos_codes: set[int],
+) -> tuple[str, float, str | None]:
+    """Demote the multi-word entries the classifier reads as phrases but a learner must not see.
+
+    Kept as a pure function of the entry's own data so the rules can be tested against the cases
+    that reached the real pack (`tools/lexicon_builder/test_lexicon_builder.py`); the full build
+    needs the 98 MB source database, which is not available everywhere the tests are.
+
+    The tags decide membership, not a single "primary" tag: a word like "look" is a noun and a
+    verb, and reading only its most frequent tag demoted the real phrasal verb "look forward to".
+
+    @param token_tags every POS tag recorded for each token, in key order
+    @param token_lemmas each token's lemma, used to recognise verbs the word table does not tag
+    @return the kind, the prior and the reason, or None when nothing was demoted
+    """
+    tokens = [t for t in key.split() if t]
+    if not tokens or kind == "WORD":
+        return kind, entry_prior, None
+
+    tags_per_token = [set(tags) for tags in token_tags]
+    all_tags: set[str] = set()
+    for tags in tags_per_token:
+        all_tags |= tags
+
+    def is_verb(index: int) -> bool:
+        if "VERB" in tags_per_token[index]:
+            return True
+        return token_lemmas[index] in COMMON_PHRASAL_VERBS
+
+    verb_present = any(is_verb(i) for i in range(len(tokens)))
+
+    # Rule 1: every token is closed-class → grammar, not vocabulary.
+    if tags_per_token and all(tags and tags <= CLOSED_CLASS_TAGS for tags in tags_per_token):
+        return "PHRASE", 0.25, "all_closed_class"
+
+    # Rule 2: DET/PREP + a name or loanword → part of a name, not a phrase.
+    if len(tokens) == 2:
+        first_tags = tags_per_token[0] if tags_per_token else set()
+        if first_tags & {"DET", "PREP"} and tokens[1][:1].isupper():
+            return "PHRASE", 0.25, "det_prep_proper"
+
+    # Rule 3: no verb anywhere and every tag is a content or fixed-function tag → a fixed
+    # combination ("year by year", "in fact"). An entry the classifier already read as an idiom is
+    # left alone: "a piece of cake" has the same shape and is exactly what the learner wants
+    # underlined.
+    if kind != "IDIOM" and not verb_present and all_tags and all_tags <= {"NOUN", "ADJ", "ADV", "PREP", "DET"}:
+        if all_tags & {"NOUN", "ADJ"}:
+            return "PHRASE", 0.25, "noun_adj_combo"
+
+    # Rule 3b: opens with a preposition that is not a verb → a prepositional phrase. "in truth"
+    # reached the pack as a COLLOCATION because the source gives "truth" a verb among its senses,
+    # and a later homograph must not make the key's head a verb: the heading preposition decides.
+    # Idioms are exempt for the same reason as above: most of them open with a preposition
+    # ("in the nick of time", "on the other hand") and are not what this rule is aimed at.
+    if kind != "IDIOM" and tokens[0].lower() in LEADING_PREPOSITIONS and not is_verb(0):
+        return "PHRASE", 0.25, "prepositional_phrase"
+
+    # Rule 4: PHRASAL whose only "particle" is "to" after a verb of motion → not a phrasal verb.
+    # The source database labels some of these with the phrasal code; the label is wrong for
+    # exactly these keys, and an underline on "go to" is the kind of error D-34 exists to prevent.
+    if kind == "PHRASAL" and len(tokens) == 2 and tokens[1].lower() == "to":
+        verb_lemma = token_lemmas[0]
+        if verb_lemma in MOTION_LINKING_VERBS:
+            reason = "phrasal_to_motion_db" + ("20" if 20 in all_pos_codes else "none")
+            return "PHRASE", 0.25, reason
+
+    # Rule 5: a COLLOCATION the source only links from its idiom table, with no collocation code,
+    # cannot be trusted enough to underline.
+    if kind == "COLLOCATION" and 19 not in all_pos_codes and in_idioms:
+        return kind, min(entry_prior, 0.50), None
+
+    return kind, entry_prior, None
+
+
 def build_lexicon(
     input_path: str,
     output_dir: str,
@@ -1577,60 +1675,24 @@ def build_lexicon(
         kind, entry_prior = classify_entry(key, w_rows, all_pos_codes)
 
         # --- Quality filters (§2.3) ---
-        # Demote noise patterns that the classifier gets wrong.
-        demotion_reason = None
+        # The rules are in `apply_quality_filters` so they can be exercised without the source
+        # database; this call only gathers what they decide on.
         in_idioms = any(r["english_word_id"] in idiom_word_ids for r in w_rows)
         tokens = [t for t in key.split() if t]
-        token_pos_set = set()
-        for tok in tokens:
-            p = word_to_primary_pos.get(tok.lower())
-            if p:
-                token_pos_set.add(p)
-
-        # Rule 1: ALL tokens are closed-class (determiner/prep/pron/aux/conj)
-        # → PHRASE without pattern ("at that", "have to", "the way", "a lot")
-        closed_class = {"DET", "PREP", "PRON", "AUX", "CONJ", "PART"}
-        if kind != "WORD" and tokens and token_pos_set and token_pos_set.issubset(closed_class):
-            kind = "PHRASE"
-            entry_prior = 0.25
-            demotion_reason = "all_closed_class"
-
-        # Rule 2: 2-token pattern: first is DET/PREP, second is proper/loanword
-        # → PHRASE ("the swedish", "pas seul")
-        if kind != "WORD" and len(tokens) == 2 and not demotion_reason:
-            first_pos = word_to_primary_pos.get(tokens[0].lower())
-            if first_pos in ("DET", "PREP") and tokens[1][0].isupper():
-                kind = "PHRASE"
-                entry_prior = 0.25
-                demotion_reason = "det_prep_proper"
-
-        # Rule 3: Noun combination (all NOUN/ADJ, no verb) + fixed adverb/prep
-        # → PHRASE ("in truth", "year by year")
-        if kind != "WORD" and tokens and not demotion_reason:
-            noun_adj = {"NOUN", "ADJ"}
-            has_verb = "VERB" in token_pos_set
-            if not has_verb and token_pos_set and token_pos_set.issubset(noun_adj | {"ADV", "PREP", "DET"}):
-                if len(tokens) >= 2 and token_pos_set.intersection(noun_adj):
-                    kind = "PHRASE"
-                    entry_prior = 0.25
-                    demotion_reason = "noun_adj_combo"
-
-        # Rule 4: PHRASAL with sole particle "to" + motion/linking verb
-        # → remove from PHRASAL ("go to", "come to", "going to", "get to")
-        # UNLESS DB has code 20 explicitly
-        if kind == "PHRASAL" and len(tokens) == 2 and not demotion_reason:
-            if tokens[-1].lower() == "to" and 20 not in all_pos_codes:
-                motion_linking = {"go", "come", "get", "turn", "lead", "switch", "amount"}
-                verb_lemma = lemma_map.get(tokens[0].lower(), tokens[0].lower())
-                if verb_lemma in motion_linking:
-                    kind = "PHRASE"
-                    entry_prior = 0.25
-                    demotion_reason = "phrasal_to_motion"
-
-        # Rule 5: COLLOCATION without explicit code 19 (only linked from english_idioms)
-        # → prior ≤ 0.50 (below threshold)
-        if kind == "COLLOCATION" and 19 not in all_pos_codes and in_idioms:
-            entry_prior = min(entry_prior, 0.50)
+        token_tags = [
+            {tag for tag, _ in by_word_tags.get(tok.lower(), [])}
+            for tok in tokens
+        ]
+        token_lemmas = [lemma_map.get(tok.lower(), tok.lower()) for tok in tokens]
+        kind, entry_prior, demotion_reason = apply_quality_filters(
+            key=key,
+            kind=kind,
+            entry_prior=entry_prior,
+            token_tags=token_tags,
+            token_lemmas=token_lemmas,
+            in_idioms=in_idioms,
+            all_pos_codes=all_pos_codes,
+        )
 
         # Track demotions for the build report
         if demotion_reason:

@@ -108,10 +108,12 @@ fun SettingsScreen(
             TopAppBar(
                 title = { Text(stringResource(section.settingsTitleRes())) },
                 navigationIcon = {
+                    // One step back: a section returns to the list, the list leaves settings. The
+                    // arrow says both, so there is no second icon to keep in step.
                     val atRoot = section == "root"
                     IconButton(onClick = { if (atRoot) onBack() else section = "root" }) {
                         Icon(
-                            imageVector = if (atRoot) Icons.AutoMirrored.Filled.ArrowBack else Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.action_back),
                         )
                     }

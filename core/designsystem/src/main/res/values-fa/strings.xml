@@ -46,6 +46,9 @@
     <string name="action_download">دانلود</string>
     <string name="action_delete">حذف</string>
     <string name="action_retry">تلاش دوباره</string>
+    <string name="action_info">جزئیات</string>
+    <string name="action_decrease">کاهش</string>
+    <string name="action_increase">افزایش</string>
     <string name="status_installed">نصب شده</string>
     <string name="action_search">جستجو</string>
     <string name="action_apply">اعمال</string>
