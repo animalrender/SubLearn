@@ -543,6 +543,28 @@ class BuildReportTest(unittest.TestCase):
     def test_always_names_the_output_and_the_direction(self):
         lines = build_report_lines(self.base_report({}), "en-fa")
         self.assertTrue(lines[0].startswith("Build complete (en-fa)"))
+
+    def test_prints_the_quality_audit_lines(self):
+        """The audit is how a rule that read the wrong source data explains itself."""
+        report = self.base_report({"entries_created": 5})
+        report["quality_audit"] = {
+            "in truth": {
+                "kind": "PHRASE",
+                "prior": 0.25,
+                "reason": "prepositional_phrase",
+                "idioms": False,
+                "codes": [19],
+                "tokens": "in: {PREP}/lemma=in | truth: {NOUN}/lemma=truth",
+            },
+        }
+        audit = [line for line in build_report_lines(report, "en-fa") if "quality_audit" in line]
+        self.assertEqual(1, len(audit))
+        self.assertIn("quality_audit in truth: kind=PHRASE prior=0.25", audit[0])
+        self.assertIn("reason=prepositional_phrase", audit[0])
+        self.assertIn("tokens=[in: {PREP}/lemma=in", audit[0])
+
+    def test_a_report_without_an_audit_still_prints(self):
+        self.assertTrue(build_report_lines(self.base_report({}), "fa-en"))
         self.assertIn("35,863,515 bytes", lines[1])
 
 
