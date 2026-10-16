@@ -167,6 +167,28 @@ action of each `GestureSlot`, so every slot is remappable (PLY-4), and a double 
 limits it to plate drags in layout mode. The system bars are hidden for the whole player screen
 (D-27), so the edges need no exclusion beyond `playerEdgeInset`.
 
+## Settings-owned resources and automatic learning hints (D-78..D-80)
+
+Learn is a localized Coming soon destination for browser/PDF/image learning. Player mode, level and
+popup appearance belong to Settings → Player learning. `feature:settings/ResourcesViewModel` owns
+pack imports/downloads/verification and profile selection; the Dictionary screen keeps its own
+`LearnViewModel`, and neither feature imports the other. No settings schema change is needed.
+
+After resolving live subtitle lines, `PlayerViewModel.publish` schedules passive learning hints.
+The cancelable job is keyed by media URI, line source/timing/text and settings, and resets on seeks.
+It checks real lexicon CEFR or the configured level provider and My Words before bounded offline
+translations. `selectLearningCandidates` implements strict above-level, known-word and lemma filters;
+`LearningCardsOverlay` draws at most two bounded, non-interactive hints, suppressed behind controls,
+tap popups, lists, sheets and PiP. It never pauses the controller or calls the online translation flow.
+The geometry-only hit registry publishes measured subtitle plate bounds; hints try other corners
+rather than covering either layer, and compact video regions draw only one hint.
+`LEARNING_POPUP` fonts are isolated from the tapped word card's fonts. Cross-cue automatic phrases
+remain a documented limitation; live tracks are never merged into an invented sentence.
+
+The shared design-system linear progress/slider wrappers disable Material stop/tick dots. The Koin
+model installer receives `get<ModelDownloader>()::download` explicitly, not an unresolved function
+binding; a Robolectric production-graph test covers Settings entry.
+
 ## Settings, storage and migration
 
 `AppSettings` is one `@Serializable` graph of small typed groups (`AppearanceSettings`,

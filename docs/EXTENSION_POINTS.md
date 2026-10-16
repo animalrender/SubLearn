@@ -205,6 +205,9 @@ notice. Keep it out of `core:subtitles`: parsing stays pure, retrieval is a netw
 
 ## 5. PDF / browser / image learning
 
+The Learn destination deliberately shows only localized Coming soon content. Player learning mode
+and the resource library are Settings concerns, not controls on this future reading surface (D-78).
+
 Entry point already accepted by the manifest design (`FEATURE_OPEN` with a PDF mime is routed to the
 Learn tab instead of the player). Needs: a text extraction path (`PdfRenderer` is in the framework and
 sufficient for text PDFs; images need an OCR model, which is a separate size and accuracy decision), a

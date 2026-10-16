@@ -3,13 +3,13 @@ package com.sublearn.feature.settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.LinearProgressIndicator
+import com.sublearn.core.designsystem.SubLearnLinearProgress
+import com.sublearn.core.designsystem.SubLearnLinearProgressIndeterminate
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -19,7 +19,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -410,9 +409,9 @@ fun TranslationSection(settings: AppSettings, viewModel: SettingsViewModel) {
         val progress = modelProgress
         if (progress != null) {
             if (progress > 0f) {
-                LinearProgressIndicator(progress = { progress.coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
+                SubLearnLinearProgress(progress = { progress.coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
             } else {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                SubLearnLinearProgressIndeterminate(modifier = Modifier.fillMaxWidth())
             }
             Text(stringResource(R.string.translate_downloading), style = MaterialTheme.typography.labelSmall)
         }

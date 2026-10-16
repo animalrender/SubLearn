@@ -29,6 +29,15 @@ phase: the listed deliverables exist on the real code path, CI is green, `docs/C
 | 16 | Workflows & real-DB CI | `build-lexicon-pack.yml`, `build-extra-packs.yml`, `release-packs.yml`, `verify-catalog.yml`, `probe-online-translate.yml`, real-DB CI evaluation suite | CI-1..5 | in progress |
 | 19 | Final cleanup & release | Remove dead `NotImplemented*` stubs for shipped features, full EN/FA strings parity, Room migration & JVM tests green, `CHANGELOG.md` + `docs/PROGRESS.md` + `docs/CHECKLIST.md` updated | GEN-1..7 | in progress |
 
+## 2026-10-16 corrective pass (phases 1, 6, 9 and 18)
+
+Settings dependency wiring, a settings-owned resource library, a Coming soon-only Learn tab, passive
+above-level player cards and no-dot tracks are implemented on `arena/89bec83d-sublearn`.
+Static checks, Debug/Release assembly, unit tests, lint and instrumented-source compilation passed in
+CI run 38923376453 (`a65db3e`); the on-device RTL/animation pass remains pending.
+This pass corrects earlier completion claims for the automatic-card rendering path, which was absent.
+See D-78..D-80 and the current entry in PROGRESS.md.
+
 ## Execution Order for Phases 10–19
 
 Phases 10 through 19 execute in dependency order:

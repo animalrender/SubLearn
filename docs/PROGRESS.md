@@ -1,3 +1,43 @@
+## 2026-10-16 — Settings entry, Learn scope and automatic player cards
+
+**Implemented on `arena/89bec83d-sublearn`; CI green on `a65db3e`, device verification pending.**
+
+[CI run 38923376453](https://github.com/animalrender/SubLearn/actions/runs/38923376453) passed:
+`assembleDebug`, `assembleRelease`, `test`, `lintDebug`, and `assembleDebugAndroidTest` (8m 9s).
+The production Settings/Resources graph regression test and seven learning-selection tests passed.
+The two new instrumented visibility/overlap tests compile; they have not run on a device.
+
+- Fixed the Settings Koin graph: bind `NlpModelInstaller` to the downloader's `::download` function.
+  Added a Robolectric test resolving the production Settings and Resources view models.
+- Learn is only the localized browser/PDF/image Coming soon screen. Moved onboarding, pack imports,
+  catalog/installed packs and accuracy profiles to Settings → Library & Resources; model downloads
+  have a direct link there. Player learning retains level, word styles, popup and lookup settings,
+  with separate cards for mode, automatic card appearance, interactions, level source and colours.
+- Removed duplicated app/feature toolbars on Settings and My Words.
+- Word styling now refreshes when level/settings change, excludes equal/unknown levels and clears in Off.
+- Settings search now includes localized titles/hints. Section and query survive recreation;
+  Android back returns to the root, prompt back returns to AI, and section scrolling is scoped.
+- Added automatic offline translated word/phrase hints for the current learning subtitles (file and
+  embedded). Strict above-level filtering, lemma deduplication, known-word exclusion and bounded
+  counts are unit tested. Cue/settings/media changes and seeks cancel stale work. At most two small
+  hints animate in a corner; UI suppresses them while other controls/popups/PiP need the picture.
+- Hints try alternative corners when measured subtitle plates overlap the requested area; compact
+  video regions show only one hint, and buffering/opening suppresses drawing.
+- Shared no-dot progress and slider components now cover Home, Settings, downloads and player seek.
+  Motion is reduced-motion-aware; appearance uses existing settings and design tokens, EN/FA strings.
+- Resources integrity checks no longer claim verification when no reference hash exists; checksums
+  run on IO and failed catalog imports/deletions no longer report success.
+
+**Checks so far:** all seven source/resource/dependency/docs/schema/catalog checks and `git diff --check` pass.
+Python tooling tests: 61 run, 59 passed, 2 intentionally skipped. Local Gradle
+cannot start: no Java/JAVA_HOME or Android SDK. Added seven selection tests, the production-graph
+regression test and an instrumented card visibility smoke test; unit-test execution passed in CI; instrumented execution is device-pending.
+The first CI compile caught the split Dictionary status field and an invalid test import; both were
+fixed. All new player/settings production code compiled in that run. The follow-up caught a missing
+WindowInsets import on My Words after the toolbar cleanup; that import is fixed too. The final CI
+run linked above is green, including the app graph regression test. No device verification is claimed.
+See D-78..D-80 and KNOWN_ISSUES 29.
+
 ## 2026-10-15 — phases 20–25: detection accuracy, downloads, navigation, profiles, releases, docs
 
 **Goal.** Address all remaining gaps across detection accuracy, ML Kit downloads, settings/navigation,

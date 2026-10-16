@@ -53,7 +53,6 @@ import com.sublearn.core.lexicon.LaterCapabilities
 import com.sublearn.feature.home.HomeScreen
 import com.sublearn.feature.home.HomeViewModel
 import com.sublearn.feature.learn.DictionaryScreen
-import com.sublearn.feature.learn.LearnScreen
 import com.sublearn.feature.player.PlayerScreen
 import com.sublearn.feature.player.PlayerViewModel
 import com.sublearn.feature.settings.SettingsScreen
@@ -149,7 +148,8 @@ private fun AppScaffold(nav: AppNavigator, versionName: String) {
     }) {
         Scaffold(
             topBar = {
-                if (nav.route != AppRoute.PLAYER) {
+                // These destinations own their toolbar; do not stack a second back/title row above it.
+                if (nav.route !in setOf(AppRoute.PLAYER, AppRoute.SETTINGS, AppRoute.LEVEL, AppRoute.WORDS)) {
                     TopAppBar(
                         title = { Text(stringResource(nav.route.titleRes()), style = MaterialTheme.typography.titleMedium) },
                         navigationIcon = {
@@ -194,10 +194,7 @@ private fun AppScaffold(nav: AppNavigator, versionName: String) {
                         viewModel = koinViewModel<HomeViewModel>(),
                     )
 
-                    AppRoute.LEARN -> LearnScreen(
-                        onOpenWords = { nav.go(AppRoute.WORDS) },
-                        onOpenSettings = { nav.go(AppRoute.SETTINGS) },
-                    )
+                    AppRoute.LEARN -> ComingSoonScreen(FeatureFlag.PDF_LEARNING)
 
                     AppRoute.WORDS -> MyWordsScreen(
                         onBack = { nav.back() },
@@ -205,11 +202,13 @@ private fun AppScaffold(nav: AppNavigator, versionName: String) {
                     )
                     AppRoute.SETTINGS -> SettingsScreen(
                         onBack = { nav.back() },
+                        onOpenWords = { nav.go(AppRoute.WORDS) },
                         versionName = versionName,
                     )
                     // LEVEL removed: use Settings→Learning instead
                     AppRoute.LEVEL -> SettingsScreen(
                         onBack = { nav.back() },
+                        onOpenWords = { nav.go(AppRoute.WORDS) },
                         startSection = "learning",
                         versionName = versionName,
                     )
@@ -270,7 +269,8 @@ fun ComingSoonScreen(flag: FeatureFlag, modifier: Modifier = Modifier) {
         Text(stringResource(R.string.coming_soon), style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.size(8.dp))
         Text(
-            entry?.detail ?: stringResource(R.string.coming_soon_body),
+            if (flag == FeatureFlag.PDF_LEARNING) stringResource(R.string.learn_coming_soon)
+            else entry?.detail ?: stringResource(R.string.coming_soon_body),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

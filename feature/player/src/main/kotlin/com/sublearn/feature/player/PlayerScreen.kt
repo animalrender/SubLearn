@@ -267,6 +267,7 @@ fun PlayerScreen(
             }
 
             SubtitleLayerStack(ui = ui, registry = registry, modifier = Modifier.fillMaxSize())
+            LearningCardsOverlay(ui = ui, inPip = inPip, subtitleBounds = registry.subtitleBounds.values.toList())
 
             Box(
                 modifier = Modifier

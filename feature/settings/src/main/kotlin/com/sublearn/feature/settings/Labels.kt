@@ -225,6 +225,7 @@ fun String.settingsTitleRes(): Int = when (this) {
     "ai" -> R.string.settings_category_ai
     "translation" -> R.string.settings_category_translation
     "models" -> R.string.settings_category_models
+    "resources" -> R.string.library_title
     "dictionary" -> R.string.settings_category_dictionary
     "quick" -> R.string.settings_category_quick_actions
     "prompt" -> R.string.settings_prompt_title

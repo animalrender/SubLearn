@@ -118,6 +118,19 @@ so the system font-size setting and the in-app scale compose instead of fighting
 New shared components go here with a KDoc line stating which spec ID they serve. Anything that needs
 `AppSettings` receives the value, not a repository.
 
+## Passive player hints and continuous tracks (D-79, D-80)
+
+`LearningCardsOverlay` uses LEARNING_POPUP fonts per language role, the subtitle backdrop/text roles,
+soft elevation and the configured corner/opacity/rise/fade. Two hints at most occupy a bounded corner;
+they are non-interactive and hidden while player controls, modal surfaces, lists or PiP are visible.
+`Dimens.learningCard*` caps their size; imported offsets are clamped to the viewport. Compact video
+regions display one hint. Measured subtitle plate bounds take priority: hints try alternative corners
+and omit the batch when no unobstructed corner exists.
+
+Use `SubLearnLinearProgress` / `SubLearnLinearProgressIndeterminate` for every linear progress bar:
+zero gap and no stop dot. Use `SubLearnSlider` for sliders: no endpoint or tick dots, but retain its
+thumb, snapping, gestures and accessibility. These APIs exist in the current Material3 BOM.
+
 ## Accessibility and i18n checklist for a new screen
 
 1. Every interactive element has a `contentDescription` from `core:designsystem` strings (EN + FA).

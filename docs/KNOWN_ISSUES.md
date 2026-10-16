@@ -132,3 +132,13 @@ TODO comment; each entry has a route to being fixed.
     `visibleEntries()` would show a row the installer could not handle. Route: add a
     `WORDFREQ_CEFR` kind, an importer branch for the two formats, and a catalog entry; until then
     the pack is downloaded from the release page rather than from inside the app.
+
+29. **Automatic player cards need a device pass, and only detect phrases within each live line.**
+    File and embedded learning cues drive the new renderer, but cross-cue phrase hints are not yet
+    scheduled (simultaneous tracks must not be concatenated). Offline lookups time out rather than
+    obstruct playback; missing packs/models yield no automatic translation cards. Equal/below-level
+    words are intentionally omitted; with the Manual provider all unlisted words equal the chosen
+    level, so import a CEFR list or use My Words for fallback hints. The compact corner bounds and
+    reduced-motion animations need phone verification in portrait/landscape and EN/FA. The production
+    settings graph and seven selection tests pass in CI run 38923376453 (`a65db3e`); the instrumented
+    visibility/overlap tests compile but have not executed. No local Android toolchain exists.

@@ -41,7 +41,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
+import com.sublearn.core.designsystem.SubLearnSlider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
@@ -216,7 +216,7 @@ private fun AudioSheet(ui: PlayerUi, viewModel: PlayerViewModel, onAddAudio: () 
         Text(stringResource(R.string.player_add_audio_file))
     }
     Text(stringResource(R.string.player_audio_volume), style = MaterialTheme.typography.labelLarge)
-    Slider(
+    SubLearnSlider(
         value = if (ui.playback.isMuted) 0f else ui.playback.volumePercent.toFloat(),
         onValueChange = { viewModel.setVolumePercent(it.toInt()) },
         valueRange = 0f..100f,
@@ -257,7 +257,7 @@ private fun SpeedSheet(ui: PlayerUi, onSet: (Int) -> Unit) {
     val percent = ui.playback.speedPercent
     SheetTitle(stringResource(R.string.player_speed))
     Text(stringResource(R.string.player_speed_value, percent), style = MaterialTheme.typography.headlineSmall)
-    Slider(
+    SubLearnSlider(
         value = percent.toFloat(),
         onValueChange = { onSet(it.toInt()) },
         valueRange = player.speedMinPercent.toFloat()..player.speedMaxPercent.toFloat(),
@@ -294,8 +294,8 @@ private fun AspectSheet(ui: PlayerUi, onSet: (AspectMode) -> Unit, onCustom: (In
     var height by remember { mutableFloatStateOf(ui.settings.player.customAspectHeight.toFloat()) }
     Text(stringResource(R.string.player_aspect_custom), style = MaterialTheme.typography.labelLarge)
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-        Slider(value = width, onValueChange = { width = it }, valueRange = ASPECT_MIN..ASPECT_MAX, modifier = Modifier.weight(1f))
-        Slider(value = height, onValueChange = { height = it }, valueRange = ASPECT_MIN..ASPECT_MAX, modifier = Modifier.weight(1f))
+        SubLearnSlider(value = width, onValueChange = { width = it }, valueRange = ASPECT_MIN..ASPECT_MAX, modifier = Modifier.weight(1f))
+        SubLearnSlider(value = height, onValueChange = { height = it }, valueRange = ASPECT_MIN..ASPECT_MAX, modifier = Modifier.weight(1f))
         TextButton(onClick = { onCustom(width.toInt(), height.toInt()) }) { Text(stringResource(R.string.action_apply)) }
     }
     Text(
@@ -445,13 +445,13 @@ private fun SubtitleManagerSheet(
         }
     }
     Text(stringResource(R.string.subtitle_size), style = MaterialTheme.typography.labelLarge)
-    Slider(
+    SubLearnSlider(
         value = settings.scalePercent.toFloat(),
         onValueChange = { viewModel.setLayerScale(role, it.toInt()) },
         valueRange = SIZE_MIN_PERCENT..SIZE_MAX_PERCENT,
     )
     Text(stringResource(R.string.subtitle_transparency), style = MaterialTheme.typography.labelLarge)
-    Slider(
+    SubLearnSlider(
         value = settings.transparencyPercent.toFloat(),
         onValueChange = { viewModel.setLayerTransparency(role, it.toInt()) },
         valueRange = 0f..TRANSPARENCY_MAX_PERCENT,
@@ -584,10 +584,10 @@ private fun ToolsSheet(ui: PlayerUi, viewModel: PlayerViewModel) {
         label = { Text(stringResource(R.string.subtitle_tool_line_breaks)) },
     )
     Text(stringResource(R.string.subtitle_tool_max_chars), style = MaterialTheme.typography.labelLarge)
-    Slider(value = maxChars, onValueChange = { maxChars = it }, valueRange = MAX_CHARS_MIN..MAX_CHARS_MAX)
+    SubLearnSlider(value = maxChars, onValueChange = { maxChars = it }, valueRange = MAX_CHARS_MIN..MAX_CHARS_MAX)
     Text("${maxChars.toInt()}", style = MaterialTheme.typography.bodyLarge)
     Text(stringResource(R.string.subtitle_delay), style = MaterialTheme.typography.labelLarge)
-    Slider(value = mergeGap, onValueChange = { mergeGap = it }, valueRange = MERGE_GAP_MIN..MERGE_GAP_MAX)
+    SubLearnSlider(value = mergeGap, onValueChange = { mergeGap = it }, valueRange = MERGE_GAP_MIN..MERGE_GAP_MAX)
     Text(stringResource(R.string.subtitle_delay_value, mergeGap.toLong()), style = MaterialTheme.typography.bodyLarge)
     TextButton(onClick = {
         viewModel.applyNormalizer(

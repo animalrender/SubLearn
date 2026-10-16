@@ -4,7 +4,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -30,7 +29,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
+import com.sublearn.core.designsystem.SubLearnLinearProgress
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -212,7 +211,7 @@ private fun RecentCard(row: RecentVideoRow, onOpen: () -> Unit, onForget: () -> 
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 if (row.progressFraction > 0f) {
-                    LinearProgressIndicator(
+                    SubLearnLinearProgress(
                         progress = { row.progressFraction },
                         modifier = Modifier.widthIn(min = 60.dp).fillMaxWidth(0.4f).height(4.dp),
                         trackColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -251,4 +250,3 @@ private fun UrlDialog(onDismiss: () -> Unit, onOpen: (String) -> Unit) {
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }
-

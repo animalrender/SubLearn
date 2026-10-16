@@ -54,7 +54,7 @@ integrity, performance, UX consistency, and reference repositories (`dictionaryp
 ## 5. Lifecycle Reload, Room Span Cache & Release Verification (`core:lexicon`, `feature:player`, `core:models`)
 - **Lazy startup initialization and pack toggle reload (`PackLexiconAccess.ensureInitialized`)**:
   Automatically loads active packs from `InstalledPackRepository` on first query after app launch and
-  reloads immediately when packs are toggled or deleted in `LearnViewModel`.
+  reloads immediately when packs are toggled or deleted in `ResourcesViewModel`.
 - **Rich Dictionary Screen FTS suggestions and extended fields (`LearnScreen`)**: Displays clickable
   prefix/FTS search result chips alongside English glosses, antonyms, word family, and related phrasal
   verbs/idioms/collocations.
@@ -63,3 +63,14 @@ integrity, performance, UX consistency, and reference repositories (`dictionaryp
 - **Verified `packs-v2.0.0` SHA-256 digests in `catalog-v2.json` and `ModelCatalog.kt`**: Populated exact
   byte sizes and SHA-256 hashes from the full 98 MB `main_db.sqlite` (`db1.0.0`) build and added live HTTP
   HEAD verification in `verify-catalog.yml`.
+
+
+## 2026-10-16 — Settings and unobtrusive player learning
+
+- Fixed the Koin function dependency that crashed Settings; regression test resolves production modules.
+- Resource management is settings-owned, not a premature implementation of browser/PDF/image Learn.
+- Strict above-level, known-word and lemma filters feed a real offline automatic-card renderer, rather
+  than merely exposing settings for a missing pipeline. Tap lookups remain independent.
+- All linear progress and slider tracks share no-dot drawing; localized settings search and nested
+  back behaviour make the existing categories usable in both UI languages.
+- Device checks are still necessary for animation, compact landscape geometry and native translations.

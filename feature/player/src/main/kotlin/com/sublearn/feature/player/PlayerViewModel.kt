@@ -30,6 +30,7 @@ import com.sublearn.core.settings.DockMode
 import com.sublearn.core.settings.DoubleTapAction
 import com.sublearn.core.settings.GestureAction
 import com.sublearn.core.settings.GestureSlot
+import com.sublearn.core.settings.CefrLevel
 import com.sublearn.core.settings.LearningMode
 import com.sublearn.core.settings.OrientationLock
 import com.sublearn.core.settings.QuickActionId
@@ -50,6 +51,7 @@ import com.sublearn.core.subtitles.TrackRole
 import com.sublearn.core.translate.TranslationProgress
 import com.sublearn.core.translate.TranslationService
 import com.sublearn.core.translate.WordTranslation
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
@@ -61,6 +63,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.withContext
 import java.util.LinkedHashMap
 import kotlin.math.abs
@@ -131,6 +134,9 @@ class PlayerViewModel(
     private var lockJob: Job? = null
     private var hudJob: Job? = null
     private var messageJob: Job? = null
+    private var learningCardsJob: Job? = null
+    private var learningCardsKey: Pair<List<String>, AppSettings>? = null
+    private var learningCardsPositionMs = 0L
     private var wordStateJob: Job? = null
     private var wordStateKey: List<String> = emptyList()
     private var openedTarget: MediaTarget? = null
@@ -455,9 +461,17 @@ class PlayerViewModel(
             }
         ) pendingEmbeddedDefaultAssignment = false
         val current = _ui.value
+        if (current.settings.learning != settings.learning || current.settings.level != settings.level ||
+            current.settings.smartLearning != settings.smartLearning || current.settings.wordStyles != settings.wordStyles
+        ) {
+            wordStateJob?.cancel()
+            wordStateKey = emptyList()
+        }
         _ui.value = current.copy(
             settings = settings,
             learningMode = settings.learning.mode,
+            wordStates = if (settings.learning.mode == LearningMode.OFF) emptyMap() else current.wordStates,
+            lineSpans = if (settings.learning.mode == LearningMode.OFF) emptyMap() else current.lineSpans,
             shadowing = current.shadowing.copy(
                 autoRepeat = settings.shadowing.autoRepeatEnabled || settings.shadowing.repeatOnEveryBlock,
                 stopAtEnd = settings.shadowing.stopAtEndOfBlock,
@@ -467,6 +481,7 @@ class PlayerViewModel(
         )
         syncEmbeddedTextTracks(settings)
         publish()
+        refreshWordStates(controller.state.value, settings)
     }
 
     fun updateSettings(transform: (AppSettings) -> AppSettings) {
@@ -1325,6 +1340,7 @@ class PlayerViewModel(
             if (existing != null) {
                 myWords.remove(existing.id)
                 _ui.value = _ui.value.copy(popup = popup.copy(marked = false))
+                learningCardsKey = null
                 wordStateKey = emptyList()
                 refreshWordStates(playback.value, _ui.value.settings)
             } else {
@@ -1352,6 +1368,7 @@ class PlayerViewModel(
                     ),
                 )
                 _ui.value = _ui.value.copy(popup = popup.copy(marked = id != 0L))
+                learningCardsKey = null
                 wordStateKey = emptyList()
                 refreshWordStates(playback.value, _ui.value.settings)
             }
@@ -1425,6 +1442,103 @@ class PlayerViewModel(
         }
     }
 
+    /**
+     * Passive LRN-2 hints follow the resolved learning layer, including embedded cues. Identity
+     * includes source, cue timing and settings: a seek, track change or mode change cancels stale work.
+     * This path never pauses playback, opens a popup, downloads a model or queries an online engine.
+     */
+    private fun refreshLearningCards() {
+        val ui = _ui.value
+        val state = ui.playback
+        val settings = ui.settings
+        val layer = ui.layer(TrackRole.LEARNING)
+        val lines = layer.lines
+        val allowed = settings.learning.mode == LearningMode.LEARNING && settings.learning.maxPopupCards > 0 &&
+            state.target != null && state.isPlaying && !ui.opening && !state.isBuffering &&
+            layer.visible && !ui.scrubbing && lines.isNotEmpty()
+        if (!allowed) {
+            learningCardsJob?.cancel()
+            learningCardsKey = null
+            if (ui.learningCards.isNotEmpty()) _ui.value = ui.copy(learningCards = emptyList())
+            return
+        }
+        val jumped = abs(state.positionMs - learningCardsPositionMs) > LEARNING_SEEK_RESET_MS
+        learningCardsPositionMs = state.positionMs
+        val identity = listOf(state.target!!.uri) + lines.map { "${it.key}:${it.block?.startMs}:${it.text}" }
+        val key = identity to settings
+        if (!jumped && learningCardsKey == key) return
+        learningCardsKey = key
+        learningCardsJob?.cancel()
+        _ui.value = ui.copy(learningCards = emptyList())
+        learningCardsJob = viewModelScope.launch {
+            try {
+                val candidates = withContext(Dispatchers.IO) { learningCandidates(lines, settings) }
+                for (batch in selectLearningCandidates(candidates, settings.learning).chunked(VISIBLE_LEARNING_CARDS)) {
+                    val cards = withContext(Dispatchers.IO) {
+                        batch.mapNotNull { candidate ->
+                            val translated = withTimeoutOrNull(LEARNING_LOOKUP_TIMEOUT_MS) {
+                                orchestrator?.translateImmediate(
+                                    query = candidate.query,
+                                    sourceLanguage = settings.languages.learningLanguage,
+                                    targetLanguage = settings.languages.nativeLanguage,
+                                )?.primaryTranslation
+                                    ?: translation.translate(candidate.query).getOrNull()
+                            }?.trim()?.takeIf { it.isNotEmpty() && !it.equals(candidate.query, true) }
+                            translated?.let {
+                                LearningCardUi(candidate.lemma, candidate.query, it, candidate.level?.name)
+                            }
+                        }
+                    }
+                    if (learningCardsKey != key) return@launch
+                    _ui.value = _ui.value.copy(learningCards = cards)
+                    delay(settings.learning.popupLifetimeMs.coerceIn(1_000L, 20_000L))
+                    if (learningCardsKey == key) _ui.value = _ui.value.copy(learningCards = emptyList())
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // Optional hints failing must not interrupt the film or replace a deliberate tap lookup.
+                if (learningCardsKey == key) _ui.value = _ui.value.copy(learningCards = emptyList())
+            }
+        }
+    }
+
+    private suspend fun learningCandidates(lines: List<SubtitleLineUi>, settings: AppSettings): List<LearningCandidate> {
+        val lex = lexiconAccessProvider()
+        if (lex is com.sublearn.core.lexicon.PackLexiconAccess) lex.ensureInitialized()
+        val smart = settings.smartLearning
+        val config = com.sublearn.core.nlp.NlpConfig(
+            phrasalVerbsEnabled = smart.phrasalVerbsEnabled,
+            idiomsEnabled = smart.idiomsEnabled,
+            collocationsEnabled = smart.collocationsEnabled,
+            crossBlockBridgeEnabled = false, // Simultaneous tracks must never become one invented sentence.
+            confidenceThreshold = smart.confidenceThreshold,
+        )
+        val queries = ArrayList<Pair<String, Boolean>>()
+        for (line in lines) {
+            if (lex != null && settings.learning.showPhraseTranslation) {
+                val cue = com.sublearn.core.nlp.CueSlice(0L, 0L, 0L, 0L, line.text)
+                val spans = cueStreamAnalyzer.analyze(listOf(cue), lex, config)[0L].orEmpty()
+                queries += spans.filter { it.isAboveTypeThreshold(config) && it.isAboveThreshold(config.confidenceThreshold) }
+                    .map { it.headword to true }
+            }
+            queries += com.sublearn.core.subtitles.Tokenizer.spans(line.text)
+                .filter { it.isWord && it.text.any(Char::isLetter) }.map { it.text.lowercase() to false }
+        }
+        val provider = wordLevels.provider(settings.level, settings.learning.manualLevel)
+        // Bound dictionary work for unusually long or malformed subtitle lines as well as card count.
+        return queries.distinct().take(MAX_LEARNING_LOOKUPS).map { (query, phrase) ->
+            val lemmas = if (phrase) setOf(query) else lex?.lemmatiser(query) ?: fallbackLemmatiser.candidates(query)
+            val keys = (listOf(query) + lemmas).distinct()
+            val entry = keys.firstNotNullOfOrNull { lex?.lookupWord(it) }
+            val marked = myWords.findByWords(keys).values
+            val known = marked.any { it.status == WordStatus.KNOWN || settings.learning.markedWordsAreKnown }
+            val entryLevel = CefrLevel.entries.firstOrNull { it != CefrLevel.UNKNOWN && it.name == entry?.cefr }
+            val level = entryLevel ?: provider.level(query)?.takeUnless { it == CefrLevel.UNKNOWN }
+            LearningCandidate(query, entry?.key ?: lemmas.firstOrNull() ?: query, level, known, phrase)
+        }
+    }
+
     // ------------------------------------------------------------------ word styling (SUB-5, LRN-3, D-45, D-50)
 
     /**
@@ -1473,9 +1587,8 @@ class PlayerViewModel(
             val level = provider?.let { runCatching { it.level(word) }.getOrNull() }
             when {
                 isMarked -> WordVisualState.MARKED
-                level != null && level.ordinal >= settings.learning.manualLevel.ordinal &&
-                    settings.learning.showAboveLevelOnly -> WordVisualState.ABOVE_LEVEL
-                level != null && level.ordinal >= settings.level.assumedLevelOfUnknownWords.ordinal -> WordVisualState.ABOVE_LEVEL
+                level != null && level != CefrLevel.UNKNOWN &&
+                    level.ordinal > settings.learning.manualLevel.ordinal -> WordVisualState.ABOVE_LEVEL
                 else -> WordVisualState.NONE
             }
         }
@@ -1992,6 +2105,7 @@ class PlayerViewModel(
             ai = current.ai.copy(configured = aiConfigured(settings)),
             muted = state.isMuted,
         )
+        refreshLearningCards()
     }
 
     private fun isEmbeddedTrackAssigned(settings: AppSettings, role: TrackRole, ref: TrackRef): Boolean {
@@ -2047,6 +2161,7 @@ class PlayerViewModel(
         pendingAdvance?.cancel()
         aiJob?.cancel()
         popupJob?.cancel()
+        learningCardsJob?.cancel()
         super.onCleared()
     }
 
@@ -2110,3 +2225,7 @@ internal fun SubtitlePlacement.movedBy(dxDp: Float, dyDp: Float): SubtitlePlacem
 }
 
 private const val MAX_OFFSET_DP = 900f
+
+private const val LEARNING_SEEK_RESET_MS = 1_500L
+private const val LEARNING_LOOKUP_TIMEOUT_MS = 900L
+private const val MAX_LEARNING_LOOKUPS = 64

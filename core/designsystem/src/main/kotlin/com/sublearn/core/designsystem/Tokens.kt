@@ -115,6 +115,10 @@ object Dimens {
     val hudCircle = 72.dp
     val hudPadding = 24.dp
     val dockGap = 4.dp
+    val learningCardCompactHeight = 360.dp
+    val learningCardWidth = 260.dp
+    const val learningCardWidthShare = 0.48f
+    const val learningCardHeightShare = 0.38f
     val proudCardRadius = 12.dp
     val proudPopupMinWidth = 220.dp
     val proudPopupMaxWidth = 340.dp

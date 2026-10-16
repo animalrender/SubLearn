@@ -163,7 +163,7 @@
     <string name="settings_category_fonts">قلم‌ها</string>
     <string name="settings_category_gestures">حرکات</string>
     <string name="settings_category_shadowing">سایه‌خوانی</string>
-    <string name="settings_category_learning">یادگیری</string>
+    <string name="settings_category_learning">یادگیری در پلیر</string>
     <string name="settings_category_ai">دستیار هوشمند</string>
     <string name="settings_category_dictionary">فرهنگ لغت</string>
     <string name="settings_category_appearance">ظاهر</string>
@@ -222,7 +222,7 @@
     <string name="settings_auto_repeat">تکرار خودکار همه‌ی زیرنویس‌ها</string>
     <string name="settings_stop_at_end_default">به‌طور پیش‌فرض پایان زیرنویس بایست</string>
     <string name="settings_hold_invert">نگه‌داشتن انگشت، حالت را موقتاً برعکس می‌کند</string>
-    <string name="settings_learning_mode">حالت یادگیری</string>
+    <string name="settings_learning_mode">حالت یادگیری پلیر</string>
     <string name="settings_mode_entertainment">سرگرمی</string>
     <string name="settings_mode_learning">یادگیری</string>
     <string name="settings_mode_off">خاموش</string>
@@ -264,8 +264,8 @@
     <string name="level_c1">C1 پیشرفته</string>
     <string name="level_c2">C2 چیره‌دست</string>
     <string name="level_unknown">تنظیم نشده</string>
-    <string name="learn_mode_entertainment_hint">کارت‌ها فقط برای واژه‌هایی بالاتر از سطح شما می‌آیند و پخش متوقف نمی‌شود.</string>
-    <string name="learn_mode_learning_hint">کارت‌ها بیشتر می‌آیند و یک لمس می‌تواند جمله را متوقف کند تا واژه جا بیفتد.</string>
+    <string name="learn_mode_entertainment_hint">حالت پلیر: کارت خودکاری نمایش داده نمی‌شود. برای معنی واژه یا ترکیب، زیرنویس را لمس کنید.</string>
+    <string name="learn_mode_learning_hint">حالت پلیر: واژه‌ها و ترکیب‌های بالاتر از سطح شما خودکار و بدون توقف فیلم در گوشهٔ تصویر نمایش داده می‌شوند.</string>
     <string name="learn_mode_off_hint">بدون کارت و رنگ: فقط زیرنویس، تا وقتی خودتان روی واژه‌ای بزنید.</string>
     <string name="learn_level_source_hint">منبع سطح: لغات من، بعد فهرست واردشده (%1$d واژه)، بعد سطح دستی.</string>
     <string name="app_font_scale">اندازه‌ی قلم برنامه</string>
@@ -331,7 +331,7 @@
     <string name="settings_fallback_online">رجوع به سرویس آنلاین</string>
     <string name="settings_fallback_online_hint">در این نسخه بازگشت آنلاین فعال نیست.</string>
     <string name="settings_marked_known">واژه‌های «لغات من» بلد حساب می‌شوند</string>
-    <string name="settings_show_above_only">فقط واژه‌های بالاتر از سطح من</string>
+    <string name="settings_show_above_only">فقط واژه‌ها و ترکیب‌های بالاتر از سطح من</string>
     <string name="settings_popup_rise">مقدار بالا آمدن کارت</string>
     <string name="settings_popup_corner">فاصله‌ی کارت از گوشه</string>
     <string name="settings_popup_opacity">محو نبودن کارت</string>
@@ -588,4 +588,14 @@
     <string name="onboarding_title">به SubLearn خوش آمدید</string>
     <string name="onboarding_subtitle">برای دریافت فوری معانی و تشخیص عبارات هنگام تماشای فیلم، یک پک واژه‌نامهٔ آفلاین درون‌ریزی کنید یا مدل ترجمهٔ آفلاین ML Kit را دانلود نمایید.</string>
     <string name="onboarding_dismiss">متوجه شدم</string>
+    <string name="learn_coming_soon">یادگیری در مرورگر، PDF و عکس به‌زودی اضافه می‌شود. یادگیری با ویدیو در پلیر در دسترس است.</string>
+    <string name="settings_popup_anchor">گوشهٔ کارت‌ها</string>
+    <string name="settings_popup_top_start">بالا، ابتدا</string>
+    <string name="settings_popup_top_end">بالا، انتها</string>
+    <string name="settings_popup_bottom_start">پایین، ابتدا</string>
+    <string name="settings_popup_bottom_end">پایین، انتها</string>
+    <string name="settings_learning_cards">کارت‌های خودکار یادگیری</string>
+    <string name="settings_subtitle_lookup">جستجوی زیرنویس</string>
+    <string name="settings_popup_vertical_distance">فاصلهٔ عمودی از گوشه</string>
+    <string name="settings_automatic_phrases">نمایش خودکار کارت ترکیب‌ها</string>
 </resources>

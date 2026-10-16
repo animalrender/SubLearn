@@ -50,15 +50,25 @@ object Motion {
             slideOutVertically(tween(OVERLAY_MS, easing = emphasized)) { -it / 6 }
     }
 
-    fun popupEnter(reduceMotion: Boolean, risePx: Int = 40, lifetimeScale: Float = 1f): EnterTransition = if (reduceMotion) {
+    fun popupEnter(
+        reduceMotion: Boolean,
+        risePx: Int = 40,
+        lifetimeScale: Float = 1f,
+        fadeInMs: Int = POPUP_RISE_MS,
+    ): EnterTransition = if (reduceMotion) {
         fadeIn(tween((POPUP_FADE_MS * 0.4f * lifetimeScale).toInt()))
     } else {
-        fadeIn(tween((POPUP_RISE_MS * lifetimeScale).toInt(), easing = decelerate)) +
+        fadeIn(tween((fadeInMs.coerceIn(0, 2_000) * lifetimeScale).toInt(), easing = decelerate)) +
             slideInVertically(tween((POPUP_RISE_MS * lifetimeScale).toInt(), easing = emphasized)) { (risePx * 1f).toInt() }
     }
 
-    fun popupExit(reduceMotion: Boolean, lifetimeScale: Float = 1f): ExitTransition =
-        fadeOut(tween(if (reduceMotion) MICRO_MS else (POPUP_FADE_MS * lifetimeScale).toInt(), easing = accelerate))
+    fun popupExit(
+        reduceMotion: Boolean,
+        lifetimeScale: Float = 1f,
+        fadeOutMs: Int = POPUP_FADE_MS,
+    ): ExitTransition = fadeOut(
+        tween(if (reduceMotion) MICRO_MS else (fadeOutMs.coerceIn(0, 2_000) * lifetimeScale).toInt(), easing = accelerate),
+    )
 
     fun cardEnter(reduceMotion: Boolean): EnterTransition = if (reduceMotion) {
         fadeIn(tween(MICRO_MS))

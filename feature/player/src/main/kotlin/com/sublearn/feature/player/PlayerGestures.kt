@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -15,6 +16,7 @@ import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextLayoutResult
@@ -60,6 +62,8 @@ private fun Offset.length(): Float = sqrt(x * x + y * y)
  * recomposition, when layout callbacks can arrive in any order.
  */
 internal class PlayerHitRegistry {
+    /** Measured geometry only; passive hints use it to keep both subtitle layers clear. */
+    val subtitleBounds = mutableStateMapOf<TrackRole, Rect>()
     private var surface: LayoutCoordinates? = null
     private val subtitles = LinkedHashMap<TrackRole, SubtitleSurface>()
     private val blockers = LinkedHashMap<Any, LayoutCoordinates>()
@@ -70,6 +74,7 @@ internal class PlayerHitRegistry {
 
     fun putSubtitlePlate(role: TrackRole, coordinates: LayoutCoordinates) {
         subtitles.getOrPut(role) { SubtitleSurface() }.plate = coordinates
+        subtitleBounds[role] = coordinates.boundsInRoot()
     }
 
     fun putSubtitleText(role: TrackRole, lineKey: String, coordinates: LayoutCoordinates, layout: TextLayoutResult?) {
@@ -83,6 +88,7 @@ internal class PlayerHitRegistry {
 
     fun forgetSubtitle(role: TrackRole) {
         subtitles.remove(role)
+        subtitleBounds.remove(role)
     }
 
     fun putBlocker(key: Any, coordinates: LayoutCoordinates) {

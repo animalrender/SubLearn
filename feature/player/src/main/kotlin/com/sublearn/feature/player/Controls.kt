@@ -27,7 +27,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DragIndicator
@@ -61,9 +60,9 @@ import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
+import com.sublearn.core.designsystem.SubLearnLinearProgress
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
+import com.sublearn.core.designsystem.SubLearnSlider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -430,13 +429,13 @@ private fun SeekBar(
             modifier = Modifier.padding(start = Dimens.xs, end = Dimens.xs),
         )
         Box(modifier = Modifier.weight(1f).height(Dimens.touchTarget), contentAlignment = Alignment.Center) {
-            LinearProgressIndicator(
+            SubLearnLinearProgress(
                 progress = { buffered.coerceIn(0f, 1f) },
                 modifier = Modifier.fillMaxWidth().height(Dimens.seekbarTrack),
                 color = colors.controlDisabled,
                 trackColor = colors.controlDisabled.copy(alpha = 0f),
             )
-            Slider(
+            SubLearnSlider(
                 value = shown,
                 onValueChange = { next ->
                     if (scrub < 0f) onScrubStart()
