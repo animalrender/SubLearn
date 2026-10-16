@@ -31,21 +31,22 @@ class ModelCatalogTest {
 
     @Test
     fun `profile advice is decided by the device and the installed models`() {
+        val tinyPhone = DeviceCapabilities(totalRamMb = 64, cpuCores = 2, batterySaver = true, freeStorageMb = 512)
         val smallPhone = DeviceCapabilities(totalRamMb = 2048, cpuCores = 4, batterySaver = true, freeStorageMb = 512)
         val bigPhone = DeviceCapabilities(totalRamMb = 8192, cpuCores = 8, batterySaver = false, freeStorageMb = 8192)
 
         // A profile that needs no model is always ready.
-        assertEquals(ProfileAvailability.Ready, SmartProfileSelector.availability(ProfileTier.BASIC, smallPhone, emptySet()))
+        assertEquals(ProfileAvailability.Ready, SmartProfileSelector.availability(ProfileTier.BASIC, tinyPhone, emptySet()))
 
-        // The RAM floor is the device's memory, not the app's heap: a 512 MB phone is told the
-        // profile needs 128 MB of RAM, and 64 MB of RAM is not enough.
+        // The RAM floor is the device's memory, not the app's heap: a 64 MB phone is told the
+        // profile needs 128 MB of RAM, and 2 GB is enough.
         assertEquals(
             ProfileAvailability.NeedsRam(128),
-            SmartProfileSelector.availability(ProfileTier.BALANCED, smallPhone, setOf("emb-potion-base-8m")),
+            SmartProfileSelector.availability(ProfileTier.BALANCED, tinyPhone, setOf("emb-potion-base-8m")),
         )
         assertEquals(
             ProfileAvailability.Ready,
-            SmartProfileSelector.availability(ProfileTier.BALANCED, bigPhone, setOf("emb-potion-base-8m")),
+            SmartProfileSelector.availability(ProfileTier.BALANCED, smallPhone, setOf("emb-potion-base-8m")),
         )
 
         // A model that is not on the device is named, so the screen can point at it.
@@ -61,9 +62,13 @@ class ModelCatalogTest {
             precise is ProfileAvailability.RuntimeMissing || precise is ProfileAvailability.Ready,
         )
 
-        // The automatic choice never promises a model tier the device cannot hold.
-        val chosen = SmartProfileSelector.select(smallPhone, setOf("emb-potion-base-8m"))
+        // The automatic choice never promises a tier the device cannot hold: with 64 MB of RAM no
+        // model tier is possible, so the choice stays with the profiles that need no model.
+        val chosen = SmartProfileSelector.select(tinyPhone, setOf("emb-potion-base-8m"))
         assertTrue("the automatic profile must stay within the device's reach, got $chosen", chosen <= ProfileTier.LIGHT)
+
+        // With the model on the device and room to hold it, the automatic choice reaches BALANCED.
+        assertEquals(ProfileTier.BALANCED, SmartProfileSelector.select(smallPhone, setOf("emb-potion-base-8m")))
     }
 
     @Test
