@@ -14,6 +14,7 @@ import unittest
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_lexicon import (
     build_lexicon,
+    build_report_lines,
     convert_to_pattern,
     convert_to_patterns,
     find_anchor_lemma,
@@ -382,6 +383,50 @@ class TestBuildLexicon(unittest.TestCase):
             self.assertIn("builder_version", report)
             self.assertIn("output_sha256", report)
             self.assertIn("rejected_samples", report)
+
+
+class BuildReportTest(unittest.TestCase):
+    """The summary the builder prints.
+
+    `demotion_reasons` is a mapping among the counters, and formatting it as a number is what broke
+    the real build: `f"  {k}: {v:,}"` raised `unsupported format string passed to dict.__format__`
+    only on the full database, because the sample run never demoted anything.
+    """
+
+    def base_report(self, stats):
+        return {
+            "output_file": "/tmp/pack.sqlite",
+            "output_size_bytes": 35_863_515,
+            "output_sha256": "abc",
+            "stats": stats,
+        }
+
+    def test_prints_a_mapping_without_crashing(self):
+        lines = build_report_lines(
+            self.base_report({"entries_created": 102_000, "demotion_reasons": {"all_closed_class": 9}}),
+            "en-fa",
+        )
+        joined = "\n".join(lines)
+        self.assertIn("entries_created: 102,000", joined)
+        self.assertIn("demotion_reasons:", joined)
+        self.assertIn("all_closed_class: 9", joined)
+
+    def test_prints_a_mixed_stats_block(self):
+        lines = build_report_lines(
+            self.base_report(
+                {"demotions": 12, "builder_note": "gzipped", "empty": {}, "ratio": 0.75},
+            ),
+            "fa-en",
+        )
+        joined = "\n".join(lines)
+        self.assertIn("demotions: 12", joined)
+        self.assertIn("builder_note: gzipped", joined)
+        self.assertIn("ratio: 0.75", joined)
+
+    def test_always_names_the_output_and_the_direction(self):
+        lines = build_report_lines(self.base_report({}), "en-fa")
+        self.assertTrue(lines[0].startswith("Build complete (en-fa)"))
+        self.assertIn("35,863,515 bytes", lines[1])
 
 
 if __name__ == "__main__":

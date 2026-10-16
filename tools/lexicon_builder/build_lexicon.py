@@ -1233,6 +1233,31 @@ def build_fa_en_pack(src_conn: sqlite3.Connection, output_dir: str, gzip_output:
     }
 
 
+def build_report_lines(report: dict, direction: str) -> list[str]:
+    """The human-readable summary the build prints when it finishes.
+
+    Stats are mostly counters, but not all of them: `demotion_reasons` is a mapping and a couple of
+    the values are strings. Formatting every value as a number crashed the builder on the real
+    database — see the tests for the exact shape that broke it.
+    """
+    lines = [
+        f"Build complete ({direction}):",
+        f"  Output: {report['output_file']} ({report['output_size_bytes']:,} bytes)",
+        f"  SHA-256: {report['output_sha256']}",
+    ]
+    for key, value in report.get("stats", {}).items():
+        if isinstance(value, dict):
+            lines.append(f"  {key}:")
+            for nested_key, nested_value in value.items():
+                lines.append(f"    {nested_key}: {nested_value:,}" if isinstance(nested_value, int)
+                             else f"    {nested_key}: {nested_value}")
+        elif isinstance(value, int):
+            lines.append(f"  {key}: {value:,}")
+        else:
+            lines.append(f"  {key}: {value}")
+    return lines
+
+
 def _compute_sha256(path: str) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as f:
@@ -1554,7 +1579,6 @@ def build_lexicon(
         # --- Quality filters (§2.3) ---
         # Demote noise patterns that the classifier gets wrong.
         demotion_reason = None
-        is_multi = " " in key
         in_idioms = any(r["english_word_id"] in idiom_word_ids for r in w_rows)
         tokens = [t for t in key.split() if t]
         token_pos_set = set()
@@ -2013,11 +2037,8 @@ def main():
         with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report, f, ensure_ascii=False, indent=2)
 
-        print(f"Build complete ({args.direction}):")
-        print(f"  Output: {report['output_file']} ({report['output_size_bytes']:,} bytes)")
-        print(f"  SHA-256: {report['output_sha256']}")
-        for k, v in report["stats"].items():
-            print(f"  {k}: {v:,}")
+        for line in build_report_lines(report, args.direction):
+            print(line)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
