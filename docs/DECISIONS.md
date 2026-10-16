@@ -412,3 +412,124 @@ sends **only** the tapped word or phrase (`<= 60` chars) — never the full subt
 metadata — to the configurable endpoint template (primary `client=dict-chrome-ex`, fallback `client=it`
 on `translate.googleapis.com`), parses dictionary POS groups, reverse translations, and primary gloss,
 and caches the response in Room (`TranslationCacheDao`).
+
+## Phase 20–25 Decisions (D-63 .. D-68)
+
+**D-63 — Pattern prior as base confidence instead of flat 0.85.**
+`computeConfidence` in `DeterministicPhraseDetector` now starts from `pattern.prior` (read from the
+lexicon pack's `pattern.prior` column) instead of a hardcoded 0.85. Adjustments:
++0.05 if contiguous ≥3 tokens, -0.15 if gap ≥3, +0.05 if POS agrees, -0.30 if ambiguous
+particle/preposition follower. Clamped to [0,1]. This fixes false positives on common patterns
+like "in truth", "the swedish", "a lot" which have low priors in the lexicon.
+
+**D-64 — Per-type confidence thresholds in NlpConfig.**
+Instead of one global `confidenceThreshold`, each phrase kind has its own:
+`phrasalThreshold=0.75`, `idiomThreshold=0.75`, `collocationThreshold=0.65`.
+`PHRASE` kind (all closed-class tokens) never gets a visible underline. The threshold is
+configurable in Settings/Learning. Analyzer version bumped to 2 to invalidate caches.
+
+**D-65 — Separable phrasal verb detection: particle must be first after verb in pattern.**
+The old algorithm accepted any particle token after the verb in the gap, causing false matches
+like "put it with" matching "put up with". The fix requires the particle to be the first
+literal element after the verb in the compiled pattern, and the remaining pattern elements
+must follow immediately after the particle. "that" is now allowed as a single-token gap
+pronoun (for "look that up").
+
+**D-66 — Quality filter rules in build_lexicon.py.**
+The converter now applies five demotion rules after initial classification:
+1. All closed-class tokens → PHRASE (prior 0.25)
+2. DET/PREP + proper noun/loanword → PHRASE (prior 0.25)
+3. Noun/adj combo without verb + fixed adverb/prep → PHRASE (prior 0.25)
+4. PHRASAL with sole particle "to" + motion verb, without explicit code 20 → PHRASE (prior 0.25)
+5. COLLOCATION without explicit code 19 (only linked from english_idioms) → prior ≤ 0.50
+Demotions are counted and sampled in `build_report.json`.
+
+**D-67 — Overlap resolution keeps alternatives.**
+`resolveOverlaps` no longer discards losing spans; they are attached as `PhraseSpan.alternatives`
+(up to 2) so the card can show both a winning phrase and an alternative.
+
+**D-68 — Room: no destructive migration fallback.**
+`fallbackToDestructiveMigration()` is removed from `SubLearnDatabase.create()`. `exportSchema = true`
+is enabled. If a migration fails, the app should surface the error and offer a backup export rather
+than silently wiping My Words data.
+
+**D-69 — Android-free install logic lives beside the Android wrapper.**
+`MlKitModelInstaller` keeps only what needs a `Context` (paths, HTTP transfer, progress) and
+delegates the URL scheme, SHA-256 verification, zip-slip guard and archive validation to
+`MlKitInstallLogic`, whose inputs and outputs are plain files and `AppResult`. That is what makes
+those rules testable on a JVM: the previous single-class layout could only be exercised on a
+device. The metadata type moved out of the class as `MlKitModelMetadata` so both halves, and the
+`EN_FA_METADATA` constant, can name it.
+
+**D-70 — The catalog is written from the released bytes, never by hand.**
+`tools/update_catalog.py` computes size and SHA-256 from the files the pack workflow just built
+and writes them into `docs/catalog/catalog-v2.json`, which the workflow then commits. A hand-typed
+hash can silently point at other bytes; deriving it cannot. `tools/check_docs.py` and
+`tools/check_schema.py` run in CI for the same reason — the documentation and the exported Room
+schema are checked against the code rather than trusted.
+
+**D-71 — Accuracy profiles carry their model requirements as data.**
+`NlpModelCatalog` in `core:ai` maps each `AccuracyProfileToken` to the models it adds, with the
+runtime, size and RAM floor of each one, and `SmartProfileSelector` never returns a profile whose
+runtime this build lacks. The honest consequence is that PRECISE, ADVANCED and SMART are offered,
+explain what they need, and refuse to run; `NlpModelRuntimeGuard.check` returns a
+`NotImplemented` error instead of quietly falling back to a weaker profile the user did not pick.
+
+**D-72 — The word card has no header and no close button.**
+The card is anchored to the word the learner touched, so a title ("Word"/"Line"/"Block") and a
+close button were both redundant: the level badge and source chips moved onto the word row and a
+tap outside dismisses the card. Losing overlaps from `PhraseSpan.alternatives` became at most two
+extra phrase rows, each in its own type colour, and "more" continues into the AI sheet instead of
+growing the card.
+
+**D-73 — Sorting and export follow the list, not the screen.**
+`WordSort` lives next to `WordFilter` in `WordsViewModel` and every order is stable, with the
+marked-at timestamp as the tie-break, so the list cannot reshuffle between recompositions. Export
+writes through `ActivityResultContracts.CreateDocument` per format rather than a shared launcher
+with a guessed MIME type, which is also why each format gets its own filename.
+
+**D-74 — The engines are registered at startup, not assumed at compile time.**
+`core:ai` cannot see `core:nlp-onnx` or `core:nlp-llm`: those modules depend on it. So
+`NlpModelRuntime.isAvailable` asks `NlpRuntimeRegistry`, which starts pessimistic (only `NONE`) and
+is filled in by `NlpRuntimeBootstrap` from `SubLearnApplication.onCreate`. Each engine is probed
+by loading it — ONNX Runtime through `OrtEnvironment.getEnvironment`, MediaPipe by resolving
+`LlmInference` — so a device whose ABI the shipped native library does not cover keeps the
+pure-Kotlin ranker and is never offered a profile that would fail on the subtitle screen. A build
+that links both engines therefore reports `isAvailable` honestly per device rather than per
+release.
+
+**D-75 — A profile's models are a download set and a resident set.**
+`NlpModelCatalog.modelsFor(profile)` is what the user downloads; `runtimeModelsFor(profile)` is
+what stays in memory. SMART downloads four models so it can move between tiers without another
+transfer, but keeps only the word-sense encoder and the prompt model: 640 MB of resident weights
+would be a crash, not a feature. `ProfiledNlpEngine` walks the resident list strongest-first, keeps
+the first embedder that opens, and reports `meetsProfile` — the caller, not the engine, decides
+whether a weaker model is acceptable, so "PRECISE is running" is never a claim the engine makes on
+its own.
+
+**D-76 — The profile chooses the sense ranker, and the ranker is asked for per lookup.**
+`ProfiledSenseRanker.forProfile` is the whole tier table in one place: BASIC/LIGHT/CUSTOM keep
+`PriorSenseRanker`, BALANCED/PRECISE/ADVANCED rank with the encoder that `ProfiledNlpEngine`
+opened, and SMART puts the prompt model on top through `LlmSenseRanker`. `ModelSenseRanker` scores
+the subtitle line against each candidate's *English* gloss, because every encoder in the catalog is
+an English WordPiece model — a candidate with no English side is left in prior order instead of
+being given a number the model never produced, and any failure (no model, no glosses, a dead
+session) falls back to the lexical order rather than hiding the meanings. The ranker itself comes
+from `ProfiledNlpEngineCache`, which holds the profile's resident models open across subtitle lines
+and reopens them when the profile changes; a profile whose models are absent is *not* cached as a
+failure, so installing a model takes effect on the next tap instead of on the next launch.
+
+**D-77 — The quality filters read every tag a token has, and know three more shapes.**
+The five demotion rules of D-66 were applied through one "primary" POS tag per token, and the five
+errors the pack validator reported on 2026-10-16 all came from that: `look`'s most frequent tag is
+NOUN, so `look forward to` was read as a noun combination and its prior dropped to 0.25, while
+`truth` carries a verb sense, so `in truth` was not read as a fixed combination at all. The rules
+now live in `apply_quality_filters`, a pure function of the entry's data with its own tests, and
+they decide on the whole tag set plus the known-verb lemmas. Two shapes were added: a key that opens
+with a preposition (and whose head is not a verb) is a prepositional phrase, however its later
+tokens are tagged, and a two-token `PHRASAL` whose only "particle" is `to` after a verb of motion is
+demoted *even when the source labels it with the phrasal code* — that label is wrong for
+`go to`/`come to`/`get to`, and D-34 says a wrong underline is worse than a missing one. Idioms are
+exempt from the two shape heuristics, because `a piece of cake` and `in the nick of time` have
+exactly those shapes and are what the learner wants underlined. The demotion reason records whether
+the source carried the phrasal code, so `build_report.json` shows how often it happens.

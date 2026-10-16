@@ -13,6 +13,35 @@
     <string name="menu_settings">Settings</string>
     <string name="coming_soon">Coming soon</string>
     <string name="coming_soon_body">This section is planned but not built yet. The rest of the app works without it.</string>
+    <string name="library_entry_details">Details</string>
+    <string name="library_entry_version">Version %1$s</string>
+    <string name="library_entry_size">Download size: %1$d MB</string>
+    <string name="library_entry_runtime">Runtime: %1$s</string>
+    <string name="library_entry_ram">Suggested RAM: %1$d MB</string>
+    <string name="library_entry_profile">Accuracy profile: %1$s</string>
+    <string name="library_entry_license">Licence: %1$s</string>
+    <string name="library_entry_source">Source: %1$s</string>
+    <string name="library_entry_hash">SHA-256: %1$s&#8230;</string>
+    <string name="library_entry_no_hash">No SHA-256 published for this entry yet, so the download is not verified.</string>
+    <string name="profile_needs_models">This profile adds %1$d download(s), about %2$d MB, and runs only after they are installed.</string>
+    <string name="profile_runtime_missing">The runtime this profile needs is not part of this build, so analysis stays on the previous profile.</string>
+
+    <string name="settings_models_nlp_header">Accuracy models</string>
+    <string name="settings_models_nlp_desc">Optional on-device models. Each profile runs only what it can load; nothing is downloaded until you ask.</string>
+    <string name="settings_models_nlp_balancer">Adds meaning-aware ranking to the BALANCED profile</string>
+    <string name="settings_models_nlp_precise">Adds sentence-embedding ranking to the PRECISE profile</string>
+    <string name="settings_models_nlp_advanced">Adds span-in-context ranking to the ADVANCED profile</string>
+    <string name="settings_models_nlp_smart">Adds prompt-based sense selection to the SMART profile</string>
+    <string name="settings_models_nlp_runtime_none">Runs in pure Kotlin, on any device</string>
+    <string name="settings_models_nlp_runtime_onnx">Runs on ONNX Runtime, on every device with a 64-bit ABI</string>
+    <string name="settings_models_nlp_runtime_litert">Runs on the LiteRT prompt engine, needs a recent device</string>
+    <string name="settings_models_nlp_gated">This model is published under a licence you have to accept on huggingface.co before it can be downloaded.</string>
+    <string name="settings_models_nlp_runtime_missing">The %1$s engine is not part of this build, so this model cannot run here and is not offered for download.</string>
+    <string name="settings_models_nlp_installed_detail">%1$s on the device</string>
+    <string name="settings_models_nlp_progress">%1$s of %2$s</string>
+    <string name="settings_models_name">Model</string>
+    <string name="settings_models_nlp_delete_title">Remove %1$s?</string>
+    <string name="settings_models_nlp_delete_body">Removing the model frees %1$s. The profile that needs it falls back to the models still installed.</string>
 
     <!-- Home -->
     <string name="home_open_file">Open a video</string>
@@ -30,10 +59,18 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_ok">OK</string>
     <string name="action_close">Close</string>
+    <string name="action_back">Back</string>
     <string name="action_save">Save</string>
     <string name="action_reset">Reset</string>
     <string name="action_add">Add</string>
     <string name="action_remove">Remove</string>
+    <string name="action_download">Download</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_info">Details</string>
+    <string name="action_decrease">Decrease</string>
+    <string name="action_increase">Increase</string>
+    <string name="status_installed">Installed</string>
     <string name="action_search">Search</string>
     <string name="action_apply">Apply</string>
 
@@ -163,6 +200,7 @@
     <string name="settings_category_appearance">Appearance</string>
     <string name="settings_category_about">About</string>
     <string name="settings_category_translation">Translation</string>
+    <string name="settings_category_models">Models &amp; Downloads</string>
     <string name="settings_category_quick_actions">Buttons and docks</string>
     <string name="settings_export">Export settings</string>
     <string name="settings_import">Import settings</string>
@@ -275,6 +313,7 @@
     <string name="settings_hint_learning">Modes, level, cards, colours</string>
     <string name="settings_hint_ai">Provider, key, prompt, limits</string>
     <string name="settings_hint_translation">On-device engine and its cache</string>
+    <string name="settings_hint_models">Download models, packs and language data</string>
     <string name="settings_hint_dictionary">Offline dictionary import</string>
     <string name="settings_hint_quick_actions">Buttons on the player and their places</string>
     <string name="settings_hint_about">Version, export and import</string>
@@ -497,6 +536,13 @@
     <string name="settings_trans_mode">Translation orchestration</string>
     <string name="settings_trans_mode_priority">Priority chain (stop at first hit)</string>
     <string name="settings_trans_mode_merge">Merge all enabled sources</string>
+    <string name="status_verifying">Verifying&#8230;</string>
+    <string name="status_installing">Installing&#8230;</string>
+    <string name="settings_models_installed_header">Downloads</string>
+    <string name="settings_models_mlkit_name">Offline translation model (EN &#8596; FA)</string>
+    <string name="settings_models_mlkit_desc">Google ML Kit neural translation, stored on the device</string>
+    <string name="settings_models_mlkit_info">Downloads the EN&#8596;FA pair from the Google content network, verifies its SHA-256 checksum, rejects unsafe archive paths and installs it atomically. Once installed, translation works with no network at all.</string>
+    <string name="settings_models_footer">Installed items stay in this list so you can remove them; a download in progress can be cancelled at any time.</string>
     <string name="settings_trans_sources_header">Translation sources &amp; priority</string>
     <string name="settings_trans_source_pack">Offline Lexicon Pack v2</string>
     <string name="settings_trans_source_mlkit">Google ML Kit (on-device)</string>
@@ -521,6 +567,15 @@
     <string name="words_export_json">JSON</string>
     <string name="words_export_csv">CSV</string>
     <string name="words_export_anki_tsv">Anki TSV</string>
+    <string name="words_export_save_header">Save as a file</string>
+    <string name="words_export_save_csv">Save as CSV&#8230;</string>
+    <string name="words_export_save_json">Save as JSON&#8230;</string>
+    <string name="words_export_save_tsv">Save as Anki TSV&#8230;</string>
+    <string name="words_sort_label">Sort:</string>
+    <string name="words_sort_newest">Newest</string>
+    <string name="words_sort_oldest">Oldest</string>
+    <string name="words_sort_alphabetical">A&#8211;Z</string>
+    <string name="words_sort_level">Level</string>
     <string name="words_exported_copied">Copied exported vocabulary to clipboard</string>
     <string name="words_import_paste_hint">Paste JSON, CSV, or Anki TSV vocabulary rows</string>
     <string name="words_imported_count">Imported %1$d items</string>

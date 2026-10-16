@@ -459,6 +459,32 @@ COMMON_PHRASAL_VERBS = {
 }
 
 # Not verbs when appearing at start of 2-word phrase
+# Tokens that carry no meaning of their own. A multi-word key made only of these is a
+# grammatical fragment ("at that", "the way"), never something to underline (§2.3 rule 1).
+CLOSED_CLASS_TAGS = {"DET", "PREP", "PRON", "AUX", "CONJ", "PART"}
+
+# Prepositions that can open a fixed phrase. A key that starts with one of these and contains no
+# verb is a prepositional phrase ("in truth", "on time"), which is looked up but not underlined
+# (§2.3 rule 3b). The list is deliberately short: a preposition the dictionary uses as a noun
+# ("the ins and outs") is not here.
+LEADING_PREPOSITIONS = {
+    "in", "on", "at", "by", "for", "with", "without", "of", "from", "to", "into", "onto",
+    "under", "over", "about", "after", "before", "between", "against", "across", "among",
+}
+
+# The keys the pack validator asserts on. The build records what the rules decided for each of
+# them, because a rule that reads the wrong data is otherwise invisible: the pack only shows the
+# resulting kind and prior. Printed in the build log as `quality_audit <key>: ...`.
+QUALITY_AUDIT_KEYS = (
+    "at that", "the way", "a lot", "in truth", "the swedish",
+    "go to", "come to", "going to", "get to",
+    "give up", "make a decision", "look forward to", "keep an eye on",
+)
+
+# Verbs of motion or linking. "to" after one of these is the infinitive marker or a
+# preposition, not a particle: "I go to school" is not a phrasal verb (§2.3 rule 4).
+MOTION_LINKING_VERBS = {"go", "come", "get", "turn", "lead", "switch", "amount"}
+
 NON_VERB_FIRST_WORDS = {
     "a", "an", "the", "as", "at", "by", "for", "from", "in", "inside", "outside",
     "into", "of", "off", "on", "onto", "out", "over", "prior", "up", "down",
@@ -1233,12 +1259,142 @@ def build_fa_en_pack(src_conn: sqlite3.Connection, output_dir: str, gzip_output:
     }
 
 
+def build_report_lines(report: dict, direction: str) -> list[str]:
+    """The human-readable summary the build prints when it finishes.
+
+    Stats are mostly counters, but not all of them: `demotion_reasons` is a mapping and a couple of
+    the values are strings. Formatting every value as a number crashed the builder on the real
+    database — see the tests for the exact shape that broke it.
+    """
+    lines = [
+        f"Build complete ({direction}):",
+        f"  Output: {report['output_file']} ({report['output_size_bytes']:,} bytes)",
+        f"  SHA-256: {report['output_sha256']}",
+    ]
+    for key, value in report.get("stats", {}).items():
+        if isinstance(value, dict):
+            lines.append(f"  {key}:")
+            for nested_key, nested_value in value.items():
+                lines.append(f"    {nested_key}: {nested_value:,}" if isinstance(nested_value, int)
+                             else f"    {nested_key}: {nested_value}")
+        elif isinstance(value, int):
+            lines.append(f"  {key}: {value:,}")
+        else:
+            lines.append(f"  {key}: {value}")
+
+    audit = report.get("quality_audit") or {}
+    for key in sorted(audit):
+        info = audit[key]
+        lines.append(
+            f"  quality_audit {key}: kind={info['kind']} prior={info['prior']} "
+            f"reason={info['reason']} idioms={info['idioms']} codes={info['codes']} "
+            f"tokens=[{info['tokens']}]"
+        )
+    return lines
+
+
 def _compute_sha256(path: str) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(65536), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def apply_quality_filters(
+    key: str,
+    kind: str,
+    entry_prior: float,
+    token_tags: list[set[str]],
+    token_primary: list[str | None],
+    token_lemmas: list[str],
+    in_idioms: bool,
+    all_pos_codes: set[int],
+) -> tuple[str, float, str | None]:
+    """Demote the multi-word entries the classifier reads as phrases but a learner must not see.
+
+    Kept as a pure function of the entry's own data so the rules can be tested against the cases
+    that reached the real pack (`tools/lexicon_builder/test_lexicon_builder.py`); a full build needs
+    the 98 MB source database, which is not available everywhere the tests are.
+
+    Two shapes of source data make this harder than it looks, and the `quality_audit` lines in the
+    build log are where both were found:
+
+    * a token's tag *set* is the union over every sense of the word, so `in`, `at`, `that` and `an`
+      all carry a verb tag — a key containing one of them would never look verb-free;
+    * the *primary* tag is what the source uses most, and for `look` that is the noun, so a rule
+      reading only the primary tag demoted the real phrasal verb `look forward to`.
+
+    So membership tests use the primary tag, the "is there a verb here" test uses the lemma (which
+    is what `look` has and `truth` does not), and the audit records both.
+
+    @param token_tags every POS tag recorded for each token, in key order
+    @param token_primary the most frequent tag per token, or None when the source tags none
+    @param token_lemmas each token's lemma
+    @return the kind, the prior and the reason, or None when nothing was demoted
+    """
+    tokens = [t for t in key.split() if t]
+    if not tokens or kind == "WORD":
+        return kind, entry_prior, None
+
+    primary = list(token_primary)
+    tags_per_token = [set(tags) for tags in token_tags]
+
+    def is_verb(index: int) -> bool:
+        if primary[index] == "VERB":
+            return True
+        return token_lemmas[index] in COMMON_PHRASAL_VERBS
+
+    verb_present = any(is_verb(index) for index in range(len(tokens)))
+
+    # Rule 2 (checked before rule 1 so each case gets its own reason): determiner or preposition in
+    # front of a token the dictionary does not tag at all → a name or a loanword, not a phrase
+    # ("the swedish").
+    if len(tokens) == 2 and primary[0] in ("DET", "PREP") and not tags_per_token[1]:
+        return "PHRASE", 0.25, "det_prep_untagged"
+
+    # Rule 1: every token is a closed-class word → grammar, not vocabulary ("at that", "the way",
+    # "a lot"). Only tokens the source tagged at all take part: an untagged token is unknown, which
+    # is rule 2's case, not this one.
+    if primary and all(tag in CLOSED_CLASS_TAGS for tag in primary if tag) and not verb_present:
+        return "PHRASE", 0.25, "all_closed_class"
+
+    # Rule 3b: the key opens with a preposition that is not a verb → a prepositional phrase. A
+    # two-token entry is included even when the source calls it an idiom, because "at that" is not
+    # vocabulary; longer idioms ("in the nick of time") are, and are left alone.
+    if (
+        (kind != "IDIOM" or len(tokens) == 2)
+        and tokens[0].lower() in LEADING_PREPOSITIONS
+        and not is_verb(0)
+    ):
+        return "PHRASE", 0.25, "prepositional_phrase"
+
+    # Rule 3: no verb and every primary tag is a content or fixed-function tag → a fixed
+    # combination ("year by year", "in fact"). An entry the classifier already read as an idiom is
+    # left alone: "a piece of cake" has this shape and is exactly what the learner wants underlined.
+    if (
+        kind != "IDIOM"
+        and not verb_present
+        and any(primary)
+        and all(tag in {"NOUN", "ADJ", "ADV", "PREP", "DET"} for tag in primary if tag)
+        and any(tag in ("NOUN", "ADJ") for tag in primary)
+    ):
+        return "PHRASE", 0.25, "noun_adj_combo"
+
+    # Rule 4: PHRASAL whose only "particle" is "to" after a verb of motion → not a phrasal verb.
+    # The source database labels some of these with the phrasal code; the label is wrong for
+    # exactly these keys, and an underline on "go to" is the kind of error D-34 exists to prevent.
+    if kind == "PHRASAL" and len(tokens) == 2 and tokens[1].lower() == "to":
+        if token_lemmas[0] in MOTION_LINKING_VERBS:
+            reason = "phrasal_to_motion_db" + ("20" if 20 in all_pos_codes else "none")
+            return "PHRASE", 0.25, reason
+
+    # Rule 5: a COLLOCATION the source only links from its idiom table, with no collocation code,
+    # cannot be trusted enough to underline.
+    if kind == "COLLOCATION" and 19 not in all_pos_codes and in_idioms:
+        return kind, min(entry_prior, 0.50), None
+
+    return kind, entry_prior, None
 
 
 def build_lexicon(
@@ -1289,8 +1445,12 @@ def build_lexicon(
         "entry_extra_created": 0,
         "colloc_created": 0,
         "rejected_patterns": 0,
+        "demotions": 0,
+        "demotion_reasons": {},
     }
     rejected_samples = []
+    demotion_samples = {}
+    quality_audit = {}
 
     # 0. Load category_names from DB (all 82 categories) + fallback
     cat_map: dict[int, tuple[str, str]] = dict(CATEGORIES_FALLBACK)
@@ -1547,6 +1707,52 @@ def build_lexicon(
             all_pos_codes.update(pos_by_did.get(d["english_detail_id"], []))
 
         kind, entry_prior = classify_entry(key, w_rows, all_pos_codes)
+
+        # --- Quality filters (§2.3) ---
+        # The rules are in `apply_quality_filters` so they can be exercised without the source
+        # database; this call only gathers what they decide on.
+        in_idioms = any(r["english_word_id"] in idiom_word_ids for r in w_rows)
+        tokens = [t for t in key.split() if t]
+        token_tags = [
+            {tag for tag, _ in by_word_tags.get(tok.lower(), [])}
+            for tok in tokens
+        ]
+        token_lemmas = [lemma_map.get(tok.lower(), tok.lower()) for tok in tokens]
+        token_primary = [word_to_primary_pos.get(tok.lower()) for tok in tokens]
+        kind, entry_prior, demotion_reason = apply_quality_filters(
+            key=key,
+            kind=kind,
+            entry_prior=entry_prior,
+            token_tags=token_tags,
+            token_primary=token_primary,
+            token_lemmas=token_lemmas,
+            in_idioms=in_idioms,
+            all_pos_codes=all_pos_codes,
+        )
+
+        # What the rules saw, for the keys the validator has an opinion about. A wrong reading of
+        # the source data shows up nowhere else: the pack keeps only the resulting kind and prior.
+        if key in QUALITY_AUDIT_KEYS:
+            quality_audit[key] = {
+                "kind": kind,
+                "prior": round(float(entry_prior), 3),
+                "reason": demotion_reason or "none",
+                "idioms": in_idioms,
+                "codes": sorted(all_pos_codes),
+                "tokens": " | ".join(
+                    f"{tok}: {token_primary[i] or 'untagged'}"
+                    f"/{{{', '.join(sorted(tags)) or 'no tags'}}}"
+                    f"/lemma={token_lemmas[i]}"
+                    for i, (tok, tags) in enumerate(zip(tokens, token_tags))
+                ),
+            }
+
+        # Track demotions for the build report
+        if demotion_reason:
+            stats["demotions"] += 1
+            stats["demotion_reasons"][demotion_reason] = stats["demotion_reasons"].get(demotion_reason, 0) + 1
+            if len(demotion_samples.get(demotion_reason, [])) < 5:
+                demotion_samples.setdefault(demotion_reason, []).append(key)
 
         # Pick best headword (prefer one with parentheses if it's an idiom/phrasal so pattern expansion sees "(or ...)")
         headword = w_rows[0]["english_word"].strip()
@@ -1857,6 +2063,8 @@ def build_lexicon(
         "gzip_sha256": gz_sha256,
         "stats": stats,
         "rejected_samples": rejected_samples,
+        "demotion_samples": demotion_samples,
+        "quality_audit": quality_audit,
     }
 
 
@@ -1945,11 +2153,8 @@ def main():
         with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report, f, ensure_ascii=False, indent=2)
 
-        print(f"Build complete ({args.direction}):")
-        print(f"  Output: {report['output_file']} ({report['output_size_bytes']:,} bytes)")
-        print(f"  SHA-256: {report['output_sha256']}")
-        for k, v in report["stats"].items():
-            print(f"  {k}: {v:,}")
+        for line in build_report_lines(report, args.direction):
+            print(line)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)

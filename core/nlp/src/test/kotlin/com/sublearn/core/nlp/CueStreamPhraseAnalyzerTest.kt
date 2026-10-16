@@ -49,8 +49,8 @@ class CueStreamPhraseAnalyzerTest {
     fun `detects phrase split across two consecutive cues within gap`() = runBlocking {
         val analyzer = CueStreamPhraseAnalyzer()
         val cues = listOf(
-            CueSlice(blockId = 10L, startMs = 1000L, endMs = 2500L, text = "She finally came"),
-            CueSlice(blockId = 11L, startMs = 2700L, endMs = 4200L, text = "up with a brilliant plan."),
+            CueSlice(cueId = 1L, blockId = 10L, startMs = 1000L, endMs = 2500L, text = "She finally came"),
+            CueSlice(cueId = 2L, blockId = 11L, startMs = 2700L, endMs = 4200L, text = "up with a brilliant plan."),
         )
         val result = analyzer.analyze(cues, buildLexicon(), NlpConfig.DEFAULT, LexiconPosTagger())
         val block10Spans = result[10L].orEmpty()
@@ -65,8 +65,8 @@ class CueStreamPhraseAnalyzerTest {
     fun `does not bridge across terminal sentence punctuation`() = runBlocking {
         val analyzer = CueStreamPhraseAnalyzer()
         val cues = listOf(
-            CueSlice(blockId = 1L, startMs = 1000L, endMs = 2000L, text = "He never gave."),
-            CueSlice(blockId = 2L, startMs = 2100L, endMs = 3000L, text = "Up on the hill."),
+            CueSlice(cueId = 1L, blockId = 1L, startMs = 1000L, endMs = 2000L, text = "He never gave."),
+            CueSlice(cueId = 2L, blockId = 2L, startMs = 2100L, endMs = 3000L, text = "Up on the hill."),
         )
         val result = analyzer.analyze(cues, buildLexicon(), NlpConfig.DEFAULT)
         assertTrue(result[1L].orEmpty().isEmpty())
@@ -74,15 +74,44 @@ class CueStreamPhraseAnalyzerTest {
     }
 
     @Test
-    fun `does not bridge when gap exceeds maxGapMs`() = runBlocking {
+    fun `does not bridge when gap exceeds hardGapMs`() = runBlocking {
         val analyzer = CueStreamPhraseAnalyzer()
         val cues = listOf(
-            CueSlice(blockId = 1L, startMs = 1000L, endMs = 2000L, text = "She finally came"),
-            CueSlice(blockId = 2L, startMs = 5000L, endMs = 6500L, text = "up with a plan"),
+            CueSlice(cueId = 1L, blockId = 1L, startMs = 1000L, endMs = 2000L, text = "She finally came"),
+            CueSlice(cueId = 2L, blockId = 2L, startMs = 5000L, endMs = 6500L, text = "up with a plan"),
         )
-        val result = analyzer.analyze(cues, buildLexicon(), NlpConfig.DEFAULT, maxGapMs = 1200L)
+        val segConfig = SegmentConfig(hardGapMs = 1200L)
+        val result = analyzer.analyze(cues, buildLexicon(), NlpConfig.DEFAULT, segmentConfig = segConfig)
         assertTrue(result[1L].orEmpty().isEmpty())
         assertTrue(result[2L].orEmpty().isEmpty())
+    }
+
+    @Test
+    fun `text cleanup strips speaker labels and HTML tags`() {
+        val cleaned = AnalysisTextCleanup.clean("<i>JOHN: I gave up [MUSIC] smoking.</i>")
+        assertFalse("Should strip HTML tags", cleaned.contains("<i>"))
+        assertFalse("Should strip speaker label", cleaned.contains("JOHN:"))
+        assertFalse("Should strip stage direction", cleaned.contains("[MUSIC]"))
+        assertTrue("Should contain core text", cleaned.contains("gave up"))
+    }
+
+    @Test
+    fun `text cleanup normalizes curly quotes`() {
+        val cleaned = AnalysisTextCleanup.clean("She\u2019s going to \u201Cgive up\u201D")
+        assertTrue("Should normalize curly single quote", cleaned.contains("'s"))
+        assertFalse("Should not contain curly double quotes", cleaned.contains("\u201C"))
+    }
+
+    @Test
+    fun `computeContentHash produces stable hash`() {
+        val cues = listOf(
+            CueSlice(1L, 10L, 0L, 1000L, "Hello world"),
+            CueSlice(2L, 11L, 1100L, 2000L, "Goodbye world"),
+        )
+        val hash1 = CueStreamPhraseAnalyzer.computeContentHash(cues)
+        val hash2 = CueStreamPhraseAnalyzer.computeContentHash(cues)
+        assertEquals("Same input should produce same hash", hash1, hash2)
+        assertTrue("Hash should be 64 hex chars", hash1.length == 64)
     }
 
     @Test
@@ -111,5 +140,53 @@ class CueStreamPhraseAnalyzerTest {
         val tags4 = tagger.tag(listOf("It", "can", "break"))
         assertEquals("VERB", tags4[2])
         assertFalse(tags3[4] == tags4[2])
+    }
+
+    /**
+     * Throughput benchmark (§2.4). A feature film is roughly 1,500 cues and 15-20k tokens, so the
+     * analyser has to clear that in well under a second of CPU on a phone. The bound here is
+     * deliberately loose: it is a regression tripwire for an accidental O(n^2) change, not a
+     * performance target, because CI machines vary.
+     */
+    @Test
+    fun `analyses twenty thousand tokens within the regression budget`() = runBlocking {
+        val analyzer = CueStreamPhraseAnalyzer()
+        val lexicon = buildLexicon()
+
+        // Three cues per sentence, bridging into one stream, 20 tokens per sentence, 1000 sentences.
+        val sentences = 1_000
+        val cues = ArrayList<CueSlice>(sentences * 3)
+        var cueId = 1L
+        for (i in 0 until sentences) {
+            val base = i * 10_000L
+            cues += CueSlice(cueId++, i * 3L, base, base + 1_500L, "She finally came")            // 3
+            cues += CueSlice(cueId++, i * 3L + 1, base + 1_600L, base + 3_000L,
+                "up with a brilliant plan for the whole team")                                     // 10
+            cues += CueSlice(cueId++, i * 3L + 2, base + 3_100L, base + 4_500L,
+                "and then turned it all down again today")                                         // 8
+        }
+
+        val tokenCount = cues.sumOf {
+            CueStreamPhraseAnalyzer.tokenizeText(AnalysisTextCleanup.clean(it.text)).size
+        }
+        assertEquals("the benchmark should exercise 20k tokens", 20_000, tokenCount)
+
+        val started = System.nanoTime()
+        val result = analyzer.analyze(cues, lexicon, NlpConfig.DEFAULT, LexiconPosTagger())
+        val elapsedMs = (System.nanoTime() - started) / 1_000_000
+
+        assertEquals("each cue is its own block", sentences * 3, result.size)
+        assertTrue(
+            "analysing $tokenCount tokens took ${elapsedMs}ms, above the regression budget",
+            elapsedMs < 15_000,
+        )
+    }
+
+    @Test
+    fun `hard boundary start detection`() {
+        assertTrue(CueStreamPhraseAnalyzer.endsWithSentenceBoundary("He said."))
+        assertTrue(CueStreamPhraseAnalyzer.endsWithSentenceBoundary("Really?"))
+        assertFalse(CueStreamPhraseAnalyzer.endsWithSentenceBoundary("Wait..."))
+        assertFalse(CueStreamPhraseAnalyzer.endsWithSentenceBoundary("..."))
     }
 }

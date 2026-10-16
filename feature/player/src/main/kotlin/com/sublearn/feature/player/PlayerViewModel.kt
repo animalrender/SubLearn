@@ -12,6 +12,7 @@ import com.sublearn.core.data.MarkedWord
 import com.sublearn.core.data.MyWordsRepository
 import com.sublearn.core.data.RecentVideoRepository
 import com.sublearn.core.data.WordStatus
+import com.sublearn.core.designsystem.WordCardTokens
 import com.sublearn.core.designsystem.R
 import com.sublearn.core.lexicon.WordLevelSource
 import com.sublearn.core.player.MediaTarget
@@ -91,6 +92,12 @@ class PlayerViewModel(
     private val ai: AiAssistant,
     private val secrets: SecretStore,
     private val lexiconAccessProvider: () -> com.sublearn.core.nlp.LexiconAccess? = { null },
+    /**
+     * The sense ranker for the profile selected right now, or null to keep the lexicon's own
+     * order (`D-76`). Asked for per popup rather than captured, because the user can change
+     * profile while a video is open.
+     */
+    private val senseRankerProvider: () -> com.sublearn.core.nlp.SenseRanker? = { null },
     private val orchestrator: com.sublearn.core.translate.TranslationOrchestrator? = null,
     private val phraseSpanCacheDao: com.sublearn.core.data.PhraseSpanCacheDao? = null,
 ) : ViewModel() {
@@ -1141,6 +1148,15 @@ class PlayerViewModel(
                 kind = span.kind,
                 marked = span.lemmaKey.lowercase() in _ui.value.savedPhraseKeys ||
                     span.headword.lowercase() in _ui.value.savedPhraseKeys,
+                // §7: at most two losing overlaps travel with the winning span, so the card can
+                // show "in truth" next to "in the truth of it" without becoming a list.
+                alternatives = span.alternatives.take(WordCardTokens.MAX_PHRASE_ROWS).map { alt ->
+                    PopupPhraseAlternative(
+                        headword = alt.headword,
+                        kind = alt.kind,
+                        level = lexiconAccessProvider()?.lookupWord(alt.lemmaKey.lowercase())?.cefr,
+                    )
+                },
             )
         }
 
@@ -1174,9 +1190,14 @@ class PlayerViewModel(
                 val orchPhrase = orchestrator?.translateImmediate(section.headword)
                 val lexEntry = lexiconAccessProvider()?.lookupWord(section.lemmaKey.lowercase())
                 val lexSenses = lexEntry?.let { lexiconAccessProvider()?.senses(it.id).orEmpty() }.orEmpty()
-                val lexExamples = lexSenses.firstOrNull()?.let { lexiconAccessProvider()?.examples(it.senseId).orEmpty() }.orEmpty()
+                // The profile may rank the meanings for this line; without a model this is the
+                // lexicon's own order (`D-76`).
+                val rankedSenses = rankSensesForLine(section.lemmaKey, lexSenses, block.text)
+                val lexExamples = rankedSenses.firstOrNull()?.let {
+                    lexiconAccessProvider()?.examples(it.senseId).orEmpty()
+                }.orEmpty()
                 val phraseGloss = orchPhrase?.primaryTranslation
-                    ?: lexSenses.map { it.glossFa }.distinct().take(4).joinToString("، ").takeIf { it.isNotBlank() }
+                    ?: rankedSenses.map { it.glossFa }.distinct().take(4).joinToString("، ").takeIf { it.isNotBlank() }
                     ?: runCatching { translation.translate(section.headword).getOrNull() }.getOrNull()
                 section.copy(
                     translation = phraseGloss,
@@ -1460,6 +1481,28 @@ class PlayerViewModel(
         }
     }
 
+    /**
+     * Orders a word's meanings for the line it was tapped in.
+     *
+     * The ranker comes from the accuracy profile (`D-76`): priors and CEFR for the model-free
+     * profiles, a sentence encoder for PRECISE and above, and the prompt model on top of that for
+     * SMART. Anything that goes wrong - no ranker, a model that will not open, an inference that
+     * fails - leaves the lexicon's own order in place, because a tapped word must always show its
+     * meanings.
+     */
+    private suspend fun rankSensesForLine(
+        lemmaKey: String,
+        senses: List<com.sublearn.core.nlp.SenseCandidate>,
+        line: String,
+    ): List<com.sublearn.core.nlp.SenseCandidate> {
+        if (senses.size < 2) return senses
+        val ranker = runCatching { senseRankerProvider() }.getOrNull() ?: return senses
+        val context = line.split(CONTEXT_SEPARATOR)
+            .filter { it.isNotBlank() }
+            .take(CONTEXT_WINDOW_TOKENS)
+        return runCatching { ranker.rank(lemmaKey, senses, context) }.getOrDefault(senses)
+    }
+
     private suspend fun computeLinePhraseSpans(
         doc: SubtitleDocument,
         currentBlock: SubtitleBlock,
@@ -1488,6 +1531,7 @@ class PlayerViewModel(
         }
         val slices = windowBlocks.map { b ->
             com.sublearn.core.nlp.CueSlice(
+                cueId = b.id,
                 blockId = b.id,
                 startMs = b.startMs,
                 endMs = b.endMs,
@@ -2010,6 +2054,13 @@ class PlayerViewModel(
     enum class TapSide { LEFT, CENTER, RIGHT }
 
     companion object {
+        /** How many words of the line a sense ranker is shown. The models take 256 tokens; this
+         *  keeps the call short, and a subtitle line is shorter than this anyway. */
+        private const val CONTEXT_WINDOW_TOKENS = 24
+
+        /** Everything that is not a letter or a digit separates context words. */
+        private val CONTEXT_SEPARATOR = Regex("[^\\p{L}\\p{N}']+")
+
         private const val RESUME_THRESHOLD_MS = 8_000L
         private const val PAUSE_LEAD_MS = 4_000L
         private const val MIN_AUTO_HIDE_MS = 1_000L

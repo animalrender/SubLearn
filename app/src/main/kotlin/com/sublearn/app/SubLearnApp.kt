@@ -1,5 +1,6 @@
 package com.sublearn.app
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
@@ -8,8 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoStories
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.OndemandVideo
 import androidx.compose.material.icons.filled.SmartDisplay
@@ -111,7 +112,14 @@ fun SubLearnApp(
 private fun AppScaffold(nav: AppNavigator, versionName: String) {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
-    var tab by remember { mutableStateOf(Tab.HOME) }
+
+    // System back handler (§4.2)
+    BackHandler(enabled = nav.route != AppRoute.PLAYER) {
+        nav.back()
+    }
+
+    // Derive active tab from route (§4.2) — no separate `tab` variable
+    val activeTab = nav.activeTabIndex
 
     ModalNavigationDrawer(drawerState = drawerState, drawerContent = {
         ModalDrawerSheet {
@@ -122,10 +130,8 @@ private fun AppScaffold(nav: AppNavigator, versionName: String) {
                     modifier = Modifier.padding(horizontal = 20.dp),
                 )
                 Spacer(Modifier.size(16.dp))
-                MenuEntry(Icons.Default.School, R.string.menu_level) {
-                    scope.launch { drawerState.close() }
-                    nav.go(AppRoute.LEVEL)
-                }
+                // §4.2: Side menu: My Words, Quiz (coming soon), Settings, About/Updates
+                // Level removed (→ Settings→Learning), Dictionary removed (in bottom nav)
                 MenuEntry(Icons.Default.Star, R.string.menu_my_words) {
                     scope.launch { drawerState.close() }
                     nav.go(AppRoute.WORDS)
@@ -133,10 +139,6 @@ private fun AppScaffold(nav: AppNavigator, versionName: String) {
                 MenuEntry(Icons.Default.AutoStories, R.string.menu_quiz) {
                     scope.launch { drawerState.close() }
                     nav.go(AppRoute.QUIZ)
-                }
-                MenuEntry(Icons.Default.TrendingUp, R.string.settings_category_dictionary) {
-                    scope.launch { drawerState.close() }
-                    nav.go(AppRoute.DICTIONARY)
                 }
                 MenuEntry(Icons.Default.Settings, R.string.menu_settings) {
                     scope.launch { drawerState.close() }
@@ -147,37 +149,38 @@ private fun AppScaffold(nav: AppNavigator, versionName: String) {
     }) {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text(stringResource(nav.route.titleRes()), style = MaterialTheme.typography.titleMedium) },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.menu_settings))
-                        }
-                    },
-                    actions = {
-                        // The player is the only screen that needs the drawer closed, so it hides the bar.
-                        IconButton(onClick = { scope.launch { drawerState.close() } }) {
-                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_close))
-                        }
-                    },
-                )
+                if (nav.route != AppRoute.PLAYER) {
+                    TopAppBar(
+                        title = { Text(stringResource(nav.route.titleRes()), style = MaterialTheme.typography.titleMedium) },
+                        navigationIcon = {
+                            if (nav.route in setOf(AppRoute.HOME, AppRoute.YOUTUBE, AppRoute.LEARN, AppRoute.DICTIONARY)) {
+                                // Main screens: hamburger menu
+                                IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                    Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.menu_settings))
+                                }
+                            } else {
+                                // Sub-screens: back arrow
+                                IconButton(onClick = { nav.back() }) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.action_back))
+                                }
+                            }
+                        },
+                        // §4.2: No ⨯ button; Home has title only
+                    )
+                }
             },
             bottomBar = {
                 NavigationBar {
-                    TabEntry(tab == Tab.HOME, Icons.Default.OndemandVideo, R.string.tab_home) {
-                        tab = Tab.HOME
+                    TabEntry(activeTab == 0, Icons.Default.OndemandVideo, R.string.tab_home) {
                         nav.go(AppRoute.HOME)
                     }
-                    TabEntry(tab == Tab.YOUTUBE, Icons.Default.SmartDisplay, R.string.tab_youtube) {
-                        tab = Tab.YOUTUBE
+                    TabEntry(activeTab == 1, Icons.Default.SmartDisplay, R.string.tab_youtube) {
                         nav.go(AppRoute.YOUTUBE)
                     }
-                    TabEntry(tab == Tab.LEARN, Icons.Default.Slideshow, R.string.tab_learn) {
-                        tab = Tab.LEARN
+                    TabEntry(activeTab == 2, Icons.Default.Slideshow, R.string.tab_learn) {
                         nav.go(AppRoute.LEARN)
                     }
-                    TabEntry(tab == Tab.DICTIONARY, Icons.Default.TrendingUp, R.string.tab_dictionary) {
-                        tab = Tab.DICTIONARY
+                    TabEntry(activeTab == 3, Icons.Default.TrendingUp, R.string.tab_dictionary) {
                         nav.go(AppRoute.DICTIONARY)
                     }
                 }
@@ -197,15 +200,16 @@ private fun AppScaffold(nav: AppNavigator, versionName: String) {
                     )
 
                     AppRoute.WORDS -> MyWordsScreen(
-                        onBack = { nav.go(AppRoute.HOME) },
+                        onBack = { nav.back() },
                         onOpenContext = { title, _ -> nav.openPlayer(title, title) },
                     )
                     AppRoute.SETTINGS -> SettingsScreen(
-                        onBack = { nav.go(AppRoute.HOME) },
+                        onBack = { nav.back() },
                         versionName = versionName,
                     )
+                    // LEVEL removed: use Settings→Learning instead
                     AppRoute.LEVEL -> SettingsScreen(
-                        onBack = { nav.go(AppRoute.HOME) },
+                        onBack = { nav.back() },
                         startSection = "learning",
                         versionName = versionName,
                     )
@@ -219,8 +223,6 @@ private fun AppScaffold(nav: AppNavigator, versionName: String) {
         }
     }
 }
-
-private enum class Tab { HOME, YOUTUBE, LEARN, DICTIONARY }
 
 private fun AppRoute.titleRes(): Int = when (this) {
     AppRoute.HOME -> R.string.tab_home

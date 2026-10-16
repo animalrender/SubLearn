@@ -103,3 +103,32 @@ TODO comment; each entry has a route to being fixed.
     an external audio source with its selected video; it is intentionally attached only to that video.
     Different stream lengths, provider MIME metadata and unusual codec containers may need device-level
     handling. Route: exercise common MP3/AAC/FLAC + video pairs after CI, then document unsupported formats.
+24. **The ONNX and LiteRT engines compile but have never run on a device.** Both are implemented:
+    `core:nlp-onnx` loads the int8 encoders through ONNX Runtime 1.22.0 and `core:nlp-llm` loads the
+    LiteRT bundles through MediaPipe's LLM Inference API, `NlpRuntimeBootstrap` registers whichever
+    native library actually loads, and `ProfiledNlpEngine` opens the models a profile needs. What is
+    not proven is inference itself: no `.onnx` or `.task` file has been executed, because the sandbox
+    has no Android SDK and the models are hundreds of megabytes. The selection, layout, pooling,
+    tokenizer and installer logic is unit tested; the native call paths are not. Route: install a
+    model on a device, run `ProfiledNlpEngine` against a known sentence, and record the output.
+25. **The ML Kit model installer has not downloaded anything on a real device.** The URL scheme,
+    checksum, zip-slip guard and archive validation are unit tested, and the UI is wired to the
+    installer, but no end-to-end download has been performed. The catalog's SHA-256 for the pair
+    is deliberately empty, which skips verification rather than failing on a guessed hash; fill it
+    in when the URL is confirmed against Google's CDN. Route: one device run through
+    Settings → Models & Downloads, then record the hash.
+26. **The rebuilt word card is verified by compilation only.** The header and close button were
+    removed (§7) and the alternative phrase rows were added, but no Compose UI test pins the
+    layout, so a regression in the card's arrangement would only show up visually. Route: a
+    Robolectric Compose test once the popup's state is constructible in a test.
+27. **The Room migration is checked statically, not executed.** `tools/check_schema.py` compares
+    `MIGRATION_1_2` with the exported v2 schema, but no test opens a v1 database and upgrades it,
+    so a SQL statement that is valid DDL yet wrong at runtime would still pass. Route: a
+    `MigrationTestHelper` test in `core/data` with `room-testing` on the instrumented test path.
+28. **The supplementary CEFR pack is built but not installable from the catalog.** The
+    `Build Extra Packs` workflow publishes `sublearn-cefr-v1.sqlite.gz` and
+    `cefr-levels-en-v1.tsv.gz` to the packs release, and the app can already import a word list
+    through Settings, but the catalog has no entry for it because `ModelKind` has no CEFR kind and
+    `visibleEntries()` would show a row the installer could not handle. Route: add a
+    `WORDFREQ_CEFR` kind, an importer branch for the two formats, and a catalog entry; until then
+    the pack is downloaded from the release page rather than from inside the app.

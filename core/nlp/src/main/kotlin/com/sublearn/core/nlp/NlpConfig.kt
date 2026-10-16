@@ -6,10 +6,20 @@ package com.sublearn.core.nlp
  *
  * The defaults prioritise precision over recall (D-34): a wrong underline is
  * worse than a missing one.
+ *
+ * Per-type thresholds: `phrasalThreshold`, `idiomThreshold`, `collocationThreshold`.
+ * A span must meet its type-specific threshold to get a visible underline.
+ * The generic `confidenceThreshold` acts as a global floor for all types.
+ * `PHRASE` kind (all closed-class tokens) is never underlined.
  */
 data class NlpConfig(
-    /** Minimum confidence for a visible underline. Below this the match only shows as "possible" in the card. */
+    /** Global minimum confidence for a visible underline (superseded by per-type). */
     val confidenceThreshold: Float = 0.75f,
+
+    /** Per-type minimum confidence for a visible underline. */
+    val phrasalThreshold: Float = 0.75f,
+    val idiomThreshold: Float = 0.75f,
+    val collocationThreshold: Float = 0.65f,
 
     /** Whether to show low-confidence matches in the touch card as "possible". */
     val showPossibleMatches: Boolean = true,
@@ -50,8 +60,19 @@ data class NlpConfig(
     val maxSeparationTokens: Int = 4,
 
     // --- Analysis version: bump to invalidate cached results ---
-    val analyzerVersion: Int = 1,
+    val analyzerVersion: Int = 2,
 ) {
+    /**
+     * Get the per-type threshold for a given [PhraseKind].
+     * PHRASE kind returns [Float.MAX_VALUE] (never underlined).
+     */
+    fun thresholdFor(kind: PhraseKind?): Float = when (kind) {
+        PhraseKind.PHRASAL -> phrasalThreshold
+        PhraseKind.IDIOM -> idiomThreshold
+        PhraseKind.COLLOCATION -> collocationThreshold
+        null -> confidenceThreshold
+    }
+
     companion object {
         val DEFAULT = NlpConfig()
     }

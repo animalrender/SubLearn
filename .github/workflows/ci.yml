@@ -60,12 +60,20 @@ jobs:
           python3 tools/check_symbols.py
           python3 tools/check_deps.py
           python3 tools/check_resources.py core app feature
+          python3 tools/check_docs.py --repo-root .
+          python3 tools/check_schema.py --repo-root .
+          python3 tools/check_catalog.py --repo-root .
+          python3 -m unittest tools/test_update_catalog.py
+          python3 -m unittest tools/test_check_catalog.py
           python3 -m unittest tools/lexicon_builder/test_lexicon_builder.py
 
       - name: Assemble, unit test, lint
         # --continue so a broken module does not hide the errors of the modules after it: one run
         # should produce the whole list of compile errors, since each CI round trip is slow here.
         shell: bash
+        env:
+          SUBLEARN_VERSION_NAME: "0.0.0-ci+${{ github.sha }}"
+          SUBLEARN_VERSION_CODE: ${{ github.run_number }}
         run: |
           set -o pipefail
           ./gradlew assembleDebug assembleRelease test lintDebug assembleDebugAndroidTest \

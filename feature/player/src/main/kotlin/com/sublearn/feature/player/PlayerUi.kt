@@ -196,6 +196,21 @@ data class PopupPhraseSection(
     val lexiconEntryId: Long? = null,
     val marked: Boolean = false,
     val sourcesUsed: List<String> = emptyList(),
+    /**
+     * Phrases that overlapped the detected one and lost (from `PhraseSpan.alternatives`).
+     * The card shows at most [com.sublearn.core.designsystem.WordCardTokens.MAX_PHRASE_ROWS]
+     * of them so a dense sentence does not turn the card into a list.
+     */
+    val alternatives: List<PopupPhraseAlternative> = emptyList(),
+)
+
+/** One losing overlap, shown as an extra phrase row on the card. */
+@Immutable
+data class PopupPhraseAlternative(
+    val headword: String,
+    val kind: com.sublearn.core.nlp.PhraseKind,
+    val translation: String? = null,
+    val level: String? = null,
 )
 
 /** LRN-1 & D-49 ProudVocab card. `level` is the CEFR name as stored on a marked word, so the badge needs no lookup. */

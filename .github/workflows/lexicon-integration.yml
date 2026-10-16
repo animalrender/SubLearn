@@ -1,0 +1,145 @@
+name: Lexicon Integration Test
+
+on:
+  pull_request:
+    paths:
+      - 'core/nlp/**'
+      - 'core/lexicon/**'
+      - 'tools/lexicon_builder/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache main_db.sqlite
+        uses: actions/cache@v4
+        with:
+          path: /tmp/main_db.sqlite
+          key: main-db-1.0.0
+          restore-keys: |
+            main-db-
+
+      - name: Download main_db.sqlite
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          # `-f` matters: without it a 404 saves the error page as main_db.sqlite and the next step
+          # fails with "file is not a database", which says nothing about the real cause.
+          curl -fL -o /tmp/main_db.sqlite \
+            https://github.com/melonityhub/dictionaryproject/releases/download/db1.0.0/main_db.sqlite
+          ls -l /tmp/main_db.sqlite
+          head -c 16 /tmp/main_db.sqlite | grep -q "SQLite format 3" || {
+            echo "::error::the download is not a SQLite database"
+            exit 1
+          }
+
+      - name: Build lexicon packs
+        run: |
+          # `tee` is how the next step gets the log; without pipefail it would also hide a failure.
+          set -o pipefail
+          mkdir -p /tmp/lexicon_out
+          python3 tools/lexicon_builder/build_lexicon.py \
+            --input /tmp/main_db.sqlite \
+            --output-dir /tmp/lexicon_out \
+            --direction en-fa --gzip 2>&1 | tee /tmp/build_en_fa.log
+          python3 tools/lexicon_builder/build_lexicon.py \
+            --input /tmp/main_db.sqlite \
+            --output-dir /tmp/lexicon_out \
+            --direction fa-en --gzip 2>&1 | tee /tmp/build_fa_en.log
+
+      - name: Validate packs
+        run: |
+          set -o pipefail
+          python3 tools/lexicon_builder/validate_pack.py /tmp/lexicon_out/sublearn-lexicon-en-fa-v2.sqlite --full 2>&1 | tee /tmp/validate_en_fa.log
+          python3 tools/lexicon_builder/validate_pack.py /tmp/lexicon_out/sublearn-dict-fa-en-v1.sqlite --full 2>&1 | tee /tmp/validate_fa_en.log
+
+      - name: Export test JSON
+        run: |
+          python3 tools/lexicon_builder/build_lexicon.py \
+            --input /tmp/main_db.sqlite \
+            --output-dir /tmp/lexicon_out \
+            --direction en-fa \
+            --export-test-json /tmp/lexicon_test_json
+
+      - name: Run JVM NLP tests
+        run: |
+          ./gradlew :core:nlp:test --no-daemon
+
+      # The Actions log host is not reachable from the agent sandbox, so the reason a run failed is
+      # published as an annotation, which the REST API exposes. This runs last so it catches a
+      # failure from any earlier step, not only the one it follows.
+      - name: Report the reason a build failed
+        if: failure()
+        run: |
+          # The Actions log host is not reachable from the agent sandbox, so the reason a run failed
+          # is published as an annotation, which the REST API exposes. This runs last so it catches a
+          # failure from any earlier step, not only the one it follows.
+          #
+          # One annotation per line: an annotation carries a single line, and GitHub keeps only ten
+          # of them per step. The validator's reasons ("  - <reason>") and the builder's audit lines
+          # ("quality_audit <key>: ...") are therefore emitted first, and the budget is spent on
+          # them rather than on whatever else matched.
+          LOGS="/tmp/build_en_fa.log /tmp/build_fa_en.log /tmp/validate_en_fa.log /tmp/validate_fa_en.log"
+          BUDGET=9
+          REASONS='^[[:space:]]*-[[:space:]]|error|fail|traceback|exception|assert'
+          found=/tmp/lexicon_report_lines.txt
+          : > "$found"
+
+          for log in $LOGS; do
+            [ -f "$log" ] || continue
+            grep -iE "$REASONS" "$log" | tail -12 | sed "s|^|$(basename "$log"): |" >> "$found"
+          done
+          for log in $LOGS; do
+            [ -f "$log" ] || continue
+            grep -iE 'quality_audit' "$log" | sed "s|^|$(basename "$log"): |" >> "$found"
+          done
+
+          total=$(wc -l < "$found")
+          if [ "${total:-0}" -eq 0 ]; then
+            for log in $LOGS; do
+              [ -f "$log" ] || continue
+              while IFS= read -r line; do
+                echo "::error title=$(basename "$log") tail::${line:0:280}"
+              done < <(tail -3 "$log")
+            done
+            echo "::warning::no captured log matched the failure patterns"
+            exit 0
+          fi
+
+          head -n "$BUDGET" "$found" | while IFS= read -r line; do
+            echo "::error title=lexicon::${line:0:280}"
+          done
+          if [ "$total" -gt "$BUDGET" ]; then
+            echo "::warning::$((total - BUDGET)) more matching lines are in the step logs"
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Lexicon Integration Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Pack | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          for f in /tmp/lexicon_out/*.sqlite*; do
+            if [ -f "$f" ]; then
+              size=$(stat -c%s "$f" 2>/dev/null || stat -f%z "$f" 2>/dev/null)
+              echo "| $(basename $f) | ${size} bytes |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done

@@ -17,7 +17,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         PhraseSpanCacheEntity::class,
     ],
     version = 2,
-    exportSchema = false,
+    exportSchema = true,
 )
 abstract class SubLearnDatabase : RoomDatabase() {
     abstract fun recentVideos(): RecentVideoDao
@@ -90,13 +90,20 @@ abstract class SubLearnDatabase : RoomDatabase() {
 
         private val migrations: Array<Migration> = arrayOf(MIGRATION_1_2)
 
+        /**
+         * Create the database. Intentionally does NOT call `fallbackToDestructiveMigration()`
+         * (§2.5): if a migration fails, the app should surface the error and offer a backup
+         * export rather than silently wiping all My Words data.
+         *
+         * The caller is expected to catch `IllegalStateException` / `SQLiteException` from
+         * the first database access and show a recovery UI with an export option.
+         */
         fun create(context: Context): SubLearnDatabase = Room.databaseBuilder(
             context.applicationContext,
             SubLearnDatabase::class.java,
             "sublearn.db",
         )
             .addMigrations(*migrations)
-            .fallbackToDestructiveMigration()
             .build()
     }
 }

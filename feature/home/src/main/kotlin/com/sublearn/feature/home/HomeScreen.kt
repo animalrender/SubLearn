@@ -187,7 +187,9 @@ private fun RecentCard(row: RecentVideoRow, onOpen: () -> Unit, onForget: () -> 
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
-                IconButton(onClick = onForget, modifier = Modifier.size(36.dp)) {
+                // Material's own 48 dp target: a 36 dp box around a 16 dp cross is a miss on a
+                // phone held one-handed, and the row has vertical padding to absorb the height.
+                IconButton(onClick = onForget) {
                     Icon(
                         Icons.Default.Close,
                         contentDescription = stringResource(R.string.home_remove_recent),

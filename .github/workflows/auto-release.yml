@@ -92,10 +92,23 @@ jobs:
           HAS_KEYSTORE: ${{ steps.keystore.outputs.present }}
         run: |
           set -euo pipefail
-          version=$(sed -n 's/^[[:space:]]*versionName = "\([^"]*\)"/\1/p' app/build.gradle.kts | head -1)
-          if [ -z "$version" ]; then
-            echo "::error::versionName was not found in app/build.gradle.kts"
-            exit 1
+          # Compute version from conventional commits (Phase 25)
+          last_tag=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || echo "")
+          version=""
+          if [ "$BRANCH" = "main" ]; then
+            # Try bump_version.py for conventional commit versioning
+            if [ -n "$last_tag" ]; then
+              version=$(python3 tools/bump_version.py --last-tag "$last_tag" 2>/dev/null || echo "")
+            fi
+            if [ -z "$version" ]; then
+              # Fallback: read from build.gradle.kts or use 0.1.0
+              version=$(sed -n 's/^[[:space:]]*versionName = "\([^"]*\)"/\1/p' app/build.gradle.kts | head -1)
+              version=${version:-0.1.0}
+            fi
+          else
+            # Dev channel: branch + short sha
+            shortsha=$(echo "$SHA" | head -c 7)
+            version="0.0.0-dev-${BRANCH//\//-}+${shortsha}"
           fi
 
           # Branch filter: the same set CI builds, plus any branch a human dispatched by hand.
@@ -246,6 +259,8 @@ jobs:
           SUBLEARN_KEYSTORE_PASSWORD: ${{ secrets.SUBLEARN_KEYSTORE_PASSWORD }}
           SUBLEARN_KEY_ALIAS: ${{ secrets.SUBLEARN_KEY_ALIAS }}
           SUBLEARN_KEY_PASSWORD: ${{ secrets.SUBLEARN_KEY_PASSWORD }}
+          SUBLEARN_VERSION_NAME: ${{ needs.plan.outputs.version }}
+          SUBLEARN_VERSION_CODE: ${{ github.run_number }}
         run: |
           set -o pipefail
           ./gradlew :app:assembleRelease --stacktrace --console=plain 2>&1 | tee "$RUNNER_TEMP/gradle.log"

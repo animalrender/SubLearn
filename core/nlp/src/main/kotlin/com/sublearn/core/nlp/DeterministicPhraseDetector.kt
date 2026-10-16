@@ -173,6 +173,11 @@ class DeterministicPhraseDetector : PhraseDetector {
 
     /**
      * Detect separated phrasal verbs like "turn the offer down" or "look it up".
+     *
+     * Fix for §2.2: The particle must be the **first element after the verb in the pattern**,
+     * and the remaining pattern elements must come immediately after the particle.
+     * This prevents false matches like "put it with" matching "put up with".
+     * Also: "look that up" works when "that" is the sole gap token and not in forbidden list.
      */
     private fun detectSeparatedPhrasals(
         tokens: List<TokenInfo>,
@@ -197,42 +202,72 @@ class DeterministicPhraseDetector : PhraseDetector {
                         }
                         if (verbPatIdx < 0) continue
 
+                        // The particle must be the FIRST element after the verb in the pattern.
+                        val particlePatIdx = verbPatIdx + 1
+                        if (particlePatIdx >= compiled.size) continue
+                        val particleElement = compiled[particlePatIdx]
+                        if (particleElement !is PatternElement.Literal) continue
+
                         for (gapSize in 1..config.maxSeparationTokens) {
                             val particleIdx = i + gapSize + 1
                             if (particleIdx >= tokens.size) break
 
+                            // Gap validation: only pronouns, determiners, nouns allowed in gap
                             if (!isValidGap(tokens, i + 1, particleIdx, posTags)) break
 
                             val particleToken = tokens[particleIdx].text.lowercase()
                             val particleLemmas = lexicon.lemmatiser(tokens[particleIdx].text)
 
-                            for (patIdx in (verbPatIdx + 1) until compiled.size) {
-                                val element = compiled[patIdx]
-                                val matches = when (element) {
-                                    is PatternElement.Literal -> element.word == particleToken || element.word in particleLemmas
-                                    else -> false
-                                }
-                                if (matches) {
-                                    var confidence = 0.78f
-                                    if (posTags != null && posTags.getOrNull(particleIdx) == "PREP") {
-                                        confidence = 0.4f
-                                    } else if (posTags != null && posTags.getOrNull(particleIdx) == "PART") {
-                                        confidence = 0.85f
-                                    }
+                            // Match the particle element from the pattern
+                            val matches = particleElement.word == particleToken ||
+                                particleElement.word in particleLemmas
 
-                                    results.add(
-                                        PhraseSpan(
-                                            startChar = tokens[i].startChar,
-                                            endChar = tokens[particleIdx].endChar,
-                                            tokens = listOf(i, particleIdx),
-                                            kind = PhraseKind.PHRASAL,
-                                            headword = entry.headword,
-                                            lemmaKey = entry.key,
-                                            confidence = confidence,
-                                            separable = true,
-                                        ),
-                                    )
+                            if (matches) {
+                                // Check that remaining pattern elements (after particle)
+                                // must follow immediately (no further gap allowed)
+                                val remainingPatStart = particlePatIdx + 1
+                                val remainingPatCount = compiled.size - remainingPatStart
+                                val nextTokenAfterParticle = particleIdx + 1
+
+                                // Allow up to 1 extra token for remaining pattern elements
+                                // (e.g. "put up with" has "with" as the next element)
+                                if (remainingPatCount > 0) {
+                                    val restEnd = nextTokenAfterParticle + remainingPatCount - 1
+                                    if (restEnd >= tokens.size) break
+                                    var restMatch = true
+                                    for (rp in 0 until remainingPatCount) {
+                                        val tokIdx = nextTokenAfterParticle + rp
+                                        if (!matchesSingleElement(compiled[remainingPatStart + rp], tokens[tokIdx], lexicon)) {
+                                            restMatch = false
+                                            break
+                                        }
+                                    }
+                                    if (!restMatch) continue
                                 }
+
+                                // POS-based confidence for the particle
+                                var confidence = pattern.prior
+                                if (posTags != null && posTags.getOrNull(particleIdx) == "PREP") {
+                                    confidence -= 0.30f
+                                } else if (posTags != null && posTags.getOrNull(particleIdx) == "PART") {
+                                    confidence += 0.05f
+                                }
+
+                                val endTok = if (remainingPatCount > 0)
+                                    particleIdx + remainingPatCount else particleIdx
+
+                                results.add(
+                                    PhraseSpan(
+                                        startChar = tokens[i].startChar,
+                                        endChar = tokens[endTok].endChar,
+                                        tokens = (i..endTok).toList(),
+                                        kind = PhraseKind.PHRASAL,
+                                        headword = entry.headword,
+                                        lemmaKey = entry.key,
+                                        confidence = confidence.coerceIn(0f, 1f),
+                                        separable = true,
+                                    ),
+                                )
                             }
                         }
                     }
@@ -252,13 +287,17 @@ class DeterministicPhraseDetector : PhraseDetector {
         val gapSize = endIdx - startIdx
         if (gapSize > 4) return false
 
-        val forbiddenWords = setOf(",", ";", ":", "and", "or", "but", "because", "while", "which", "who", "that", "where")
+        // "that" is removed from forbiddenWords: it can be a pronoun in single-token gaps
+        // (e.g. "look that up") or a conjunction/determiner in larger gaps.
+        val forbiddenWords = setOf(",", ";", ":", "and", "or", "but", "because", "while", "which", "who", "where")
         val pronouns = setOf("it", "them", "him", "her", "this", "that", "me", "us", "someone", "something", "somebody")
 
         for (i in startIdx until endIdx) {
             val text = tokens[i].text.lowercase()
             val tag = posTags?.getOrNull(i)
 
+            // "that" is allowed as a pronoun but not as a conjunction in multi-token gaps
+            if (text == "that" && gapSize > 1) return false
             if (text in forbiddenWords) return false
             if (tag == "VERB" || tag == "CONJ" || tag == "PUNCT") return false
         }
@@ -285,15 +324,26 @@ class DeterministicPhraseDetector : PhraseDetector {
         posTags: List<String>?,
         hasTagger: Boolean,
     ): Float {
-        var confidence = 0.85f
+        // Start from the pattern's prior probability (read from the lexicon pack),
+        // NOT from a flat 0.85. This is the main fix for §2.1.
+        var confidence = pattern.prior
 
-        if (compiled.size >= 3) confidence += 0.05f
-        if (compiled.size >= 4) confidence += 0.05f
+        // +0.05 if contiguous and ≥3 tokens (more context = more certain)
+        val spanTokens = match.endToken - match.startToken + 1
+        if (spanTokens >= 3) confidence += 0.05f
 
+        // -0.15 if there is a gap ≥ 3 tokens within the span
+        if (match.endToken - match.startToken + 1 > compiled.size + 2) {
+            confidence -= 0.15f
+        }
+
+        // +0.05 if POS tags agree with the pattern
         if (hasTagger && posTags != null) {
             confidence += 0.05f
         }
 
+        // -0.30 if the next token is an ambiguous particle/preposition follower
+        // that could make this a false positive (e.g. "look up at the sky")
         val nextTokenIdx = match.endToken + 1
         if (nextTokenIdx < tokens.size) {
             val nextToken = tokens[nextTokenIdx].text.lowercase()
@@ -302,10 +352,11 @@ class DeterministicPhraseDetector : PhraseDetector {
             if (nextToken in PREPOSITION_FOLLOWERS) {
                 val lastMatchedToken = tokens[match.endToken].text.lowercase()
                 if (lastMatchedToken in COMMON_PARTICLES) {
+                    // Ambiguous: e.g. "looked up at" — reduce confidence
                     if (!hasTagger) {
                         confidence -= 0.25f
                     } else if (nextTag == "PREP") {
-                        confidence -= 0.3f
+                        confidence -= 0.30f
                     }
                 }
             }
@@ -329,12 +380,21 @@ class DeterministicPhraseDetector : PhraseDetector {
 
         for (span in sorted) {
             val spanRange = span.startChar until span.endChar
-            val overlap = usedRanges.any { existing ->
+            val overlappingIdx = usedRanges.indexOfFirst { existing ->
                 maxOf(existing.first, spanRange.first) <= minOf(existing.last, spanRange.last)
             }
-            if (!overlap) {
+            if (overlappingIdx < 0) {
+                // No overlap — this span wins
                 result.add(span)
                 usedRanges.add(spanRange)
+            } else {
+                // Overlaps with a winner — attach as alternative (up to 2)
+                val winner = result[overlappingIdx]
+                if (winner.alternatives.size < 2) {
+                    result[overlappingIdx] = winner.copy(
+                        alternatives = winner.alternatives + span
+                    )
+                }
             }
         }
 

@@ -195,6 +195,49 @@ def validate_pack(db_path: str, require_full_counts: bool = False) -> tuple[bool
     if word_pos_count == 0:
         errors.append("word_pos table is empty")
 
+    # 4e. Quality filter assertions (§2.3)
+    # Entries that should be demoted to PHRASE (low prior, no underlines)
+    demoted_keys = ["at that", "the way", "a lot", "in truth", "the swedish"]
+    for dk in demoted_keys:
+        row = cur.execute(
+            "SELECT kind, prior FROM entry WHERE key = ?", (dk,)
+        ).fetchone()
+        if row:
+            kind_val, prior_val = row
+            if kind_val != "PHRASE" and prior_val >= 0.65:
+                errors.append(
+                    f"Entry '{dk}' should be PHRASE with prior < 0.65, "
+                    f"got kind={kind_val}, prior={prior_val:.2f}"
+                )
+
+    # Phrasal verbs with sole particle "to" and motion verb should be demoted
+    phrasal_to_keys = ["go to", "come to", "going to", "get to"]
+    for pk in phrasal_to_keys:
+        row = cur.execute(
+            "SELECT kind, prior FROM entry WHERE key = ?", (pk,)
+        ).fetchone()
+        if row:
+            kind_val, prior_val = row
+            if kind_val == "PHRASAL" and prior_val >= 0.65:
+                errors.append(
+                    f"Entry '{pk}' should not be PHRASAL with high prior, "
+                    f"got kind={kind_val}, prior={prior_val:.2f}"
+                )
+
+    # Entries that SHOULD have meaningful prior (real phrases)
+    real_phrases = ["give up", "make a decision", "look forward to", "keep an eye on"]
+    for rp in real_phrases:
+        row = cur.execute(
+            "SELECT kind, prior FROM entry WHERE key = ?", (rp,)
+        ).fetchone()
+        if row:
+            kind_val, prior_val = row
+            if prior_val < 0.60:
+                errors.append(
+                    f"Entry '{rp}' should have prior >= 0.60, "
+                    f"got kind={kind_val}, prior={prior_val:.2f}"
+                )
+
     # 4d. Full database count bounds (when running against full main_db.sqlite)
     if require_full_counts or entry_count >= 50000:
         lemma_count = cur.execute("SELECT COUNT(*) FROM lemma_form").fetchone()[0]

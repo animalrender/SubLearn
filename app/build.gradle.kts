@@ -13,9 +13,25 @@ val releaseKeystorePath: String? = System.getenv("SUBLEARN_KEYSTORE_PATH")?.take
 // 0.2.1 → 201. The code is derived from the name so that a release only ever edits one number, which
 // is what lets `auto-release.yml` publish a version bump without touching the build file (D-28). A
 // pre-release suffix (0.3.0-rc1) maps to the code of the version it leads to.
+// Phase 25: SUBLEARN_VERSION_NAME / SUBLEARN_VERSION_CODE from CI; default for local/dev builds.
 fun versionCodeOf(name: String): Int {
     val parts = name.substringBefore('-').split('.').map { part -> part.takeWhile(Char::isDigit).toIntOrNull() ?: 0 }
     return parts.getOrElse(0) { 0 } * 10_000 + parts.getOrElse(1) { 0 } * 100 + parts.getOrElse(2) { 0 }
+}
+
+/**
+ * Resolve the version name from the environment or fall back to a dev placeholder.
+ * CI sets `SUBLEARN_VERSION_NAME` (e.g. "0.3.0"); local builds get "0.0.0-dev+<shortsha>".
+ */
+fun resolveVersionName(): String {
+    val env = System.getenv("SUBLEARN_VERSION_NAME")?.takeIf { it.isNotBlank() }
+    if (env != null) return env
+    // Try to get the short SHA from git; fall back to "dev"
+    val sha = try {
+        val p = ProcessBuilder("git", "rev-parse", "--short", "HEAD").redirectErrorStream(true).start()
+        p.inputStream.bufferedReader().readText().trim().ifEmpty { "dev" }
+    } catch (_: Exception) { "dev" }
+    return "0.0.0-dev+$sha"
 }
 
 android {
@@ -26,10 +42,12 @@ android {
         applicationId = "com.sublearn.app"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        // The release workflows read this exact line to check a tag against the build, so keep it a
-        // plain literal. SUBLEARN_VERSION_CODE overrides the derived code if one is ever dictated.
-        versionName = "0.2.1"
-        versionCode = System.getenv("SUBLEARN_VERSION_CODE")?.toIntOrNull() ?: versionCodeOf(versionName!!)
+        // Phase 25: version is resolved from SUBLEARN_VERSION_NAME (CI) or git sha (local dev).
+        // The release workflows set SUBLEARN_VERSION_NAME; no manual version editing is needed.
+        versionName = resolveVersionName()
+        versionCode = System.getenv("SUBLEARN_VERSION_CODE")?.toIntOrNull()
+            ?: System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()
+            ?: versionCodeOf(versionName!!)
         resourceConfigurations += listOf("en", "fa")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
@@ -123,6 +141,10 @@ dependencies {
     implementation(project(":core:security"))
     implementation(project(":core:lexicon"))
     implementation(project(":core:nlp"))
+    // The optional inference engines. They are Android libraries because both ship a native
+    // runtime; `core:ai` stays pure JVM and reaches them only through its loader interfaces.
+    implementation(project(":core:nlp-onnx"))
+    implementation(project(":core:nlp-llm"))
     implementation(project(":core:models"))
     implementation(project(":feature:home"))
     implementation(project(":feature:player"))

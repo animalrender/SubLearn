@@ -34,11 +34,16 @@ android {
 
 dependencies {
     api(project(":core:common"))
+    api(project(":core:ai"))
     api(project(":core:nlp"))
     api(libs.coroutines.core)
     implementation(libs.koin.core)
-    // ONNX Runtime will be added when the module is activated in phase 14:
-    // implementation("com.microsoft.onnxruntime:onnxruntime-android:1.17.0")
+    // ONNX Runtime executes the quantised sentence encoders. 1.22.0 is the current release; the
+    // AAR bundles the native providers for every ABI the app ships.
+    implementation(libs.onnxruntime.android)
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
+    // The embedder is exercised on the JVM: `onnxruntime-android` cannot be resolved there, so the
+    // tests cover everything that does not need the native session (tokenizer, layout, pooling).
+    testImplementation(project(":core:ai"))
 }

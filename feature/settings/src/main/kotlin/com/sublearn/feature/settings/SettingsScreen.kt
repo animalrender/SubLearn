@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,7 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
@@ -99,17 +100,21 @@ fun SettingsScreen(
     var section by remember { mutableStateOf(startSection) }
     var query by remember { mutableStateOf("") }
 
+    // Use WindowInsets(0) to avoid double-insets when nested inside the app-level Scaffold (§4.3)
     Scaffold(
         modifier = modifier,
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(section.settingsTitleRes())) },
                 navigationIcon = {
+                    // One step back: a section returns to the list, the list leaves settings. The
+                    // arrow says both, so there is no second icon to keep in step.
                     val atRoot = section == "root"
                     IconButton(onClick = { if (atRoot) onBack() else section = "root" }) {
                         Icon(
-                            imageVector = if (atRoot) Icons.Default.Close else Icons.Default.ArrowBack,
-                            contentDescription = stringResource(R.string.action_close),
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.action_back),
                         )
                     }
                 },
@@ -135,6 +140,7 @@ fun SettingsScreen(
                 "gestures" -> GesturesSection(settings, viewModel)
                 "shadowing" -> ShadowingSection(settings, viewModel)
                 "learning" -> LearningSection(settings, viewModel)
+                "models" -> ModelsSection(viewModel)
                 "ai" -> AiSection(settings, viewModel, onOpenPrompt = { section = "prompt" })
                 "translation" -> TranslationSection(settings, viewModel)
                 "dictionary" -> DictionarySection(settings, viewModel)
@@ -187,6 +193,8 @@ private enum class Sections(val id: String, val titleRes: Int, val hintRes: Int,
     Ai("ai", R.string.settings_category_ai, R.string.settings_hint_ai, listOf("openai", "gemini", "anthropic", "key", "prompt")),
     Translation("translation", R.string.settings_category_translation, R.string.settings_hint_translation, listOf("ml kit", "model",
         "cache")),
+    Models("models", R.string.settings_category_models, R.string.settings_hint_models, listOf("download", "model", "pack", "ml kit",
+        "storage", "دانلود", "مدل")),
     Dictionary("dictionary", R.string.settings_category_dictionary, R.string.settings_hint_dictionary, listOf("dictionary", "offline",
         "فرهنگ")),
     QuickActions("quick", R.string.settings_category_quick_actions, R.string.settings_hint_quick_actions, listOf("button", "dock", "icon")),

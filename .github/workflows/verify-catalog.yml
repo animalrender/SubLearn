@@ -21,6 +21,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      - name: Catalog must agree with the app's model table
+        # Sizes, runtimes and profile placement are read from NlpModelCatalog.kt, so a catalog
+        # edit that the app does not know about fails here rather than in the downloads screen.
+        run: python3 tools/check_catalog.py --repo-root .
+
       - name: Validate Catalog Schema & Verified Flags
         run: |
           python3 - <<'EOF'

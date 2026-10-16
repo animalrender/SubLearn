@@ -1,3 +1,205 @@
+## 2026-10-15 — phases 20–25: detection accuracy, downloads, navigation, profiles, releases, docs
+
+**Goal.** Address all remaining gaps across detection accuracy, ML Kit downloads, settings/navigation,
+smart profiles, feature completion, auto-versioning, and documentation.
+
+**Implemented (pending CI compile)**
+
+### Phase 20 — Detection accuracy
+- **`computeConfidence` uses `pattern.prior`** (D-63): base confidence from the lexicon pack's prior
+  probability instead of a flat 0.85. Adjustments: +0.05 contiguous ≥3 tokens, -0.15 gap ≥3,
+  +0.05 POS agreement, -0.30 ambiguous particle/preposition follower.
+- **Per-type thresholds** (D-64): `NlpConfig` now has `phrasalThreshold=0.75`, `idiomThreshold=0.75`,
+  `collocationThreshold=0.65`. PHRASE kind is never underlined. Analyzer version bumped to 2.
+- **Separable phrasal verb bug fixed** (D-65): particle must be the first element after verb in pattern;
+  "put it with" no longer matches "put up with"; "look that up" now works.
+- **Alternatives kept** (D-67): `resolveOverlaps` attaches losing spans as `PhraseSpan.alternatives`.
+- **Quality filters in `build_lexicon.py`** (D-66): 5 demotion rules (all closed-class, DET+proper,
+  noun-adj combo, phrasal-to-motion, COL without explicit code 19). Demotions tracked in report.
+- **`validate_pack.py` expanded**: asserts "in truth", "the way", "a lot", "go to", "the swedish"
+  are demoted; "give up", "make a decision", "look forward to", "keep an eye on" are kept.
+- **Gold evaluation set** (`tools/eval/gold_en_v1.jsonl`): 52 entries (30 positives, 16 negatives,
+  6 two-cue, 8 noisy). `RealPackIntegrationTest` JVM test harness created.
+- **Room: no destructive migration** (D-68): `fallbackToDestructiveMigration()` removed,
+  `exportSchema = true` enabled.
+- **Word card design tokens** (`WordCardTokens.kt`): ProudVocab values — container, word row,
+  phrase row, badges, save button, CEFR colors, type colors. All in `core:designsystem`.
+
+### Phase 25 — Auto-versioning
+- **`app/build.gradle.kts`**: reads `SUBLEARN_VERSION_NAME` from env (CI), falls back to
+  `0.0.0-dev+<shortsha>` for local builds. `versionCode` uses `GITHUB_RUN_NUMBER` or derived.
+- **`tools/bump_version.py`**: conventional commit parser, computes next version (feat→minor,
+  fix/perf/refactor→patch, BREAKING→major). 9 unit tests pass locally.
+
+**Checks run**
+- `python3 tools/check_sources.py core app feature tools`: 149 files, 0 problems.
+- `python3 tools/check_symbols.py`: 0 unresolved imports.
+- `python3 tools/check_deps.py`: 18 modules, 0 missing dependencies.
+- `python3 tools/check_resources.py core app feature`: 15 resource files, 0 problems.
+- `tools/test_bump_version.py`: 9/9 pass.
+- `git diff --check`: clean.
+
+## 2026-10-16 — completing the remaining phase 20–25 items
+
+**Branches:** `arena/3779275b-sublearn`. Every change below is on real code paths; the CI run
+listed at the end is the evidence.
+
+### Phase 20 — analysis input (§2.4) and schema drift (§2.5)
+- **`CueSlice` carries `cueId`** and `CueStreamPhraseAnalyzer` now cleans text before analysis
+  (`AnalysisTextCleanup`: HTML tags, `JOHN:` speaker labels, `[MUSIC]`/`[LAUGHTER]`, `♪`,
+  leading dashes, curly quotes), segments long streams (`SegmentConfig`, hard gap 1500 ms,
+  64 token segments with 8 token overlap), builds an `AnalysisCacheKey` from the content,
+  normaliser, pack, analyser version and profile, and exposes `CueOffsetMapping` for the UI.
+- **`tools/check_schema.py`** compares `MIGRATION_1_2` against the exported v2 schema, so a
+  column the entity no longer declares fails in CI, and asserts the analyser cache columns
+  survive. Verified to fail on a deliberately broken migration.
+- Gold set grown from 52 to **209 entries** (120 positive, 50 negative, 20 noise, 19 two-cue).
+
+### Phase 21 — ML Kit installer (§3.1, §3.2)
+- `MlKitInstallLogic` (D-69) holds the URL scheme, SHA-256 check, zip-slip guard and structure
+  validation; `MlKitModelInstaller` keeps the Android and network half.
+- **10 unit tests** cover both hosts, version routing, a known SHA-256, parent and nested
+  traversal rejection, valid extraction, both directions of structure validation and the
+  metadata constants.
+- **`DownloadItemCard`** in `core:designsystem` renders available / downloading / verifying /
+  installing / installed / error with progress, cancel, retry, delete and an info action.
+- A new **Models & Downloads** settings section drives it from the installer through
+  `SettingsViewModel`, registered in Koin.
+
+### Phase 22 — navigation, insets, downloads UI
+- `SettingsScreen` and `MyWordsScreen` set `contentWindowInsets = WindowInsets(0)` so the nested
+  scaffolds stop insetting twice under the app-level scaffold (§4.3), and both use
+  `Icons.AutoMirrored.Filled.ArrowBack`.
+- `SubLearnLinearProgress` gives the app one progress bar to reach for.
+
+### Phase 23/24 — profiles, models, packs
+- **`NlpModelCatalog`** maps the six catalog models to the accuracy profiles with runtime, size
+  and RAM floor, **`SmartProfileSelector`** picks the strongest runnable profile, and
+  **`NlpModelRuntimeGuard`** reports `NotImplemented` instead of silently degrading (D-71).
+  Covered by 9 tests in `core:ai`.
+- The Learn tab's profile chips now say how many models the profile adds and how large the
+  download is, and flag profiles whose runtime is missing.
+- **The ONNX and LiteRT engines exist now.** `core:nlp-onnx` (ONNX Runtime 1.22.0) loads the
+  `Xenova` int8 encoders; `core:nlp-llm` (MediaPipe `tasks-genai` 0.10.35) runs the LiteRT `.task`
+  bundles. `NlpRuntimeBootstrap` probes both native libraries at startup and registers what loads,
+  `ProfiledNlpEngine` opens the models a profile needs through injectable loaders, and
+  `NlpModelInstaller` downloads a model's files with per-file resume and deletes a partial
+  directory on failure (D-74, D-75). 19 tests cover the engine and the installer.
+- **`ModelStore` and `ModelDownloader`** give the models a real home in `filesDir/ai-models` and
+  one plain-JVM transfer path with checksum verification. The catalog's sizes and hashes were
+  wrong for every model; `tools/refresh_model_catalog.py` now derives them from the publisher's own
+  metadata, and `tools/check_catalog.py` proves `ModelStore`'s file table matches the catalog field
+  by field.
+- Models & Downloads **lists all six models** with the profile each one unlocks, progress across
+  every file of a model, and a stated reason (rather than a dead button) when this build cannot run
+  one. `DownloadItemCard` gained that state, a two-line description and theme colours.
+- **`tools/update_catalog.py`** derives the catalog's size and SHA-256 from the released files and
+  `release-packs.yml` commits the result (D-70). 11 tests.
+- My Words gained a stable **sort selector** (Newest, Oldest, A–Z, Level) and **SAF export** for
+  CSV, JSON and Anki TSV alongside the clipboard actions (D-73), with 5 tests for the orderings.
+
+### Phase 25 — docs, versions, checks
+- `docs/README.md` indexes every document, and `tools/check_docs.py` fails when the index and the
+  directory disagree, alongside the existing catalog and EN/FA string checks. Both are wired into
+  the CI static checks.
+- Decisions **D-69 .. D-73** record the reasoning above.
+- `tools/check_catalog.py` cross-checks `catalog-v2.json` against the Kotlin model table (ids,
+  sizes, RAM floors, runtimes, profile placement) and runs on every build and every catalog
+  change. Writing it found a real gap — two alternative SMART LLMs the app did not name — now
+  recorded as `NlpModelCatalog.smartAlternatives`.
+- The library rows gained a **details dialog** (version, size, runtime, RAM, profile, licence,
+  source, hash prefix, and an explicit warning when no hash is published).
+- `build-extra-packs.yml` no longer **discards its own output** when the release is missing.
+- A 20k-token **throughput tripwire** for the cue analyser, and tests for the runtime guard's
+  budgets, downgrade ladder, guarded-call fallbacks and the two profile scorers.
+
+**Honest gaps that remain**
+- The ONNX and LiteRT engines are **implemented but have never executed a model**. Both native call
+  paths need a device and a downloaded model; the selection, layout, tokenizer, pooling, download
+  and install logic around them is unit tested, and CI compiles the native bindings.
+- The ML Kit installer compiles, is unit tested and is wired to the UI, but has **not been run on
+  a device**: no download was performed against Google's CDN from this environment.
+- No Compose UI test was added for the rebuilt word card, so its layout is unverified beyond
+  compilation.
+- `Compose` navigation still uses the hand-rolled `AppNavigator`; the back stack is tested by
+  compilation and manual reasoning, not by an automated test.
+
+**CI verification (2026-10-16, engines)**
+- Both workflows are green on `7264aac`: `CI` ("Build, test, lint") run 38838624639 and
+  `Lexicon Integration Test` run 38838624586, both **success**, plus the same two checks on the
+  pull request. `assembleDebug`, `assembleRelease`, `test`, `lintDebug` and
+  `assembleDebugAndroidTest` all pass with the ONNX and LiteRT engines, the profile-selected sense
+  ranker and the settings UI changes in the tree.
+- Getting there took four rounds, and each round's reason came from a check-run annotation rather
+  than from the log (the Actions log host is unreachable from the agent sandbox):
+  1. `LlmInferenceOptions` is nested inside `LlmInference`, and the ONNX embedder did not match
+     `TextEmbedder` or the tokenizer/pooling APIs the module actually has;
+  2. `SettingsRows` was missing the design system's `R`, and `NlpModel` had no
+     `requiresTermsAcceptance` for the models card to read;
+  3. two test sources followed the old contracts (`embed()` returning `AppResult`, `File.setLength`);
+  4. twelve unit-test failures: eleven were tests asserting values the code no longer has (round
+     model sizes now read from the catalog, a tokenizer helper that dropped `[SEP]`), and one was
+     real — the engine cache returned a model ranker with no model loaded.
+- `tools/check_sources.py` gained the backtick case after a real miss: an apostrophe in a test name
+  made it swallow the rest of the file, so a broken test file passed the check that exists to catch
+  broken test files.
+- Static checks on `7264aac`: 182 files, 0 problems; 0 unresolved imports; 20 modules, 0 missing
+  dependencies; catalog, schema, resources and docs checks all pass; 36 python tests pass.
+
+**CI verification (2026-10-16)**
+- CI green on `86cd5fc`: `assembleDebug`, `assembleRelease`, `test`, `lintDebug` and
+  `assembleDebugAndroidTest` all pass, with the new static checks (`check_docs`, `check_schema`,
+  `check_catalog` and the 20 new python tests) running inside the same job.
+- Two failures were found and fixed by CI in this round: a missing type argument on the
+  `WordSort` comparator, and a test that assumed a blocking sleep could be cancelled by
+  `withTimeoutOrNull` (it cannot — the test now suspends).
+
+**CI verification (2026-10-15)**
+- CI run 38808380130 on `arena/3779275b-sublearn` (commit `cc60465`): **green**.
+  `assembleDebug`, `assembleRelease`, `test`, `lintDebug` all pass.
+  All 18 test classes pass (including 4 new tests for prior-based confidence,
+  per-type thresholds, separable phrasal bug fixes, and `look that up`).
+- Static checks: 150 files, 0 problems; 0 unresolved imports; 18 modules, 0 missing deps;
+  15 resource files, 0 problems. EN/FA strings in sync.
+- Auto-release pre-release should be published at `dev-arena-3779275b-sublearn`.
+
+**Sense ranking per profile (2026-10-16, D-76)**
+- `ProfiledSenseRanker` implements the D-33 tier table over the engines `ProfiledNlpEngine` opens:
+  `ModelSenseRanker` scores the line against each sense's English gloss with the encoder, SMART's
+  `LlmSenseRanker` adds the prompt model's choice, and every failure path falls back to
+  `PriorSenseRanker` instead of hiding the word's meanings.
+- `ProfiledNlpEngineCache` keeps the selected profile's resident models open between popups and
+  reopens them when the profile changes; a missing model is retried next call, so installing one
+  takes effect immediately.
+- The player's phrase section now asks for the ranker before it shows a headword's glosses; with no
+  model installed the order is unchanged. `core:ai` gained a dependency on `core:nlp` (one-way) for
+  the `SenseRanker` contract, and `tools/check_sources.py` learned to skip backticked identifiers,
+  which had made it swallow the rest of any file whose test name contained an apostrophe.
+
+**Pack validation (2026-10-16, second round)**
+- The lexicon workflow's five `VALIDATION FAILED` errors are fixed in `apply_quality_filters`
+  (D-77): `look forward to` keeps a real prior, `in truth` is demoted as a prepositional phrase, and
+  `go to`/`come to`/`get to` are demoted even though the source labels them with the phrasal code.
+  The rules are a pure function with 9 tests in `test_lexicon_builder.py` (33 in the file), because
+  the real pack needs the 98 MB source database, which this sandbox cannot download.
+- The workflow's reporter now matches the validator's `  - <reason>` lines, which is how the five
+  reasons became visible: the previous version only published the headline.
+
+**What remains (honest)**
+- Phases 21–24 are implemented and compile, and what is *not* proven is device behaviour: no ONNX
+  or LiteRT model has ever been executed (KNOWN_ISSUES 24), the ML Kit installer has never
+  completed a real download (25), and the new UI has been verified by compilation, static checks
+  and code review rather than on a screen.
+- The lexicon pack's validator passes on the full database in CI, which is the only place the 98 MB
+  source database is reachable; the five errors it reported came from demotion rules that read the
+  wrong field, and the build now prints a `quality_audit` line per asserted key so the next one
+  explains itself.
+- No device testing has been done.
+- The gold integration test needs a real pack to compute precision/recall numbers.
+- The `build-lexicon-pack.yml` workflow needs the quality filters tested against the real DB.
+
+---
+
 ## 2026-10-11 — phase 10 (Lexicon pack) started
 
 **Goal.** Build the foundation for offline phrase detection: the lexicon v2 format, the converter

@@ -203,6 +203,67 @@ class DeterministicPhraseDetectorTest {
     }
 
     @Test
+    fun `confidence uses pattern prior instead of flat 0_85`() = runBlocking {
+        val lem = Lemmatiser(
+            irregularForms = mapOf(
+                "gave" to setOf("give"),
+            ),
+        )
+        val entries = listOf(
+            LexiconEntry(
+                id = 200, key = "give up", headword = "give up",
+                kind = PhraseKind.PHRASAL, pos = "VERB", cefr = "B1",
+                patterns = listOf(
+                    LexiconPattern(200, "give up", "give", separable = true, minTokens = 2, maxTokens = 5, prior = 0.90f),
+                ),
+            ),
+        )
+        val byAnchor = entries.groupBy { it.patterns.first().anchorLemma }
+        val lex = object : LexiconAccess {
+            override fun lemmatiser(form: String): Set<String> = lem.candidates(form)
+            override fun findByAnchor(anchorLemma: String): List<LexiconEntry> = byAnchor[anchorLemma].orEmpty()
+            override fun lookupWord(key: String): LexiconEntry? = entries.firstOrNull { it.key == key }
+            override fun senses(entryId: Long): List<SenseCandidate> = emptyList()
+            override fun examples(senseId: Long): List<Pair<String, String>> = emptyList()
+        }
+
+        val detector = DeterministicPhraseDetector()
+        val spans = detector.detect(tokenize("he gave up smoking"), lex, NlpConfig.DEFAULT)
+        val giveUp = spans.firstOrNull { it.headword == "give up" }
+        assertTrue("Confidence should be based on prior 0.90, not 0.85", giveUp != null && giveUp.confidence >= 0.90f)
+    }
+
+    @Test
+    fun `per-type threshold filters collocations`() = runBlocking {
+        val lem = Lemmatiser()
+        val entries = listOf(
+            LexiconEntry(
+                id = 201, key = "heavy rain", headword = "heavy rain",
+                kind = PhraseKind.COLLOCATION, pos = null, cefr = "B1",
+                patterns = listOf(
+                    LexiconPattern(201, "heavy rain", "rain", separable = false, minTokens = 2, maxTokens = 2, prior = 0.60f),
+                ),
+            ),
+        )
+        val byAnchor = entries.groupBy { it.patterns.first().anchorLemma }
+        val lex = object : LexiconAccess {
+            override fun lemmatiser(form: String): Set<String> = lem.candidates(form)
+            override fun findByAnchor(anchorLemma: String): List<LexiconEntry> = byAnchor[anchorLemma].orEmpty()
+            override fun lookupWord(key: String): LexiconEntry? = entries.firstOrNull { it.key == key }
+            override fun senses(entryId: Long): List<SenseCandidate> = emptyList()
+            override fun examples(senseId: Long): List<Pair<String, String>> = emptyList()
+        }
+
+        val detector = DeterministicPhraseDetector()
+        val spans = detector.detect(tokenize("there was heavy rain today"), lex, NlpConfig.DEFAULT)
+        val heavyRain = spans.firstOrNull { it.headword == "heavy rain" }
+        assertTrue("Should detect collocation", heavyRain != null)
+        // Collocation threshold is 0.65; prior 0.60 is below
+        assertTrue("Should be below collocation threshold",
+            heavyRain != null && !heavyRain.isAboveTypeThreshold(NlpConfig.DEFAULT))
+    }
+
+    @Test
     fun `idiom has priority over phrasal in overlap resolution`() = runBlocking {
         val detector = DeterministicPhraseDetector()
         // "piece of cake" (idiom) should win over any smaller phrasal that overlaps
@@ -231,6 +292,69 @@ class DeterministicPhraseDetectorTest {
 
         val spans2 = detector.detect(tokenize("he turned the offer down"), miniLexicon(), NlpConfig.DEFAULT, tagger)
         assertTrue("Should detect 'turn down'", spans2.any { it.headword == "turn down" && it.separable })
+    }
+
+    @Test
+    fun `look that up should be detected`() = runBlocking {
+        val detector = DeterministicPhraseDetector()
+        val tagger = LexiconPosTagger()
+        val spans = detector.detect(tokenize("can you look that up"), miniLexicon(), NlpConfig.DEFAULT, tagger)
+        assertTrue("Should detect 'look up' with 'that' as gap", spans.any { it.headword == "look up" && it.separable })
+    }
+
+    @Test
+    fun `put it with should NOT match put up with`() = runBlocking {
+        // Build a lexicon with "put up with" only
+        val lem = Lemmatiser()
+        val entries = listOf(
+            LexiconEntry(
+                id = 100, key = "put up with", headword = "put up with",
+                kind = PhraseKind.PHRASAL, pos = "VERB", cefr = "B1",
+                patterns = listOf(
+                    LexiconPattern(100, "put up with", "put", separable = true, minTokens = 3, maxTokens = 6, prior = 0.80f),
+                ),
+            ),
+        )
+        val byAnchor = entries.groupBy { it.patterns.first().anchorLemma }
+        val lex = object : LexiconAccess {
+            override fun lemmatiser(form: String): Set<String> = lem.candidates(form)
+            override fun findByAnchor(anchorLemma: String): List<LexiconEntry> = byAnchor[anchorLemma].orEmpty()
+            override fun lookupWord(key: String): LexiconEntry? = entries.firstOrNull { it.key == key }
+            override fun senses(entryId: Long): List<SenseCandidate> = emptyList()
+            override fun examples(senseId: Long): List<Pair<String, String>> = emptyList()
+        }
+
+        val detector = DeterministicPhraseDetector()
+        val tagger = LexiconPosTagger()
+        val spans = detector.detect(tokenize("put it with the books"), lex, NlpConfig.DEFAULT, tagger)
+        assertTrue("'put it with' should NOT match 'put up with'", spans.none { it.headword == "put up with" })
+    }
+
+    @Test
+    fun `put up with this noise SHOULD be detected`() = runBlocking {
+        val lem = Lemmatiser()
+        val entries = listOf(
+            LexiconEntry(
+                id = 101, key = "put up with", headword = "put up with",
+                kind = PhraseKind.PHRASAL, pos = "VERB", cefr = "B1",
+                patterns = listOf(
+                    LexiconPattern(101, "put up with", "put", separable = true, minTokens = 3, maxTokens = 6, prior = 0.80f),
+                ),
+            ),
+        )
+        val byAnchor = entries.groupBy { it.patterns.first().anchorLemma }
+        val lex = object : LexiconAccess {
+            override fun lemmatiser(form: String): Set<String> = lem.candidates(form)
+            override fun findByAnchor(anchorLemma: String): List<LexiconEntry> = byAnchor[anchorLemma].orEmpty()
+            override fun lookupWord(key: String): LexiconEntry? = entries.firstOrNull { it.key == key }
+            override fun senses(entryId: Long): List<SenseCandidate> = emptyList()
+            override fun examples(senseId: Long): List<Pair<String, String>> = emptyList()
+        }
+
+        val detector = DeterministicPhraseDetector()
+        val tagger = LexiconPosTagger()
+        val spans = detector.detect(tokenize("I can't put up with this noise"), lex, NlpConfig.DEFAULT, tagger)
+        assertTrue("'put up with' should be detected", spans.any { it.headword == "put up with" })
     }
 
     @Test
