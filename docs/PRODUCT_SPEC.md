@@ -25,6 +25,8 @@ meaning so that `docs/CHECKLIST.md` can point at an ID for every claim of comple
 - Opened with a video → straight into the player. Opened with a PDF → learning section (LATER).
 - Opened normally → modern tabbed navigation: Home, YouTube, Learn, Dictionary + side menu (Level,
   My Words, Quiz, Check for updates, Settings). Home = player entry + recent local videos.
+- Learn is reserved for browser/PDF/image learning (LATER) and shows only "Coming soon".
+  Video learning modes, level, popup preferences, accuracy profiles and resource management live in Settings.
 - YouTube and Dictionary are LATER: a flag, a disabled "coming soon" entry, an interface.
 
 ## Player (MX-Player-like; local files and URL/streams)
@@ -98,11 +100,12 @@ meaning so that `docs/CHECKLIST.md` can point at an ID for every claim of comple
   translation under it; multi-word selection; bookmark; an icon opens a full-details overlay (offline
   dictionary when available, otherwise a Google Translate window; the default is a setting). Card style
   inspired by proudvocab.
-- **LRN-2** Learning mode: everything above, plus words/phrases of the current block above the user's
+- **LRN-2** Player learning mode (not the Learn tab): everything above, plus words/phrases of the current block above the user's
   level appear with translations as low-opacity, soft-shadow popup cards in a corner, floating up from
   the bottom and fading out. Animated and pleasant. Level data comes from a `WordLevelProvider`: NOW
   ships a manual-level setting and a default provider using a frequency/CEFR list the user imports;
   otherwise popups are driven by "words not marked as known".
+  Entertainment and Off never show automatic cards; tap lookup remains separate.
   Automatic level detection stays LATER.
 - **LRN-3** English only: phrasal verbs, collocations, idioms, word level via offline lightweight NLP —
   LATER (`WordAnalyzer` stub).

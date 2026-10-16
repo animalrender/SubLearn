@@ -22,7 +22,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
+import com.sublearn.core.designsystem.SubLearnSlider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -90,7 +90,7 @@ fun SliderRow(
             Text(title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             Text(valueLabel, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
         }
-        Slider(
+        SubLearnSlider(
             value = value.coerceIn(range.start, range.endInclusive),
             onValueChange = onValueChange,
             onValueChangeFinished = onValueChangeFinished,

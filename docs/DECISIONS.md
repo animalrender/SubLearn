@@ -533,3 +533,32 @@ demoted *even when the source labels it with the phrasal code* — that label is
 exempt from the two shape heuristics, because `a piece of cake` and `in the nick of time` have
 exactly those shapes and are what the learner wants underlined. The demotion reason records whether
 the source carried the phrasal code, so `build_report.json` shows how often it happens.
+
+
+**D-78 — Learn is a future reading surface; learning mode belongs to the player.**
+The owner clarified that Learn is only for browser/PDF/image learning and must stay a Coming soon
+surface. Pack onboarding, imports, integrity checks, downloads and accuracy profiles move to
+`feature:settings/ResourcesSection` and `ResourcesViewModel`; mode, level and popup controls stay in
+Settings → Player learning, with a My Words shortcut. The Dictionary screen remains independent in
+`feature:learn`; no feature depends on another feature. Settings search matches localized titles and
+hints as well as keywords, nested back stays inside Settings, and section/search survive recreation.
+
+**D-79 — Automatic cards are passive, offline and scoped to the current learning cues.**
+`PlayerViewModel.publish` resolves all active external and embedded lines before scheduling hints.
+Candidates come from token/lemma lookups and confident within-line phrase detection; real pack CEFR
+wins, otherwise the configured word-level provider applies. Equal-level and known entries are excluded
+when above-only is enabled. No new stored settings or migration is needed. At most two compact hints
+are displayed at a time, bounded to a corner and using the LEARNING_POPUP fonts, opacity and motion
+settings. No model download, network lookup, pause, focus or touch target is introduced. A cue/source,
+media, settings change or seek cancels stale work; no subtitle means no hint. Controls, PiP, lists,
+sheets, tap popups and AI answers suppress drawing. Missing translations silently omit *optional*
+hints, not report successful lookup. Cross-cue automatic phrase hints are deferred (KNOWN_ISSUES 29).
+
+**D-80 — Remove decorative endpoints at the design-system boundary.**
+The pinned Material3 already supports `drawStopIndicator` and `gapSize`; the old wrapper's claim
+that a BOM upgrade was needed was incorrect. Every progress bar now uses `SubLearnLinearProgress`
+(no stop indicator, zero gap) and sliders use `SubLearnSlider` (no endpoint or tick dots, keeping
+snapping and the interactive thumb). Settings entry also fixes a Koin runtime failure: the
+`NlpModelInstaller` downloader is a function, not a `ModelDownloader` instance; pass the registered
+instance's `::download` rather than asking Koin for an unregistered function. `SettingsGraphTest`
+resolves the real production graph to guard this failure, which source checks cannot catch.

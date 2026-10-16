@@ -65,6 +65,7 @@ import com.sublearn.feature.learn.LearnViewModel
 import com.sublearn.feature.player.PlayerViewModel
 import com.sublearn.feature.player.SafSubtitleFileSource
 import com.sublearn.feature.player.SafTextResourceReader
+import com.sublearn.feature.settings.ResourcesViewModel
 import com.sublearn.feature.settings.SettingsViewModel
 import com.sublearn.feature.words.WordsViewModel
 import org.koin.android.ext.koin.androidContext
@@ -115,7 +116,7 @@ private fun coreModule(): Module = module {
     single<SubtitleRepository> { DefaultSubtitleRepository(get()) }
     single { SafTextResourceReader(androidContext()) } bind TextResourceReader::class
     single { FrequencyListImporter(get()) }
-    single { WordLevelSource(get()) }
+    single { WordLevelSource(get(), get()) }
 
     // translation
     single<TranslationProvider> { MlKitTranslationProvider(logger = get()) }
@@ -124,7 +125,7 @@ private fun coreModule(): Module = module {
     // optional nlp models: one store, one downloader, one installer (Phase 23, D-74)
     single { ModelStore(androidContext().filesDir.resolve("ai-models")) }
     single { ModelDownloader() }
-    single { NlpModelInstaller(get(), get()) }
+    single { NlpModelInstaller(store = get(), downloader = get<ModelDownloader>()::download) }
 
     // The engines are registered by asking them whether their native library loads. A build or a
     // device where it does not keeps the pure-Kotlin ranker and never offers a profile it cannot run.
@@ -253,7 +254,8 @@ private fun coreModule(): Module = module {
 private fun featureModule(): Module = module {
     viewModel { HomeViewModel(get()) }
     viewModel { WordsViewModel(get(), get(), get()) }
-    viewModel { LearnViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { LearnViewModel(get(), get(), get()) }
+    viewModel { ResourcesViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get(), get(), get(), get(), androidContext(), get(), get()) }
     viewModel {
         PlayerViewModel(

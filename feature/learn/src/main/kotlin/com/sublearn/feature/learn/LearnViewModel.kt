@@ -9,60 +9,21 @@ import com.sublearn.core.data.MyWordsRepository
 import com.sublearn.core.data.WordStatus
 import com.sublearn.core.lexicon.DictionaryEntry
 import com.sublearn.core.lexicon.DictionaryProvider
-import com.sublearn.core.lexicon.LegacyV1Importer
-import com.sublearn.core.lexicon.PackImporter
-import com.sublearn.core.lexicon.WordLevelSource
-import com.sublearn.core.models.ModelCatalogEntry
-import com.sublearn.core.models.ModelCatalogParser
-import com.sublearn.core.models.ModelKind
-import com.sublearn.core.models.ModelRuntimeGuard
-import com.sublearn.core.models.PackDownloadState
-import com.sublearn.core.models.PackDownloader
-import com.sublearn.core.models.ProfileBenchmarkReport
-import com.sublearn.core.settings.AccuracyProfileToken
-import com.sublearn.core.settings.AppSettings
 import com.sublearn.core.settings.CefrLevel
-import com.sublearn.core.settings.LearningMode
-import com.sublearn.core.settings.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.io.File
 
 class LearnViewModel(
-    private val settingsRepository: SettingsRepository,
-    wordLevels: WordLevelSource,
-    private val installedPacksRepo: InstalledPackRepository? = null,
-    private val packImporter: PackImporter? = null,
-    private val legacyImporter: LegacyV1Importer? = null,
-    private val downloader: PackDownloader? = null,
-    private val dictionaryProvider: DictionaryProvider? = null,
-    private val myWords: MyWordsRepository? = null,
-    private val lexiconAccess: com.sublearn.core.lexicon.PackLexiconAccess? = null,
+    installedPacksRepo: InstalledPackRepository,
+    private val dictionaryProvider: DictionaryProvider,
+    private val myWords: MyWordsRepository,
 ) : ViewModel() {
-    val settings: StateFlow<AppSettings> = settingsRepository.settings
-
-    val levelState = wordLevels.state
-        .stateIn(viewModelScope, SharingStarted.Eagerly, WordLevelSource.Status())
-
-    val installedPacks: StateFlow<List<InstalledPackEntity>> = installedPacksRepo?.observeAll()
-        ?.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-        ?: MutableStateFlow(emptyList())
-
-    val downloadStates: StateFlow<Map<String, PackDownloadState>> =
-        downloader?.states ?: MutableStateFlow(emptyMap())
-
-    val catalogEntries: List<ModelCatalogEntry> = ModelCatalogParser.bundledDefault().visibleEntries()
-
-    private val runtimeGuard = ModelRuntimeGuard()
-    private val _benchmarkReport = MutableStateFlow<ProfileBenchmarkReport?>(null)
-    val benchmarkReport: StateFlow<ProfileBenchmarkReport?> = _benchmarkReport.asStateFlow()
-
-    private val _statusMessage = MutableStateFlow<String?>(null)
-    val statusMessage: StateFlow<String?> = _statusMessage.asStateFlow()
+    val installedPacks: StateFlow<List<InstalledPackEntity>> = installedPacksRepo.observeAll()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     // Dictionary search state (D-55, D-58)
     private val _dictQuery = MutableStateFlow("")
@@ -76,107 +37,6 @@ class LearnViewModel(
 
     private val _dictSearchResults = MutableStateFlow<List<DictionaryEntry>>(emptyList())
     val dictSearchResults: StateFlow<List<DictionaryEntry>> = _dictSearchResults.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            lexiconAccess?.ensureInitialized()
-        }
-    }
-
-    fun setMode(mode: LearningMode) = update { it.copy(learning = it.learning.copy(mode = mode)) }
-
-    fun setLevel(level: CefrLevel) = update { it.copy(learning = it.learning.copy(manualLevel = level)) }
-
-    fun setPopupCount(count: Int) = update { it.copy(learning = it.learning.copy(maxPopupCards = count.coerceIn(1, 10))) }
-
-    fun setPopupLifetime(ms: Long) = update { it.copy(learning = it.learning.copy(popupLifetimeMs = ms.coerceIn(1_500L, 15_000L))) }
-
-    fun setAccuracyProfile(profile: AccuracyProfileToken) {
-        val report = runtimeGuard.benchmark(profile)
-        _benchmarkReport.value = report
-        update { it.copy(smartLearning = it.smartLearning.copy(accuracyProfile = report.recommendedProfile)) }
-    }
-
-    fun dismissOnboarding() = update {
-        it.copy(smartLearning = it.smartLearning.copy(completedOnboarding = true))
-    }
-
-    fun importV2Pack(uriString: String) {
-        val importer = packImporter ?: return
-        viewModelScope.launch {
-            val res = importer.importUri(uriString)
-            res.fold(
-                onSuccess = { out ->
-                    _statusMessage.value = "Imported ${out.packId} (${out.meta?.entryCount ?: 0} entries)"
-                },
-                onFailure = { err ->
-                    _statusMessage.value = err.message
-                },
-            )
-        }
-    }
-
-    fun importLegacyV1Pack(uriString: String) {
-        val importer = legacyImporter ?: return
-        viewModelScope.launch {
-            val res = importer.importUri(uriString)
-            res.fold(
-                onSuccess = { out ->
-                    _statusMessage.value = "Imported ${out.packId} (${out.meta?.entryCount ?: 0} entries)"
-                },
-                onFailure = { err ->
-                    _statusMessage.value = err.message
-                },
-            )
-        }
-    }
-
-    fun activatePack(pack: InstalledPackEntity) {
-        viewModelScope.launch {
-            installedPacksRepo?.setEnabled(pack.packId, !pack.enabled)
-            lexiconAccess?.reloadFromRepository()
-        }
-    }
-
-    fun verifyPack(pack: InstalledPackEntity) {
-        viewModelScope.launch {
-            val file = File(pack.localPath)
-            if (!file.exists()) {
-                _statusMessage.value = "File missing: ${pack.localPath}"
-                return@launch
-            }
-            val sha = PackDownloader.computeSha256(file)
-            if (pack.sha256.isBlank() || sha.equals(pack.sha256, ignoreCase = true)) {
-                _statusMessage.value = "SHA-256 verified (${sha.take(12)}…)"
-            } else {
-                _statusMessage.value = "SHA-256 mismatch!"
-            }
-        }
-    }
-
-    fun deletePack(pack: InstalledPackEntity) {
-        viewModelScope.launch {
-            runCatching { File(pack.localPath).delete() }
-            installedPacksRepo?.remove(pack.packId)
-            lexiconAccess?.reloadFromRepository()
-        }
-    }
-
-    fun downloadCatalogEntry(entry: ModelCatalogEntry) {
-        val dl = downloader ?: return
-        viewModelScope.launch {
-            val res = dl.download(entry)
-            val downloadedFile = res.getOrNull()
-            if (downloadedFile != null) {
-                if (entry.kind == ModelKind.LEXICON || entry.kind == ModelKind.DICT_FA_EN) {
-                    packImporter?.importFile(downloadedFile)
-                }
-                _statusMessage.value = "Downloaded ${entry.nameEn}"
-            } else {
-                _statusMessage.value = res.errorOrNull()?.message
-            }
-        }
-    }
 
     fun setDictDirection(direction: String) {
         _dictDirection.value = direction
@@ -237,7 +97,4 @@ class LearnViewModel(
         }
     }
 
-    private fun update(transform: (AppSettings) -> AppSettings) {
-        viewModelScope.launch { settingsRepository.update(transform) }
-    }
 }

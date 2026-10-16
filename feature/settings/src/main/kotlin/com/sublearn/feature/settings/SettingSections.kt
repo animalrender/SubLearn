@@ -554,9 +554,18 @@ fun LearningSection(settings: AppSettings, viewModel: SettingsViewModel) {
             label = { stringResource(it.labelRes()) },
             onSelect = { value -> viewModel.update { it.copy(learning = it.learning.copy(mode = value)) } },
         )
+        Text(
+            stringResource(when (learning.mode) {
+                LearningMode.LEARNING -> R.string.learn_mode_learning_hint
+                LearningMode.ENTERTAINMENT -> R.string.learn_mode_entertainment_hint
+                LearningMode.OFF -> R.string.learn_mode_off_hint
+            }),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         ChoiceRow(
             title = stringResource(R.string.settings_level),
-            options = CefrLevel.entries,
+            options = CefrLevel.entries.filter { it != CefrLevel.UNKNOWN },
             selected = learning.manualLevel,
             label = { stringResource(it.labelRes()) },
             onSelect = { value -> viewModel.update { it.copy(learning = it.learning.copy(manualLevel = value)) } },
@@ -571,6 +580,8 @@ fun LearningSection(settings: AppSettings, viewModel: SettingsViewModel) {
             value = learning.markedWordsAreKnown,
             onChange = { value -> viewModel.update { it.copy(learning = it.learning.copy(markedWordsAreKnown = value)) } },
         )
+    }
+    SectionCard(stringResource(R.string.settings_learning_cards)) {
         StepperRow(
             title = stringResource(R.string.settings_popup_count),
             value = learning.maxPopupCards,
@@ -599,6 +610,64 @@ fun LearningSection(settings: AppSettings, viewModel: SettingsViewModel) {
             valueLabel = "${learning.popupRiseDp.toInt()} dp",
             onValueChange = { value -> viewModel.update { it.copy(learning = it.learning.copy(popupRiseDp = value)) } },
         )
+        val corners = listOf(
+            SubtitleVerticalAnchor.TOP to SubtitleHorizontalAnchor.START,
+            SubtitleVerticalAnchor.TOP to SubtitleHorizontalAnchor.END,
+            SubtitleVerticalAnchor.BOTTOM to SubtitleHorizontalAnchor.START,
+            SubtitleVerticalAnchor.BOTTOM to SubtitleHorizontalAnchor.END,
+        )
+        ChoiceRow(
+            title = stringResource(R.string.settings_popup_anchor),
+            options = corners,
+            selected = learning.popupCorner.vertical to learning.popupCorner.horizontal,
+            label = { corner ->
+                stringResource(when (corner) {
+                    corners[0] -> R.string.settings_popup_top_start
+                    corners[1] -> R.string.settings_popup_top_end
+                    corners[2] -> R.string.settings_popup_bottom_start
+                    else -> R.string.settings_popup_bottom_end
+                })
+            },
+            onSelect = { corner -> viewModel.update {
+                it.copy(learning = it.learning.copy(popupCorner = it.learning.popupCorner.copy(
+                    vertical = corner.first, horizontal = corner.second,
+                )))
+            } },
+        )
+        SliderRow(
+            title = stringResource(R.string.settings_popup_corner),
+            value = learning.popupCorner.offsetXDp,
+            range = 0f..120f,
+            valueLabel = "${learning.popupCorner.offsetXDp.toInt()} dp",
+            onValueChange = { value -> viewModel.update {
+                it.copy(learning = it.learning.copy(popupCorner = it.learning.popupCorner.copy(offsetXDp = value)))
+            } },
+        )
+        SliderRow(
+            title = stringResource(R.string.settings_popup_vertical_distance),
+            value = learning.popupCorner.offsetYDp,
+            range = 0f..240f,
+            valueLabel = "${learning.popupCorner.offsetYDp.toInt()} dp",
+            onValueChange = { value -> viewModel.update {
+                it.copy(learning = it.learning.copy(popupCorner = it.learning.popupCorner.copy(offsetYDp = value)))
+            } },
+        )
+        SliderRow(
+            title = stringResource(R.string.settings_popup_fade_in),
+            value = learning.popupFadeInMs.toFloat(),
+            range = 0f..2000f,
+            valueLabel = "${learning.popupFadeInMs} ms",
+            onValueChange = { value -> viewModel.update { it.copy(learning = it.learning.copy(popupFadeInMs = value.toLong())) } },
+        )
+        SliderRow(
+            title = stringResource(R.string.settings_popup_fade_out),
+            value = learning.popupFadeOutMs.toFloat(),
+            range = 0f..2000f,
+            valueLabel = "${learning.popupFadeOutMs} ms",
+            onValueChange = { value -> viewModel.update { it.copy(learning = it.learning.copy(popupFadeOutMs = value.toLong())) } },
+        )
+    }
+    SectionCard(stringResource(R.string.settings_subtitle_lookup)) {
         SwitchRow(
             title = stringResource(R.string.settings_tap_counts),
             value = learning.tapCountsForLineAndBlock,

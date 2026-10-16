@@ -49,6 +49,8 @@ data class PlayerUi(
     val muted: Boolean = false,
     /** LRN-1: the word/line/block card, or null when nothing is selected. */
     val popup: PopupUi? = null,
+    /** LRN-2: passive translated hints; independent of the interactive tap popup. */
+    val learningCards: List<LearningCardUi> = emptyList(),
     /** The ML Kit translation model is missing; popups offer a download instead of an error. */
     val modelMissing: Boolean = false,
     val layers: Map<TrackRole, LayerUi> = TrackRole.entries.associateWith { LayerUi() },

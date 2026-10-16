@@ -3,11 +3,10 @@ package com.sublearn.feature.settings
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,9 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,53 +27,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.key
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sublearn.core.designsystem.Dimens
 import com.sublearn.core.designsystem.R
-import com.sublearn.core.player.OpenDocumentContract
-import com.sublearn.core.player.OpenTreeContract
 import com.sublearn.core.settings.AccentToken
-import com.sublearn.core.settings.AiProviderToken
-import com.sublearn.core.settings.AspectMode
-import com.sublearn.core.settings.CefrLevel
-import com.sublearn.core.settings.DecoderMode
-import com.sublearn.core.settings.DetailsOpenTrigger
-import com.sublearn.core.settings.DictionaryPreference
-import com.sublearn.core.settings.DockMode
-import com.sublearn.core.settings.DoubleTapAction
-import com.sublearn.core.settings.FontFamilyToken
-import com.sublearn.core.settings.FontSpec
-import com.sublearn.core.settings.FontSurface
-import com.sublearn.core.settings.GestureAction
-import com.sublearn.core.settings.GestureSlot
-import com.sublearn.core.settings.ImportMode
-import com.sublearn.core.settings.LayerStackDirection
-import com.sublearn.core.settings.LearningMode
-import com.sublearn.core.settings.LevelProviderToken
-import com.sublearn.core.settings.OrientationLock
-import com.sublearn.core.settings.QuickActionId
-import com.sublearn.core.settings.SubtitleHorizontalAnchor
-import com.sublearn.core.settings.SubtitleLayerRole
-import com.sublearn.core.settings.SubtitleVerticalAnchor
-import com.sublearn.core.settings.TextDecorationToken
 import com.sublearn.core.settings.ThemeMode
-import com.sublearn.core.settings.TranslationProviderToken
-import com.sublearn.core.settings.FontWeightToken
-import com.sublearn.core.subtitles.TrackRole
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -90,6 +56,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onOpenWords: () -> Unit,
     modifier: Modifier = Modifier,
     startSection: String = "root",
     versionName: String = "",
@@ -97,8 +64,9 @@ fun SettingsScreen(
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val status by viewModel.status.collectAsStateWithLifecycle()
-    var section by remember { mutableStateOf(startSection) }
-    var query by remember { mutableStateOf("") }
+    var section by rememberSaveable(startSection) { mutableStateOf(startSection) }
+    var query by rememberSaveable { mutableStateOf("") }
+    BackHandler(section != "root") { section = if (section == "prompt") "ai" else "root" }
 
     // Use WindowInsets(0) to avoid double-insets when nested inside the app-level Scaffold (§4.3)
     Scaffold(
@@ -121,51 +89,62 @@ fun SettingsScreen(
             )
         },
     ) { padding ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .imePadding()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 18.dp),
-        ) {
-            StatusBanner(status = status, onDismiss = { })
+        key(section) {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .imePadding()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = Dimens.lg),
+            ) {
+                StatusBanner(status = status, onDismiss = { })
 
-            when (section) {
-                "root" -> RootList(query = query, onQuery = { query = it }, onOpen = { section = it })
-                "appearance" -> AppearanceSection(settings, viewModel)
-                "player" -> PlayerSection(settings, viewModel)
-                "subtitles" -> SubtitlesSection(settings, viewModel)
-                "fonts" -> FontsSection(settings, viewModel)
-                "gestures" -> GesturesSection(settings, viewModel)
-                "shadowing" -> ShadowingSection(settings, viewModel)
-                "learning" -> LearningSection(settings, viewModel)
-                "models" -> ModelsSection(viewModel)
-                "ai" -> AiSection(settings, viewModel, onOpenPrompt = { section = "prompt" })
-                "translation" -> TranslationSection(settings, viewModel)
-                "dictionary" -> DictionarySection(settings, viewModel)
-                "quick" -> QuickActionsSection(settings, viewModel)
-                "prompt" -> PromptSection(settings, viewModel, onDone = { section = "ai" })
-                "about" -> AboutSection(settings, viewModel, versionName, onBack)
+                when (section) {
+                    "root" -> RootList(query = query, onQuery = { query = it }, onOpen = { section = it })
+                    "appearance" -> AppearanceSection(settings, viewModel)
+                    "player" -> PlayerSection(settings, viewModel)
+                    "subtitles" -> SubtitlesSection(settings, viewModel)
+                    "fonts" -> FontsSection(settings, viewModel)
+                    "gestures" -> GesturesSection(settings, viewModel)
+                    "shadowing" -> ShadowingSection(settings, viewModel)
+                    "learning" -> {
+                        LearningSection(settings, viewModel)
+                        SectionCard(stringResource(R.string.library_title)) {
+                            ActionRow(stringResource(R.string.library_title), onClick = { section = "resources" }, showArrow = true)
+                            ActionRow(stringResource(R.string.words_title), onClick = onOpenWords, showArrow = true)
+                        }
+                    }
+                    "models" -> ModelsSection(viewModel)
+                    "resources" -> ResourcesSection(onOpenModels = { section = "models" })
+                    "ai" -> AiSection(settings, viewModel, onOpenPrompt = { section = "prompt" })
+                    "translation" -> TranslationSection(settings, viewModel)
+                    "dictionary" -> DictionarySection(settings, viewModel)
+                    "quick" -> QuickActionsSection(settings, viewModel)
+                    "prompt" -> PromptSection(settings, viewModel, onDone = { section = "ai" })
+                    "about" -> AboutSection(settings, viewModel, versionName, onBack)
+                }
+                Spacer(Modifier.height(Dimens.xxl))
             }
-            Spacer(Modifier.height(32.dp))
         }
     }
 }
 
 @Composable
 private fun RootList(query: String, onQuery: (String) -> Unit, onOpen: (String) -> Unit) {
-    var search by remember { mutableStateOf(query) }
+    val search = query
     OutlinedTextField(
         value = search,
-        onValueChange = { search = it; onQuery(it) },
+        onValueChange = onQuery,
         placeholder = { Text(stringResource(R.string.settings_search)) },
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
         singleLine = true,
         modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.sm),
     )
     Sections.entries.forEach { entry ->
-        if (search.isBlank() || entry.matches(search)) {
+        val title = stringResource(entry.titleRes)
+        val hint = stringResource(entry.hintRes)
+        if (search.isBlank() || title.contains(search, true) || hint.contains(search, true) || entry.matches(search)) {
             ActionRow(
                 title = stringResource(entry.titleRes),
                 subtitle = stringResource(entry.hintRes),
@@ -190,6 +169,8 @@ private enum class Sections(val id: String, val titleRes: Int, val hintRes: Int,
         "تکرار")),
     Learning("learning", R.string.settings_category_learning, R.string.settings_hint_learning, listOf("level", "cefr", "popup", "word",
         "سطح")),
+    Resources("resources", R.string.library_title, R.string.library_subtitle,
+        listOf("library", "pack", "import", "profile", "resource", "منابع", "بسته", "دقت")),
     Ai("ai", R.string.settings_category_ai, R.string.settings_hint_ai, listOf("openai", "gemini", "anthropic", "key", "prompt")),
     Translation("translation", R.string.settings_category_translation, R.string.settings_hint_translation, listOf("ml kit", "model",
         "cache")),
@@ -343,4 +324,3 @@ private fun Context.findActivity(): Activity? {
     }
     return null
 }
-

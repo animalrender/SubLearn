@@ -74,6 +74,7 @@ dependencies {
     debugImplementation(libs.compose.ui.tooling)
 
     implementation(project(":core:data"))
+    implementation(project(":core:models"))
 
     api(project(":core:translate"))
 

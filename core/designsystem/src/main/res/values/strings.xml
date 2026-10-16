@@ -194,7 +194,7 @@
     <string name="settings_category_fonts">Fonts</string>
     <string name="settings_category_gestures">Gestures</string>
     <string name="settings_category_shadowing">Shadowing</string>
-    <string name="settings_category_learning">Learning</string>
+    <string name="settings_category_learning">Player learning</string>
     <string name="settings_category_ai">AI</string>
     <string name="settings_category_dictionary">Dictionary</string>
     <string name="settings_category_appearance">Appearance</string>
@@ -253,7 +253,7 @@
     <string name="settings_auto_repeat">Auto-repeat every subtitle</string>
     <string name="settings_stop_at_end_default">Stop at end of subtitle by default</string>
     <string name="settings_hold_invert">Holding a toggle inverts it</string>
-    <string name="settings_learning_mode">Learning mode</string>
+    <string name="settings_learning_mode">Player learning mode</string>
     <string name="settings_mode_entertainment">Entertainment</string>
     <string name="settings_mode_learning">Learning</string>
     <string name="settings_mode_off">Off</string>
@@ -297,8 +297,8 @@
     <string name="level_c1">C1 advanced</string>
     <string name="level_c2">C2 proficient</string>
     <string name="level_unknown">Not set</string>
-    <string name="learn_mode_entertainment_hint">Cards appear for words above your level, nothing pauses. Watch first, look things up when you care to.</string>
-    <string name="learn_mode_learning_hint">Cards appear more often and a tap can pause the line, so a word is settled before the story moves on.</string>
+    <string name="learn_mode_entertainment_hint">Player mode: no automatic cards. Tap a subtitle to look up a word or phrase.</string>
+    <string name="learn_mode_learning_hint">Player mode: words and phrases above your level appear automatically in a quiet corner, without pausing the video.</string>
     <string name="learn_mode_off_hint">No cards and no colours: subtitles only, until you tap a word.</string>
     <string name="learn_level_source_hint">Level source: My Words, then the imported list (%1$d words), then the manual level.</string>
     <string name="app_font_scale">App font size</string>
@@ -364,7 +364,7 @@
     <string name="settings_fallback_online">Fall back to an online service</string>
     <string name="settings_fallback_online_hint">No online fallback is enabled in this build.</string>
     <string name="settings_marked_known">Words in My Words count as known</string>
-    <string name="settings_show_above_only">Only mark words above my level</string>
+    <string name="settings_show_above_only">Only show words and phrases above my level</string>
     <string name="settings_popup_rise">Card rise</string>
     <string name="settings_popup_corner">Card distance from the corner</string>
     <string name="settings_popup_opacity">Card opacity</string>
@@ -604,4 +604,13 @@
     <string name="onboarding_title">Welcome to SubLearn</string>
     <string name="onboarding_subtitle">Import an offline English–Persian lexicon pack or download the on-device ML Kit model to get instant meanings and phrase detection while watching.</string>
     <string name="onboarding_dismiss">Got it</string>
+    <string name="learn_coming_soon">Browser, PDF and image learning is coming soon. Video learning is available in the player.</string>
+    <string name="settings_popup_anchor">Card corner</string>
+    <string name="settings_popup_top_start">Top start</string>
+    <string name="settings_popup_top_end">Top end</string>
+    <string name="settings_popup_bottom_start">Bottom start</string>
+    <string name="settings_popup_bottom_end">Bottom end</string>
+    <string name="settings_learning_cards">Automatic learning cards</string>
+    <string name="settings_subtitle_lookup">Subtitle lookup</string>
+    <string name="settings_popup_vertical_distance">Vertical distance from the corner</string>
 </resources>
