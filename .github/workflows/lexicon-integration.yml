@@ -64,21 +64,11 @@ jobs:
             --output-dir /tmp/lexicon_out \
             --direction fa-en --gzip 2>&1 | tee /tmp/build_fa_en.log
 
-      # The Actions log host is not reachable from the agent sandbox, so the reason a run failed is
-      # published as annotations and as the text of a check run, both of which the REST API exposes.
-      - name: Report the reason a build failed
-        if: failure()
-        run: |
-          for log in /tmp/build_en_fa.log /tmp/build_fa_en.log; do
-            [ -f "$log" ] || continue
-            echo "::error::$(grep -iE 'error|traceback|exception|assert' "$log" | tail -3 | tr '\n' ' ' | cut -c1-280)"
-            grep -iE 'error|traceback|exception|assert' "$log" | tail -20 || true
-          done
-
       - name: Validate packs
         run: |
-          python3 tools/lexicon_builder/validate_pack.py /tmp/lexicon_out/sublearn-lexicon-en-fa-v2.sqlite --full
-          python3 tools/lexicon_builder/validate_pack.py /tmp/lexicon_out/sublearn-dict-fa-en-v1.sqlite --full
+          set -o pipefail
+          python3 tools/lexicon_builder/validate_pack.py /tmp/lexicon_out/sublearn-lexicon-en-fa-v2.sqlite --full 2>&1 | tee /tmp/validate_en_fa.log
+          python3 tools/lexicon_builder/validate_pack.py /tmp/lexicon_out/sublearn-dict-fa-en-v1.sqlite --full 2>&1 | tee /tmp/validate_fa_en.log
 
       - name: Export test JSON
         run: |
@@ -91,6 +81,23 @@ jobs:
       - name: Run JVM NLP tests
         run: |
           ./gradlew :core:nlp:test --no-daemon
+
+      # The Actions log host is not reachable from the agent sandbox, so the reason a run failed is
+      # published as an annotation, which the REST API exposes. This runs last so it catches a
+      # failure from any earlier step, not only the one it follows.
+      - name: Report the reason a build failed
+        if: failure()
+        run: |
+          failed=0
+          for log in /tmp/build_en_fa.log /tmp/build_fa_en.log /tmp/validate_en_fa.log /tmp/validate_fa_en.log; do
+            [ -f "$log" ] || continue
+            message=$(grep -iE 'error|fail|traceback|exception|assert' "$log" | tail -3 | tr '\n' ' ' | cut -c1-280)
+            [ -n "$message" ] || continue
+            failed=1
+            echo "::error title=$(basename "$log")::$message"
+            grep -iE 'error|fail|traceback|exception|assert' "$log" | tail -20 || true
+          done
+          [ "$failed" -eq 1 ] || echo "::error::no log explained the failure"
 
       - name: Summary
         if: always()
