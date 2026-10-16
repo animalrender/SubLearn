@@ -90,8 +90,10 @@ class NlpModelInstallerTest {
         // The graph is exactly the published size, so a resume must skip it and fetch only the rest.
         val graph = layout.fileUnder(root, "model_quantized.onnx")
         graph.parentFile?.mkdirs()
-        graph.writeBytes(ByteArray(0))
-        assertTrue(graph.setLength(layout.assets.first().sizeBytes))
+        // A sparse file of the published size: the installer only compares lengths, and writing
+        // 22 MB of zeros into a test would be pointless.
+        java.io.RandomAccessFile(graph, "rw").use { it.setLength(layout.assets.first().sizeBytes) }
+        assertEquals(layout.assets.first().sizeBytes, graph.length())
 
         val installer = installerWith(writingDownloader())
         installer.install("emb-minilm-l6-int8")

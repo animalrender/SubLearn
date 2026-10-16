@@ -44,7 +44,7 @@ class NlpEngineTest {
         var closed = false
             private set
 
-        override fun embed(text: String): AppResult<FloatArray> = AppResult.Success(FloatArray(dimensions))
+        override fun embed(text: String): FloatArray = FloatArray(dimensions)
 
         override fun close() {
             closed = true
