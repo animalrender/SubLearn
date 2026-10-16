@@ -103,13 +103,14 @@ TODO comment; each entry has a route to being fixed.
     an external audio source with its selected video; it is intentionally attached only to that video.
     Different stream lengths, provider MIME metadata and unusual codec containers may need device-level
     handling. Route: exercise common MP3/AAC/FLAC + video pairs after CI, then document unsupported formats.
-24. **The ONNX and LiteRT accuracy profiles cannot run yet.** `NlpModelCatalog` describes the
-    models for Balanced, Precise, Advanced and Smart, and the settings and library screens show
-    what each one downloads, but only the pure-Kotlin runtime (`NONE`) exists in this build.
-    `NlpModelRuntimeGuard.check` returns `NotImplemented` for the profiles that need ONNX or
-    LiteRT, and `SmartProfileSelector` never selects them, so a user cannot end up silently on a
-    weaker profile. Route: add `onnxruntime-android` with the int8 encoders, then a LiteRT runner
-    for the LLM tier.
+24. **The ONNX and LiteRT engines compile but have never run on a device.** Both are implemented:
+    `core:nlp-onnx` loads the int8 encoders through ONNX Runtime 1.22.0 and `core:nlp-llm` loads the
+    LiteRT bundles through MediaPipe's LLM Inference API, `NlpRuntimeBootstrap` registers whichever
+    native library actually loads, and `ProfiledNlpEngine` opens the models a profile needs. What is
+    not proven is inference itself: no `.onnx` or `.task` file has been executed, because the sandbox
+    has no Android SDK and the models are hundreds of megabytes. The selection, layout, pooling,
+    tokenizer and installer logic is unit tested; the native call paths are not. Route: install a
+    model on a device, run `ProfiledNlpEngine` against a known sentence, and record the output.
 25. **The ML Kit model installer has not downloaded anything on a real device.** The URL scheme,
     checksum, zip-slip guard and archive validation are unit tested, and the UI is wired to the
     installer, but no end-to-end download has been performed. The catalog's SHA-256 for the pair

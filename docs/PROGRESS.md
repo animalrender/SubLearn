@@ -79,6 +79,20 @@ listed at the end is the evidence.
   Covered by 9 tests in `core:ai`.
 - The Learn tab's profile chips now say how many models the profile adds and how large the
   download is, and flag profiles whose runtime is missing.
+- **The ONNX and LiteRT engines exist now.** `core:nlp-onnx` (ONNX Runtime 1.22.0) loads the
+  `Xenova` int8 encoders; `core:nlp-llm` (MediaPipe `tasks-genai` 0.10.35) runs the LiteRT `.task`
+  bundles. `NlpRuntimeBootstrap` probes both native libraries at startup and registers what loads,
+  `ProfiledNlpEngine` opens the models a profile needs through injectable loaders, and
+  `NlpModelInstaller` downloads a model's files with per-file resume and deletes a partial
+  directory on failure (D-74, D-75). 19 tests cover the engine and the installer.
+- **`ModelStore` and `ModelDownloader`** give the models a real home in `filesDir/ai-models` and
+  one plain-JVM transfer path with checksum verification. The catalog's sizes and hashes were
+  wrong for every model; `tools/refresh_model_catalog.py` now derives them from the publisher's own
+  metadata, and `tools/check_catalog.py` proves `ModelStore`'s file table matches the catalog field
+  by field.
+- Models & Downloads **lists all six models** with the profile each one unlocks, progress across
+  every file of a model, and a stated reason (rather than a dead button) when this build cannot run
+  one. `DownloadItemCard` gained that state, a two-line description and theme colours.
 - **`tools/update_catalog.py`** derives the catalog's size and SHA-256 from the released files and
   `release-packs.yml` commits the result (D-70). 11 tests.
 - My Words gained a stable **sort selector** (Newest, Oldest, A–Z, Level) and **SAF export** for
@@ -100,15 +114,23 @@ listed at the end is the evidence.
   budgets, downgrade ladder, guarded-call fallbacks and the two profile scorers.
 
 **Honest gaps that remain**
-- The ONNX and LiteRT runtimes are **not implemented**. The profiles that need them are visible,
-  describe their download, and refuse to run with a clear error. Balanced uses the pure-Kotlin
-  embedding model only.
+- The ONNX and LiteRT engines are **implemented but have never executed a model**. Both native call
+  paths need a device and a downloaded model; the selection, layout, tokenizer, pooling, download
+  and install logic around them is unit tested, and CI compiles the native bindings.
 - The ML Kit installer compiles, is unit tested and is wired to the UI, but has **not been run on
   a device**: no download was performed against Google's CDN from this environment.
 - No Compose UI test was added for the rebuilt word card, so its layout is unverified beyond
   compilation.
 - `Compose` navigation still uses the hand-rolled `AppNavigator`; the back stack is tested by
   compilation and manual reasoning, not by an automated test.
+
+**CI verification (2026-10-16, engines)**
+- Static checks on `820f359`: 180 files, 0 problems; 0 unresolved imports; 20 modules, 0 missing
+  dependencies; catalog, schema, resources and docs checks all pass; 25 python tests pass.
+- `tools/check_symbols.py` gained an enum-entry check after a real bug: `SubLearnError.Kind
+  .ModelFailure` was written and used in seven places, and it did not exist — nothing offline could
+  have caught it, and only CI would have. It is now a `Kind` of its own, and the checker rejects
+  the next one, with 5 tests of its own.
 
 **CI verification (2026-10-16)**
 - CI green on `86cd5fc`: `assembleDebug`, `assembleRelease`, `test`, `lintDebug` and

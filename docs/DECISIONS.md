@@ -487,3 +487,22 @@ growing the card.
 marked-at timestamp as the tie-break, so the list cannot reshuffle between recompositions. Export
 writes through `ActivityResultContracts.CreateDocument` per format rather than a shared launcher
 with a guessed MIME type, which is also why each format gets its own filename.
+
+**D-74 — The engines are registered at startup, not assumed at compile time.**
+`core:ai` cannot see `core:nlp-onnx` or `core:nlp-llm`: those modules depend on it. So
+`NlpModelRuntime.isAvailable` asks `NlpRuntimeRegistry`, which starts pessimistic (only `NONE`) and
+is filled in by `NlpRuntimeBootstrap` from `SubLearnApplication.onCreate`. Each engine is probed
+by loading it — ONNX Runtime through `OrtEnvironment.getEnvironment`, MediaPipe by resolving
+`LlmInference` — so a device whose ABI the shipped native library does not cover keeps the
+pure-Kotlin ranker and is never offered a profile that would fail on the subtitle screen. A build
+that links both engines therefore reports `isAvailable` honestly per device rather than per
+release.
+
+**D-75 — A profile's models are a download set and a resident set.**
+`NlpModelCatalog.modelsFor(profile)` is what the user downloads; `runtimeModelsFor(profile)` is
+what stays in memory. SMART downloads four models so it can move between tiers without another
+transfer, but keeps only the word-sense encoder and the prompt model: 640 MB of resident weights
+would be a crash, not a feature. `ProfiledNlpEngine` walks the resident list strongest-first, keeps
+the first embedder that opens, and reports `meetsProfile` — the caller, not the engine, decides
+whether a weaker model is acceptable, so "PRECISE is running" is never a claim the engine makes on
+its own.

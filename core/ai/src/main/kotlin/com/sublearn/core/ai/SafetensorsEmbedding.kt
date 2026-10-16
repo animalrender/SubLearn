@@ -6,6 +6,7 @@ import java.io.File
 import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.pow
 
 /**
  * Minimal reader for the `safetensors` container used by `minishlab/potion-base-8M`.
@@ -45,7 +46,12 @@ object Safetensors {
         }
     }
 
-    /** A model file plus the offsets of every tensor in it. */
+    /**
+     * A model file plus the offsets of every tensor in it.
+     *
+     * The constructor is private and [create] is the door: Kotlin's `private` is scoped to the class
+     * itself, not to the enclosing object, so the outer reader cannot call it directly.
+     */
     class SafetensorsFile private constructor(
         private val file: File,
         val tensors: Map<String, TensorInfo>,
@@ -92,6 +98,15 @@ object Safetensors {
         override fun close() {
             runCatching { channel.close() }
         }
+
+        companion object {
+            /** The only way to build one: the file is opened and the header parsed before this. */
+            internal fun create(
+                file: File,
+                tensors: Map<String, TensorInfo>,
+                headerLength: Long,
+            ): SafetensorsFile = SafetensorsFile(file, tensors, headerLength)
+        }
     }
 
     /**
@@ -118,7 +133,7 @@ object Safetensors {
                     ?: return AppResult.failure(
                         SubLearnError(SubLearnError.Kind.MalformedInput, "safetensors header is not valid JSON"),
                     )
-                AppResult.success(SafetensorsFile(file, tensors, 8 + headerLength))
+                AppResult.success(SafetensorsFile.create(file, tensors, 8 + headerLength))
             }
         } catch (t: Throwable) {
             AppResult.failure(SubLearnError.from(t))
@@ -205,7 +220,7 @@ object Safetensors {
                 if (mantissa == 0) 0f else mantissa.toFloat() * 2f.pow(-24)
             }
             0x1F -> if (mantissa == 0) Float.POSITIVE_INFINITY else Float.NaN
-            else -> (1f + mantissa / 1024f) * 2f.pow(exponent - 15)
+            else -> (1f + mantissa / 1024f) * 2f.pow((exponent - 15).toFloat())
         }
         return if (sign == 1) -asFloat else asFloat
     }
@@ -215,6 +230,4 @@ object Safetensors {
         Float.fromBits((bits.toInt() and 0xFFFF) shl 16)
 
     private const val MAX_HEADER_BYTES = 100L * 1024 * 1024
-
-    private fun Float.pow(exponent: Int): Float = kotlin.math.pow(this, exponent.toFloat())
 }
