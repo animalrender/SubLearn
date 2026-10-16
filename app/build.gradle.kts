@@ -20,6 +20,28 @@ fun versionCodeOf(name: String): Int {
 }
 
 /**
+ * The code of a build that has no version number of its own.
+ *
+ * A development build is called `0.0.0-dev-<branch>+<sha>`, so the name carries no number and
+ * `versionCodeOf` would answer 0 — which the Android plugin rejects ("versionCode is set to 0").
+ * The number of commits is used instead: it grows with the history, so a newer development build
+ * installs over an older one, and it is the same for every build of the same commit, so a rebuild
+ * installs over the build it replaces.
+ *
+ * The codes stay below the release codes (3.0.0 → 30000), so a release can always be installed
+ * over a development build without uninstalling first.
+ */
+fun devVersionCodeOf(): Int {
+    val commits = try {
+        val process = ProcessBuilder("git", "rev-list", "--count", "HEAD").redirectErrorStream(true).start()
+        process.inputStream.bufferedReader().readText().trim().toIntOrNull() ?: 0
+    } catch (_: Exception) {
+        0
+    }
+    return commits.coerceIn(1, 99_999)
+}
+
+/**
  * Resolve the version name.
  *
  * The order is: the environment (the release workflows set `SUBLEARN_VERSION_NAME` to the exact
@@ -58,9 +80,11 @@ android {
         versionName = resolveVersionName()
         // The code follows the name, never the build run: a release that was built by a later
         // workflow run than the CI run that tested it must still be installable over the build the
-        // user already has, and a run counter would not be (D-82).
+        // user already has, and a run counter would not be (D-82). A build without a number of its
+        // own (a development build) gets the commit count, so the code is always positive.
         versionCode = System.getenv("SUBLEARN_VERSION_CODE")?.toIntOrNull()?.takeIf { it > 0 }
-            ?: versionCodeOf(versionName!!)
+            ?: versionCodeOf(versionName!!).takeIf { it > 0 }
+            ?: devVersionCodeOf()
         resourceConfigurations += listOf("en", "fa")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
