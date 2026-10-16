@@ -28,7 +28,8 @@ Python tooling tests: 61 run, 59 passed, 2 intentionally skipped. Local Gradle
 cannot start: no Java/JAVA_HOME or Android SDK. Added seven selection tests, the production-graph
 regression test and an instrumented card visibility smoke test; execution is pending CI/device.
 The first CI compile caught the split Dictionary status field and an invalid test import; both were
-fixed. All new player/settings production code compiled in that run. A follow-up CI run is pending.
+fixed. All new player/settings production code compiled in that run. The follow-up caught a missing
+WindowInsets import on My Words after the toolbar cleanup; that import is fixed too. CI is rerunning.
 No device verification or final-build success is claimed here. See D-78..D-80 and KNOWN_ISSUES 29.
 
 ## 2026-10-15 — phases 20–25: detection accuracy, downloads, navigation, profiles, releases, docs
