@@ -1,0 +1,14 @@
+# Baseline 4/5: the Learn tab only says "Coming soon" for browser, PDF and image learning.
+appId: com.sublearn.app.debug
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Open a video"
+    timeout: 60000
+- tapOn: "Learn"
+- extendedWaitUntil:
+    visible: "Coming soon"
+    timeout: 20000
+- assertVisible: "Browser, PDF and image learning.*"
+- takeScreenshot: 04-learn

@@ -1,0 +1,37 @@
+# Baseline 2/5: Home -> side menu -> Settings -> search -> Downloads, top and bottom.
+appId: com.sublearn.app.debug
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Open a video"
+    timeout: 60000
+# The menu button's content description is "Settings" (menu_settings). The drawer entry has the same
+# text, so the second tap is anchored below "Quiz", which exists only in the drawer.
+- tapOn: "Settings"
+- extendedWaitUntil:
+    visible: "Quiz"
+    timeout: 15000
+- tapOn:
+    text: "Settings"
+    below: "Quiz"
+- extendedWaitUntil:
+    visible: "Search settings"
+    timeout: 20000
+- takeScreenshot: 02-settings-root
+# "download", not "downloads": the typed text must not match the "Downloads.*" row it filters to.
+- tapOn: "Search settings"
+- inputText: "download"
+- extendedWaitUntil:
+    visible: "Downloads.*"
+    timeout: 10000
+- takeScreenshot: 02-settings-search
+- tapOn: "Downloads.*"
+- extendedWaitUntil:
+    visible: "Offline translation"
+    timeout: 20000
+- takeScreenshot: 02-settings-downloads
+- scrollUntilVisible:
+    element: "Subtitle lab"
+    timeout: 60000
+- takeScreenshot: 02-settings-downloads-bottom

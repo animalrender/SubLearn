@@ -1,0 +1,14 @@
+# Baseline 1/5: a cold start lands on Home, with its two actions and the empty "Continue watching" state.
+# Labels come from core/designsystem/src/main/res/values/strings.xml (home_*), never from memory.
+appId: com.sublearn.app.debug
+---
+- launchApp:
+    clearState: true
+# launchApp returns before the first Compose frame: wait for a known text before any screenshot.
+- extendedWaitUntil:
+    visible: "Open a video"
+    timeout: 60000
+- assertVisible: "Open URL or stream"
+- assertVisible: "Continue watching"
+- assertVisible: "No videos yet.*"
+- takeScreenshot: 01-home

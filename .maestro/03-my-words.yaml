@@ -1,0 +1,18 @@
+# Baseline 3/5: My Words from the side menu, empty on a fresh install.
+appId: com.sublearn.app.debug
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Open a video"
+    timeout: 60000
+- tapOn: "Settings"
+- extendedWaitUntil:
+    visible: "Quiz"
+    timeout: 15000
+- tapOn: "My Words"
+- extendedWaitUntil:
+    visible: "Nothing marked yet.*"
+    timeout: 20000
+- assertVisible: "0 words"
+- takeScreenshot: 03-my-words
