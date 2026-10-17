@@ -470,7 +470,7 @@ internal fun BottomChrome(
                 }
                 Row(
                     modifier = Modifier.weight(2f),
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.xs, Arrangement.End),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.xs, Alignment.End),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     rightActions.forEach { id ->
