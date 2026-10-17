@@ -62,6 +62,14 @@ appId: com.sublearn.app.debug
     direction: DOWN
     duration: 900
 - takeScreenshot: 08-player-cross-dock-drop
-- tapOn: "Arrange player controls"
-- assertVisible: "Arrange player controls"
+- tapOn:
+    text: "Arrange player controls"
+    below: "Drag subtitle layers to move them.*"
+- assertVisible: "Choose a toolbar or playback row.*"
+- swipe:
+    start: "50%, 90%"
+    end: "50%, 45%"
+    duration: 700
+- assertVisible: "Repeat this subtitle"
+- assertVisible: "Playback row"
 - takeScreenshot: 08-player-action-layout-sheet
