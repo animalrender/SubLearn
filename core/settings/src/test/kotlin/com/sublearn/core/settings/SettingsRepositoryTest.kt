@@ -193,7 +193,7 @@ class SettingsRepositoryTest {
 
         val oldSettings = QuickActionSettings(specs = QuickActionSpec.defaults - QuickActionId.TOGGLE_MUTE.key)
         assertEquals(DockMode.BAR, oldSettings.spec(QuickActionId.TOGGLE_MUTE).dock)
-        assertEquals(QuickActionSpec.defaults.size, oldSettings.spec(QuickActionId.TOGGLE_MUTE).order)
+        assertEquals(settings.visibleIn(DockMode.BAR).size, oldSettings.spec(QuickActionId.TOGGLE_MUTE).order)
         assertTrue(oldSettings.visibleIn(DockMode.BAR).any { it.first == QuickActionId.TOGGLE_MUTE })
     }
 

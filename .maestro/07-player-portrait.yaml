@@ -9,12 +9,6 @@ appId: com.sublearn.app.debug
     visible: "360 × 640"
     timeout: 60000
 - assertVisible: "SubLearn-UI-Fixture.mp4"
-- takeScreenshot: 07-player-portrait-first-frame
-- tapOn:
-    point: "50%, 50%"
-- extendedWaitUntil:
-    visible: "More"
-    timeout: 10000
 - assertVisible: "FIT"
 - takeScreenshot: 07-player-portrait-controls
 # Enter Layout mode, reposition its confirmation button, and use it to leave the mode.

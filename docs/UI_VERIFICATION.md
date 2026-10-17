@@ -317,7 +317,9 @@ The `ui-snapshots` branch is generated: never edit it, merge it or delete it by 
 
 **Limits.** The debug-only fixture is a synthetic 3-minute clip with one embedded English subtitle
 track; the Player flows use it to test controls and subtitle rendering without depending on a user's
-media library. Mark that coverage verified only when the exact-sha UI run passes and its screenshots are reviewed.
+media library. A debug-only startup extra extends control auto-hide to ten minutes so selectors and
+screenshots are stable; these flows do **not** verify the normal three-second auto-hide timer. Mark
+Player coverage verified only when the exact-sha UI run passes and its screenshots are reviewed.
 The Android system file picker is not driven, so external subtitle/audio attachment, SAF grants and
 real-library resume remain unverified. Downloads are looked at, not performed. The emulator is x86_64
 with a software GPU and animations off, so it says nothing about performance, animation timing,

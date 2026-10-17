@@ -352,11 +352,14 @@ prepare_player_fixture() {
     log "player fixture is missing: $fixture"
     return 1
   fi
+  # A long debug-only auto-hide interval keeps selectors/screenshots deterministic; normal 3 s auto-hide
+  # is still the default and this fixture settings state is wiped before every flow.
   adb shell am start -W -n "$PKG/com.sublearn.app.MainActivity" \
     -a android.intent.action.VIEW -t video/mp4 -d "$uri" \
     --grant-read-uri-permission \
     --ez com.sublearn.app.debug.extra.fixture true \
-    --es com.sublearn.app.debug.extra.orientation "$orientation" </dev/null
+    --es com.sublearn.app.debug.extra.orientation "$orientation" \
+    --el com.sublearn.app.debug.extra.controlsAutoHideMs 600000 </dev/null
 }
 
 attempt_flow() {

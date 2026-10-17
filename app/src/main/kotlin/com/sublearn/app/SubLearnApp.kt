@@ -87,11 +87,16 @@ fun SubLearnApp(
         val request by startup.collectAsStateWithLifecycle(initialValue = null)
         LaunchedEffect(request) {
             request?.let {
-                it.testOrientation?.let { orientation ->
+                if (it.testOrientation != null || it.testControlsAutoHideMs != null) {
                     settingsRepository.update { settings ->
-                        settings.copy(player = settings.player.copy(orientationLock = orientation))
+                        settings.copy(
+                            player = settings.player.copy(
+                                orientationLock = it.testOrientation ?: settings.player.orientationLock,
+                                controlsAutoHideMs = it.testControlsAutoHideMs ?: settings.player.controlsAutoHideMs,
+                            ),
+                        )
                     }
-                    // Let the settings StateFlow reach Compose before PlayerScreen reads its lock.
+                    // Let the test-only settings reach PlayerScreen before it opens the fixture.
                     androidx.compose.runtime.withFrameNanos { }
                 }
                 nav.openPlayer(it.uri, it.title)

@@ -7,11 +7,8 @@ appId: com.sublearn.app.debug
 - extendedWaitUntil:
     visible: "360 × 640"
     timeout: 60000
-- tapOn:
-    point: "50%, 50%"
-- extendedWaitUntil:
-    visible: "More"
-    timeout: 10000
+- assertVisible: "SubLearn-UI-Fixture.mp4"
+- assertVisible: "More"
 - tapOn: "More"
 - assertVisible: "Subtitle options"
 - assertVisible: "Arrange player controls"

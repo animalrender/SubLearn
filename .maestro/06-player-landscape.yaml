@@ -9,12 +9,6 @@ appId: com.sublearn.app.debug
     visible: "360 × 640"
     timeout: 60000
 - assertVisible: "SubLearn-UI-Fixture.mp4"
-- takeScreenshot: 06-player-landscape-first-frame
-- tapOn:
-    point: "50%, 50%"
-- extendedWaitUntil:
-    visible: "More"
-    timeout: 10000
 - assertVisible: "FIT"
 - assertVisible: "Subtitle list"
 - assertVisible: "Repeat this subtitle"

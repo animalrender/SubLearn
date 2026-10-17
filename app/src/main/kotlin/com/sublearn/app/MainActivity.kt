@@ -82,7 +82,12 @@ class MainActivity : ComponentActivity() {
         } else {
             null
         }
-        return StartupRequest(uri.toString(), displayNameOf(uri), testOrientation)
+        val testControlsAutoHideMs = if (BuildConfig.DEBUG && intent.hasExtra("com.sublearn.app.debug.extra.controlsAutoHideMs")) {
+            intent.getLongExtra("com.sublearn.app.debug.extra.controlsAutoHideMs", 0L).takeIf { it in 3_000L..600_000L }
+        } else {
+            null
+        }
+        return StartupRequest(uri.toString(), displayNameOf(uri), testOrientation, testControlsAutoHideMs)
     }
 
     /** Copy the self-generated clip from debug-only APK assets into the app-private FileProvider root. */
@@ -149,6 +154,8 @@ data class StartupRequest(
     val title: String,
     /** Debug-only emulator hook; callers outside debug builds cannot set player orientation. */
     val testOrientation: com.sublearn.core.settings.OrientationLock? = null,
+    /** Keeps fixture controls stable while Maestro takes screenshots; release intents cannot set it. */
+    val testControlsAutoHideMs: Long? = null,
 )
 
 /**
