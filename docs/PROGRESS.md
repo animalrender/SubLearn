@@ -752,3 +752,6 @@ and rotate. With no network: the same, plus translation only for a previously do
   build/unit tests/lint remain the CI authority; no emulator or phone execution is claimed.
 - Removed numeric-ID UI fallbacks during subtitle restore/loading too; unavailable metadata produces
   a generic filename label rather than an opaque ID. External-audio fallback uses provider names.
+- All 10 model-self-test verdict cases passed locally with the same direct harness (30 cases total
+  with Safetensors/resume). The two positive/negative fake LLM probes now use the supported Qwen
+  `.task` layout; a separate regression retains SmolLM2 to prove its format is rejected pre-native.
