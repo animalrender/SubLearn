@@ -14,6 +14,7 @@ the list cannot rot.
 | [AGENT_REQUESTS.md](AGENT_REQUESTS.md) | Outstanding requests and the questions they answer. |
 | [CHECKLIST.md](CHECKLIST.md) | Pre-release verification steps. |
 | [MANUAL_TEST.md](MANUAL_TEST.md) | Manual test script for the paths that automated tests cannot cover. |
+| [UI_VERIFICATION.md](UI_VERIFICATION.md) | How to see and drive the running app in CI: trigger, read the results, review checklist, flow cheatsheet, merge gate. Mandatory for any visible or operable change. |
 
 ## Design and specification
 

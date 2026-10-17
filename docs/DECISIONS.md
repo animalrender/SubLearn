@@ -96,7 +96,9 @@ tests is caught automatically. Amended by D-21/D-22/D-28: the two release workfl
 and `auto-release.yml`) are the only ones that hold `contents: write` (to create a tag and upload
 assets), `auto-release.yml` also holds `actions: read` (to fetch the APK artifact of the CI run it
 reacts to), and the three of them hold `checks: write` (to publish the failure report). CI itself is
-still read-only and never sees a signing secret.
+still read-only and never sees a signing secret. Amended by D-94: KVM does work on the runner of this
+public repository (the instrumented suite stays manual to keep every push cheap), and `ui-snapshot.yml`
+holds `contents: write` too, to force-push the orphan branch `ui-snapshots` and nothing else.
 
 **D-18 — RTL is decided per text run, not per app locale.** Subtitle layers and popups pass an
 explicit `TextDirection` derived from the content, because a Persian gloss inside an English card (and
@@ -739,3 +741,37 @@ its object selected too. Otherwise each word is shown with its entry, and any ph
 named. Text is capped at 2000 characters and ranking shares the file mode's budget of 8 words. The lab
 imports no `feature:player` code; the selection rules are pure Kotlin with a JVM test. Nothing is written
 to My Words or the span cache.
+
+**D-94 — The running app is checked on an emulator in CI, and the evidence goes to an orphan branch.**
+Until now nobody could see the app run: the sandbox has no JVM or device, CI's log and artifact hosts are
+unreachable from it, and "verified" meant "compiled" (REQ-7; KNOWN_ISSUES 12, 21, 30). `ui-snapshot.yml`
+builds the debug APK, boots an API 34 `google_apis` x86_64 emulator with the `pixel_6` profile (1080x2400;
+without a profile the AVD is 320x640), runs the Maestro flows of `.maestro/` one by one (five numbered
+baseline flows: Home, Settings with search and Downloads, My Words, Learn, Dictionary; per-change flows in
+`.maestro/_scratch/`, deleted before a merge) and force-pushes the evidence as one orphan commit to
+`ui-snapshots`: `STATUS.md` (branch, sha, build, PASS/FAIL per flow, `app crash: yes|no`), screenshots,
+view-hierarchy dumps, the full and the app-only logcat. The sandbox reads it with `git clone`; the sha and
+the verdict are also in the job's check-run annotations. The job is red when the build failed, a flow
+failed, no flow ran, or the crash scan found a real crash (our package's `FATAL EXCEPTION`, ANR, process
+death, native crash, `am_crash`/`am_anr`; never another process, because the emulator's Google apps are
+noisy). It runs for `workflow_dispatch` and for a push whose tip commit says `[ui]`; an agent triggers it
+with an empty last commit, so the checked sha is the sha that gets merged, and comparing the `sha:` line of
+`STATUS.md` with `HEAD` before reading anything else keeps stale results out. The procedure is
+[UI_VERIFICATION.md](UI_VERIFICATION.md), mandatory for any change the user can see or operate (AGENTS.md).
+Rejected: screenshots committed to the working branch (artifacts on `main`, noise in review), artifact
+uploads (the host is unreachable from the sandbox), Compose instrumented tests alone (no system UI, no
+keyboard, nothing that drives Settings search or the Persian layout), a device farm (accounts and secrets,
+rule 5).
+Consequences. KVM works on the runner of this public repository, which makes the reason D-17 gave for
+keeping the instrumented suite manual wrong; the suite stays manual to keep pushes cheap. Four things
+were learned by running it and are now in the script: Gboard's suggestion strip is part of the hierarchy
+and is clickable, so a flow taps text only the app can show or hides the keyboard first; Maestro prints
+every non-ASCII character in a dump as `?` unless it runs under a UTF-8 locale; the emulator right after its
+boot sometimes raises "Pixel Launcher isn't responding", which covers the whole app (one run lost all eight
+flows to it), so system error dialogs are switched off and a leftover one is removed before every flow; and
+`launchApp` with `clearState` races the activity manager's destroy timeout for the previous task, which
+can kill the new process (2 of 8 flows in one run), so the previous app is wiped and given three seconds
+before every flow and a flow that fails with exactly that signature is retried once, never when it crashed.
+The runner is pinned to `ubuntu-24.04` because `ubuntu-latest` moves to 26.04 on 2026-10-19 and the setup
+was proven on 24.04. Not covered: the player and anything behind a video (no fixture, REQ-13),
+real-device behaviour (performance, picture-in-picture, sensors) and release builds.

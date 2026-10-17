@@ -70,15 +70,25 @@ blocking, the workaround used in the meantime is stated too.
   release is then properly signed. Users of a debug-signed build must uninstall before installing it.
 - **Severity**: low for the tag, high for a store listing.
 
-### REQ-7 — Device for the verification pass and README screenshots
+### REQ-7 — Device for the verification pass and README screenshots — **resolved for the app shell 2026-10-17**
 - **Phase/task**: 9.
 - **Needed**: a physical device or an emulator the agent can drive, to verify RTL rendering, animation,
   PiP, process death and gestures, and to take the screenshots the README should have.
-- **Tried**: instrumented tests as the substitute (need KVM; kept as a manual workflow),
-  Robolectric/Compose unit tests (real font measurement is missing, so hit testing cannot be trusted
-  there).
-- **Next step**: owner runs `.github/workflows/instrumented.yml`, or supplies screenshots/notes.
-- **Severity**: medium (GEN-1/GEN-4 claims cannot be honestly closed without it).
+- **Tried**: instrumented tests as the substitute (they need KVM, which was believed to be missing on
+  standard runners, so they stayed a manual workflow), Robolectric/Compose unit tests (real font
+  measurement is missing, so hit testing cannot be trusted there).
+- **Resolution**: KVM does work on the runner of this public repository. `ui-snapshot.yml` builds the debug
+  APK, boots an API 34 Pixel 6 emulator, drives the app with the Maestro flows in `.maestro/` and publishes
+  screenshots, view-hierarchy dumps and logs to the `ui-snapshots` branch, where an agent reads them with
+  `git clone`. Procedure and rules: [UI_VERIFICATION.md](UI_VERIFICATION.md), mandatory for any change the
+  user can see or operate (D-94). First evidence (2026-10-17): the five baseline flows (Home, Settings
+  search and Downloads, My Words, Learn, Dictionary) pass with `app crash: no`, and the Persian (RTL)
+  layout of Home and of the Dictionary tab was driven and looked at.
+- **What remains**: the player, because no flow can open a video yet (none in the repository, REQ-13, and
+  the system picker is not driven); what an emulator cannot show (performance, picture-in-picture, sensors,
+  Bluetooth, animation, since flows run with animations off); and README screenshots, which exist only on
+  `ui-snapshots`: committing some to `main` is the owner's decision.
+- **Severity**: low now; GEN-1 and GEN-4 keep their device-pending parts (player, phone).
 
 ### REQ-8 — Confirm the branch strategy after the workspace reset
 - **Phase/task**: 1 (git protocol).

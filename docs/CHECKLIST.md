@@ -2,7 +2,9 @@
 
 Status codes: **real** = implemented on the shipped path; **stub** = deliberate LATER stub with flag,
 disabled entry and a section in [EXTENSION_POINTS.md](EXTENSION_POINTS.md); **device-pending** = code
-complete, needs the on-device pass (phase 9) because there is no emulator or JVM in the agent sandbox;
+complete, needs the on-device pass (phase 9) because there is no emulator or JVM in the agent sandbox (CI
+now offers an emulator for the screens the UI check covers, [UI_VERIFICATION.md](UI_VERIFICATION.md); a row
+leaves this state only when a run has shown it);
 **ci-pending** = also waiting for the first green compile of this branch; **partial** = part of the
 requirement is on the shipped path and the gap has a KNOWN_ISSUES entry.
 

@@ -58,10 +58,13 @@ TODO comment; each entry has a route to being fixed.
 11. `resourceConfigurations` is deprecated in AGP 8.7 in favour of `androidResources.localeFilters`;
     changing it now would need the min-version of that API to be checked against our AGP, so the
     deprecation warning stays and is listed here rather than silenced in a lint baseline.
-12. **Instrumented tests are not run in CI automatically** (no KVM on standard runners); they compile
-    there (`assembleDebugAndroidTest`) and run in the manual `instrumented.yml` workflow.
-13. **README has no screenshots yet** (phase 9 owns them). Adding pretty fakes would be worse than
-    waiting; see `REQ-7`.
+12. **Instrumented tests are not run in CI automatically.** They compile there
+    (`assembleDebugAndroidTest`) and run in the manual `instrumented.yml` workflow. KVM does work on the
+    runner of this public repository (the UI check boots an emulator on it, D-94), so running them on every
+    push is a cost decision, not a limitation.
+13. **README has no screenshots yet** (phase 9 owns them). The UI check now makes real ones, but they live
+    on the `ui-snapshots` branch only; putting some in the README means committing images to `main`, which
+    is the owner's decision (`REQ-7`). Adding pretty fakes would be worse than waiting.
 14. Gradle 8.11.1 is reported as out-of-date by `setup-gradle`. It is the newest line compatible with
     AGP 8.7.3 + Kotlin 2.0.21 as pinned in the catalog; bumping all three is one deliberate commit, not
     a drive-by.
@@ -94,9 +97,13 @@ TODO comment; each entry has a route to being fixed.
     videos, so previous/next transport works, but tapping a playlist row does not jump to it because
     `PlayerController` has no `playIndex(index)`. Route: add that interface method and row selection in
     `Sheets.kt`.
-21. **The rebuilt player has not run on a device or an emulator.** Picture-in-picture, rotation, the
+21. **The rebuilt player has not run on a device or an emulator.** The rest of the app shell has, on every
+    UI check (D-94): Home, Settings with search and Downloads, My Words, Learn and Dictionary in English,
+    and Persian as a scratch recipe. The player has not, because no flow can open a video yet: there is none
+    in the repository (REQ-13) and the system file picker is not driven. Picture-in-picture, rotation, the
     immersive bars and word hit testing on real glyph layouts were reviewed by hand and by the static
-    checkers. Route: the 2026-10-11 checklist in PROGRESS.md and `PlayerPopupsSmokeTest` on a device.
+    checkers. Route: a video fixture and flows in `.maestro/`; the 2026-10-11 checklist in PROGRESS.md and
+    `PlayerPopupsSmokeTest` on a device.
 22. **Media3 cannot identify the originating soft track for every live cue.** `CueGroup` returns text
     cues without a track reference. When exactly one track is selected or active-cue count matches the
     selected soft-track count, the controller associates them by order; otherwise cues stay untagged and
@@ -152,12 +159,15 @@ TODO comment; each entry has a route to being fixed.
     settings graph and seven selection tests pass in CI run 38923376453 (`a65db3e`); the instrumented
     visibility/overlap tests compile but have not executed. No local Android toolchain exists.
 
-30. **The new Downloads screen has not run on a device.** The screen replaces two older sections and
-    three download paths with one (D-81), and it is verified by the static checkers and by reading
-    the SDK calls, not by a phone. What still needs a device run: the ML Kit download itself (see
-    issue 25), the pack download and import from the release (the catalog now matches the published
-    digests, D-83), and the profile chips, which show the advice of `SmartProfileSelector` for the
-    memory and storage the device reports. Route: the 2026-10-16 checklist in PROGRESS.md.
+30. **The new Downloads screen has run on an emulator, not on a phone.** The screen replaces two older
+    sections and three download paths with one (D-81). The UI check opens it and scrolls it to the end
+    without a crash, in English (flow `02-settings`, run 39016568582, 2026-10-17): the first and the last
+    screens of it, with the translation card, both packs, the import buttons, the accuracy profile details
+    and the subtitle lab card, render without clipping. What still needs a device run: the ML Kit download
+    itself (see issue 25), the pack download and import from the release (the catalog now matches the
+    published digests, D-83), and the profile chips, which show the advice of `SmartProfileSelector` for the
+    memory and storage the device reports (on the emulator the screen advises Basic as the strongest profile).
+    Route: the 2026-10-16 checklist in PROGRESS.md.
 
 31. **The accuracy profile can now be chosen above what the device can run.** The old guard
     compared the profile's floor with the app's *heap*, which is a fraction of the phone's memory,
@@ -195,3 +205,30 @@ TODO comment; each entry has a route to being fixed.
     and fails safely before native load/test; existing files are removable. Route: add and validate
     the separate LiteRT-LM engine, or publish a verified MediaPipe-compatible asset. Other `.task`
     models are unchanged. This is a confirmed compatibility defect, not proof of the unnamed crash.
+
+36. **The UI check has two emulator flakes, both mitigated, neither proven gone.** (a) Right after its boot the
+    emulator sometimes raises "Pixel Launcher isn't responding", which covers the app for the rest of the
+    run: in run 39015359606 all eight flows failed on their first assertion (`app crash: no`, the dialog
+    is not our process). The script now switches system error dialogs off, removes one that gets through
+    before every flow by stopping the process it names, installs Maestro before the boot and stops the Gradle
+    daemons; `STATUS.md` names such a dialog when a failed flow ends under one. (b) Maestro's `launchApp` with
+    `clearState` runs `pm clear` and about a second later `am start`; when the previous flow's app is still
+    on screen, the activity manager's destroy timeout for the removed task (about a second) can fire just
+    after the new process was forked and kill it: black screen, no first frame, the flow fails on its first
+    assertion. Logcat shows `Killing ...: remove task` and `failed to attach`. It hit 2 of the 8 flows of run
+    39017266425 and none of the 15 flows of the first and the third run. The script now wipes the app and presses
+    Home, waits three seconds before every flow, and retries a flow once when it fails with exactly that
+    signature and no crash; `STATUS.md` says so and keeps the first attempt in `attempt-1/`. Route if either
+    comes back: more cores for the emulator (`cores: 4`), or look at what else the logcat of the failed
+    attempt shows.
+37. **`ubuntu-latest` becomes Ubuntu 26.04 on 2026-10-19, and only `ui-snapshot.yml` is ready for it.** The
+    notice appeared in the annotations of a UI-check run. `ci.yml`, `instrumented.yml`, the release workflows
+    and the others still say `ubuntu-latest`, and what they rely on (the preinstalled Android SDK path,
+    `sdkmanager`, the JDK setup) may differ on the new image; nothing has been checked. `ui-snapshot.yml` is
+    pinned to `ubuntu-24.04`, where it was proven. Route: watch the first CI run after the migration, or pin
+    the others the same way.
+38. **Two Persian strings point an arrow the wrong way.** `dict_no_pack_installed` and
+    `settings_trans_model_hint` in `values-fa` say "تنظیمات → دانلودها" (`&#8594;`): in a right-to-left
+    sentence the first step, Settings, is on the right, so the arrow should point left, as it does in
+    `ai_no_key` and in the language chips of the Dictionary tab. Found by looking at the Persian screenshot of
+    the UI check; not fixed here. Route: change the two strings to `&#8592;`.

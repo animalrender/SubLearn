@@ -110,3 +110,12 @@ provider-specific filenames and playback UX remains pending.
 D-91..D-93 add tone-based status colours and step-named model-test failures, a generated description of
 each accuracy profile, and a free-text mode in the subtitle lab. Local static checks pass; compilation and
 the JVM tests run in CI for the first time with this change. The model-test crash remains open (#34).
+
+## 2026-10-17 tooling pass (phase 9 verification)
+
+D-94 adds the UI check: an emulator in CI, Maestro flows in `.maestro/`, and the evidence on the
+`ui-snapshots` branch ([UI_VERIFICATION.md](UI_VERIFICATION.md)). The app shell (Home, Settings with
+search and Downloads, My Words, Learn, Dictionary) has now been run and looked at on an emulator for the
+first time. The parts of phase 9 that need a video, a phone or real hardware stay pending (KNOWN_ISSUES
+21, 24, 25, 29 and 30). From here on, a phase that changes a visible screen ends with a UI check before its
+merge (AGENTS.md, per-task loop step 6).

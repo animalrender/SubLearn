@@ -87,6 +87,30 @@ secrets exist, in which case `auto-release.yml` rebuilds and signs too). See D-2
 Pipeline changes only take effect once they are on `main`: `workflow_run` always runs the
 default-branch copy.
 
+## Seeing and driving the app
+
+A change the user can see or operate is not done until it has been seen running. CI boots an Android
+emulator, runs [Maestro](https://docs.maestro.dev) flows against the debug APK and publishes screenshots,
+view-hierarchy dumps and logs to the orphan branch `ui-snapshots`, which this sandbox reads with plain
+`git`: no JVM, no log host and no artifact host are needed. The procedure, the review checklist, the flow
+cheatsheet and the stop rules are in **[docs/UI_VERIFICATION.md](docs/UI_VERIFICATION.md)**, the single
+source of truth. The short version:
+
+1. Finish the change, then push an **empty last commit**: `git commit --allow-empty -m "chore: ui check [ui]"`.
+2. Confirm that a run of `ui-snapshot.yml` exists for your branch and that its `headSha` is your `HEAD`
+   (`gh run list --branch <b>`, `gh run watch`). If no run appears, say so; do not assume.
+3. `git clone --depth 1 -b ui-snapshots <repo-url> /tmp/snap` and read `STATUS.md`: its `sha:` must equal
+   your `HEAD` (a stale result from an older commit is the main trap), it must say `app crash: no`, and
+   every flow must be `PASS`.
+4. **Open the PNG images and look at them** against what the user asked for; a green run does not prove
+   the UI is right. Judge crashes only from `logcat-app.txt` and the `app crash:` line, never from
+   `logcat-full.txt`.
+5. Delete `.maestro/_scratch/` before the merge. The UI check is the last step before the merge; after the
+   merge the session is over.
+
+It is mandatory for any change the user can see or operate. A PNG, a video or a log is never committed
+anywhere except the `ui-snapshots` branch, and `main` stays free of artifacts.
+
 ## Module map and boundaries
 
 ```
@@ -157,6 +181,9 @@ Rules that keep those boundaries:
 4. Push, `gh run watch`, fix until green.
 5. Verify against `docs/CHECKLIST.md` on the real code path (not a preview harness), then update
    `docs/PROGRESS.md`, `docs/KNOWN_ISSUES.md` and the spec ID status.
+6. If the change touches anything visible or operable, run the UI check and fix until clean, before
+   merging (the empty `[ui]` commit, the sha check, the images; [docs/UI_VERIFICATION.md](docs/UI_VERIFICATION.md)).
+   It is the last step before the merge.
 
 ## Reference repos (ideas only, studied in phase 0)
 

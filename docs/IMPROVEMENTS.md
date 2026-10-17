@@ -121,3 +121,15 @@ integrity, performance, UX consistency, and reference repositories (`dictionaryp
   investigation. The RAM pre-check turns some crashes into an honest "not enough free RAM" message.
 - Each accuracy profile lists its steps and models, so the user sees what a profile costs before choosing it.
 - The subtitle lab can analyse pasted text as well as a file, using the same analyser, lookups and ranking.
+
+## 2026-10-17 — the running app can be seen
+
+- Verifying a visible change no longer stops at "it compiles": from a sandbox with no JVM, no device and no
+  access to the Actions logs, an agent can have the app run on an emulator in CI, look at its screens, drive
+  them, and read its own log, and the job fails when a flow fails or the app crashes (D-94).
+- Crashes are judged from the app's own pids, so the emulator's Google apps can neither fail a run nor
+  hide a real crash. A result is only believed when the sha in `STATUS.md` is the commit being judged.
+- The first runs found four traps that are now handled in the script and written down: the keyboard's
+  suggestion strip is clickable and listed before the app, non-ASCII labels printed as `?` under a C
+  locale, the emulator's own "isn't responding" dialog can cover the app for a whole run, and a launch right
+  after `pm clear` can lose a race with the previous task's removal and start no process at all.
