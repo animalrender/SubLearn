@@ -1,0 +1,131 @@
+# See and drive the running app: build the debug APK, boot an emulator, run the Maestro flows in
+# .maestro/ and publish screenshots, view-hierarchy dumps and logs to the orphan branch
+# `ui-snapshots`, which a sandboxed agent (no JVM, no log or artifact host) can read with plain git.
+# The whole procedure is in docs/UI_VERIFICATION.md; the logic is in scripts/ui-snapshot/run.sh.
+#
+# Normal pushes stay cheap: the job only runs for a manual dispatch or when the commit at the tip of
+# the push has `[ui]` in its message (an empty last commit does it, see the docs).
+name: UI snapshot
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main, ui-snapshots]
+
+permissions:
+  contents: read
+
+env:
+  ANDROID_HOME: /usr/local/lib/android/sdk
+
+jobs:
+  ui:
+    name: Build, boot an emulator, run the flows
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[ui]') }}
+    # Pinned, not ubuntu-latest: that label moves to Ubuntu 26.04 on 2026-10-19, and this setup (KVM,
+    # the preinstalled Android SDK, the emulator) was proven on 24.04. Move it on purpose, with a run.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      # Only to force-push the ui-snapshots branch; the job never touches any other ref.
+      contents: write
+    # One run per ref, newest wins. Job level, and a push without the marker gets a group of its own
+    # (its run id): that push skips the job and must never cancel a run that is still busy with the
+    # previous, marked commit.
+    concurrency:
+      group: ui-snapshot-${{ github.ref }}-${{ (github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[ui]')) && 'ui' || github.run_id }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # The whole history: STATUS.md records `git rev-parse HEAD`, and the build derives a version
+          # code from the commit count when the name carries no number.
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+
+      - name: Install platform and build tools
+        run: yes | sdkmanager --licenses >/dev/null 2>&1 || true; sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@b9bee63ef481cc545e4517ec730544a4d8b1dfa0 # v6.4.0
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Build the debug APK
+        id: build
+        # A step timeout shorter than the job's: when the build hangs, the publish step below still
+        # has time to put the log on the branch.
+        timeout-minutes: 20
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p out
+          ./gradlew assembleDebug --stacktrace --console=plain 2>&1 | tee out/build.log
+
+      - name: Stop the Gradle and Kotlin daemons
+        # They idle on about 2 GB and some CPU the emulator will want; the build is finished.
+        run: ./gradlew --stop || true; pkill -f KotlinCompileDaemon || true
+
+      - name: Install Maestro
+        # Before the emulator boots: the 315 MB download and unzip must not compete with a freshly
+        # booted emulator for the CPU (one run lost every flow to a "Pixel Launcher isn't responding"
+        # dialog raised right after the boot).
+        run: bash scripts/ui-snapshot/run.sh install-maestro
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install ImageMagick
+        # Not on the runner image; run.sh shrinks every screenshot to 600 px wide with it.
+        run: sudo apt-get update -qq || true; sudo apt-get install -y -qq imagemagick
+
+      - name: Run the flows on an emulator
+        id: emulator
+        # No continue-on-error: a failed script must not look green. The script records every exit
+        # code in out/results.tsv, and the last step turns them into the verdict.
+        timeout-minutes: 20
+        uses: reactivecircus/android-emulator-runner@c9c93e6ba9c4194322e114c40970d5983d9a07cc # v2.38.0
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+        with:
+          api-level: 34
+          arch: x86_64
+          # google_apis, not default: ML Kit needs Play services. profile: without one the AVD is 320x640.
+          target: google_apis
+          profile: pixel_6
+          ram-size: 4096M
+          disable-animations: true
+          # The runner executes this input line by line with sh, so the logic is in the script.
+          script: bash scripts/ui-snapshot/run.sh
+
+      - name: Publish the results to the ui-snapshots branch
+        # Also after a failed build or a dead emulator: the log is the evidence.
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          EMULATOR_OUTCOME: ${{ steps.emulator.outcome }}
+        run: bash scripts/ui-snapshot/run.sh publish
+
+      - name: Fail unless the build, every flow and the crash scan are clean
+        # No false green: the job is red when the build failed, any flow failed, no flow ran, or
+        # STATUS.md reports an app crash.
+        if: always()
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          EMULATOR_OUTCOME: ${{ steps.emulator.outcome }}
+        run: bash scripts/ui-snapshot/run.sh verdict

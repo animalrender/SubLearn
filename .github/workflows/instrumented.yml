@@ -1,4 +1,6 @@
-# Manual only: a full emulator run needs KVM, which the standard runners do not provide reliably.
+# Manual only, to keep every push cheap, not because KVM is missing: KVM works on the standard Linux
+# runner (ubuntu-24.04, what ubuntu-latest points to) in this public repository; ui-snapshot.yml boots
+# an emulator with the same step on every marked push (D-94).
 # `assembleDebugAndroidTest` in CI proves the instrumented sources compile; this runs them.
 name: Instrumented smoke test
 

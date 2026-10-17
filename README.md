@@ -114,6 +114,12 @@ python3 tools/check_deps.py
 python3 tools/check_resources.py core app feature
 ```
 
+To see the app run (screenshots, view hierarchy, logs) without a phone, CI has the **UI check**: it boots a
+Pixel 6 emulator (API 34, KVM works on the GitHub runner of this public repository), drives the debug APK
+with the [Maestro](https://docs.maestro.dev) flows in `.maestro/` and publishes the evidence to the
+`ui-snapshots` branch. Push an empty commit whose message contains `[ui]` to start it; the steps, the review
+checklist and how to write a flow are in [docs/UI_VERIFICATION.md](docs/UI_VERIFICATION.md).
+
 Translation needs the ML Kit model, which the Play Store service downloads on first use; the app
 offers the download in Settings → Translation and reports progress rather than failing silently.
 

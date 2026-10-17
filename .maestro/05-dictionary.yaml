@@ -1,0 +1,14 @@
+# Baseline 5/5: the Dictionary tab with no lexicon pack installed.
+appId: com.sublearn.app.debug
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Open a video"
+    timeout: 60000
+- tapOn: "Dictionary"
+- extendedWaitUntil:
+    visible: "Type a word or expression.*"
+    timeout: 20000
+- assertVisible: "Import or download a lexicon pack.*"
+- takeScreenshot: 05-dictionary

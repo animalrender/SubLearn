@@ -9,3 +9,5 @@ agents here:
   Actions compile and read the "Gradle failure report" check run (see AGENTS.md).
 - Never write a setting, label or string in a feature module: settings live in `core:settings`,
   enum labels in `feature/settings/Labels.kt`, strings only in `core:designsystem` (EN + FA).
+
+To see or drive the running app (screenshots, view hierarchy, logs) use the UI check, mandatory for any visible or operable change: [docs/UI_VERIFICATION.md](docs/UI_VERIFICATION.md).

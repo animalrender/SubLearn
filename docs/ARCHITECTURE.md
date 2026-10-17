@@ -302,8 +302,12 @@ Adding a *dictionary* for that language is a different, larger change: see
 - **Android-adjacent** code (Room repositories, DataStore, Keystore cipher) uses Robolectric.
 - **Compose** behaviour that depends on real font measurement (word hit testing, bidi shaping) is an
   instrumented test in `feature:player/src/androidTest`, run by the manual
-  `.github/workflows/instrumented.yml` (it needs KVM). CI always *compiles* those sources via
-  `assembleDebugAndroidTest`, so test code cannot silently rot.
+  `.github/workflows/instrumented.yml` (it needs KVM, which the runner of this public repository has).
+  CI always *compiles* those sources via `assembleDebugAndroidTest`, so test code cannot silently rot.
+- **Screens and navigation as the user meets them** are checked on an emulator by the UI check
+  (`.github/workflows/ui-snapshot.yml`, the Maestro flows in `.maestro/`, D-94): screenshots,
+  view-hierarchy dumps and logs land on the `ui-snapshots` branch. Mandatory for any visible or operable
+  change; see [UI_VERIFICATION.md](UI_VERIFICATION.md).
 - **`FakePlayerController`** exists so the player view model can be driven without Media3: a future
   commit adds view-model-level tests on it (logged in [KNOWN_ISSUES.md](KNOWN_ISSUES.md) as the current
   test gap, not as a passing claim).

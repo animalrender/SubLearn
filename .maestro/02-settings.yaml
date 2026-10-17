@@ -1,0 +1,39 @@
+# Baseline 2/5: Home -> side menu -> Settings -> search -> Downloads, top and bottom.
+appId: com.sublearn.app.debug
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Open a video"
+    timeout: 60000
+# The menu button's content description is "Settings" (menu_settings). The drawer entry has the same
+# text, so the second tap is anchored below "Quiz", which exists only in the drawer.
+- tapOn: "Settings"
+- extendedWaitUntil:
+    visible: "Quiz"
+    timeout: 15000
+- tapOn:
+    text: "Settings"
+    below: "Quiz"
+- extendedWaitUntil:
+    visible: "Search settings"
+    timeout: 20000
+- takeScreenshot: 02-settings-root
+- tapOn: "Search settings"
+- inputText: "download"
+# The keyboard's suggestion strip ("download", "downloads") is part of the hierarchy and is listed
+# before the app, so a selector like "Downloads.*" taps a suggestion, not the row. Wait for and tap
+# the row's own subtitle, which the keyboard cannot produce.
+- extendedWaitUntil:
+    visible: "Translation model, offline packs, accuracy models"
+    timeout: 10000
+- takeScreenshot: 02-settings-search
+- tapOn: "Translation model, offline packs, accuracy models"
+- extendedWaitUntil:
+    visible: "Offline translation"
+    timeout: 20000
+- takeScreenshot: 02-settings-downloads
+- scrollUntilVisible:
+    element: "Subtitle lab"
+    timeout: 60000
+- takeScreenshot: 02-settings-downloads-bottom

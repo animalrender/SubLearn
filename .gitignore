@@ -53,3 +53,6 @@ build_report.json
 assets/models/
 *.onnx
 *.safetensors
+
+# UI snapshot output (scripts/ui-snapshot/run.sh). It lives only on the ui-snapshots branch, never on main.
+/out/

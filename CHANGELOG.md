@@ -74,6 +74,11 @@ Unreleased work lands on phase branches; `main` only ever contains merged, CI-gr
   profiles moved to Settings → Downloads, separate from Settings → Player learning.
 
 ### Added
+- **The UI check**: CI builds the debug APK, boots a Pixel 6 emulator and drives the app with the Maestro
+  flows in `.maestro/` (Home, Settings search and Downloads, My Words, Learn, Dictionary), then publishes
+  screenshots, view-hierarchy dumps and logs to the `ui-snapshots` branch, where a sandboxed agent can read
+  them. It runs for a manual dispatch or a push whose tip commit says `[ui]`, and fails on a failed build,
+  a failed flow or a real app crash. Procedure: `docs/UI_VERIFICATION.md`.
 - **Stop** on every pack and model download: a pack keeps its partial file and offers *Resume*; a
   model removes its partial files. ML Kit's download cannot be stopped and shows no button.
 - The details dialog of every pack and model shows its full download URL and SHA-256; a model
