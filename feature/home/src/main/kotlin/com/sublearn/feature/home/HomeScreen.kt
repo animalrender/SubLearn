@@ -70,7 +70,10 @@ fun HomeScreen(
     val videoPicker = rememberLauncherForActivityResult(OpenVideoContract()) { picked ->
         picked?.let {
             OpenVideoContract.persistReadPermission(context, it.uri)
-            onPlay(it.uri, MediaInfo.titleFromFileName(it.title))
+            // The exact file name, as the provider reports it: the title bar and the recent list
+            // show what the user sees in their file manager, not a cleaned-up guess (D-85).
+            val exact = MediaInfo.read(context, android.net.Uri.parse(it.uri), null)?.title ?: it.title
+            onPlay(it.uri, exact)
         }
     }
 

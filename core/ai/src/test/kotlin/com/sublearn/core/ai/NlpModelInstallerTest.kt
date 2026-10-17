@@ -119,6 +119,24 @@ class NlpModelInstallerTest {
     }
 
     @Test
+    fun `a stop thrown from the progress callback removes the directory and propagates`() {
+        // The first file arrives whole; the caller stops the install while the second is reported.
+        val writing = writingDownloader()
+        val installer = installerWith(writing)
+        val layout = ModelStore.LAYOUTS.getValue("emb-minilm-l6-int8")
+
+        val thrown = runCatching {
+            installer.install("emb-minilm-l6-int8") { progress ->
+                if (progress.fileIndex == 1) throw IllegalStateException("stopped by the user")
+            }
+        }.exceptionOrNull()
+
+        assertTrue("the stop must reach the caller", thrown is IllegalStateException)
+        assertFalse(installer.isInstalled("emb-minilm-l6-int8"))
+        assertFalse("the finished first file must not stay behind", layout.directoryUnder(root).exists())
+    }
+
+    @Test
     fun `a model under a licence gate is refused with the publisher named`() {
         val installer = installerWith(writingDownloader())
 

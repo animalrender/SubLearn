@@ -71,7 +71,23 @@ class MainActivity : ComponentActivity() {
                 contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
         }
-        return StartupRequest(uri.toString(), uri.lastPathSegment?.substringAfterLast('/') ?: "video")
+        return StartupRequest(uri.toString(), displayNameOf(uri))
+    }
+
+    /**
+     * The file's real name, as the provider reports it. A `content://media/…/1234` URI has a
+     * numeric last segment, and the player's title bar and the recent list must show the file name
+     * the user knows, not an id or a cleaned-up guess.
+     */
+    private fun displayNameOf(uri: android.net.Uri): String {
+        val fromProvider = runCatching {
+            contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) cursor.getString(0) else null
+            }
+        }.getOrNull()
+        return fromProvider?.takeIf { it.isNotBlank() }
+            ?: uri.lastPathSegment?.substringAfterLast('/')?.takeIf { it.isNotBlank() }
+            ?: "video"
     }
 
     override fun onUserLeaveHint() {
@@ -90,11 +106,17 @@ class MainActivity : ComponentActivity() {
     override fun onPictureInPictureModeChanged(isInPip: Boolean, newConfig: Configuration) {
         super.onPictureInPictureModeChanged(isInPip, newConfig)
         pipMode.value = isInPip
+        // Closing the PiP window stops the Activity without a second onStop; that close is also
+        // "leaving the player", so the film pauses here instead of carrying on as audio only.
+        if (!isInPip && !lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
+            playerViewModel?.onLeave(pausePlayback = true)
+        }
     }
 
     override fun onStop() {
         super.onStop()
-        playerViewModel?.onLeave()
+        // Going to the background pauses the film unless it is playing in a PiP window (D-84).
+        playerViewModel?.onLeave(pausePlayback = !isInPictureInPictureMode)
     }
 
     override fun onStart() {

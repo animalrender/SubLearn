@@ -7,6 +7,7 @@ import com.sublearn.core.ai.LlmLoader
 import com.sublearn.core.ai.ModelDownloader
 import com.sublearn.core.ai.ModelStore
 import com.sublearn.core.ai.NlpModelInstaller
+import com.sublearn.core.ai.NlpModelSelfTest
 import com.sublearn.core.ai.ProfileTier
 import com.sublearn.core.ai.ProfiledNlpEngineCache
 import com.sublearn.core.ai.AnthropicProvider
@@ -31,6 +32,7 @@ import com.sublearn.core.lexicon.PackLexiconAccess
 import com.sublearn.core.lexicon.TextResourceReader
 import com.sublearn.core.lexicon.WordLevelSource
 import com.sublearn.core.models.DeviceCapabilityReader
+import com.sublearn.core.models.ProcessResourceReader
 import com.sublearn.core.models.PackDownloader
 import com.sublearn.core.nlp.LexiconAccess
 import com.sublearn.core.nlp.llm.LiteRtLlmLoader
@@ -67,6 +69,7 @@ import com.sublearn.feature.player.PlayerViewModel
 import com.sublearn.feature.player.SafSubtitleFileSource
 import com.sublearn.feature.player.SafTextResourceReader
 import com.sublearn.feature.settings.DownloadsViewModel
+import com.sublearn.feature.settings.LabViewModel
 import com.sublearn.feature.settings.SettingsViewModel
 import com.sublearn.feature.words.WordsViewModel
 import org.koin.android.ext.koin.androidContext
@@ -142,6 +145,11 @@ private fun coreModule(): Module = module {
 
     // What the phone can do; the accuracy profiles are checked against it (D-81).
     single { DeviceCapabilityReader(androidContext()) }
+    // What this process is using right now; the subtitle lab shows it beside its results (D-87).
+    single { ProcessResourceReader(androidContext()) }
+    // The "Test" button next to an installed accuracy model (D-86): the same loaders the player
+    // uses, so a pass here means the player's ranker will open the model too.
+    single { NlpModelSelfTest(store = get(), embedderLoader = get(), llmLoader = get()) }
 
     // The engines are registered by asking them whether their native library loads. A build or a
     // device where it does not keeps the pure-Kotlin ranker and never offers a profile it cannot run.
@@ -280,8 +288,21 @@ private fun featureModule(): Module = module {
             downloader = get(),
             lexiconAccess = get(),
             modelInstaller = get(),
+            modelSelfTest = get(),
+            engineCache = get(),
             translationModels = get(),
             deviceCapabilities = get(),
+            context = androidContext(),
+        )
+    }
+    viewModel {
+        LabViewModel(
+            settingsRepository = get(),
+            subtitles = get(),
+            installedPacksRepo = get(),
+            lexiconAccess = get(),
+            engineCache = get(),
+            resources = get(),
             context = androidContext(),
         )
     }

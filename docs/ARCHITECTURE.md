@@ -199,8 +199,16 @@ Settings → Downloads
   ├── offline packs                ── PackDownloader (core:models) ── GitHub release
   │      └── PackImporter / LegacyV1Importer (core:lexicon) ── InstalledPackRepository
   ├── accuracy models              ── NlpModelInstaller (core:ai) ── ModelStore layout
-  └── accuracy profile             ── SmartProfileSelector (core:ai) + DeviceCapabilityReader
+  │      └── Test ── NlpModelSelfTest (core:ai) ── the player's own loaders (D-86)
+  ├── accuracy profile             ── SmartProfileSelector (core:ai) + DeviceCapabilityReader
+  └── subtitle lab                 ── LabViewModel ── SubtitleRepository, CueStreamPhraseAnalyzer,
+         PackLexiconAccess, ProfiledNlpEngineCache, ProcessResourceReader (core:models) (D-87)
 ```
+
+Every item is one `DownloadItemCard` (core:designsystem): name and description, then state, then
+a wrapping actions row. `DownloadsViewModel` keeps a `Job` per running download so the card's
+*Stop* cancels it; the pack downloader answers a cancel with `PAUSED` and keeps its `.part`, the
+model installer deletes the partial directory and the card returns to *Download* (D-87).
 
 One rule runs through the screen: **one state per item, and one place that changes it.** The
 translation model's state lives in `TranslationModelManager`, which every screen reads and every
@@ -210,6 +218,15 @@ read from `ModelStore` through `NlpModelInstaller`; the profile's advice is comp
 screen offers is `ModelCatalogParser.bundledDefault()`, which is generated from
 `docs/catalog/catalog-v2.json` and checked against it by `tools/check_catalog.py` — so the size and
 the SHA-256 the user is shown are the ones the download is verified against (D-83).
+
+## Player orientation and pausing (D-84, D-85)
+
+`PlayerScreen` owns the Activity orientation (D-27) and maps `OrientationLock` to the `SENSOR_*`
+constants: `LANDSCAPE` → `SENSOR_LANDSCAPE`, so the picture flips to reverse-landscape with the
+device whether or not the system's auto-rotate is on. `Media3PlayerController` registers an
+`AudioDeviceCallback` and pauses on any output-device change; `PlayerViewModel.onLeave(pausePlayback)`
+pauses when the screen is disposed or the Activity stops, and `MainActivity` passes
+`pausePlayback = false` only while picture-in-picture is showing.
 
 ## Settings, storage and migration
 
@@ -222,6 +239,8 @@ per-surface fonts. Storage is DataStore Preferences holding a single JSON docume
 
 - Adding a field with a default needs **no** version bump: absent keys simply take the default. This pass adds
   `PlayerSettings.showRemainingTime` and `SubtitleSettings.rememberedMediaUri` with defaults.
+- Changing a *default* that an existing install should adopt does: schema 5 turns a stored
+  `orientationLock = AUTO` into `LANDSCAPE` once (D-85), and leaves any other stored choice alone.
 - Renaming, removing or reshaping a field does: bump the version and write the upgrade in
   `DataStoreSettingsStorage` before decoding.
 - Import applies per section with `ImportMode.REPLACE|MERGE` and returns an `ImportReport` of applied

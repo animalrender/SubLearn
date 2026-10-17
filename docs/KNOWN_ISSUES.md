@@ -83,8 +83,9 @@ TODO comment; each entry has a route to being fixed.
 18. **ML Kit model download progress is coarse.** `RemoteModelManager.download` only reports
     start/success/failure, so the Settings → Downloads card shows an indeterminate bar while the
     model downloads. The card states the published size of the English–Persian package (about 30 MB)
-    instead of a percentage that the SDK cannot produce. Route: none in the public ML Kit API;
-    revisit if a progress callback appears.
+    instead of a percentage that the SDK cannot produce, and shows no *Stop* button: the SDK has no
+    cancel either, so the pack and model cards can be stopped and this one cannot (D-87). Route:
+    none in the public ML Kit API; revisit if a progress or cancel callback appears.
 19. **Repeat-block hold does not invert the auto-repeat setting until release.** A hold runs the
     auto-repeat count once. The chrome button has no release callback, so the setting is not
     temporarily inverted as SHD-2 describes. Route: a release callback on `ChromeIconButton`, and a
@@ -112,8 +113,11 @@ TODO comment; each entry has a route to being fixed.
     native library actually loads, and `ProfiledNlpEngine` opens the models a profile needs. What is
     not proven is inference itself: no `.onnx` or `.task` file has been executed, because the sandbox
     has no Android SDK and the models are hundreds of megabytes. The selection, layout, pooling,
-    tokenizer and installer logic is unit tested; the native call paths are not. Route: install a
-    model on a device, run `ProfiledNlpEngine` against a known sentence, and record the output.
+    tokenizer and installer logic is unit tested; the native call paths are not. The *Test* button
+    on each installed model card (D-86) now runs exactly that probe on the device with the real
+    loaders and reports the verdict, the timings and the heap delta, so the route is in the app:
+    install a model, tap *Test*, and record the report here. Until someone has done so on a phone,
+    this issue stays open.
 25. **The offline translation model has not been downloaded on a real device.** The hand-written
     installer that unpacked the model archive itself is gone (D-81): ML Kit downloads, verifies and
     stores its own models, and the app asks the SDK for the language models of the current pair
@@ -161,5 +165,15 @@ TODO comment; each entry has a route to being fixed.
     memory, storage and installed models, and the screen states what a profile still needs instead
     of switching the choice. That means a user can still pick a profile their phone cannot run: the
     engine then falls back to what it can open, which is the documented behaviour, but the screen
-    does not block the choice. Route: if a profile turns out to be too slow on real hardware, gate
-    the chip behind the advice rather than the advice behind the chip.
+    does not block the choice. The subtitle lab (D-87) is where that is measured: it runs the
+    chosen profile on a real subtitle, states which profile is actually running and what each stage
+    costs, and shows the process memory beside it. Route: if a profile turns out to be too slow on
+    real hardware, gate the chip behind the advice rather than the advice behind the chip.
+32. **Audio-route pauses are not distinguished from the user's own pause.** When a Bluetooth headset
+    drops, `Media3PlayerController` pauses the film (D-84) and the player shows the ordinary paused
+    state; nothing says *why* it paused. The behaviour is right, the explanation is missing. Route:
+    a `PlayerEvent.PausedForRouteChange` and a one-line message in the player.
+33. **The subtitle lab ranks at most eight ambiguous words per block and benchmarks only the phrase
+    pass.** Both bounds are deliberate (a SMART ranking is an LLM call per word), but they mean the
+    lab's numbers are a lower bound for a full block. Route: a "rank everything" switch with a
+    visible time budget, once the engines have run on a device (#24).

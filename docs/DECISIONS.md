@@ -608,3 +608,70 @@ from the same file, and `tools/check_catalog.py` compares the two field by field
 catalog can no longer drift from the app. `verify-catalog.yml` additionally asks the GitHub API
 for the digest of every published asset and fails the build when the catalog disagrees, which turns
 the defect the user hit into a red check instead of a broken download.
+
+**D-84 — Leaving the player, or losing the audio route, pauses the film.**
+A film that keeps talking after the user has walked away from the screen, or after the headphones
+came out, is noise, not playback. Three things now pause: the player screen going away (navigation
+to settings or My Words, the Activity stopping, the screen turning off), the system's
+`ACTION_AUDIO_BECOMING_NOISY` (wired headphones unplugged, which Media3 already handled) and any
+change in the audio output device reported by `AudioManager.AudioDeviceCallback` — a Bluetooth
+headset connecting or dropping, a USB DAC appearing, or a return to the phone speaker. The route
+watcher lives in `Media3PlayerController` because that is the one place that knows whether the
+film is playing; the "leaving" rule lives in `PlayerViewModel.onLeave(pausePlayback)` so the
+Activity and the screen share it. Picture-in-picture is the one exception: a window that is still
+on screen is not "left", so `MainActivity.onStop` passes `pausePlayback = false` while PiP is
+active and closing the PiP window pauses instead. The watcher only reacts to *changes*: a route
+that is already external when the film starts is the user's choice and is left alone.
+
+**D-85 — The player opens in landscape and turns over with the phone; the file name is the title.**
+`PlayerSettings.orientationLock` defaults to `LANDSCAPE` (schema 5; a stored `AUTO` from a v4
+settings file becomes `LANDSCAPE` once, so an upgraded install behaves like a new one). The
+Activity orientation for `LANDSCAPE` is `SENSOR_LANDSCAPE`, not `LANDSCAPE`: the picture stays
+landscape and flips to reverse-landscape when the phone is turned over, *whatever the system's
+auto-rotate switch says* — a user watching in bed with rotation locked still gets the picture the
+right way up. `PORTRAIT` is `SENSOR_PORTRAIT` for the same reason; `SENSOR` is `FULL_SENSOR`;
+`AUTO` follows the system. The same pass settles the title: the player's title bar and the Recent
+list show the file's exact name as the document provider reports it (`DISPLAY_NAME`), never a
+cleaned-up guess — `titleFromFileName` stripped tags and separators and produced titles that did
+not match anything in the user's file manager, so it is gone. The side menu covers half the screen
+instead of Material's 360 dp: three entries do not need the whole width, and the screen behind
+stays visible.
+
+**D-86 — An installed accuracy model can be tested on the device from the card that installed it.**
+`core:ai/NlpModelSelfTest` opens one installed model with the *same* loaders the player's ranker
+uses (`OnnxEmbedderLoader`, `LiteRtLlmLoader`, or the pure-Kotlin path for the `NONE` runtime), runs
+one probe through it — three short sentences for an encoder, one four-option question for a prompt
+model — and reports a verdict with the load time, the inference time, the heap delta and a
+one-line detail. It checks the files against the publisher's sizes before loading, so a truncated
+download is named instead of crashing the engine. The "Test" button on each installed model card
+runs it on `Dispatchers.Default`, one at a time, and shows the report in a dialog. This is the
+first thing that runs inference on a device (known issue #24): a pass means the player will open
+the model too, a fail names the reason in words the user can act on. It is a smoke test, not a
+benchmark.
+
+**D-87 — One card for every download, a stop button on each, the exact URL on request, and a lab.**
+Settings → Downloads had grown three different row layouts; the catalog pack row put a Persian
+name, a size, an info icon and a cloud icon on one line, which is what overflowed in Persian and
+looked "all over the place". Every downloadable item is now the design system's `DownloadItemCard`,
+laid out as three stacked rows (name and description; state; actions that wrap), with real
+tokens instead of literal dp. The card gained the states and controls the owner asked for:
+**Stop** while downloading (the pack downloader keeps its `.part` and the card shows *Stopped —
+Resume*; the model installer deletes the partial directory and the card returns to *Download*),
+an indeterminate bar and no stop button for ML Kit, whose SDK offers neither progress nor cancel,
+and a wrapping actions row for *Test*, *Verify*, *Set active* and *Delete*. The details dialog of
+every item shows the full download URL, selectable, and for an accuracy model every file it is
+made of with its URL and SHA-256 — a host name was not "the exact source". The installed-pack
+table and the catalog are matched by kind (the two id spaces differ), so the catalog card says
+*Installed* with the entry count rather than listing the same pack twice.
+
+The **subtitle lab** (`LabViewModel`, `LabSection`, reached from the bottom of Downloads) runs the
+player's text pipeline on one subtitle file with no video: the same parser, the same three-block
+window into `CueStreamPhraseAnalyzer`, the same pack lookups and the same profile ranker from
+`ProfiledNlpEngineCache`. It shows what each stage took, the phrases found, every word with its
+pack entry and the ranker's first meaning, the engine's own runtime report (which profile is
+actually running and why), a timed phrase pass over the first 200 blocks, and the process's heap,
+native memory, PSS and the device's free memory from `ProcessResourceReader`. Profiles and installed
+packs are switched from inside the lab and the next analysis uses them. Ranking is bounded to the
+first eight ambiguous words per block, because ranking is what a tap costs and the SMART profile
+pays for it with an LLM call. The lab writes nothing to My Words or the span cache; it changes only
+the two settings it exists to compare.

@@ -2148,8 +2148,16 @@ class PlayerViewModel(
     // ------------------------------------------------------------------ lifecycle
 
     /** Called when the screen leaves the foreground: saves the position, keeps the player alive. */
-    fun onLeave() {
+    /**
+     * The player screen is going away (navigation, the Activity stopping, the screen turning off).
+     *
+     * @param pausePlayback pause the film as well as saving the position (D-84). The Activity passes
+     *   `false` while picture-in-picture is active, which is the one case where leaving the screen
+     *   should not stop the sound.
+     */
+    fun onLeave(pausePlayback: Boolean = true) {
         finishPlan()
+        if (pausePlayback && playback.value.isPlaying) controller.pause()
         viewModelScope.launch {
             controller.flushPosition()
             playback.value.target?.let { target ->

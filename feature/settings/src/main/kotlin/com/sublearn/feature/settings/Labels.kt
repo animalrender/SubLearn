@@ -258,6 +258,7 @@ fun String.settingsTitleRes(): Int = when (this) {
     "shadowing" -> R.string.settings_category_shadowing
     "learning" -> R.string.settings_category_learning
     "downloads" -> R.string.settings_category_downloads
+    "lab" -> R.string.lab_title
     "translation" -> R.string.settings_category_translation
     "ai" -> R.string.settings_category_ai
     "dictionary" -> R.string.settings_category_dictionary
@@ -265,4 +266,14 @@ fun String.settingsTitleRes(): Int = when (this) {
     "prompt" -> R.string.settings_prompt_title
     "about" -> R.string.settings_category_about
     else -> R.string.settings_title
+}
+
+/**
+ * Where "back" goes from a section: the sub-sections return to the section that opened them, the
+ * rest return to the list.
+ */
+fun String.settingsParent(): String = when (this) {
+    "prompt" -> "ai"
+    "lab" -> "downloads"
+    else -> "root"
 }

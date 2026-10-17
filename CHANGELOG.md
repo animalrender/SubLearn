@@ -44,16 +44,35 @@ Unreleased work lands on phase branches; `main` only ever contains merged, CI-gr
 ## [Unreleased]
 
 ### Fixed
+- Settings → Downloads no longer overflows in Persian: every item is one stacked card with real
+  spacing tokens, the import buttons and profile chips wrap, and the status line can be dismissed.
+- The player pauses when its screen is left, when the Activity stops (except in picture-in-picture)
+  and when the audio output changes — headphones out, a Bluetooth headset connecting or dropping.
+- The player's title and the Recent list show the file's exact name as the file manager does.
+- A stopped accuracy-model download no longer leaves a half-written model directory behind.
 - Settings entry crash from an unresolved Koin downloader-function dependency.
 - Decorative stop/tick dots on progress bars and slider tracks throughout the app.
 - Localized settings search, nested back handling and section/search restoration.
 - Duplicate Settings/My Words toolbars and stale subtitle styling after level/mode changes.
 
 ### Changed
+- The player opens in landscape by default and turns over with the phone even when the system's
+  rotation lock is on (`SENSOR_LANDSCAPE`); a stored "Automatic" becomes "Landscape" once
+  (settings schema 5). The orientation labels say what they do.
+- The side menu covers half the screen instead of the full width.
 - Learn now shows only Coming soon for browser/PDF/image learning; onboarding, resources and accuracy
   profiles moved to Settings → Downloads, separate from Settings → Player learning.
 
 ### Added
+- **Stop** on every pack and model download: a pack keeps its partial file and offers *Resume*; a
+  model removes its partial files. ML Kit's download cannot be stopped and shows no button.
+- The details dialog of every pack and model shows its full download URL and SHA-256; a model
+  lists every file it is made of.
+- **Test** next to every installed accuracy model: opens it with the real engine, runs one probe
+  and reports pass/fail with load time, inference time and memory.
+- **Subtitle lab** at the bottom of Settings → Downloads: load one subtitle file, step through its
+  blocks, run the player's phrase analysis, lookups and sense ranking on a block, switch profile
+  and pack in place, time the first 200 blocks, and watch the process memory.
 - Passive offline above-level word/phrase cards in the player Learning mode, with strict level/known
   filters, bounded corner layout and reduced-motion-aware rise/fade. No automatic cards in Entertainment.
 - Production Settings graph regression test, selection unit tests and card visibility device smoke test.

@@ -6,7 +6,6 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.activity.result.contract.ActivityResultContract
 import com.sublearn.core.subtitles.SubtitleFormat
-import java.util.Locale
 
 /** Opens a document picker for videos; SAF means no storage permission is needed (GEN-5). */
 class OpenVideoContract : ActivityResultContract<Unit, PickedMedia?>() {
@@ -72,23 +71,16 @@ object MediaInfo {
     /** Name from the document provider when there is one, otherwise the last path segment. */
     fun displayName(uri: Uri): String? = uri.lastPathSegment?.substringAfterLast('/')
 
+    /**
+     * The media with its real file name. The provider's `DISPLAY_NAME` wins; the last path segment
+     * is only a fallback for `file:` URIs and providers that publish no name.
+     */
     fun read(context: Context, uri: Uri, displayName: String?): PickedMedia? {
         val name = displayName ?: runCatching {
             context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
                 if (cursor.moveToFirst()) cursor.getString(0) else null
             }
-        }.getOrNull() ?: uri.lastPathSegment ?: "video"
+        }.getOrNull()?.takeIf { it.isNotBlank() } ?: uri.lastPathSegment?.substringAfterLast('/') ?: "video"
         return PickedMedia(uri.toString(), name)
-    }
-
-    /** Best-effort human title from a file name: strips extension and quality tags. */
-    fun titleFromFileName(fileName: String): String {
-        val stem = fileName.substringBeforeLast('.')
-        val cleaned = stem
-            .replace(Regex("""\[(.*?)]"""), " ")
-            .replace(Regex("""(?i)\b(1080p|720p|480p|2160p|x264|x265|h264|h265|aac|web-dl|bluray|hdtv|x265-10bit)\b"""), " ")
-            .replace(Regex("""[_.]+"""), " ")
-            .trim()
-        return cleaned.ifBlank { stem }.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
     }
 }

@@ -1,7 +1,12 @@
 package com.sublearn.core.player
 
 import android.content.Context
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -50,6 +55,10 @@ fun interface PositionSink {
  *   decoders, which is what the FFmpeg extension would otherwise be needed for.
  * - Subtitle text is mirrored out through [embeddedCues] instead of the built-in subtitle view, so
  *   the Compose overlay can hit-test words (PLY-7, SUB-4).
+ * - Playback pauses when the audio route changes in either direction (D-84). Media3's
+ *   `handleAudioBecomingNoisy` covers an unplugged headset; an [AudioDeviceCallback] covers the
+ *   other half — a headset or a car that *connects* mid-film would otherwise grab the sound at a
+ *   different volume and the learner loses the line.
  */
 @OptIn(markerClass = [androidx.media3.common.util.UnstableApi::class])
 class Media3PlayerController(
@@ -87,6 +96,8 @@ class Media3PlayerController(
     private var pendingIndex = 0
     private var lastSavedPositionUri: String? = null
     private var lastSavedPositionMs = -1L
+    private val audioManager: AudioManager? = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+    private var audioRouteCallback: AudioDeviceCallback? = null
 
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) {
@@ -164,7 +175,48 @@ class Media3PlayerController(
 
     init {
         buildPlayer()
+        watchAudioRoute()
     }
+
+    /**
+     * Pauses when an external output appears or disappears.
+     *
+     * The platform calls `onAudioDevicesAdded` once with the current list right after registering,
+     * which is not a route change; the first callback is therefore swallowed. Built-in outputs are
+     * ignored too, so a phone that merely re-enumerates its speaker never pauses the film.
+     */
+    private fun watchAudioRoute() {
+        val manager = audioManager ?: return
+        val callback = object : AudioDeviceCallback() {
+            private var primed = false
+
+            override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>?) {
+                if (!primed) {
+                    primed = true
+                    return
+                }
+                if (addedDevices.orEmpty().any { it.isExternalOutput() }) pauseForRouteChange()
+            }
+
+            override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>?) {
+                primed = true
+                if (removedDevices.orEmpty().any { it.isExternalOutput() }) pauseForRouteChange()
+            }
+        }
+        manager.registerAudioDeviceCallback(callback, Handler(Looper.getMainLooper()))
+        audioRouteCallback = callback
+    }
+
+    private fun pauseForRouteChange() {
+        val exo = player ?: return
+        if (!exo.playWhenReady) return
+        exo.playWhenReady = false
+        flushPositionNow()
+        logger?.log(SubLearnLogger.Level.INFO, TAG, "paused: the audio output changed")
+    }
+
+    private fun AudioDeviceInfo.isExternalOutput(): Boolean =
+        isSink && type !in BUILT_IN_OUTPUT_TYPES
 
     // ---------------------------------------------------------------- lifecycle
 
@@ -616,6 +668,8 @@ class Media3PlayerController(
     override fun release() {
         stopTicker()
         flushPositionNow()
+        audioRouteCallback?.let { callback -> audioManager?.unregisterAudioDeviceCallback(callback) }
+        audioRouteCallback = null
         attachedView?.let { it.player = null }
         attachedView = null
         player?.let {
@@ -634,5 +688,18 @@ class Media3PlayerController(
         const val VOLUME_PERCENT = 100f
         const val VOLUME_PERCENT_INT = 100
         const val USER_AGENT = "SubLearn/1.0 (+https://github.com/animalrender/SubLearn) Media3"
+
+        /**
+         * Outputs that are part of the phone itself. `TYPE_BUILTIN_SPEAKER_SAFE` (24) is API 30, so
+         * it is spelled as its value to keep the set valid on minSdk 26.
+         */
+        val BUILT_IN_OUTPUT_TYPES: Set<Int> = setOf(
+            AudioDeviceInfo.TYPE_BUILTIN_EARPIECE,
+            AudioDeviceInfo.TYPE_BUILTIN_SPEAKER,
+            AudioDeviceInfo.TYPE_TELEPHONY,
+            AudioDeviceInfo.TYPE_FM,
+            AudioDeviceInfo.TYPE_REMOTE_SUBMIX,
+            24,
+        )
     }
 }

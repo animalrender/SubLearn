@@ -58,8 +58,19 @@ class SettingsRepositoryTest {
     fun `v3 to v4 migration maps fallbackToOnline into enabledSources`() {
         val v3 = """{"schemaVersion": 3, "translation": {"fallbackToOnline": true}}"""
         val decoded = SettingsJson.decode(v3).getOrThrow()
-        assertEquals(4, decoded.schemaVersion)
+        assertEquals(AppSettings.SCHEMA_VERSION, decoded.schemaVersion)
         assertTrue(TranslationSourceKind.ONLINE_GOOGLE in decoded.translation.enabledSources)
+    }
+
+    @Test
+    fun `v4 to v5 migration turns the old AUTO default into landscape and keeps explicit choices`() {
+        val auto = """{"schemaVersion": 4, "player": {"orientationLock": "AUTO"}}"""
+        assertEquals(OrientationLock.LANDSCAPE, SettingsJson.decode(auto).getOrThrow().player.orientationLock)
+        val portrait = """{"schemaVersion": 4, "player": {"orientationLock": "PORTRAIT"}}"""
+        assertEquals(OrientationLock.PORTRAIT, SettingsJson.decode(portrait).getOrThrow().player.orientationLock)
+        val absent = """{"schemaVersion": 4, "player": {"seekStepMs": 5000}}"""
+        assertEquals(OrientationLock.LANDSCAPE, SettingsJson.decode(absent).getOrThrow().player.orientationLock)
+        assertEquals(OrientationLock.LANDSCAPE, AppSettings.DEFAULT.player.orientationLock)
     }
 
     @Test

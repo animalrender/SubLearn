@@ -1,3 +1,57 @@
+## 2026-10-16 — the Downloads screen made usable, the player made quiet, and a lab for the packs
+
+**Implemented on `arena/6da9d669-sublearn`; CI green on `917bd34` ([run 38975245322](https://github.com/animalrender/SubLearn/actions/runs/38975245322)); no device run claimed.**
+
+The owner's second report, after the downloads fix: the Downloads screen's words were all over the
+place; the player should open in landscape, turn over with the phone even when the system rotation
+is locked, and pause when the screen is left or the headphones change; the side menu should cover
+half the screen; the file name should be shown exactly; each pack and model should show where it
+comes from; downloads should be stoppable; a downloaded model should be testable; and there should
+be a sandbox to try packs and profiles on a subtitle without playing a video.
+
+**What changed**
+
+- **Player (D-84, D-85).** `orientationLock` defaults to `LANDSCAPE` (settings schema 5, migration
+  `AUTO → LANDSCAPE`) and maps to `SENSOR_LANDSCAPE`, so the picture flips to reverse-landscape
+  with the device regardless of the system rotation switch; `PORTRAIT` → `SENSOR_PORTRAIT`.
+  `Media3PlayerController` watches `AudioManager` for output-device changes and pauses on any of
+  them (Media3's becoming-noisy handling stays). `PlayerViewModel.onLeave(pausePlayback)` pauses
+  when the screen is left or the Activity stops, except while picture-in-picture is showing;
+  closing the PiP window pauses too.
+- **Shell.** The navigation drawer is `fillMaxWidth(0.5f)`. The player title and the Recent list
+  use the provider's `DISPLAY_NAME`; `MediaInfo.titleFromFileName` is deleted, and `MainActivity`
+  resolves the name for a file opened from another app.
+- **Downloads (D-87).** `DownloadItemCard` is rebuilt: stacked rows, `Dimens` tokens, a rendered
+  `detail` line, a `PAUSED` state with *Resume*, a *Stop* button while downloading (hidden when the
+  caller cannot stop — ML Kit), an indeterminate bar when the size is unknown, and a wrapping
+  actions row. The catalog packs, the imported packs, the translation model and the accuracy
+  models all use it. `DownloadsViewModel` keeps a `Job` per download so *Stop* cancels it: the pack
+  downloader keeps the `.part` (resume continues it), the model installer deletes the partial
+  directory (`ModelDownloader` and `NlpModelInstaller` now clean up on *any* throw, not only on
+  `InterruptedException`). The status line is dismissible; import buttons and profile chips wrap.
+- **Sources.** The details dialog of every pack shows the full URL, selectable, and the SHA-256 in
+  full; an accuracy model's dialog lists every file with its URL, size and SHA-256; the translation
+  model's dialog says that ML Kit fetches it from Google's servers and that there is no URL to show.
+- **Self-test (D-86).** `core:ai/NlpModelSelfTest` (new) opens an installed model with the real
+  loaders, runs one probe and reports a verdict with timings and heap delta; a *Test* button on
+  every installed model card runs it; `NlpModelSelfTestTest` pins all eight verdicts with fakes.
+- **Subtitle lab (D-87).** `LabViewModel` + `LabSection` (new, in `feature:settings`, section
+  `lab` under Downloads): pick one subtitle, step through its blocks, analyse a block with the
+  player's exact pipeline (phrases, lookups, ranking with the profile's ranker), switch profile
+  and active pack in place, time the phrase pass over the first 200 blocks, and read the engine
+  report and the process resources (`core:models/ProcessResourceReader`, new).
+- **Strings.** 63 new keys in EN and FA; the three orientation labels now say what they do.
+
+**Checks:** `check_sources`, `check_symbols`, `check_deps`, `check_resources`, `check_docs` and
+`git diff --check` pass. New unit tests: `NlpModelSelfTestTest` (8), a stop-from-callback case in
+`ModelDownloaderTest` and `NlpModelInstallerTest`, and the v4→v5 settings migration in
+`SettingsRepositoryTest`. The compile is CI's job.
+
+**Still to verify by hand, on a device:** the reverse-landscape flip with system rotation locked;
+the pause on a Bluetooth headset connecting and disconnecting; stopping and resuming a pack
+download; the self-test on a real `.onnx` and a real `.task` file (this is the first inference on
+a device — #24); the lab's timings on a low-memory phone.
+
 ## 2026-10-16 — one downloads screen, automatic releases, and the catalog that matches the bytes
 
 **Implemented on `arena/40fc4e81-sublearn`; CI green on `345f763`, device verification pending.**

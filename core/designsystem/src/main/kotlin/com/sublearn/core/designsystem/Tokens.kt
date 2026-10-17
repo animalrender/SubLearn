@@ -92,6 +92,7 @@ object Dimens {
     /** Portrait: the subtitle list takes this share of the height and the picture keeps the rest. */
     val listPortraitShare = 0.45f
     val cardElevation = 6.dp
+    val tonalElevation = 1.dp
     val strokeWidth = 1.5.dp
 
     // Player chrome. Named here so a feature never types a literal size (DESIGN_SYSTEM).
