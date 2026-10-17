@@ -1,0 +1,371 @@
+--------- beginning of system
+10-17 14:55:42.485 I/ActivityManager(  520): Force stopping com.sublearn.app.debug appid=10192 user=0: clear data
+10-17 14:55:42.486 W/ProcessStats(  520): Tracking association SourceState{a2f1f33 com.google.android.gms.persistent/10131 BTop #15128} whose proc state 2 is better than process ProcessState{7001444 com.google.android.gms/10131 pkg=com.google.android.gms} proc state 8 (2882 skipped)
+10-17 14:55:42.487 I/ActivityManager(  520): Force stopping com.sublearn.app.debug appid=10192 user=-1: clearApplicationUserData
+--------- beginning of main
+10-17 14:55:42.487 E/libprocessgroup(  520): No such cgroup attribute: /sys/fs/cgroup/uid_4294877488/cgroup.freeze
+10-17 14:55:42.487 W/libprocessgroup(  520): Failed to apply Frozen process profile: No such file or directory
+10-17 14:55:42.487 E/libprocessgroup(  520): No such cgroup attribute: /sys/fs/cgroup/uid_4294877488/cgroup.freeze
+10-17 14:55:42.487 W/libprocessgroup(  520): Failed to apply Unfrozen process profile: No such file or directory
+10-17 14:55:42.491 D/CarrierSvcBindHelper( 1050): onHandleForceStop: [com.sublearn.app.debug]
+10-17 14:55:42.491 D/CarrierSvcBindHelper( 1050): No carrier app for: 0
+10-17 14:55:42.495 V/MediaPlayerList( 1025): mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_DATA_CLEARED
+10-17 14:55:42.495 V/MediaPlayerList( 1025): mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_DATA_CLEARED
+10-17 14:55:42.509 I/Icing   ( 5901): doRemovePackageData com.sublearn.app.debug
+10-17 14:55:42.513 I/MediaProvider( 1620): Begin Intent { act=android.intent.action.PACKAGE_DATA_CLEARED dat=package: flg=0x5000010 cmp=com.google.android.providers.media.module/com.android.providers.media.MediaService (has extras) }
+10-17 14:55:42.516 D/SafetySourceDataValidator(  520): No cert check requested for package com.google.android.permissioncontroller
+10-17 14:55:42.517 D/MediaProvider( 1620): Deleted 0 Android/media items belonging to com.sublearn.app.debug on /data/user/0/com.google.android.providers.media.module/databases/external.db
+10-17 14:55:42.522 D/MediaGrants( 1620): Removed 0 media_grants for 0 user for com.sublearn.app.debug. Reason: Package orphaned
+10-17 14:55:42.522 I/MediaProvider( 1620): End Intent { act=android.intent.action.PACKAGE_DATA_CLEARED dat=package: flg=0x5000010 cmp=com.google.android.providers.media.module/com.android.providers.media.MediaService (has extras) }
+10-17 14:55:42.524 I/Fitness ( 5833): FitCleanupIntentOperation received Intent android.intent.action.PACKAGE_DATA_CLEARED [CONTEXT service_id=17 ]
+10-17 14:55:42.525 D/PersistedStoragePackageUninstalledReceiver(  836): Received android.intent.action.PACKAGE_DATA_CLEARED for com.sublearn.app.debug for u0
+10-17 14:55:43.080 I/ActivityManager(  520): Force stopping com.sublearn.app.debug appid=10192 user=0: from pid 6931
+10-17 14:55:43.084 D/CarrierSvcBindHelper( 1050): onHandleForceStop: [com.sublearn.app.debug]
+10-17 14:55:43.084 D/CarrierSvcBindHelper( 1050): No carrier app for: 0
+10-17 14:55:43.110 D/CompatibilityChangeReporter(  520): Compat change id reported: 244637991; UID 10201; state: ENABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 265464455; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 265452344; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 266124927; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 265451093; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 265456536; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 255940284; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 236283604; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 263959004; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 264304459; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 264301586; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 254631730; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 273509367; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 263259275; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 174042980; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 174042936; UID 10192; state: DISABLED
+10-17 14:55:43.111 D/CompatibilityChangeReporter(  520): Compat change id reported: 181136395; UID 10192; state: DISABLED
+10-17 14:55:43.112 D/CompatibilityChangeReporter(  520): Compat change id reported: 194480991; UID 10192; state: ENABLED
+10-17 14:55:43.113 D/CompatibilityChangeReporter(  520): Compat change id reported: 184838306; UID 10192; state: DISABLED
+10-17 14:55:43.113 D/CompatibilityChangeReporter(  520): Compat change id reported: 185004937; UID 10192; state: DISABLED
+10-17 14:55:43.114 V/SplashScreenExceptionList(  520): SplashScreen checking exception for package com.sublearn.app.debug (target sdk:35) -> false
+10-17 14:55:43.114 D/CompatibilityChangeReporter(  520): Compat change id reported: 205907456; UID 10192; state: ENABLED
+10-17 14:55:43.115 D/CompatibilityChangeReporter(  520): Compat change id reported: 194833441; UID 10192; state: ENABLED
+10-17 14:55:43.115 I/ActivityTaskManager(  520): START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 pkg=com.sublearn.app.debug cmp=com.sublearn.app.debug/com.sublearn.app.MainActivity} with LAUNCH_SINGLE_TASK from uid 10201 (BAL_ALLOW_PERMISSION) result code=0
+10-17 14:55:43.116 D/CompatibilityChangeReporter(  520): Compat change id reported: 135634846; UID 10192; state: DISABLED
+10-17 14:55:43.116 D/CompatibilityChangeReporter(  520): Compat change id reported: 143937733; UID 10192; state: ENABLED
+10-17 14:55:43.118 D/SplashScreenView(  835): Build android.window.SplashScreenView{18dc6c7 V.E...... ......ID 0,0-0,0}
+10-17 14:55:43.118 D/SplashScreenView(  835): Icon: view: null drawable: null size: 0
+10-17 14:55:43.118 D/SplashScreenView(  835): Branding: view: android.view.View{d874f4 G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+10-17 14:55:43.120 D/CompatibilityChangeReporter(  520): Compat change id reported: 168419799; UID 10192; state: DISABLED
+10-17 14:55:43.121 D/CompatibilityChangeReporter(  520): Compat change id reported: 273564678; UID 10192; state: DISABLED
+10-17 14:55:43.123 D/Zygote  (  334): Forked child process 6939
+10-17 14:55:43.128 V/WindowManagerShell(  835): Transition requested: android.os.BinderProxy@1160863 TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=10 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 pkg=com.sublearn.app.debug cmp=com.sublearn.app.debug/com.sublearn.app.MainActivity } baseActivity=ComponentInfo{com.sublearn.app.debug/com.sublearn.app.MainActivity} topActivity=ComponentInfo{com.sublearn.app.debug/com.sublearn.app.MainActivity} origActivity=null realActivity=ComponentInfo{com.sublearn.app.debug/com.sublearn.app.MainActivity} numActivities=1 lastActiveTime=137253 supportsMultiWindow=true resizeMode=2 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@c81ec60} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 128 - 0, 0) topActivityInfo=ActivityInfo{b971519 com.sublearn.app.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+10-17 14:55:43.128 D/CompatibilityChangeReporter(  520): Compat change id reported: 265195908; UID 10192; state: ENABLED
+10-17 14:55:43.147 I/ActivityManager(  520): Start proc 6939:com.sublearn.app.debug/u0a192 for next-top-activity {com.sublearn.app.debug/com.sublearn.app.MainActivity}
+10-17 14:55:43.156 I/BpBinder(  398): onLastStrongRef automatically unlinking death recipients: 
+10-17 14:55:43.166 V/WindowManager(  520): Sent Transition #13 createdAt=10-17 14:55:43.112 via request=TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=10 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10000000 pkg=com.sublearn.app.debug cmp=com.sublearn.app.debug/com.sublearn.app.MainActivity } baseActivity=ComponentInfo{com.sublearn.app.debug/com.sublearn.app.MainActivity} topActivity=ComponentInfo{com.sublearn.app.debug/com.sublearn.app.MainActivity} origActivity=null realActivity=ComponentInfo{com.sublearn.app.debug/com.sublearn.app.MainActivity} numActivities=1 lastActiveTime=137253 supportsMultiWindow=true resizeMode=2 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{8c1b2ff Task{e60a80f #10 type=standard A=10192:com.sublearn.app.debug}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 128 - 0, 0) topActivityInfo=ActivityInfo{f3d18cc com.sublearn.app.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+10-17 14:55:43.167 V/WindowManager(  520):     startWCT=WindowContainerTransaction { changes = {} hops = [] errorCallbackToken=null taskFragmentOrganizer=null }
+10-17 14:55:43.167 V/WindowManagerShell(  835): onTransitionReady android.os.BinderProxy@1160863: {id=13 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@42fefb7} m=OPEN f=NONE leash=Surface(name=Task=10)/@0x5a4e778 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@1fd0324} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x48d4e51 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+10-17 14:55:43.167 V/WindowManager(  520):     info={id=13 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{RemoteToken{8c1b2ff Task{e60a80f #10 type=standard A=10192:com.sublearn.app.debug}}} m=OPEN f=NONE leash=Surface(name=Task=10)/@0xd24be59 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{RemoteToken{5084cbd Task{391c2b8 #1 type=home}}} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x608e6b0 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+10-17 14:55:43.167 V/WindowManagerShell(  835): Playing animation for (#13)android.os.BinderProxy@1160863@0
+10-17 14:55:43.168 V/WindowManagerShell(  835):  try handler com.android.wm.shell.transition.DefaultMixedHandler@55ce559
+10-17 14:55:43.168 V/WindowManagerShell(  835):  try handler com.android.wm.shell.keyguard.KeyguardTransitionHandler@244f51e
+10-17 14:55:43.168 V/WindowManagerShell(  835):  try handler com.android.wm.shell.activityembedding.ActivityEmbeddingController@d3fb1ff
+10-17 14:55:43.168 V/WindowManagerShell(  835):  try handler com.android.wm.shell.recents.RecentsTransitionHandler@694abcc
+10-17 14:55:43.168 V/ShellRecents(  835): RecentsTransitionHandler.startAnimation: no controller found
+10-17 14:55:43.168 V/WindowManagerShell(  835):  try handler com.android.wm.shell.pip.PipTransition@56d7e15
+10-17 14:55:43.168 V/WindowManagerShell(  835):  try handler com.android.wm.shell.splitscreen.StageCoordinator@547452a
+10-17 14:55:43.168 V/WindowManagerShell(  835):  try handler com.android.wm.shell.transition.RemoteTransitionHandler@ee76f1b
+10-17 14:55:43.168 V/WindowManagerShell(  835): Transition doesn't have explicit remote, search filters for match for {id=13 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@42fefb7} m=OPEN f=NONE leash=Surface(name=Task=10)/@0x5a4e778 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@1fd0324} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x48d4e51 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+10-17 14:55:43.169 V/WindowManagerShell(  835):  Checking filter Pair{{types=[] flags=0x0] notFlags=0x0 checks=[{atype=dream independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=ANY topActivity=null},{atype=home independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@d664c3, appThread = android.app.IApplicationThread$Stub$Proxy@fce8140, debugName = LauncherToDream }}
+10-17 14:55:43.169 V/WindowManagerShell(  835):  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity}},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@dceb879, appThread = android.app.IApplicationThread$Stub$Proxy@3cf99be, debugName = QuickstepLaunchHome }}
+10-17 14:55:43.169 V/WindowManagerShell(  835):  Delegate animation for #13 to null
+10-17 14:55:43.169 V/WindowManagerShell(  835):  try handler com.android.wm.shell.transition.DefaultTransitionHandler@b0aa864
+10-17 14:55:43.169 V/WindowManagerShell(  835): start default transition animation, info = {id=13 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@42fefb7} m=OPEN f=NONE leash=Surface(name=Task=10)/@0x5a4e778 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@1fd0324} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x48d4e51 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+10-17 14:55:43.169 V/WindowManagerShell(  835): loadAnimation: anim=android.view.animation.AnimationSet@57a7689 animAttr=0x13 type=OPEN isEntrance=false
+10-17 14:55:43.169 V/WindowManagerShell(  835): loadAnimation: anim=android.view.animation.AnimationSet@98af245 animAttr=0x12 type=OPEN isEntrance=true
+10-17 14:55:43.170 V/WindowManagerShell(  835):  animated by com.android.wm.shell.transition.DefaultTransitionHandler@b0aa864
+10-17 14:55:43.191 V/WindowManagerShell(  835): Transition animation finished (aborted=false), notifying core (#13)android.os.BinderProxy@1160863@0
+10-17 14:55:43.192 D/EGL_emulation( 1096): app_time_stats: avg=1971.24ms min=13.63ms max=9608.96ms count=5
+10-17 14:55:43.238 I/learn.app.debug( 6939): Late-enabling -Xcheck:jni
+10-17 14:55:43.248 V/WindowManager(  520): Finish Transition #13: created at 10-17 14:55:43.112 collect-started=0.039ms request-sent=2.863ms started=20.907ms ready=53.049ms sent=54.172ms finished=136.15ms
+10-17 14:55:43.250 V/WindowManagerShell(  835): Track 0 became idle
+10-17 14:55:43.250 V/WindowManagerShell(  835): All active transition animations finished
+10-17 14:55:43.250 W/Looper  (  835): Slow dispatch took 59ms wmshell.main h=android.os.Handler c=com.android.wm.shell.transition.DefaultTransitionHandler$$ExternalSyntheticLambda0@a6d6dc1 m=0
+10-17 14:55:43.312 I/learn.app.debug( 6939): Using CollectorTypeCC GC.
+10-17 14:55:43.314 W/learn.app.debug( 6939): Unexpected CPU variant for x86: x86_64.
+10-17 14:55:43.314 W/learn.app.debug( 6939): Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+10-17 14:55:43.333 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:43.338 I/adbd    (  411): jdwp connection from 6939
+10-17 14:55:43.340 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:43.340 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:43.343 I/AppsFilter(  520): interaction: PackageSetting{dedfa2a com.sublearn.app.debug/10192} -> PackageSetting{708801b dev.mobile.maestro/10201} BLOCKED
+10-17 14:55:43.352 W/UiDevice( 6799): Active window root not found.
+10-17 14:55:43.361 D/CompatibilityChangeReporter( 6939): Compat change id reported: 171979766; UID 10192; state: ENABLED
+10-17 14:55:43.362 D/CompatibilityChangeReporter( 6939): Compat change id reported: 242716250; UID 10192; state: ENABLED
+10-17 14:55:43.369 W/UiDevice( 6799): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=64, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=136170, hasParent=false, isAnchored=false, hasChildren=false]
+10-17 14:55:43.378 D/CompatibilityChangeReporter(  520): Compat change id reported: 170503758; UID 10192; state: ENABLED
+10-17 14:55:43.380 D/ApplicationLoaders( 6939): Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+10-17 14:55:43.380 D/ApplicationLoaders( 6939): Returning zygote-cached class loader: /system_ext/framework/androidx.window.sidecar.jar
+10-17 14:55:43.381 W/ziparchive( 6939): Unable to open '/data/app/~~Sl2kAE2e3IWOnQ80q-BAQA==/com.sublearn.app.debug-RiqHlSXmzQtMX3KH9GI1iQ==/base.dm': No such file or directory
+10-17 14:55:43.381 W/ziparchive( 6939): Unable to open '/data/app/~~Sl2kAE2e3IWOnQ80q-BAQA==/com.sublearn.app.debug-RiqHlSXmzQtMX3KH9GI1iQ==/base.dm': No such file or directory
+10-17 14:55:43.418 D/Maestro ( 6799): View hierarchy received in 85 ms
+10-17 14:55:43.545 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:43.545 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:43.546 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:43.546 W/UiDevice( 6799): Active window root not found.
+10-17 14:55:43.547 W/UiDevice( 6799): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=64, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=136170, hasParent=false, isAnchored=false, hasChildren=false]
+10-17 14:55:43.568 D/Maestro ( 6799): View hierarchy received in 23 ms
+10-17 14:55:43.646 W/AccessibilityManagerService(  520):  wait for adding window timeout: 65
+10-17 14:55:43.649 W/ActivityManager(  520): Unable to start service Intent { act=com.google.android.gms.drive.ApiService.RESET_AFTER_BOOT flg=0x4 cmp=com.google.android.gms/.drive.api.ApiService (has extras) } U=0: not found
+10-17 14:55:43.676 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:43.676 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:43.676 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:43.677 W/UiDevice( 6799): Active window root not found.
+10-17 14:55:43.678 W/UiDevice( 6799): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=64, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=136170, hasParent=false, isAnchored=false, hasChildren=false]
+10-17 14:55:43.721 D/Maestro ( 6799): View hierarchy received in 45 ms
+10-17 14:55:43.760 D/nativeloader( 6939): Configuring clns-6 for other apk /data/app/~~Sl2kAE2e3IWOnQ80q-BAQA==/com.sublearn.app.debug-RiqHlSXmzQtMX3KH9GI1iQ==/base.apk. target_sdk_version=35, uses_libraries=, library_path=/data/app/~~Sl2kAE2e3IWOnQ80q-BAQA==/com.sublearn.app.debug-RiqHlSXmzQtMX3KH9GI1iQ==/lib/x86_64:/data/app/~~Sl2kAE2e3IWOnQ80q-BAQA==/com.sublearn.app.debug-RiqHlSXmzQtMX3KH9GI1iQ==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.sublearn.app.debug
+10-17 14:55:43.766 V/GraphicsEnvironment( 6939): Currently set values for:
+10-17 14:55:43.766 V/GraphicsEnvironment( 6939):   angle_gl_driver_selection_pkgs=[]
+10-17 14:55:43.766 V/GraphicsEnvironment( 6939):   angle_gl_driver_selection_values=[]
+10-17 14:55:43.766 V/GraphicsEnvironment( 6939): ANGLE GameManagerService for com.sublearn.app.debug: false
+10-17 14:55:43.766 V/GraphicsEnvironment( 6939): com.sublearn.app.debug is not listed in per-application setting
+10-17 14:55:43.766 V/GraphicsEnvironment( 6939): Neither updatable production driver nor prerelease driver is supported.
+10-17 14:55:43.788 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:43.788 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:43.788 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:43.789 W/UiDevice( 6799): Active window root not found.
+10-17 14:55:43.790 W/UiDevice( 6799): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=64, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=136170, hasParent=false, isAnchored=false, hasChildren=false]
+10-17 14:55:43.813 D/Maestro ( 6799): View hierarchy received in 25 ms
+10-17 14:55:43.831 I/SubLearn( 6939): nlp runtimes available: LITERT, NONE, ONNX
+10-17 14:55:43.845 I/ActivityManager(  520): Flag disabled. Ignoring finishAttachApplication from uid: 10192. pid: 6939
+10-17 14:55:43.854 D/libEGL  ( 6939): loaded /vendor/lib64/egl/libEGL_emulation.so
+10-17 14:55:43.857 D/libEGL  ( 6939): loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+10-17 14:55:43.862 D/libEGL  ( 6939): loaded /vendor/lib64/egl/libGLESv2_emulation.so
+10-17 14:55:43.889 D/CompatibilityChangeReporter( 6939): Compat change id reported: 237531167; UID 10192; state: DISABLED
+10-17 14:55:43.890 W/OpenGLRenderer( 6939): Unknown dataspace 0
+10-17 14:55:43.895 D/CoreBackPreview(  520): Window{7b359ef u0 com.sublearn.app.debug/com.sublearn.app.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@85a60b, mPriority=-1, mIsAnimationCallback=false}
+10-17 14:55:43.943 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:43.944 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:43.944 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:43.945 W/UiDevice( 6799): Active window root not found.
+10-17 14:55:43.947 W/UiDevice( 6799): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=64, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=136170, hasParent=false, isAnchored=false, hasChildren=false]
+10-17 14:55:43.982 D/Maestro ( 6799): View hierarchy received in 39 ms
+10-17 14:55:44.028 W/learn.app.debug( 6939): Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+10-17 14:55:44.028 W/learn.app.debug( 6939): Common causes for lock verification issues are non-optimized dex code
+10-17 14:55:44.028 W/learn.app.debug( 6939): and incorrect proguard optimizations.
+10-17 14:55:44.028 W/learn.app.debug( 6939): Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+10-17 14:55:44.028 W/learn.app.debug( 6939): Method java.lang.Object androidx.compose.runtime.snapshots.SnapshotStateList.mutate(kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+10-17 14:55:44.028 W/learn.app.debug( 6939): Method void androidx.compose.runtime.snapshots.SnapshotStateList.update(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+10-17 14:55:44.029 W/learn.app.debug( 6939): Method void androidx.compose.runtime.snapshots.SnapshotStateList.update$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+10-17 14:55:44.045 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:44.046 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:44.046 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:44.046 W/UiDevice( 6799): Active window root not found.
+10-17 14:55:44.048 W/UiDevice( 6799): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=64, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=136170, hasParent=false, isAnchored=false, hasChildren=false]
+10-17 14:55:44.063 D/Maestro ( 6799): View hierarchy received in 18 ms
+10-17 14:55:44.066 I/ExoPlayerImpl( 6939): Init 919d8d6 [AndroidXMedia3/1.5.1] [emu64xa, sdk_gphone64_x86_64, Google, 34]
+10-17 14:55:44.075 D/CompatibilityChangeReporter(  520): Compat change id reported: 161145287; UID 10192; state: ENABLED
+10-17 14:55:44.080 W/learn.app.debug( 6939): Accessing hidden method Landroid/media/AudioTrack;->getLatency()I (unsupported, reflection, allowed)
+10-17 14:55:44.171 D/CoreBackPreview(  520): Window{7b359ef u0 com.sublearn.app.debug/com.sublearn.app.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@84c93f5, mPriority=0, mIsAnimationCallback=true}
+10-17 14:55:44.196 D/StatusBarIconController(  835): ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-17 14:55:44.201 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:44.201 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:44.201 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:44.202 W/UiDevice( 6799): Active window root not found.
+10-17 14:55:44.203 W/JobService( 1721): onNetworkChanged() not implemented in com.google.android.apps.gsa.tasks.BackgroundTasksJobService. Must override in a subclass.
+10-17 14:55:44.203 W/JobService( 4142): onNetworkChanged() not implemented in androidx.work.impl.background.systemjob.SystemJobService. Must override in a subclass.
+10-17 14:55:44.203 W/JobService( 2358): onNetworkChanged() not implemented in com.android.voicemail.impl.scheduling.TaskSchedulerJobService. Must override in a subclass.
+10-17 14:55:44.204 W/UiDevice( 6799): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=64, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=136170, hasParent=false, isAnchored=false, hasChildren=false]
+10-17 14:55:44.213 D/Maestro ( 6799): View hierarchy received in 12 ms
+10-17 14:55:44.239 D/StatusBarIconController(  835): ignoring old pipeline callback because the new wifi icon is enabled
+10-17 14:55:44.280 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:44.280 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:44.281 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:44.282 W/UiDevice( 6799): Active window root not found.
+10-17 14:55:44.285 W/UiDevice( 6799): Skipping null root node for window: AccessibilityWindowInfo[title=Home, displayId=0, id=64, taskId=7, type=TYPE_APPLICATION, layer=0, region=SkRegion((0,0,1080,2400)), bounds=Rect(0, 0 - 1080, 2400), focused=true, active=true, pictureInPicture=false, transitionTime=136170, hasParent=false, isAnchored=false, hasChildren=false]
+10-17 14:55:44.335 W/OpenGLRenderer( 6939): Failed to initialize 101010-2 format, error = EGL_SUCCESS
+10-17 14:55:44.338 D/Maestro ( 6799): View hierarchy received in 58 ms
+10-17 14:55:44.350 I/hwservicemanager(  134): getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+10-17 14:55:44.351 I/Gralloc4( 6939): mapper 4.x is not supported
+--------- beginning of kernel
+10-17 14:55:44.535 I/servicemanager(    0): Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest.
+10-17 14:55:44.614 W/ziparchive(  520): Unable to open '/data/app/~~Sl2kAE2e3IWOnQ80q-BAQA==/com.sublearn.app.debug-RiqHlSXmzQtMX3KH9GI1iQ==/base.dm': No such file or directory
+10-17 14:55:44.616 D/ConnectivityService(  520): releasing NetworkRequest [ REQUEST id=114, [ Transports: CELLULAR Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10132 RequestorUid: 10132 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ] (release request)
+10-17 14:55:44.617 I/ActivityTaskManager(  520): Displayed com.sublearn.app.debug/com.sublearn.app.MainActivity for user 0: +1s502ms
+10-17 14:55:44.619 I/ConnectivityService(  520): Update capabilities for net 101 : -FOREGROUND
+10-17 14:55:44.621 I/netd    (  333): networkSetPermissionForNetwork(101, 1) <1.65ms>
+10-17 14:55:44.643 I/Choreographer( 6939): Skipped 43 frames!  The application may be doing too much work on its main thread.
+10-17 14:55:44.647 W/InputManager-JNI(  520): Input channel object '89b62b Splash Screen com.sublearn.app.debug (client)' was disposed without first being removed with the input manager!
+10-17 14:55:44.651 I/OpenGLRenderer( 6939): Davey! duration=816ms; Flags=1, FrameTimelineVsyncId=11095, IntendedVsync=137944329354, Vsync=138027662679, InputEventId=0, HandleInputStart=138032418911, AnimationStart=138032421945, PerformTraversalsStart=138032501475, DrawStart=138501511645, FrameDeadline=137960996020, FrameInterval=138032322145, FrameStartTime=16666665, SyncQueued=138535457557, SyncStart=138535715023, IssueDrawCommandsStart=138536354312, SwapBuffers=138659763393, FrameCompleted=138761238511, DequeueBufferDuration=3916, QueueBufferDuration=394272, GpuCompleted=138761238511, SwapBuffersCompleted=138741608733, DisplayPresentTime=0, CommandSubmissionCompleted=138659763393, 
+10-17 14:55:44.692 D/EGL_emulation(  835): app_time_stats: avg=5604.53ms min=207.73ms max=11001.33ms count=2
+10-17 14:55:44.722 I/ImeTracker( 1096): com.google.android.apps.nexuslauncher:d5ce82a: onRequestHide at ORIGIN_CLIENT_HIDE_SOFT_INPUT reason HIDE_SOFT_INPUT
+10-17 14:55:44.728 D/OneSearchSuggestProvider( 1096): Shut down the binder channel
+10-17 14:55:44.728 I/OpenGLRenderer( 6939): Davey! duration=780ms; Flags=0, FrameTimelineVsyncId=11124, IntendedVsync=138060990491, Vsync=138777657129, InputEventId=0, HandleInputStart=138781726104, AnimationStart=138781730020, PerformTraversalsStart=138814402292, DrawStart=138814623203, FrameDeadline=138794329270, FrameInterval=138781220756, FrameStartTime=16666666, SyncQueued=138815863033, SyncStart=138815920650, IssueDrawCommandsStart=138816063554, SwapBuffers=138819409845, FrameCompleted=138841742567, DequeueBufferDuration=3726, QueueBufferDuration=2464738, GpuCompleted=138839713073, SwapBuffersCompleted=138841742567, DisplayPresentTime=0, CommandSubmissionCompleted=138819409845, 
+10-17 14:55:44.729 D/CompatibilityChangeReporter(  520): Compat change id reported: 214016041; UID 10192; state: ENABLED
+10-17 14:55:44.730 I/ImeTracker(  520): com.sublearn.app.debug:e0f26e4: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+10-17 14:55:44.730 I/ImeTracker(  520): com.sublearn.app.debug:e0f26e4: onCancelled at PHASE_SERVER_SHOULD_HIDE
+10-17 14:55:44.732 I/IPCThreadState( 1096): oneway function results for code 2 on binder at 0x7c4744994270 will be dropped but finished with status UNKNOWN_TRANSACTION
+10-17 14:55:44.745 W/SearchServiceCore( 1721): Abort, client detached.
+10-17 14:55:44.745 W/SearchServiceCore( 1721): Abort, client detached.
+10-17 14:55:44.745 W/SearchServiceCore( 1721): Abort, client detached.
+10-17 14:55:44.745 W/SearchServiceCore( 1721): Abort, client detached.
+10-17 14:55:44.755 W/InputMethodManagerService(  520): Ignoring hideSoftInput of uid 10169 : com.android.internal.inputmethod.IInputMethodClient$Stub$Proxy@3d4f48
+10-17 14:55:44.755 I/ImeTracker(  520): com.google.android.apps.nexuslauncher:d5ce82a: onCancelled at PHASE_SERVER_CLIENT_FOCUSED
+10-17 14:55:44.757 I/GoogleInputMethodService( 1539): GoogleInputMethodService.onFinishInput():3227 
+10-17 14:55:44.758 I/PBSessionCacheImpl( 1721): Deleted sessionId[7570830294448123] from persistence.
+10-17 14:55:44.759 W/SearchServiceCore( 1721): Abort, client detached.
+10-17 14:55:44.759 W/SearchServiceCore( 1721): Abort, client detached.
+10-17 14:55:44.759 W/SearchServiceCore( 1721): Abort, client detached.
+10-17 14:55:44.761 I/GoogleInputMethodService( 1539): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 0, unlocked = true
+10-17 14:55:44.762 I/GoogleInputMethodService( 1539): GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=com.sublearn.app.debug fieldId=0 fieldName=null extras=null}, false)
+10-17 14:55:44.763 I/GoogleInputMethodService( 1539): GoogleInputMethodService.shouldHideHeaderOnInitialState():4008 ShouldHideHeaderOnInitialState = false
+10-17 14:55:44.763 I/GoogleInputMethodService( 1539): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 2, unlocked = true
+10-17 14:55:44.779 D/EGL_emulation(  835): app_time_stats: avg=11135.01ms min=11135.01ms max=11135.01ms count=1
+10-17 14:55:44.781 I/FontLog ( 5833): Received query Noto Color Emoji Compat, URI content://com.google.android.gms.fonts [CONTEXT service_id=132 ]
+10-17 14:55:44.781 I/FontLog ( 5833): Query [emojicompat-emoji-font] resolved to {Noto Color Emoji Compat, wdth 100.0, wght 400, ital 0.0, bestEffort false} [CONTEXT service_id=132 ]
+10-17 14:55:44.782 I/FontLog ( 5833): Fetch {Noto Color Emoji Compat, wdth 100.0, wght 400, ital 0.0, bestEffort false} end status Status{statusCode=SUCCESS, resolution=null} [CONTEXT service_id=132 ]
+10-17 14:55:44.784 I/FontLog ( 5833): Pulling font file for id = 6, cache size = 6 [CONTEXT service_id=132 ]
+10-17 14:55:44.789 I/FontLog ( 5833): Pulling font file for id = 6, cache size = 6 [CONTEXT service_id=132 ]
+10-17 14:55:45.231 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:45.232 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:45.232 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:45.233 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:45.319 D/Maestro ( 6799): View hierarchy received in 87 ms
+10-17 14:55:45.522 D/ActivityManager(  520): freezing 5285 com.google.android.settings.intelligence
+10-17 14:55:45.845 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:45.845 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:45.845 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:45.882 D/Maestro ( 6799): View hierarchy received in 37 ms
+10-17 14:55:45.936 D/ActivityManager(  520): freezing 2054 com.google.android.contacts
+10-17 14:55:45.939 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:45.948 D/UiDevice( 6799): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-17 14:55:46.117 E/TaskPersister(  520): File error accessing recents directory (directory doesn't exist?).
+10-17 14:55:46.449 W/UiDevice( 6799): Timed out waiting 500ms on window update.
+10-17 14:55:46.449 W/UiDevice( 6799): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-17 14:55:46.449 W/UiDevice( 6799): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-17 14:55:46.449 W/UiDevice( 6799): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-17 14:55:46.449 W/UiDevice( 6799): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-17 14:55:46.449 W/UiDevice( 6799): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-17 14:55:46.449 W/UiDevice( 6799): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-17 14:55:46.449 W/UiDevice( 6799): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-17 14:55:46.449 W/UiDevice( 6799): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-17 14:55:46.449 W/UiDevice( 6799): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-17 14:55:46.449 W/UiDevice( 6799): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-17 14:55:46.449 W/UiDevice( 6799): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-17 14:55:46.449 W/UiDevice( 6799): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-17 14:55:46.449 W/UiDevice( 6799): 	at java.lang.Thread.run(Thread.java:1012)
+10-17 14:55:46.506 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:46.507 D/UiDevice( 6799): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-17 14:55:47.008 W/UiDevice( 6799): Timed out waiting 500ms on window update.
+10-17 14:55:47.008 W/UiDevice( 6799): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-17 14:55:47.008 W/UiDevice( 6799): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-17 14:55:47.008 W/UiDevice( 6799): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-17 14:55:47.008 W/UiDevice( 6799): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-17 14:55:47.008 W/UiDevice( 6799): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-17 14:55:47.008 W/UiDevice( 6799): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-17 14:55:47.008 W/UiDevice( 6799): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-17 14:55:47.008 W/UiDevice( 6799): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-17 14:55:47.008 W/UiDevice( 6799): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-17 14:55:47.008 W/UiDevice( 6799): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-17 14:55:47.008 W/UiDevice( 6799): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-17 14:55:47.008 W/UiDevice( 6799): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-17 14:55:47.008 W/UiDevice( 6799): 	at java.lang.Thread.run(Thread.java:1012)
+10-17 14:55:47.070 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:47.070 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:47.070 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:47.104 D/Maestro ( 6799): View hierarchy received in 34 ms
+10-17 14:55:47.183 D/TaplEvents( 1096): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=74.0, y[0]=212.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=141301, downTime=141301, deviceId=-1, source=0x1002, displayId=0, eventId=-810588553 }
+10-17 14:55:47.243 D/StatusBarIconController(  835): ignoring old pipeline callback because the new wifi icon is enabled
+10-17 14:55:47.270 D/EGL_emulation( 6939): app_time_stats: avg=532.58ms min=20.75ms max=2004.25ms count=5
+10-17 14:55:47.300 D/TaplEvents( 1096): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=74.0, y[0]=212.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=141428, downTime=141301, deviceId=-1, source=0x1002, displayId=0, eventId=-648400589 }
+10-17 14:55:47.300 D/ShellBackPreview(  835): Finishing gesture with event action: 1
+10-17 14:55:47.301 D/ShellBackPreview(  835): onGestureFinished() mTriggerBack == false
+10-17 14:55:47.301 D/ShellBackPreview(  835): BackAnimationController: finishBackNavigation()
+10-17 14:55:47.496 D/OomAdjuster(  520): Not killing cached processes
+10-17 14:55:47.805 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:47.806 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:47.806 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:47.829 D/Maestro ( 6799): View hierarchy received in 24 ms
+10-17 14:55:47.843 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:47.844 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:47.844 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:47.867 D/Maestro ( 6799): View hierarchy received in 24 ms
+10-17 14:55:47.884 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:47.885 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:47.885 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:47.907 D/Maestro ( 6799): View hierarchy received in 23 ms
+10-17 14:55:48.001 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:48.001 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:48.001 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:48.017 D/Maestro ( 6799): View hierarchy received in 16 ms
+10-17 14:55:48.026 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:48.028 D/UiDevice( 6799): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-17 14:55:48.529 W/UiDevice( 6799): Timed out waiting 500ms on window update.
+10-17 14:55:48.529 W/UiDevice( 6799): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-17 14:55:48.529 W/UiDevice( 6799): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-17 14:55:48.529 W/UiDevice( 6799): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-17 14:55:48.529 W/UiDevice( 6799): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-17 14:55:48.529 W/UiDevice( 6799): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-17 14:55:48.529 W/UiDevice( 6799): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-17 14:55:48.529 W/UiDevice( 6799): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-17 14:55:48.529 W/UiDevice( 6799): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-17 14:55:48.529 W/UiDevice( 6799): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-17 14:55:48.529 W/UiDevice( 6799): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-17 14:55:48.529 W/UiDevice( 6799): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-17 14:55:48.529 W/UiDevice( 6799): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-17 14:55:48.529 W/UiDevice( 6799): 	at java.lang.Thread.run(Thread.java:1012)
+10-17 14:55:48.586 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:48.587 D/UiDevice( 6799): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-17 14:55:48.968 I/netd    (  333): tetherGetStats() -> {[]} <0.29ms>
+10-17 14:55:48.969 I/netd    (  333): bandwidthSetGlobalAlert(2097152) <0.09ms>
+10-17 14:55:48.970 I/netd    (  333): bandwidthRemoveInterfaceQuota(eth0) <0.29ms>
+10-17 14:55:48.970 I/netd    (  333): bandwidthSetInterfaceQuota(eth0, 9223372036854775807) <0.21ms>
+10-17 14:55:49.088 W/UiDevice( 6799): Timed out waiting 500ms on window update.
+10-17 14:55:49.088 W/UiDevice( 6799): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-17 14:55:49.088 W/UiDevice( 6799): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-17 14:55:49.088 W/UiDevice( 6799): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-17 14:55:49.088 W/UiDevice( 6799): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-17 14:55:49.088 W/UiDevice( 6799): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-17 14:55:49.088 W/UiDevice( 6799): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-17 14:55:49.088 W/UiDevice( 6799): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-17 14:55:49.088 W/UiDevice( 6799): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-17 14:55:49.088 W/UiDevice( 6799): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-17 14:55:49.088 W/UiDevice( 6799): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-17 14:55:49.088 W/UiDevice( 6799): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-17 14:55:49.088 W/UiDevice( 6799): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-17 14:55:49.088 W/UiDevice( 6799): 	at java.lang.Thread.run(Thread.java:1012)
+10-17 14:55:49.130 D/ProfileInstaller( 6939): Installing profile for com.sublearn.app.debug
+10-17 14:55:49.148 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:49.148 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:49.148 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:49.166 D/Maestro ( 6799): View hierarchy received in 18 ms
+10-17 14:55:49.229 D/TaplEvents( 1096): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=245.0, y[0]=362.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=143351, downTime=143351, deviceId=-1, source=0x1002, displayId=0, eventId=-376384988 }
+10-17 14:55:49.320 D/EGL_emulation( 6939): app_time_stats: avg=504.42ms min=14.00ms max=1788.90ms count=4
+10-17 14:55:49.333 D/TaplEvents( 1096): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=245.0, y[0]=362.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=143467, downTime=143351, deviceId=-1, source=0x1002, displayId=0, eventId=-759512527 }
+10-17 14:55:49.438 D/CompatibilityChangeReporter( 6939): Compat change id reported: 289878283; UID 10192; state: ENABLED
+10-17 14:55:50.019 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:50.020 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:50.020 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:50.020 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:50.089 D/Maestro ( 6799): View hierarchy received in 69 ms
+10-17 14:55:50.143 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:50.144 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:50.144 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:50.193 D/Maestro ( 6799): View hierarchy received in 50 ms
+10-17 14:55:50.245 D/StatusBarIconController(  835): ignoring old pipeline callback because the new wifi icon is enabled
+10-17 14:55:50.250 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:50.251 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:50.251 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:50.308 D/Maestro ( 6799): View hierarchy received in 57 ms
+10-17 14:55:50.373 D/Maestro ( 6799): Requesting view hierarchy
+10-17 14:55:50.374 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:50.374 W/QueryController( 6799): Could not detect idle state.
+10-17 14:55:50.422 D/Maestro ( 6799): View hierarchy received in 49 ms
+10-17 14:55:50.515 D/WindowManager(  520): captureDisplay
+10-17 14:55:50.527 I/hwservicemanager(  134): getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+10-17 14:55:50.527 I/Gralloc4( 6787): mapper 4.x is not supported
+10-17 14:55:50.712 I/servicemanager(    0): Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest.
+10-17 14:55:50.552 D/libEGL  ( 6787): loaded /vendor/lib64/egl/libEGL_emulation.so
+10-17 14:55:50.553 D/libEGL  ( 6787): loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+10-17 14:55:50.553 D/libEGL  ( 6787): loaded /vendor/lib64/egl/libGLESv2_emulation.so
+10-17 14:55:50.567 W/OpenGLRenderer( 6787): Failed to initialize 101010-2 format, error = EGL_SUCCESS
+10-17 14:55:50.815 D/BtGatt.ScanManager( 1025): uid 10131 isForeground true scanMode -1
+10-17 14:55:50.815 D/BtGatt.ScanManager( 1025): uid 10131 isForeground true scanMode -1
+10-17 14:55:50.815 D/BtGatt.ScanManager( 1025): uid 10131 isForeground true scanMode 1
+10-17 14:55:51.277 I/logd    (    0): logdr: UID=2000 GID=2000 PID=6986 n tail=0 logMask=99 pid=0 start=0ns deadline=0ns

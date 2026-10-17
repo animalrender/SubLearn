@@ -1,0 +1,674 @@
+Starting a Gradle Daemon (subsequent builds will be faster)
+> Task :app:preBuild UP-TO-DATE
+> Task :core:ai:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:nlp:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:common:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :core:subtitles:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :core:subtitles:processResources NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:ai:processResources NO-SOURCE
+> Task :core:data:preBuild UP-TO-DATE
+> Task :core:data:preDebugBuild UP-TO-DATE
+> Task :core:data:writeDebugAarMetadata
+> Task :core:designsystem:preBuild UP-TO-DATE
+> Task :core:designsystem:preDebugBuild UP-TO-DATE
+> Task :core:designsystem:writeDebugAarMetadata
+> Task :core:lexicon:preBuild UP-TO-DATE
+> Task :core:lexicon:preDebugBuild UP-TO-DATE
+> Task :core:lexicon:writeDebugAarMetadata
+> Task :core:models:preBuild UP-TO-DATE
+> Task :core:models:preDebugBuild UP-TO-DATE
+> Task :core:models:writeDebugAarMetadata
+> Task :core:nlp-llm:preBuild UP-TO-DATE
+> Task :core:nlp-llm:preDebugBuild UP-TO-DATE
+> Task :core:nlp:compileKotlin FROM-CACHE
+> Task :core:common:compileKotlin FROM-CACHE
+> Task :app:generateDebugBuildConfig
+> Task :core:nlp-onnx:preBuild UP-TO-DATE
+> Task :core:nlp-onnx:preDebugBuild UP-TO-DATE
+> Task :core:common:compileJava NO-SOURCE
+> Task :core:nlp:compileJava NO-SOURCE
+> Task :core:common:processResources NO-SOURCE
+> Task :core:common:classes UP-TO-DATE
+> Task :core:nlp-llm:writeDebugAarMetadata
+> Task :core:player:preBuild UP-TO-DATE
+> Task :core:player:preDebugBuild UP-TO-DATE
+> Task :core:nlp:processResources NO-SOURCE
+> Task :core:nlp:classes UP-TO-DATE
+> Task :core:nlp-onnx:writeDebugAarMetadata
+> Task :core:security:preBuild UP-TO-DATE
+> Task :core:player:writeDebugAarMetadata
+> Task :core:settings:preBuild UP-TO-DATE
+> Task :core:settings:preDebugBuild UP-TO-DATE
+> Task :core:security:preDebugBuild UP-TO-DATE
+> Task :core:settings:writeDebugAarMetadata
+> Task :core:security:writeDebugAarMetadata
+> Task :feature:home:preBuild UP-TO-DATE
+> Task :core:translate:preBuild UP-TO-DATE
+> Task :core:translate:preDebugBuild UP-TO-DATE
+> Task :feature:home:preDebugBuild UP-TO-DATE
+> Task :core:translate:writeDebugAarMetadata
+> Task :feature:learn:preBuild UP-TO-DATE
+> Task :feature:learn:preDebugBuild UP-TO-DATE
+> Task :feature:learn:writeDebugAarMetadata
+> Task :feature:player:preBuild UP-TO-DATE
+> Task :feature:player:preDebugBuild UP-TO-DATE
+> Task :feature:home:writeDebugAarMetadata
+> Task :feature:settings:preBuild UP-TO-DATE
+> Task :feature:settings:preDebugBuild UP-TO-DATE
+> Task :feature:player:writeDebugAarMetadata
+> Task :feature:words:preBuild UP-TO-DATE
+> Task :feature:words:preDebugBuild UP-TO-DATE
+> Task :feature:words:writeDebugAarMetadata
+> Task :app:generateDebugResValues FROM-CACHE
+> Task :feature:settings:writeDebugAarMetadata
+> Task :core:data:generateDebugResValues FROM-CACHE
+> Task :core:data:generateDebugResources FROM-CACHE
+> Task :core:data:packageDebugResources FROM-CACHE
+> Task :core:designsystem:generateDebugResValues FROM-CACHE
+> Task :core:nlp:jar
+> Task :core:common:jar
+> Task :core:designsystem:generateDebugResources
+> Task :core:lexicon:generateDebugResValues FROM-CACHE
+> Task :core:lexicon:generateDebugResources FROM-CACHE
+> Task :core:lexicon:packageDebugResources FROM-CACHE
+> Task :core:models:generateDebugResValues FROM-CACHE
+> Task :core:models:generateDebugResources FROM-CACHE
+> Task :core:models:packageDebugResources FROM-CACHE
+> Task :core:nlp-llm:generateDebugResValues FROM-CACHE
+> Task :core:nlp-llm:generateDebugResources FROM-CACHE
+> Task :core:subtitles:compileKotlin FROM-CACHE
+> Task :core:subtitles:compileJava NO-SOURCE
+> Task :core:subtitles:classes UP-TO-DATE
+> Task :core:nlp-llm:packageDebugResources FROM-CACHE
+> Task :core:nlp-onnx:generateDebugResValues FROM-CACHE
+> Task :core:nlp-onnx:generateDebugResources FROM-CACHE
+> Task :core:nlp-onnx:packageDebugResources FROM-CACHE
+> Task :core:subtitles:jar
+> Task :core:player:generateDebugResValues FROM-CACHE
+> Task :core:player:generateDebugResources FROM-CACHE
+> Task :core:player:packageDebugResources FROM-CACHE
+> Task :core:security:generateDebugResValues FROM-CACHE
+> Task :core:security:generateDebugResources FROM-CACHE
+> Task :core:security:packageDebugResources FROM-CACHE
+> Task :core:settings:generateDebugResValues FROM-CACHE
+> Task :core:settings:generateDebugResources FROM-CACHE
+> Task :core:settings:packageDebugResources FROM-CACHE
+> Task :core:translate:generateDebugResValues FROM-CACHE
+> Task :core:translate:generateDebugResources FROM-CACHE
+> Task :core:translate:packageDebugResources FROM-CACHE
+> Task :feature:home:generateDebugResValues FROM-CACHE
+> Task :feature:home:generateDebugResources FROM-CACHE
+> Task :feature:home:packageDebugResources FROM-CACHE
+> Task :feature:learn:generateDebugResValues FROM-CACHE
+> Task :feature:learn:generateDebugResources FROM-CACHE
+> Task :feature:learn:packageDebugResources FROM-CACHE
+> Task :feature:player:generateDebugResValues FROM-CACHE
+> Task :feature:player:generateDebugResources FROM-CACHE
+> Task :feature:player:packageDebugResources FROM-CACHE
+> Task :feature:settings:generateDebugResValues FROM-CACHE
+> Task :feature:settings:generateDebugResources FROM-CACHE
+> Task :feature:settings:packageDebugResources FROM-CACHE
+> Task :core:designsystem:packageDebugResources
+> Task :core:data:extractDeepLinksDebug FROM-CACHE
+> Task :feature:words:generateDebugResValues FROM-CACHE
+> Task :feature:words:generateDebugResources FROM-CACHE
+> Task :core:data:processDebugManifest FROM-CACHE
+> Task :core:designsystem:extractDeepLinksDebug FROM-CACHE
+> Task :feature:words:packageDebugResources FROM-CACHE
+> Task :core:lexicon:extractDeepLinksDebug FROM-CACHE
+> Task :core:designsystem:processDebugManifest FROM-CACHE
+> Task :core:models:extractDeepLinksDebug FROM-CACHE
+> Task :core:lexicon:processDebugManifest FROM-CACHE
+> Task :core:nlp-llm:extractDeepLinksDebug FROM-CACHE
+> Task :core:models:processDebugManifest FROM-CACHE
+> Task :core:nlp-onnx:extractDeepLinksDebug FROM-CACHE
+> Task :core:nlp-llm:processDebugManifest FROM-CACHE
+> Task :core:player:extractDeepLinksDebug FROM-CACHE
+> Task :core:nlp-onnx:processDebugManifest FROM-CACHE
+> Task :core:security:extractDeepLinksDebug FROM-CACHE
+> Task :core:player:processDebugManifest FROM-CACHE
+> Task :core:settings:extractDeepLinksDebug FROM-CACHE
+> Task :core:security:processDebugManifest FROM-CACHE
+> Task :core:translate:extractDeepLinksDebug FROM-CACHE
+> Task :core:settings:processDebugManifest FROM-CACHE
+> Task :feature:home:extractDeepLinksDebug FROM-CACHE
+> Task :core:translate:processDebugManifest FROM-CACHE
+> Task :feature:home:processDebugManifest FROM-CACHE
+> Task :feature:learn:extractDeepLinksDebug FROM-CACHE
+> Task :feature:player:extractDeepLinksDebug FROM-CACHE
+> Task :feature:learn:processDebugManifest FROM-CACHE
+> Task :feature:player:processDebugManifest FROM-CACHE
+> Task :feature:settings:extractDeepLinksDebug FROM-CACHE
+> Task :feature:words:extractDeepLinksDebug FROM-CACHE
+> Task :core:ai:compileKotlin FROM-CACHE
+> Task :feature:words:processDebugManifest FROM-CACHE
+> Task :feature:settings:processDebugManifest FROM-CACHE
+> Task :core:ai:compileJava NO-SOURCE
+> Task :core:ai:classes UP-TO-DATE
+> Task :core:data:compileDebugLibraryResources FROM-CACHE
+> Task :core:designsystem:compileDebugLibraryResources
+> Task :app:checkDebugAarMetadata
+> Task :core:ai:jar
+> Task :core:lexicon:compileDebugLibraryResources FROM-CACHE
+> Task :core:data:parseDebugLocalResources FROM-CACHE
+> Task :core:data:generateDebugRFile FROM-CACHE
+> Task :core:lexicon:parseDebugLocalResources FROM-CACHE
+> Task :core:models:compileDebugLibraryResources FROM-CACHE
+> Task :core:lexicon:generateDebugRFile FROM-CACHE
+> Task :core:models:parseDebugLocalResources FROM-CACHE
+> Task :core:nlp-llm:compileDebugLibraryResources FROM-CACHE
+> Task :core:nlp-llm:parseDebugLocalResources FROM-CACHE
+> Task :core:models:generateDebugRFile FROM-CACHE
+> Task :core:nlp-onnx:compileDebugLibraryResources FROM-CACHE
+> Task :core:nlp-llm:generateDebugRFile FROM-CACHE
+> Task :core:nlp-onnx:parseDebugLocalResources FROM-CACHE
+> Task :core:player:compileDebugLibraryResources FROM-CACHE
+> Task :core:nlp-onnx:generateDebugRFile FROM-CACHE
+> Task :core:player:parseDebugLocalResources FROM-CACHE
+> Task :app:mapDebugSourceSetPaths
+> Task :core:security:compileDebugLibraryResources FROM-CACHE
+> Task :core:player:generateDebugRFile FROM-CACHE
+> Task :app:generateDebugResources
+> Task :core:settings:compileDebugLibraryResources FROM-CACHE
+> Task :core:security:parseDebugLocalResources FROM-CACHE
+> Task :core:settings:parseDebugLocalResources FROM-CACHE
+> Task :core:security:generateDebugRFile FROM-CACHE
+> Task :core:translate:compileDebugLibraryResources FROM-CACHE
+> Task :core:settings:generateDebugRFile FROM-CACHE
+> Task :core:translate:parseDebugLocalResources FROM-CACHE
+> Task :feature:home:compileDebugLibraryResources FROM-CACHE
+> Task :core:translate:generateDebugRFile FROM-CACHE
+> Task :feature:learn:compileDebugLibraryResources FROM-CACHE
+> Task :feature:home:parseDebugLocalResources FROM-CACHE
+> Task :feature:learn:parseDebugLocalResources FROM-CACHE
+> Task :feature:learn:generateDebugRFile FROM-CACHE
+> Task :feature:home:generateDebugRFile FROM-CACHE
+> Task :feature:player:compileDebugLibraryResources FROM-CACHE
+> Task :feature:settings:compileDebugLibraryResources FROM-CACHE
+> Task :feature:player:parseDebugLocalResources FROM-CACHE
+> Task :feature:settings:parseDebugLocalResources FROM-CACHE
+> Task :feature:player:generateDebugRFile FROM-CACHE
+> Task :core:designsystem:parseDebugLocalResources
+> Task :feature:settings:generateDebugRFile FROM-CACHE
+> Task :core:data:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature:words:compileDebugLibraryResources FROM-CACHE
+> Task :feature:words:parseDebugLocalResources FROM-CACHE
+> Task :feature:words:generateDebugRFile FROM-CACHE
+> Task :core:designsystem:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:settings:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:designsystem:generateDebugRFile
+> Task :core:designsystem:javaPreCompileDebug FROM-CACHE
+> Task :core:lexicon:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:lexicon:javaPreCompileDebug FROM-CACHE
+> Task :core:models:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:models:javaPreCompileDebug FROM-CACHE
+> Task :core:nlp-llm:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:nlp-llm:compileDebugKotlin FROM-CACHE
+> Task :core:nlp-llm:javaPreCompileDebug FROM-CACHE
+> Task :core:nlp-llm:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:nlp-llm:bundleLibCompileToJarDebug
+> Task :core:nlp-onnx:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:nlp-onnx:compileDebugKotlin FROM-CACHE
+> Task :core:nlp-onnx:javaPreCompileDebug FROM-CACHE
+> Task :core:nlp-onnx:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:nlp-onnx:bundleLibCompileToJarDebug
+> Task :core:player:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:player:javaPreCompileDebug FROM-CACHE
+> Task :core:security:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:security:compileDebugKotlin FROM-CACHE
+> Task :core:settings:javaPreCompileDebug FROM-CACHE
+> Task :core:security:javaPreCompileDebug FROM-CACHE
+> Task :core:security:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:security:bundleLibCompileToJarDebug
+> Task :core:translate:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:translate:javaPreCompileDebug FROM-CACHE
+> Task :feature:home:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature:home:javaPreCompileDebug FROM-CACHE
+> Task :feature:learn:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature:learn:javaPreCompileDebug FROM-CACHE
+> Task :feature:player:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature:player:javaPreCompileDebug FROM-CACHE
+> Task :feature:settings:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature:settings:javaPreCompileDebug FROM-CACHE
+> Task :feature:words:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:data:kspDebugKotlin FROM-CACHE
+> Task :feature:words:javaPreCompileDebug FROM-CACHE
+> Task :core:designsystem:mergeDebugShaders
+> Task :core:designsystem:compileDebugShaders NO-SOURCE
+> Task :core:designsystem:generateDebugAssets UP-TO-DATE
+> Task :core:data:compileDebugKotlin FROM-CACHE
+> Task :core:designsystem:packageDebugAssets
+> Task :core:data:javaPreCompileDebug FROM-CACHE
+> Task :core:lexicon:mergeDebugShaders
+> Task :core:lexicon:compileDebugShaders NO-SOURCE
+> Task :core:lexicon:generateDebugAssets UP-TO-DATE
+> Task :core:lexicon:packageDebugAssets
+> Task :core:models:mergeDebugShaders
+> Task :core:models:compileDebugShaders NO-SOURCE
+> Task :core:models:generateDebugAssets UP-TO-DATE
+> Task :core:models:packageDebugAssets
+> Task :core:nlp-llm:mergeDebugShaders
+> Task :core:nlp-llm:compileDebugShaders NO-SOURCE
+> Task :core:nlp-llm:generateDebugAssets UP-TO-DATE
+> Task :core:nlp-llm:packageDebugAssets
+> Task :core:nlp-onnx:mergeDebugShaders
+> Task :core:nlp-onnx:compileDebugShaders NO-SOURCE
+> Task :core:nlp-onnx:generateDebugAssets UP-TO-DATE
+> Task :core:nlp-onnx:packageDebugAssets
+> Task :core:player:mergeDebugShaders
+> Task :core:player:compileDebugShaders NO-SOURCE
+> Task :core:player:generateDebugAssets UP-TO-DATE
+> Task :core:player:packageDebugAssets
+> Task :core:security:mergeDebugShaders
+> Task :core:security:compileDebugShaders NO-SOURCE
+> Task :core:security:generateDebugAssets UP-TO-DATE
+> Task :core:security:packageDebugAssets
+> Task :core:settings:mergeDebugShaders
+> Task :core:settings:compileDebugShaders NO-SOURCE
+> Task :core:settings:generateDebugAssets UP-TO-DATE
+> Task :core:settings:packageDebugAssets
+> Task :core:translate:mergeDebugShaders
+> Task :core:translate:compileDebugShaders NO-SOURCE
+> Task :core:translate:generateDebugAssets UP-TO-DATE
+> Task :core:translate:packageDebugAssets
+> Task :feature:home:mergeDebugShaders
+> Task :feature:home:compileDebugShaders NO-SOURCE
+> Task :feature:home:generateDebugAssets UP-TO-DATE
+> Task :feature:home:packageDebugAssets
+> Task :feature:learn:mergeDebugShaders
+> Task :feature:learn:compileDebugShaders NO-SOURCE
+> Task :feature:learn:generateDebugAssets UP-TO-DATE
+> Task :feature:learn:packageDebugAssets
+> Task :feature:player:mergeDebugShaders
+> Task :feature:player:compileDebugShaders NO-SOURCE
+> Task :feature:player:generateDebugAssets UP-TO-DATE
+> Task :feature:player:packageDebugAssets
+> Task :feature:settings:mergeDebugShaders
+> Task :feature:settings:compileDebugShaders NO-SOURCE
+> Task :feature:settings:generateDebugAssets UP-TO-DATE
+> Task :feature:settings:packageDebugAssets
+> Task :feature:words:mergeDebugShaders
+> Task :feature:words:compileDebugShaders NO-SOURCE
+> Task :feature:words:generateDebugAssets UP-TO-DATE
+> Task :feature:words:packageDebugAssets
+> Task :core:nlp-onnx:bundleLibRuntimeToJarDebug
+> Task :core:nlp-llm:bundleLibRuntimeToJarDebug
+> Task :core:security:bundleLibRuntimeToJarDebug
+> Task :core:nlp-llm:processDebugJavaRes
+> Task :core:nlp-onnx:processDebugJavaRes
+> Task :core:security:processDebugJavaRes
+> Task :core:nlp-onnx:bundleLibRuntimeToDirDebug
+> Task :core:nlp-llm:bundleLibRuntimeToDirDebug
+> Task :core:security:bundleLibRuntimeToDirDebug
+> Task :core:designsystem:mergeDebugJniLibFolders
+> Task :core:designsystem:mergeDebugNativeLibs NO-SOURCE
+> Task :core:designsystem:copyDebugJniLibsProjectOnly
+> Task :core:lexicon:mergeDebugJniLibFolders
+> Task :core:lexicon:mergeDebugNativeLibs NO-SOURCE
+> Task :core:lexicon:copyDebugJniLibsProjectOnly
+> Task :core:models:mergeDebugJniLibFolders
+> Task :core:models:mergeDebugNativeLibs NO-SOURCE
+> Task :core:models:copyDebugJniLibsProjectOnly
+> Task :core:data:compileDebugJavaWithJavac FROM-CACHE
+> Task :app:packageDebugResources
+> Task :core:nlp-llm:mergeDebugJniLibFolders
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug FROM-CACHE
+> Task :app:parseDebugLocalResources
+> Task :core:data:bundleLibCompileToJarDebug
+> Task :core:data:mergeDebugShaders
+> Task :core:data:compileDebugShaders NO-SOURCE
+> Task :core:data:generateDebugAssets UP-TO-DATE
+> Task :core:data:packageDebugAssets
+> Task :core:data:bundleLibRuntimeToJarDebug
+> Task :core:data:processDebugJavaRes
+> Task :core:data:bundleLibRuntimeToDirDebug
+> Task :app:processDebugMainManifest
+> Task :core:data:mergeDebugJniLibFolders
+> Task :core:data:mergeDebugNativeLibs NO-SOURCE
+> Task :core:data:copyDebugJniLibsProjectOnly
+> Task :core:nlp-llm:mergeDebugNativeLibs NO-SOURCE
+> Task :core:nlp-llm:copyDebugJniLibsProjectOnly
+> Task :core:nlp-onnx:mergeDebugJniLibFolders
+> Task :core:nlp-onnx:mergeDebugNativeLibs NO-SOURCE
+> Task :core:nlp-onnx:copyDebugJniLibsProjectOnly
+> Task :core:player:mergeDebugJniLibFolders
+> Task :core:player:mergeDebugNativeLibs NO-SOURCE
+> Task :core:player:copyDebugJniLibsProjectOnly
+> Task :core:security:mergeDebugJniLibFolders
+> Task :core:security:mergeDebugNativeLibs NO-SOURCE
+> Task :app:processDebugManifest
+> Task :core:security:copyDebugJniLibsProjectOnly
+> Task :core:settings:mergeDebugJniLibFolders
+> Task :core:settings:mergeDebugNativeLibs NO-SOURCE
+> Task :core:settings:copyDebugJniLibsProjectOnly
+> Task :app:processDebugManifestForPackage
+> Task :core:translate:mergeDebugJniLibFolders
+> Task :app:javaPreCompileDebug FROM-CACHE
+> Task :core:translate:mergeDebugNativeLibs NO-SOURCE
+> Task :core:translate:copyDebugJniLibsProjectOnly
+> Task :app:mergeDebugShaders
+> Task :feature:home:mergeDebugJniLibFolders
+> Task :feature:home:mergeDebugNativeLibs NO-SOURCE
+> Task :feature:home:copyDebugJniLibsProjectOnly
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :feature:learn:mergeDebugJniLibFolders
+> Task :feature:learn:mergeDebugNativeLibs NO-SOURCE
+> Task :feature:learn:copyDebugJniLibsProjectOnly
+> Task :feature:player:mergeDebugJniLibFolders
+> Task :feature:player:mergeDebugNativeLibs NO-SOURCE
+> Task :feature:player:copyDebugJniLibsProjectOnly
+> Task :feature:settings:mergeDebugJniLibFolders
+> Task :app:mergeDebugAssets
+> Task :feature:settings:mergeDebugNativeLibs NO-SOURCE
+> Task :app:mergeDebugResources
+> Task :feature:settings:copyDebugJniLibsProjectOnly
+> Task :core:data:stripDebugDebugSymbols NO-SOURCE
+> Task :feature:words:mergeDebugJniLibFolders
+> Task :feature:words:mergeDebugNativeLibs NO-SOURCE
+> Task :feature:words:copyDebugJniLibsProjectOnly
+> Task :core:data:copyDebugJniLibsProjectAndLocalJars
+> Task :app:compressDebugAssets
+> Task :core:designsystem:stripDebugDebugSymbols NO-SOURCE
+> Task :core:designsystem:copyDebugJniLibsProjectAndLocalJars
+> Task :core:designsystem:extractDeepLinksForAarDebug FROM-CACHE
+> Task :core:data:extractDebugAnnotations FROM-CACHE
+> Task :core:data:extractDeepLinksForAarDebug FROM-CACHE
+> Task :core:designsystem:prepareDebugArtProfile
+> Task :core:data:mergeDebugGeneratedProguardFiles
+> Task :core:data:mergeDebugConsumerProguardFiles
+> Task :core:data:prepareDebugArtProfile
+> Task :core:designsystem:prepareLintJarForPublish
+> Task :core:data:prepareLintJarForPublish
+> Task :core:lexicon:stripDebugDebugSymbols NO-SOURCE
+> Task :core:lexicon:copyDebugJniLibsProjectAndLocalJars
+> Task :core:lexicon:extractDeepLinksForAarDebug FROM-CACHE
+> Task :core:lexicon:prepareDebugArtProfile
+> Task :core:lexicon:prepareLintJarForPublish
+> Task :core:models:stripDebugDebugSymbols NO-SOURCE
+> Task :core:models:copyDebugJniLibsProjectAndLocalJars
+> Task :core:models:extractDeepLinksForAarDebug FROM-CACHE
+> Task :core:models:prepareDebugArtProfile
+> Task :core:models:prepareLintJarForPublish
+> Task :core:nlp-llm:stripDebugDebugSymbols NO-SOURCE
+> Task :core:nlp-llm:copyDebugJniLibsProjectAndLocalJars
+> Task :core:nlp-llm:extractDebugAnnotations FROM-CACHE
+> Task :app:desugarDebugFileDependencies FROM-CACHE
+> Task :core:data:mergeDebugJavaResource
+> Task :core:data:syncDebugLibJars FROM-CACHE
+> Task :core:data:bundleDebugAar
+> Task :core:data:assembleDebug
+> Task :core:nlp-llm:extractDeepLinksForAarDebug FROM-CACHE
+> Task :core:nlp-llm:mergeDebugGeneratedProguardFiles
+> Task :core:nlp-llm:mergeDebugConsumerProguardFiles
+> Task :core:nlp-llm:prepareDebugArtProfile
+> Task :core:nlp-llm:prepareLintJarForPublish
+> Task :core:nlp-llm:mergeDebugJavaResource
+> Task :core:nlp-llm:syncDebugLibJars FROM-CACHE
+> Task :app:mergeDebugJniLibFolders
+> Task :app:checkDebugDuplicateClasses
+> Task :core:nlp-llm:bundleDebugAar
+> Task :app:mergeDebugNativeLibs
+> Task :core:nlp-llm:assembleDebug
+> Task :core:nlp-onnx:stripDebugDebugSymbols NO-SOURCE
+> Task :app:mergeExtDexDebug FROM-CACHE
+> Task :core:nlp-onnx:copyDebugJniLibsProjectAndLocalJars
+> Task :app:processDebugResources
+> Task :core:nlp-onnx:extractDebugAnnotations FROM-CACHE
+> Task :core:nlp-onnx:extractDeepLinksForAarDebug FROM-CACHE
+> Task :core:nlp-onnx:mergeDebugGeneratedProguardFiles
+> Task :core:nlp-onnx:mergeDebugConsumerProguardFiles
+> Task :core:nlp-onnx:prepareDebugArtProfile
+> Task :core:nlp-onnx:prepareLintJarForPublish
+> Task :core:nlp-onnx:mergeDebugJavaResource
+> Task :core:nlp-onnx:syncDebugLibJars FROM-CACHE
+> Task :core:nlp-onnx:bundleDebugAar
+> Task :core:nlp-onnx:assembleDebug
+> Task :core:player:stripDebugDebugSymbols NO-SOURCE
+> Task :core:player:copyDebugJniLibsProjectAndLocalJars
+> Task :core:player:extractDeepLinksForAarDebug FROM-CACHE
+> Task :core:player:prepareDebugArtProfile
+> Task :core:player:prepareLintJarForPublish
+> Task :core:security:stripDebugDebugSymbols NO-SOURCE
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libdatastore_shared_counter.so, libllm_inference_engine_jni.so, libonnxruntime.so, libonnxruntime4j_jni.so, libtranslate_jni.so.
+
+> Task :core:security:copyDebugJniLibsProjectAndLocalJars
+> Task :core:settings:stripDebugDebugSymbols NO-SOURCE
+> Task :core:settings:copyDebugJniLibsProjectAndLocalJars
+> Task :core:settings:extractDeepLinksForAarDebug FROM-CACHE
+> Task :core:security:extractDebugAnnotations FROM-CACHE
+> Task :core:settings:prepareDebugArtProfile
+> Task :core:settings:prepareLintJarForPublish
+> Task :core:security:extractDeepLinksForAarDebug FROM-CACHE
+> Task :core:translate:stripDebugDebugSymbols NO-SOURCE
+> Task :core:security:mergeDebugGeneratedProguardFiles
+> Task :core:translate:copyDebugJniLibsProjectAndLocalJars
+> Task :core:security:mergeDebugConsumerProguardFiles
+> Task :core:translate:extractDeepLinksForAarDebug FROM-CACHE
+> Task :core:security:prepareDebugArtProfile
+> Task :core:translate:prepareDebugArtProfile
+> Task :core:security:prepareLintJarForPublish
+> Task :core:translate:prepareLintJarForPublish
+> Task :core:security:mergeDebugJavaResource
+> Task :feature:home:stripDebugDebugSymbols NO-SOURCE
+> Task :feature:home:copyDebugJniLibsProjectAndLocalJars
+> Task :core:security:syncDebugLibJars FROM-CACHE
+> Task :feature:home:extractDeepLinksForAarDebug FROM-CACHE
+> Task :feature:home:prepareDebugArtProfile
+> Task :core:security:bundleDebugAar
+> Task :core:security:assembleDebug
+> Task :feature:home:prepareLintJarForPublish
+> Task :feature:learn:stripDebugDebugSymbols NO-SOURCE
+> Task :feature:player:stripDebugDebugSymbols NO-SOURCE
+> Task :feature:learn:extractDeepLinksForAarDebug FROM-CACHE
+> Task :feature:learn:copyDebugJniLibsProjectAndLocalJars
+> Task :feature:learn:prepareDebugArtProfile
+> Task :feature:player:copyDebugJniLibsProjectAndLocalJars
+> Task :feature:learn:prepareLintJarForPublish
+> Task :feature:player:extractDeepLinksForAarDebug FROM-CACHE
+> Task :feature:player:prepareDebugArtProfile
+> Task :feature:player:prepareLintJarForPublish
+> Task :feature:settings:stripDebugDebugSymbols NO-SOURCE
+> Task :feature:words:stripDebugDebugSymbols NO-SOURCE
+> Task :feature:settings:copyDebugJniLibsProjectAndLocalJars
+> Task :feature:words:copyDebugJniLibsProjectAndLocalJars
+> Task :feature:words:extractDeepLinksForAarDebug FROM-CACHE
+> Task :feature:settings:extractDeepLinksForAarDebug FROM-CACHE
+> Task :feature:words:prepareDebugArtProfile
+> Task :feature:settings:prepareDebugArtProfile
+> Task :feature:words:prepareLintJarForPublish
+> Task :feature:settings:prepareLintJarForPublish
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :core:settings:compileDebugKotlin
+> Task :core:settings:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:settings:bundleLibCompileToJarDebug
+> Task :core:settings:bundleLibRuntimeToJarDebug
+> Task :core:settings:processDebugJavaRes
+> Task :core:models:compileDebugKotlin
+> Task :core:models:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:models:bundleLibCompileToJarDebug
+> Task :core:designsystem:compileDebugKotlin
+> Task :core:designsystem:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:designsystem:bundleLibCompileToJarDebug
+> Task :core:designsystem:bundleLibRuntimeToJarDebug
+> Task :core:player:compileDebugKotlin
+> Task :core:player:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:player:bundleLibCompileToJarDebug
+> Task :core:lexicon:compileDebugKotlin
+> Task :core:lexicon:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:lexicon:bundleLibCompileToJarDebug
+> Task :core:player:bundleLibRuntimeToJarDebug
+> Task :core:lexicon:bundleLibRuntimeToJarDebug
+> Task :core:models:bundleLibRuntimeToJarDebug
+> Task :core:designsystem:processDebugJavaRes
+> Task :core:lexicon:processDebugJavaRes
+> Task :core:models:processDebugJavaRes
+> Task :core:player:processDebugJavaRes
+> Task :core:designsystem:bundleLibRuntimeToDirDebug
+> Task :core:player:bundleLibRuntimeToDirDebug
+> Task :core:lexicon:bundleLibRuntimeToDirDebug
+> Task :core:models:bundleLibRuntimeToDirDebug
+> Task :core:settings:bundleLibRuntimeToDirDebug
+> Task :core:designsystem:extractDebugAnnotations
+> Task :core:designsystem:mergeDebugGeneratedProguardFiles
+> Task :core:designsystem:mergeDebugConsumerProguardFiles
+> Task :core:designsystem:mergeDebugJavaResource
+> Task :core:designsystem:syncDebugLibJars
+> Task :core:designsystem:bundleDebugAar
+> Task :core:designsystem:assembleDebug
+> Task :core:lexicon:extractDebugAnnotations
+> Task :core:lexicon:mergeDebugGeneratedProguardFiles
+> Task :core:lexicon:mergeDebugConsumerProguardFiles
+> Task :core:lexicon:mergeDebugJavaResource
+> Task :core:lexicon:syncDebugLibJars FROM-CACHE
+> Task :core:lexicon:bundleDebugAar
+> Task :core:lexicon:assembleDebug
+> Task :core:models:extractDebugAnnotations
+> Task :core:models:mergeDebugGeneratedProguardFiles
+> Task :core:models:mergeDebugConsumerProguardFiles
+> Task :core:models:mergeDebugJavaResource
+> Task :core:models:syncDebugLibJars FROM-CACHE
+> Task :core:models:bundleDebugAar
+> Task :core:models:assembleDebug
+> Task :core:player:extractDebugAnnotations
+> Task :core:player:mergeDebugGeneratedProguardFiles
+> Task :core:player:mergeDebugConsumerProguardFiles
+> Task :core:player:mergeDebugJavaResource
+> Task :core:player:syncDebugLibJars
+> Task :core:player:bundleDebugAar
+> Task :core:player:assembleDebug
+> Task :core:settings:extractDebugAnnotations
+> Task :core:settings:mergeDebugGeneratedProguardFiles
+> Task :core:settings:mergeDebugConsumerProguardFiles
+> Task :core:settings:mergeDebugJavaResource
+> Task :core:settings:syncDebugLibJars
+> Task :core:settings:bundleDebugAar
+> Task :core:settings:assembleDebug
+> Task :core:translate:compileDebugKotlin
+> Task :core:translate:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:translate:bundleLibCompileToJarDebug
+> Task :core:translate:bundleLibRuntimeToJarDebug
+> Task :core:translate:processDebugJavaRes
+
+> Task :feature:home:compileDebugKotlin
+w: file:///home/runner/work/SubLearn/SubLearn/feature/home/src/main/kotlin/com/sublearn/feature/home/HomeScreen.kt:158:27 'val Icons.Filled.OpenInNew: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.OpenInNew.
+
+> Task :feature:home:compileDebugJavaWithJavac NO-SOURCE
+> Task :feature:home:bundleLibCompileToJarDebug
+> Task :feature:learn:compileDebugKotlin
+> Task :feature:learn:compileDebugJavaWithJavac NO-SOURCE
+> Task :feature:learn:bundleLibCompileToJarDebug
+> Task :feature:home:bundleLibRuntimeToJarDebug
+> Task :feature:learn:bundleLibRuntimeToJarDebug
+> Task :feature:home:processDebugJavaRes
+> Task :feature:learn:processDebugJavaRes
+> Task :feature:home:bundleLibRuntimeToDirDebug
+> Task :feature:learn:bundleLibRuntimeToDirDebug
+> Task :core:translate:bundleLibRuntimeToDirDebug
+> Task :core:translate:extractDebugAnnotations
+> Task :core:translate:mergeDebugGeneratedProguardFiles
+> Task :core:translate:mergeDebugConsumerProguardFiles
+> Task :core:translate:mergeDebugJavaResource
+> Task :core:translate:syncDebugLibJars FROM-CACHE
+> Task :core:translate:bundleDebugAar
+> Task :core:translate:assembleDebug
+> Task :feature:home:extractDebugAnnotations
+> Task :feature:home:mergeDebugGeneratedProguardFiles
+> Task :feature:home:mergeDebugConsumerProguardFiles
+> Task :feature:home:mergeDebugJavaResource
+> Task :feature:home:syncDebugLibJars FROM-CACHE
+> Task :feature:home:bundleDebugAar
+> Task :feature:home:assembleDebug
+> Task :feature:learn:extractDebugAnnotations
+> Task :feature:learn:mergeDebugGeneratedProguardFiles
+> Task :feature:learn:mergeDebugConsumerProguardFiles
+> Task :feature:learn:mergeDebugJavaResource
+> Task :feature:learn:syncDebugLibJars FROM-CACHE
+> Task :feature:learn:bundleDebugAar
+> Task :feature:learn:assembleDebug
+> Task :feature:words:compileDebugKotlin
+> Task :feature:words:compileDebugJavaWithJavac NO-SOURCE
+> Task :feature:words:bundleLibCompileToJarDebug
+> Task :feature:words:bundleLibRuntimeToJarDebug
+> Task :feature:words:processDebugJavaRes
+> Task :feature:words:bundleLibRuntimeToDirDebug
+> Task :feature:words:extractDebugAnnotations
+> Task :feature:words:mergeDebugGeneratedProguardFiles
+> Task :feature:words:mergeDebugConsumerProguardFiles
+> Task :feature:words:mergeDebugJavaResource
+> Task :feature:words:syncDebugLibJars FROM-CACHE
+> Task :feature:words:bundleDebugAar
+> Task :feature:words:assembleDebug
+The Daemon will expire after the build after running out of JVM Metaspace.
+The project memory settings are likely not configured or are configured to an insufficient value.
+The daemon will restart for the next build, which may increase subsequent build times.
+These settings can be adjusted by setting 'org.gradle.jvmargs' in 'gradle.properties'.
+The currently configured max heap space is '4 GiB' and the configured max metaspace is '1 GiB'.
+For more information on how to set these values, please refer to https://docs.gradle.org/8.11.1/userguide/build_environment.html#sec:configuring_jvm_memory in the Gradle documentation.
+To disable this warning, set 'org.gradle.daemon.performance.disable-logging=true'.
+Daemon will be stopped at the end of the build after running out of JVM Metaspace
+> Task :feature:player:compileDebugKotlin
+> Task :feature:settings:compileDebugKotlin
+> Task :feature:settings:compileDebugJavaWithJavac NO-SOURCE
+> Task :feature:settings:processDebugJavaRes
+> Task :feature:settings:bundleLibCompileToJarDebug
+> Task :feature:settings:bundleLibRuntimeToJarDebug
+> Task :feature:settings:extractDebugAnnotations
+> Task :feature:settings:mergeDebugGeneratedProguardFiles
+> Task :feature:settings:mergeDebugConsumerProguardFiles
+> Task :feature:settings:bundleLibRuntimeToDirDebug
+> Task :feature:settings:mergeDebugJavaResource
+> Task :feature:settings:syncDebugLibJars
+> Task :feature:settings:bundleDebugAar
+> Task :feature:settings:assembleDebug
+
+> Task :feature:player:compileDebugKotlin
+w: file:///home/runner/work/SubLearn/SubLearn/feature/player/src/main/kotlin/com/sublearn/feature/player/Controls.kt:1097:50 'val Icons.Filled.List: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.List.
+w: file:///home/runner/work/SubLearn/SubLearn/feature/player/src/main/kotlin/com/sublearn/feature/player/Controls.kt:1100:45 'val Icons.Filled.PlaylistPlay: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.PlaylistPlay.
+w: file:///home/runner/work/SubLearn/SubLearn/feature/player/src/main/kotlin/com/sublearn/feature/player/Controls.kt:1110:48 'val Icons.Filled.VolumeOff: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeOff.
+w: file:///home/runner/work/SubLearn/SubLearn/feature/player/src/main/kotlin/com/sublearn/feature/player/PlayerScreen.kt:169:26 'val LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
+w: file:///home/runner/work/SubLearn/SubLearn/feature/player/src/main/kotlin/com/sublearn/feature/player/Sheets.kt:192:66 'val Icons.Filled.VolumeOff: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeOff.
+w: file:///home/runner/work/SubLearn/SubLearn/feature/player/src/main/kotlin/com/sublearn/feature/player/Sheets.kt:192:95 'val Icons.Filled.VolumeUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.VolumeUp.
+
+> Task :feature:player:compileDebugJavaWithJavac NO-SOURCE
+> Task :feature:player:processDebugJavaRes
+> Task :feature:player:bundleLibCompileToJarDebug
+> Task :feature:player:bundleLibRuntimeToJarDebug
+> Task :feature:player:bundleLibRuntimeToDirDebug
+> Task :feature:player:extractDebugAnnotations
+> Task :feature:player:mergeDebugGeneratedProguardFiles
+> Task :feature:player:mergeDebugConsumerProguardFiles
+> Task :feature:player:mergeDebugJavaResource
+> Task :feature:player:syncDebugLibJars
+> Task :feature:player:bundleDebugAar
+> Task :feature:player:assembleDebug
+> Task :app:mergeLibDexDebug
+
+> Task :app:compileDebugKotlin
+w: file:///home/runner/work/SubLearn/SubLearn/app/src/main/kotlin/com/sublearn/app/MainActivity.kt:69:27 'fun <T : Parcelable!> getParcelableExtra(p0: String!): T?' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/SubLearn/SubLearn/app/src/main/kotlin/com/sublearn/app/SubLearnApp.kt:172:86 'static enum entry LEVEL: AppRoute = object : AppRoute' is deprecated. Use SETTINGS with startSection='learning'.
+w: file:///home/runner/work/SubLearn/SubLearn/app/src/main/kotlin/com/sublearn/app/SubLearnApp.kt:203:60 'val Icons.Filled.TrendingUp: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.TrendingUp.
+w: file:///home/runner/work/SubLearn/SubLearn/app/src/main/kotlin/com/sublearn/app/SubLearnApp.kt:229:30 'static enum entry LEVEL: AppRoute = object : AppRoute' is deprecated. Use SETTINGS with startSection='learning'.
+w: file:///home/runner/work/SubLearn/SubLearn/app/src/main/kotlin/com/sublearn/app/SubLearnApp.kt:256:14 'static enum entry LEVEL: AppRoute = object : AppRoute' is deprecated. Use SETTINGS with startSection='learning'.
+
+> Task :app:compileDebugJavaWithJavac
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics FROM-CACHE
+> Task :app:processDebugJavaRes
+> Task :app:mergeProjectDexDebug
+> Task :app:mergeDebugJavaResource
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/build-1792248607977.json
+
+BUILD SUCCESSFUL in 2m 4s
+482 actionable tasks: 307 executed, 175 from cache

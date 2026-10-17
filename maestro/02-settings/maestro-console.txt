@@ -1,0 +1,18 @@
+Running on test
+ > Flow 02-settings
+Launch app "com.sublearn.app.debug" with clear state... COMPLETED
+Assert that "Open a video" is visible... COMPLETED
+Tap on "Settings"... COMPLETED
+Assert that "Quiz" is visible... COMPLETED
+Tap on "Settings", Below "Quiz"... COMPLETED
+Assert that "Search settings" is visible... COMPLETED
+Take screenshot 02-settings-root... COMPLETED
+Tap on "Search settings"... COMPLETED
+Input text download... COMPLETED
+Assert that "Translation model, offline packs, accuracy models" is visible... COMPLETED
+Take screenshot 02-settings-search... COMPLETED
+Tap on "Translation model, offline packs, accuracy models"... COMPLETED
+Assert that "Offline translation" is visible... COMPLETED
+Take screenshot 02-settings-downloads... COMPLETED
+Scrolling DOWN until "Subtitle lab" is visible with speed 40, visibility percentage 100%, timeout 60000 ms, with centering disabled... COMPLETED
+Take screenshot 02-settings-downloads-bottom... COMPLETED

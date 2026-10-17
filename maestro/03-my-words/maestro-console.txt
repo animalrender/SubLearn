@@ -1,0 +1,10 @@
+Running on test
+ > Flow 03-my-words
+Launch app "com.sublearn.app.debug" with clear state... COMPLETED
+Assert that "Open a video" is visible... COMPLETED
+Tap on "Settings"... COMPLETED
+Assert that "Quiz" is visible... COMPLETED
+Tap on "My Words"... COMPLETED
+Assert that "Nothing marked yet.*" is visible... COMPLETED
+Assert that "0 words" is visible... COMPLETED
+Take screenshot 03-my-words... COMPLETED

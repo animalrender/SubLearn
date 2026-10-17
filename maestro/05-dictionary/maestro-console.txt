@@ -1,0 +1,8 @@
+Running on test
+ > Flow 05-dictionary
+Launch app "com.sublearn.app.debug" with clear state... COMPLETED
+Assert that "Open a video" is visible... COMPLETED
+Tap on "Dictionary"... COMPLETED
+Assert that "Type a word or expression.*" is visible... COMPLETED
+Assert that "Import or download a lexicon pack.*" is visible... COMPLETED
+Take screenshot 05-dictionary... COMPLETED

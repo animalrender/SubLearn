@@ -1,0 +1,51 @@
+Running on test
+ > Flow 08-player-menus
+Tap on (Optional) "Got it"... WARNED
+
+
+ Warning: Element not found: Text matching regex: Got it
+Assert that "360 × 640" is visible... COMPLETED
+Assert that "SubLearn-UI-Fixture.mp4" is visible... COMPLETED
+Assert that "More" is visible... COMPLETED
+Tap on "More"... COMPLETED
+Assert that "Subtitle options" is visible... COMPLETED
+Assert that "Arrange player controls" is visible... COMPLETED
+Tap on "Subtitle options"... COMPLETED
+Assert that "Subtitle tracks" is visible... COMPLETED
+Assert that "Learning subtitles" is visible... COMPLETED
+Swipe from (50%, 90%) to (50%, 45%) in 700 ms... COMPLETED
+Assert that "Soft subtitles in this video" is visible... COMPLETED
+Take screenshot 08-player-subtitle-options-sheet... COMPLETED
+Press Back key... COMPLETED
+Press Back key... COMPLETED
+Tap on "Audio track"... COMPLETED
+Assert that "Audio track" is visible... COMPLETED
+Swipe from (50%, 90%) to (50%, 45%) in 700 ms... COMPLETED
+Assert that "Player volume" is visible... COMPLETED
+Take screenshot 08-player-audio-track-sheet... COMPLETED
+Press Back key... COMPLETED
+Press Back key... COMPLETED
+Long press on "FIT"... COMPLETED
+Assert that "Aspect ratio" is visible... COMPLETED
+Assert that "Fit" is visible... COMPLETED
+Swipe from (50%, 90%) to (50%, 45%) in 700 ms... COMPLETED
+Assert that "Fill" is visible... COMPLETED
+Assert that "Zoom" is visible... COMPLETED
+Assert that "Stretch" is visible... COMPLETED
+Assert that "Custom" is visible... COMPLETED
+Take screenshot 08-player-aspect-ratio-sheet... COMPLETED
+Tap on "Fill"... COMPLETED
+Press Back key... COMPLETED
+Press Back key... COMPLETED
+Tap on "More"... COMPLETED
+Tap on "Layout mode"... COMPLETED
+Assert that "OK" is visible... COMPLETED
+Take screenshot 08-player-layout-mode... COMPLETED
+Swiping in DOWN direction on "Layout mode"... COMPLETED
+Take screenshot 08-player-cross-dock-drop... COMPLETED
+Tap on "Arrange player controls", Below "Drag subtitle layers to move them.*"... COMPLETED
+Assert that "Choose a toolbar or playback row.*" is visible... COMPLETED
+Swipe from (50%, 90%) to (50%, 45%) in 700 ms... COMPLETED
+Assert that "Repeat this subtitle" is visible... COMPLETED
+Assert that "Playback row" is visible... COMPLETED
+Take screenshot 08-player-action-layout-sheet... COMPLETED

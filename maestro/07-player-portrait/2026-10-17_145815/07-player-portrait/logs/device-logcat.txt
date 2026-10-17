@@ -1,0 +1,1251 @@
+--------- beginning of main
+10-17 14:58:29.416 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(17)
+10-17 14:58:29.581 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:29.584 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(66)
+10-17 14:58:29.588 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:29.589 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:29.651 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(4)
+10-17 14:58:29.655 D/EGL_emulation(10631): app_time_stats: avg=118.52ms min=44.85ms max=181.60ms count=9
+10-17 14:58:29.798 D/StatusBarIconController(  835): ignoring old pipeline callback because the new wifi icon is enabled
+10-17 14:58:30.255 D/Maestro (11026): View hierarchy received in 674 ms
+10-17 14:58:30.451 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:30.452 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:30.452 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:30.661 D/EGL_emulation(10631): app_time_stats: avg=125.79ms min=97.11ms max=149.96ms count=8
+10-17 14:58:30.692 D/Maestro (11026): View hierarchy received in 241 ms
+10-17 14:58:30.817 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:30.817 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:30.818 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:30.922 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(4)
+10-17 14:58:31.055 D/Maestro (11026): View hierarchy received in 238 ms
+10-17 14:58:31.059 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(6)
+10-17 14:58:31.151 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:31.155 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:31.155 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:31.156 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(3)
+10-17 14:58:31.328 D/Maestro (11026): View hierarchy received in 177 ms
+10-17 14:58:31.419 D/BufferPoolAccessor2.0(10631): bufferpool2 0x7c4624a2afb8 : 5(10485760 size) total buffers - 4(8388608 size) used buffers - 383/388 (recycle/alloc) - 5/388 (fetch/transfer)
+10-17 14:58:31.457 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:31.458 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:31.458 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:31.663 D/Maestro (11026): View hierarchy received in 206 ms
+10-17 14:58:31.722 D/BufferPoolAccessor2.0(10631): bufferpool2 0x7c4624a2b8f8 : 5(40960 size) total buffers - 1(8192 size) used buffers - 692/697 (recycle/alloc) - 5/696 (fetch/transfer)
+10-17 14:58:31.745 D/EGL_emulation(10631): app_time_stats: avg=120.37ms min=84.07ms max=165.03ms count=9
+10-17 14:58:31.748 D/BufferPoolAccessor2.0(  462): bufferpool2 0x7a52b27694c8 : 5(20480 size) total buffers - 1(4096 size) used buffers - 688/693 (recycle/alloc) - 8/692 (fetch/transfer)
+10-17 14:58:31.796 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:31.796 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:31.797 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:31.917 D/Maestro (11026): View hierarchy received in 121 ms
+10-17 14:58:32.013 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:32.013 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:32.020 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:32.204 D/Maestro (11026): View hierarchy received in 191 ms
+10-17 14:58:32.330 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:32.330 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:32.330 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:32.601 D/Maestro (11026): View hierarchy received in 271 ms
+10-17 14:58:32.665 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:32.665 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:32.666 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:32.770 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(6)
+10-17 14:58:32.802 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(2)
+10-17 14:58:32.830 D/EGL_emulation(10631): app_time_stats: avg=120.56ms min=100.93ms max=149.67ms count=9
+10-17 14:58:32.918 D/Maestro (11026): View hierarchy received in 253 ms
+10-17 14:58:32.997 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:32.997 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:32.998 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:33.122 I/DialerTaskExecutor( 2358): com.android.voicemail.impl.scheduling.TaskExecutor$WorkerThreadHandler.handleMessage:221 executing task com.android.voicemail.impl.ActivationTask@74f8f52 [CONTEXT enable_persistent_logger=true ]
+10-17 14:58:33.122 I/DialerLogcatLoggingBindings( 2358): com.android.dialer.logging.logcat.LogcatLoggingBindings.logImpression:41 Impression: VVM_ACTIVATION_STARTED
+10-17 14:58:33.130 I/DialerPreOMigrationHandler( 2358): com.android.voicemail.impl.PreOMigrationHandler.migrate:76 ComponentInfo{com.android.phone/com.android.services.telephony.TelephonyConnectionService}, 1, UserHandle{0} already migrated [CONTEXT enable_persistent_logger=true ]
+10-17 14:58:33.134 I/DialerOmtpVvmCarrierConfigHelper( 2358): com.android.voicemail.impl.OmtpVvmCarrierConfigHelper.isCarrierAppInstalled:637 carrier app not installed in this device [CONTEXT ratelimit_period="1 MINUTES [skipped: 4]" ]
+10-17 14:58:33.134 I/DialerVoicemailStatus( 2358): com.android.voicemail.impl.VoicemailStatus$Editor.apply:112 enter
+10-17 14:58:33.135 I/DialerVoicemailStatusDataServiceImpl( 2358): com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.insertOrUpdateVoicemailStatus:196 enter
+10-17 14:58:33.149 I/DialerRestVoicemailEnabledFn( 2358): com.android.dialer.voicemail.service.impl.vvmclients.rest.RestVoicemailEnabledFn.isEnabled:51 disabled by flag [CONTEXT ratelimit_period="1 MINUTES [skipped: 23]" ]
+10-17 14:58:33.149 I/DialerCvvmEnabledFn( 2358): com.android.dialer.voicemail.service.impl.vvmclients.omtp.protocol.cvvm.CvvmEnabledFn.isEnabled:37 disabled by flag [CONTEXT ratelimit_period="1 MINUTES [skipped: 11]" ]
+10-17 14:58:33.154 W/Settings( 2358): Setting airplane_mode_on has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+10-17 14:58:33.154 I/DialerVoicemailStatusDataServiceImpl( 2358): com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.lambda$insertOrUpdateVoicemailStatus$5:213 merged status: # kee@6600c263
+10-17 14:58:33.155 I/DialerActivationTask( 2358): com.android.voicemail.impl.ActivationTask.onExecuteInBackgroundThread:292 VVM content provider configured - vvm_type_cvvm PhoneAccountHandle: [ComponentName: com.android.phone/com.android.services.telephony.TelephonyConnectionService subId: 1] [CONTEXT enable_persistent_logger=true ]
+10-17 14:58:33.155 I/DialerActivationTask( 2358): com.android.voicemail.impl.ActivationTask.updateVoicemailsWithIccId:477 conversion disabled [CONTEXT enable_persistent_logger=true ]
+10-17 14:58:33.155 I/DialerOmtpVvmCarrierConfigHelper( 2358): com.android.voicemail.impl.OmtpVvmCarrierConfigHelper.handleEvent:527 OmtpEvent:CONFIG_ACTIVATING PhoneAccountHandle: [ComponentName: com.android.phone/com.android.services.telephony.TelephonyConnectionService subId: 1] [CONTEXT enable_persistent_logger=true ]
+10-17 14:58:33.155 I/DialerVoicemailStatus( 2358): com.android.voicemail.impl.VoicemailStatus$Editor.apply:112 enter
+10-17 14:58:33.160 I/DialerVoicemailStatusDataServiceImpl( 2358): com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.insertOrUpdateVoicemailStatus:196 enter
+10-17 14:58:33.164 W/Settings( 2358): Setting airplane_mode_on has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+10-17 14:58:33.164 I/DialerVoicemailStatusDataServiceImpl( 2358): com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.lambda$insertOrUpdateVoicemailStatus$5:213 merged status: # kee@6600c263
+10-17 14:58:33.195 I/DialerActivationTask( 2358): com.android.voicemail.impl.ActivationTask.onExecuteInBackgroundThread:339 sending an activation request [CONTEXT enable_persistent_logger=true ]
+10-17 14:58:33.199 D/SmsNumberUtils( 1050): enter filterDestAddr. destAddr="[BajqU4K5_YhSYbs-7QUn0dOwcmI]"
+10-17 14:58:33.199 D/SmsNumberUtils( 1050): destAddr is not formatted.
+10-17 14:58:33.200 D/SmsNumberUtils( 1050): leave filterDestAddr, new destAddr="[BajqU4K5_YhSYbs-7QUn0dOwcmI]"
+10-17 14:58:33.230 I/DialerLogcatLoggingBindings( 2358): com.android.dialer.logging.logcat.LogcatLoggingBindings.logImpression:46 Impression: CVVM_SEND_VVM_SMS
+10-17 14:58:33.248 D/Maestro (11026): View hierarchy received in 251 ms
+10-17 14:58:33.329 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:33.329 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:33.330 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:33.507 D/Maestro (11026): View hierarchy received in 178 ms
+--------- beginning of system
+10-17 14:58:33.573 W/ActivityManager(  520): stopServiceToken startId 14 is last, but have 1 remaining args
+10-17 14:58:33.573 D/OomAdjuster(  520): Not killing cached processes
+10-17 14:58:33.656 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:33.657 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:33.658 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:33.736 I/DialerStatusSmsFetcher( 2358): com.android.voicemail.impl.sms.StatusSmsFetcher.onReceive:106 Request SMS successfully sent [CONTEXT enable_persistent_logger=true ]
+10-17 14:58:33.754 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(10)
+10-17 14:58:33.776 I/learn.app.debug(10631): Background young concurrent copying GC freed 289848(9321KB) AllocSpace objects, 0(0B) LOS objects, 50% free, 9365KB/18MB, paused 65us,17us total 102.954ms
+10-17 14:58:33.873 W/ProcessStats(  520): Tracking association SourceState{a2f1f33 com.google.android.gms.persistent/10131 BFgs #18865} whose proc state 4 is better than process ProcessState{7001444 com.google.android.gms/10131 pkg=com.google.android.gms} proc state 8 (779 skipped)
+10-17 14:58:33.874 D/EGL_emulation(10631): app_time_stats: avg=130.39ms min=88.73ms max=168.09ms count=8
+10-17 14:58:33.963 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(20)
+10-17 14:58:34.072 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(12)
+10-17 14:58:34.203 D/StatusBarIconController(  835): ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-17 14:58:34.233 D/Maestro (11026): View hierarchy received in 577 ms
+10-17 14:58:34.252 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(5)
+10-17 14:58:34.310 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:34.311 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:34.311 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:34.499 D/Maestro (11026): View hierarchy received in 189 ms
+10-17 14:58:34.650 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:34.651 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:34.651 W/QueryController(11026): Could not detect idle state.
+--------- beginning of kernel
+10-17 14:58:34.905 W/healthd (    0): battery l=100 v=5000 t=25.0 h=2 st=2 c=900000 fc=3000000 cc=10 chg=a
+10-17 14:58:34.900 D/Maestro (11026): View hierarchy received in 250 ms
+10-17 14:58:34.938 D/EGL_emulation(10631): app_time_stats: avg=118.24ms min=79.38ms max=139.05ms count=9
+10-17 14:58:34.990 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:34.990 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:34.990 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:35.094 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(1)
+10-17 14:58:35.227 D/Maestro (11026): View hierarchy received in 237 ms
+10-17 14:58:35.326 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:35.327 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:35.327 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:35.490 D/Maestro (11026): View hierarchy received in 170 ms
+10-17 14:58:35.581 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:35.582 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:35.582 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:35.720 D/Maestro (11026): View hierarchy received in 139 ms
+10-17 14:58:35.726 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(7)
+10-17 14:58:35.741 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:35.741 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:35.741 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:35.847 D/Maestro (11026): View hierarchy received in 106 ms
+10-17 14:58:35.953 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:35.954 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:35.954 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:36.047 D/EGL_emulation(10631): app_time_stats: avg=123.16ms min=84.80ms max=159.40ms count=9
+10-17 14:58:36.070 I/ResourceTimer(  520): GetResourceValue count=14255 pvalues=1000,5000,8000,18000
+10-17 14:58:36.071 I/ResourceTimer(  520): RetrieveAttributes count=36488 pvalues=1000,1000,2000,9000
+10-17 14:58:36.185 D/Maestro (11026): View hierarchy received in 232 ms
+10-17 14:58:36.235 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:36.236 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:36.236 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:36.329 D/Maestro (11026): View hierarchy received in 94 ms
+10-17 14:58:36.412 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:36.417 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:36.424 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:36.555 I/keystore2(  155): system/security/keystore2/src/watchdog.rs:319 - Watchdog thread idle -> terminating. Have a great day.
+10-17 14:58:36.567 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(7)
+10-17 14:58:36.671 D/BufferPoolAccessor2.0(10631): bufferpool2 0x7c4624a2afb8 : 5(10485760 size) total buffers - 5(10485760 size) used buffers - 507/512 (recycle/alloc) - 5/510 (fetch/transfer)
+10-17 14:58:36.721 D/Maestro (11026): View hierarchy received in 309 ms
+10-17 14:58:37.057 D/EGL_emulation(10631): app_time_stats: avg=126.27ms min=89.09ms max=166.17ms count=8
+10-17 14:58:37.110 D/WindowManager(  520): captureDisplay
+10-17 14:58:37.324 I/servicemanager(    0): Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest.
+10-17 14:58:37.152 D/BufferPoolAccessor2.0(10631): bufferpool2 0x7c4624a2b8f8 : 5(40960 size) total buffers - 1(8192 size) used buffers - 924/929 (recycle/alloc) - 5/928 (fetch/transfer)
+10-17 14:58:37.164 I/hwservicemanager(  134): getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+10-17 14:58:37.166 I/Gralloc4(10996): mapper 4.x is not supported
+10-17 14:58:37.220 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(20)
+10-17 14:58:37.221 D/BufferPoolAccessor2.0(  462): bufferpool2 0x7a52b27694c8 : 5(20480 size) total buffers - 1(4096 size) used buffers - 920/925 (recycle/alloc) - 9/924 (fetch/transfer)
+10-17 14:58:37.252 D/libEGL  (10996): loaded /vendor/lib64/egl/libEGL_emulation.so
+10-17 14:58:37.252 D/libEGL  (10996): loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+10-17 14:58:37.253 D/libEGL  (10996): loaded /vendor/lib64/egl/libGLESv2_emulation.so
+10-17 14:58:37.267 W/OpenGLRenderer(10996): Failed to initialize 101010-2 format, error = EGL_SUCCESS
+10-17 14:58:37.315 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(46)
+10-17 14:58:37.317 E/A       ( 1721): disposing SearchServiceClient after timeout []
+10-17 14:58:37.494 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(4)
+10-17 14:58:37.811 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(10)
+10-17 14:58:38.112 D/EGL_emulation(10631): app_time_stats: avg=117.01ms min=86.37ms max=160.86ms count=9
+10-17 14:58:38.446 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(10)
+10-17 14:58:38.584 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(22)
+10-17 14:58:38.877 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:38.878 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:38.884 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:39.120 D/EGL_emulation(10631): app_time_stats: avg=125.97ms min=91.41ms max=148.41ms count=8
+10-17 14:58:39.190 D/Maestro (11026): View hierarchy received in 316 ms
+10-17 14:58:39.284 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(6)
+10-17 14:58:39.313 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:39.313 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:39.314 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:39.433 D/Maestro (11026): View hierarchy received in 120 ms
+10-17 14:58:39.521 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:39.522 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:39.522 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:39.584 I/netd    (  333): tetherGetStats() -> {[]} <0.33ms>
+10-17 14:58:39.587 I/netd    (  333): bandwidthSetGlobalAlert(2097152) <0.14ms>
+10-17 14:58:39.589 I/netd    (  333): bandwidthRemoveInterfaceQuota(eth0) <0.62ms>
+10-17 14:58:39.590 I/netd    (  333): bandwidthSetInterfaceQuota(eth0, 9223372036854775807) <0.32ms>
+10-17 14:58:39.830 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(13)
+10-17 14:58:39.920 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(4)
+10-17 14:58:40.105 D/Maestro (11026): View hierarchy received in 584 ms
+10-17 14:58:40.181 D/WindowManager(  520): captureDisplay
+10-17 14:58:40.269 W/System  (10996): A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+10-17 14:58:40.269 W/System  (10996): java.lang.Throwable: Explicit termination method 'HardwareBuffer.close' not called
+10-17 14:58:40.269 W/System  (10996): 	at dalvik.system.CloseGuard.openWithCallSite(CloseGuard.java:288)
+10-17 14:58:40.269 W/System  (10996): 	at dalvik.system.CloseGuard.open(CloseGuard.java:257)
+10-17 14:58:40.269 W/System  (10996): 	at android.hardware.HardwareBuffer.<init>(HardwareBuffer.java:266)
+10-17 14:58:40.269 W/System  (10996): A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+10-17 14:58:40.269 W/System  (10996): java.lang.Throwable: Explicit termination method 'HardwareBuffer.close' not called
+10-17 14:58:40.269 W/System  (10996): 	at dalvik.system.CloseGuard.openWithCallSite(CloseGuard.java:288)
+10-17 14:58:40.269 W/System  (10996): 	at dalvik.system.CloseGuard.open(CloseGuard.java:257)
+10-17 14:58:40.269 W/System  (10996): 	at android.hardware.HardwareBuffer.<init>(HardwareBuffer.java:266)
+10-17 14:58:40.291 D/EGL_emulation(10631): app_time_stats: avg=130.09ms min=97.97ms max=206.11ms count=9
+10-17 14:58:40.871 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(9)
+10-17 14:58:40.984 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(2)
+10-17 14:58:41.310 D/EGL_emulation(10631): app_time_stats: avg=113.09ms min=70.78ms max=134.88ms count=9
+10-17 14:58:41.312 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:41.312 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:41.313 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:41.362 D/OomAdjuster(  520): Not killing cached processes
+10-17 14:58:41.482 D/Maestro (11026): View hierarchy received in 170 ms
+10-17 14:58:41.619 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:41.623 D/UiDevice(11026): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-17 14:58:41.666 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(8)
+10-17 14:58:41.994 D/BufferPoolAccessor2.0(10631): bufferpool2 0x7c4624a2afb8 : 5(10485760 size) total buffers - 5(10485760 size) used buffers - 637/642 (recycle/alloc) - 5/641 (fetch/transfer)
+10-17 14:58:42.140 W/UiDevice(11026): Timed out waiting 500ms on window update.
+10-17 14:58:42.140 W/UiDevice(11026): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-17 14:58:42.140 W/UiDevice(11026): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-17 14:58:42.140 W/UiDevice(11026): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-17 14:58:42.140 W/UiDevice(11026): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-17 14:58:42.140 W/UiDevice(11026): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-17 14:58:42.140 W/UiDevice(11026): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-17 14:58:42.140 W/UiDevice(11026): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-17 14:58:42.140 W/UiDevice(11026): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-17 14:58:42.140 W/UiDevice(11026): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-17 14:58:42.140 W/UiDevice(11026): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-17 14:58:42.140 W/UiDevice(11026): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-17 14:58:42.140 W/UiDevice(11026): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-17 14:58:42.140 W/UiDevice(11026): 	at java.lang.Thread.run(Thread.java:1012)
+10-17 14:58:42.206 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:42.211 D/UiDevice(11026): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-17 14:58:42.258 I/netd    (  333): tetherGetStats() -> {[]} <0.28ms>
+10-17 14:58:42.262 I/netd    (  333): bandwidthSetGlobalAlert(2097152) <0.07ms>
+10-17 14:58:42.318 D/BufferPoolAccessor2.0(  462): bufferpool2 0x7a52b27694c8 : 5(20480 size) total buffers - 1(4096 size) used buffers - 1144/1149 (recycle/alloc) - 9/1148 (fetch/transfer)
+10-17 14:58:42.407 D/EGL_emulation(10631): app_time_stats: avg=121.87ms min=98.23ms max=145.54ms count=9
+10-17 14:58:42.582 D/BufferPoolAccessor2.0(10631): bufferpool2 0x7c4624a2b8f8 : 5(40960 size) total buffers - 1(8192 size) used buffers - 1159/1164 (recycle/alloc) - 5/1163 (fetch/transfer)
+10-17 14:58:42.713 W/UiDevice(11026): Timed out waiting 500ms on window update.
+10-17 14:58:42.713 W/UiDevice(11026): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-17 14:58:42.713 W/UiDevice(11026): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-17 14:58:42.713 W/UiDevice(11026): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-17 14:58:42.713 W/UiDevice(11026): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-17 14:58:42.713 W/UiDevice(11026): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-17 14:58:42.713 W/UiDevice(11026): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-17 14:58:42.713 W/UiDevice(11026): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-17 14:58:42.713 W/UiDevice(11026): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-17 14:58:42.713 W/UiDevice(11026): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-17 14:58:42.713 W/UiDevice(11026): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-17 14:58:42.713 W/UiDevice(11026): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-17 14:58:42.713 W/UiDevice(11026): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-17 14:58:42.713 W/UiDevice(11026): 	at java.lang.Thread.run(Thread.java:1012)
+10-17 14:58:42.788 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:42.788 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:42.789 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:42.958 D/Maestro (11026): View hierarchy received in 170 ms
+10-17 14:58:43.273 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:43.273 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:43.274 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:43.319 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(8)
+10-17 14:58:43.432 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(1)
+10-17 14:58:43.442 D/Maestro (11026): View hierarchy received in 169 ms
+10-17 14:58:43.489 D/EGL_emulation(10631): app_time_stats: avg=120.28ms min=103.54ms max=126.78ms count=9
+10-17 14:58:43.529 D/TaplEvents( 1096): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=642.0, y[0]=197.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=317654, downTime=317654, deviceId=-1, source=0x1002, displayId=0, eventId=-567195695 }
+10-17 14:58:43.748 D/TaplEvents( 1096): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=642.0, y[0]=197.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=317885, downTime=317654, deviceId=-1, source=0x1002, displayId=0, eventId=-206768151 }
+10-17 14:58:43.800 D/CompatibilityChangeReporter(  520): Compat change id reported: 168419799; UID 10192; state: DISABLED
+10-17 14:58:43.801 D/CompatibilityChangeReporter(  520): Compat change id reported: 273564678; UID 10192; state: DISABLED
+10-17 14:58:43.840 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(33)
+10-17 14:58:43.848 D/CoreBackPreview(  520): Window{31828ef u0 Pop-Up Window}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@1db9cda, mPriority=1000000, mIsAnimationCallback=false}
+10-17 14:58:43.871 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(2)
+10-17 14:58:44.095 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(29)
+10-17 14:58:44.120 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(6)
+10-17 14:58:44.323 D/StatusBarIconController(  835): ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-17 14:58:44.402 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(24)
+10-17 14:58:44.435 I/ImeTracker(  520): com.sublearn.app.debug:21596f5b: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+10-17 14:58:44.435 I/ImeTracker(  520): com.sublearn.app.debug:21596f5b: onCancelled at PHASE_SERVER_SHOULD_HIDE
+10-17 14:58:44.437 I/GoogleInputMethodService( 1539): GoogleInputMethodService.onFinishInput():3227 
+10-17 14:58:44.446 I/GoogleInputMethodService( 1539): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 0, unlocked = true
+10-17 14:58:44.447 I/GoogleInputMethodService( 1539): GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=com.sublearn.app.debug fieldId=0 fieldName=null extras=null}, false)
+10-17 14:58:44.447 I/GoogleInputMethodService( 1539): GoogleInputMethodService.shouldHideHeaderOnInitialState():4008 ShouldHideHeaderOnInitialState = false
+10-17 14:58:44.448 I/GoogleInputMethodService( 1539): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 2, unlocked = true
+10-17 14:58:44.456 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(12)
+10-17 14:58:44.507 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:44.513 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:44.513 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:44.514 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:44.606 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(1)
+10-17 14:58:44.641 D/EGL_emulation(10631): app_time_stats: avg=191.91ms min=51.36ms max=532.10ms count=6
+10-17 14:58:44.782 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(47)
+10-17 14:58:44.893 D/Maestro (11026): View hierarchy received in 380 ms
+10-17 14:58:45.313 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:45.314 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:45.314 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:45.336 D/Maestro (11026): View hierarchy received in 23 ms
+10-17 14:58:45.455 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:45.455 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:45.456 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:45.540 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(3)
+10-17 14:58:45.541 D/Maestro (11026): View hierarchy received in 86 ms
+10-17 14:58:45.544 D/ConnectivityService(  520): releasing NetworkRequest [ REQUEST id=151, [ Transports: CELLULAR Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10132 RequestorUid: 10132 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ] (release request)
+10-17 14:58:45.544 I/ConnectivityService(  520): Update capabilities for net 101 : -FOREGROUND
+10-17 14:58:45.546 I/netd    (  333): networkSetPermissionForNetwork(101, 1) <1.76ms>
+10-17 14:58:45.599 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(15)
+10-17 14:58:45.643 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(13)
+10-17 14:58:45.693 D/EGL_emulation(10631): app_time_stats: avg=129.65ms min=67.82ms max=165.98ms count=8
+10-17 14:58:45.697 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:45.702 D/UiDevice(11026): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-17 14:58:46.031 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(22)
+10-17 14:58:46.086 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(7)
+10-17 14:58:46.149 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(11)
+10-17 14:58:46.219 W/UiDevice(11026): Timed out waiting 500ms on window update.
+10-17 14:58:46.219 W/UiDevice(11026): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-17 14:58:46.219 W/UiDevice(11026): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-17 14:58:46.219 W/UiDevice(11026): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-17 14:58:46.219 W/UiDevice(11026): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-17 14:58:46.219 W/UiDevice(11026): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-17 14:58:46.219 W/UiDevice(11026): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-17 14:58:46.219 W/UiDevice(11026): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-17 14:58:46.219 W/UiDevice(11026): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-17 14:58:46.219 W/UiDevice(11026): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-17 14:58:46.219 W/UiDevice(11026): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-17 14:58:46.219 W/UiDevice(11026): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-17 14:58:46.219 W/UiDevice(11026): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-17 14:58:46.219 W/UiDevice(11026): 	at java.lang.Thread.run(Thread.java:1012)
+10-17 14:58:46.280 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(58)
+10-17 14:58:46.284 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:46.297 D/UiDevice(11026): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-17 14:58:46.769 D/EGL_emulation(10631): app_time_stats: avg=119.59ms min=82.89ms max=159.68ms count=9
+10-17 14:58:46.799 W/UiDevice(11026): Timed out waiting 500ms on window update.
+10-17 14:58:46.799 W/UiDevice(11026): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-17 14:58:46.799 W/UiDevice(11026): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-17 14:58:46.799 W/UiDevice(11026): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-17 14:58:46.799 W/UiDevice(11026): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-17 14:58:46.799 W/UiDevice(11026): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-17 14:58:46.799 W/UiDevice(11026): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-17 14:58:46.799 W/UiDevice(11026): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-17 14:58:46.799 W/UiDevice(11026): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-17 14:58:46.799 W/UiDevice(11026): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-17 14:58:46.799 W/UiDevice(11026): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-17 14:58:46.799 W/UiDevice(11026): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-17 14:58:46.799 W/UiDevice(11026): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-17 14:58:46.799 W/UiDevice(11026): 	at java.lang.Thread.run(Thread.java:1012)
+10-17 14:58:46.878 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:46.878 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:46.879 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:46.922 D/Maestro (11026): View hierarchy received in 44 ms
+10-17 14:58:46.980 D/TaplEvents( 1096): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=744.0, y[0]=659.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=321077, downTime=321077, deviceId=-1, source=0x1002, displayId=0, eventId=-429952863 }
+10-17 14:58:47.048 D/EGL_emulation(10631): app_time_stats: avg=590.75ms min=100.29ms max=2287.32ms count=5
+10-17 14:58:47.109 D/TaplEvents( 1096): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=744.0, y[0]=659.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=321235, downTime=321077, deviceId=-1, source=0x1002, displayId=0, eventId=-145291268 }
+10-17 14:58:47.142 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(2)
+10-17 14:58:47.391 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(59)
+10-17 14:58:47.472 D/BufferPoolAccessor2.0(10631): bufferpool2 0x7c4624a2afb8 : 5(10485760 size) total buffers - 4(8388608 size) used buffers - 763/768 (recycle/alloc) - 5/768 (fetch/transfer)
+10-17 14:58:47.474 W/WindowOnBackDispatcher(10631): sendCancelIfRunning: isInProgress=falsecallback=androidx.compose.ui.window.Api33Impl$$ExternalSyntheticLambda0@8f04749
+10-17 14:58:47.478 D/CoreBackPreview(  520): Window{31828ef u0 Pop-Up Window}: Setting back callback null
+10-17 14:58:47.540 W/InputManager-JNI(  520): Input channel object '31828ef Pop-Up Window (client)' was disposed without first being removed with the input manager!
+10-17 14:58:47.570 V/WindowManager(  520): Unknown focus tokens, dropping reportFocusChanged
+10-17 14:58:47.596 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(22)
+10-17 14:58:47.640 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(17)
+10-17 14:58:47.696 I/ImeTracker(  520): com.sublearn.app.debug:f8defd6b: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+10-17 14:58:47.697 I/ImeTracker(  520): com.sublearn.app.debug:f8defd6b: onCancelled at PHASE_SERVER_SHOULD_HIDE
+10-17 14:58:47.709 I/GoogleInputMethodService( 1539): GoogleInputMethodService.onFinishInput():3227 
+10-17 14:58:47.717 I/GoogleInputMethodService( 1539): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 0, unlocked = true
+10-17 14:58:47.718 I/GoogleInputMethodService( 1539): GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=com.sublearn.app.debug fieldId=0 fieldName=null extras=null}, false)
+10-17 14:58:47.718 I/GoogleInputMethodService( 1539): GoogleInputMethodService.shouldHideHeaderOnInitialState():4008 ShouldHideHeaderOnInitialState = false
+10-17 14:58:47.719 I/GoogleInputMethodService( 1539): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 2, unlocked = true
+10-17 14:58:47.782 D/EGL_emulation(10631): app_time_stats: avg=168.33ms min=62.51ms max=421.26ms count=6
+10-17 14:58:47.787 D/BufferPoolAccessor2.0(  462): bufferpool2 0x7a52b27694c8 : 5(20480 size) total buffers - 1(4096 size) used buffers - 1365/1370 (recycle/alloc) - 9/1369 (fetch/transfer)
+10-17 14:58:47.787 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:47.790 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:47.791 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:47.792 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:47.843 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(12)
+10-17 14:58:47.844 D/BufferPoolAccessor2.0(10631): bufferpool2 0x7c4624a2b8f8 : 5(40960 size) total buffers - 5(40960 size) used buffers - 1377/1382 (recycle/alloc) - 5/1378 (fetch/transfer)
+10-17 14:58:47.909 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(22)
+10-17 14:58:47.936 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(8)
+10-17 14:58:47.973 D/ActivityManager(  520): freezing 2028 com.android.keychain
+10-17 14:58:47.977 D/ActivityManager(  520): freezing 1051 com.android.settings
+10-17 14:58:47.977 D/ActivityManager(  520): freezing 3558 com.android.dynsystem:dynsystem
+10-17 14:58:47.977 D/ActivityManager(  520): freezing 3533 com.android.dynsystem
+10-17 14:58:47.977 D/ActivityManager(  520): freezing 2405 com.android.localtransport
+10-17 14:58:48.184 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(2)
+10-17 14:58:48.218 D/Maestro (11026): View hierarchy received in 428 ms
+10-17 14:58:48.285 D/OomAdjuster(  520): Not killing cached processes
+10-17 14:58:48.288 W/ProcessStats(  520): Tracking association SourceState{a2f1f33 com.google.android.gms.persistent/10131 BFgs #18878} whose proc state 4 is better than process ProcessState{7001444 com.google.android.gms/10131 pkg=com.google.android.gms} proc state 8 (44 skipped)
+10-17 14:58:48.337 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:48.337 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:48.338 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:48.662 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(22)
+10-17 14:58:48.673 D/Maestro (11026): View hierarchy received in 336 ms
+10-17 14:58:48.846 D/EGL_emulation(10631): app_time_stats: avg=118.25ms min=103.03ms max=144.25ms count=9
+10-17 14:58:48.954 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:48.955 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:48.955 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:49.125 D/Maestro (11026): View hierarchy received in 171 ms
+10-17 14:58:49.234 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:49.256 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:49.258 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:49.407 I/DropBoxManagerService(  520): add tag=system_server_strictmode isTagEnabled=true flags=0x2
+10-17 14:58:49.408 I/DropBoxManagerService(  520): add tag=system_server_strictmode isTagEnabled=true flags=0x2
+10-17 14:58:49.409 I/DropBoxManagerService(  520): add tag=system_server_strictmode isTagEnabled=true flags=0x2
+10-17 14:58:49.413 I/DropBoxManagerService(  520): add tag=system_server_strictmode isTagEnabled=true flags=0x2
+10-17 14:58:49.623 D/Maestro (11026): View hierarchy received in 389 ms
+10-17 14:58:49.774 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:49.775 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:49.775 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:49.921 D/Maestro (11026): View hierarchy received in 147 ms
+10-17 14:58:49.969 D/EGL_emulation(10631): app_time_stats: avg=124.66ms min=96.53ms max=160.29ms count=9
+10-17 14:58:49.995 D/WindowManager(  520): captureDisplay
+10-17 14:58:50.118 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(33)
+10-17 14:58:50.277 I/.mobile.maestro(11026): Background concurrent copying GC freed 88901(4053KB) AllocSpace objects, 67(8116KB) LOS objects, 49% free, 12MB/24MB, paused 14us,11us total 167.040ms
+10-17 14:58:50.473 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(4)
+10-17 14:58:50.845 D/StatusBarIconController(  835): ignoring old pipeline callback because the new wifi icon is enabled
+10-17 14:58:51.048 D/EGL_emulation(10631): app_time_stats: avg=119.64ms min=67.76ms max=155.47ms count=9
+10-17 14:58:51.227 D/TaplEvents( 1096): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=864.0, y[0]=936.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=325365, downTime=325365, deviceId=-1, source=0x1002, displayId=0, eventId=-163571671 }
+10-17 14:58:52.017 D/ActivityManager(  520): freezing 836 com.google.android.permissioncontroller
+10-17 14:58:52.032 D/TaplEvents( 1096): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=162.0, y[0]=1200.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=326167, downTime=325365, deviceId=-1, source=0x1002, displayId=0, eventId=-503273708 }
+10-17 14:58:52.063 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:52.064 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:52.065 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:52.141 D/EGL_emulation(10631): app_time_stats: avg=121.42ms min=91.16ms max=153.45ms count=9
+10-17 14:58:52.147 I/netd    (  333): tetherGetStats() -> {[]} <0.91ms>
+10-17 14:58:52.152 I/netd    (  333): bandwidthSetGlobalAlert(2097152) <0.11ms>
+10-17 14:58:52.154 I/netd    (  333): bandwidthRemoveInterfaceQuota(eth0) <0.37ms>
+10-17 14:58:52.169 I/netd    (  333): bandwidthSetInterfaceQuota(eth0, 9223372036854775807) <0.40ms>
+10-17 14:58:52.284 D/Maestro (11026): View hierarchy received in 221 ms
+10-17 14:58:52.371 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:52.372 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:52.372 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:52.423 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(16)
+10-17 14:58:52.566 D/Maestro (11026): View hierarchy received in 195 ms
+10-17 14:58:52.680 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:52.680 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:52.681 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:52.772 D/BufferPoolAccessor2.0(10631): bufferpool2 0x7c4624a2afb8 : 5(10485760 size) total buffers - 5(10485760 size) used buffers - 892/897 (recycle/alloc) - 5/896 (fetch/transfer)
+10-17 14:58:52.883 D/Maestro (11026): View hierarchy received in 200 ms
+10-17 14:58:53.057 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:53.058 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:53.058 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:53.138 D/BufferPoolAccessor2.0(10631): bufferpool2 0x7c4624a2b8f8 : 5(40960 size) total buffers - 2(16384 size) used buffers - 1610/1615 (recycle/alloc) - 5/1614 (fetch/transfer)
+10-17 14:58:53.227 D/EGL_emulation(10631): app_time_stats: avg=120.65ms min=89.46ms max=146.64ms count=9
+10-17 14:58:53.261 D/BufferPoolAccessor2.0(  462): bufferpool2 0x7a52b27694c8 : 5(20480 size) total buffers - 1(4096 size) used buffers - 1607/1612 (recycle/alloc) - 11/1611 (fetch/transfer)
+10-17 14:58:53.289 D/Maestro (11026): View hierarchy received in 232 ms
+10-17 14:58:53.369 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:53.372 D/UiDevice(11026): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-17 14:58:53.881 W/UiDevice(11026): Timed out waiting 500ms on window update.
+10-17 14:58:53.881 W/UiDevice(11026): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-17 14:58:53.881 W/UiDevice(11026): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-17 14:58:53.881 W/UiDevice(11026): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-17 14:58:53.881 W/UiDevice(11026): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-17 14:58:53.881 W/UiDevice(11026): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-17 14:58:53.881 W/UiDevice(11026): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-17 14:58:53.881 W/UiDevice(11026): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-17 14:58:53.881 W/UiDevice(11026): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-17 14:58:53.881 W/UiDevice(11026): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-17 14:58:53.881 W/UiDevice(11026): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-17 14:58:53.881 W/UiDevice(11026): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-17 14:58:53.881 W/UiDevice(11026): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-17 14:58:53.881 W/UiDevice(11026): 	at java.lang.Thread.run(Thread.java:1012)
+10-17 14:58:53.953 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:53.964 D/UiDevice(11026): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-17 14:58:54.208 D/StatusBarIconController(  835): ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-17 14:58:54.303 D/EGL_emulation(10631): app_time_stats: avg=119.49ms min=89.41ms max=142.77ms count=9
+10-17 14:58:54.465 W/UiDevice(11026): Timed out waiting 500ms on window update.
+10-17 14:58:54.465 W/UiDevice(11026): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-17 14:58:54.465 W/UiDevice(11026): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-17 14:58:54.465 W/UiDevice(11026): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-17 14:58:54.465 W/UiDevice(11026): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-17 14:58:54.465 W/UiDevice(11026): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-17 14:58:54.465 W/UiDevice(11026): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-17 14:58:54.465 W/UiDevice(11026): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-17 14:58:54.465 W/UiDevice(11026): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-17 14:58:54.465 W/UiDevice(11026): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-17 14:58:54.465 W/UiDevice(11026): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-17 14:58:54.465 W/UiDevice(11026): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-17 14:58:54.465 W/UiDevice(11026): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-17 14:58:54.465 W/UiDevice(11026): 	at java.lang.Thread.run(Thread.java:1012)
+10-17 14:58:54.535 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:54.535 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:54.535 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:54.746 D/Maestro (11026): View hierarchy received in 211 ms
+10-17 14:58:55.016 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:55.022 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:55.022 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:55.128 D/Maestro (11026): View hierarchy received in 111 ms
+10-17 14:58:55.211 D/TaplEvents( 1096): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=837.0, y[0]=1007.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=329325, downTime=329325, deviceId=-1, source=0x1002, displayId=0, eventId=-1036301776 }
+10-17 14:58:55.324 D/TaplEvents( 1096): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=837.0, y[0]=1007.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=329455, downTime=329325, deviceId=-1, source=0x1002, displayId=0, eventId=-44212619 }
+10-17 14:58:55.325 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(12)
+10-17 14:58:55.382 D/EGL_emulation(10631): app_time_stats: avg=104.89ms min=25.85ms max=157.68ms count=10
+10-17 14:58:55.618 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(2)
+10-17 14:58:55.878 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:55.879 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:55.879 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:56.046 D/Maestro (11026): View hierarchy received in 168 ms
+10-17 14:58:56.070 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:56.073 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:56.074 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:56.126 D/Maestro (11026): View hierarchy received in 56 ms
+10-17 14:58:56.241 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:56.241 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:56.242 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:56.362 D/Maestro (11026): View hierarchy received in 121 ms
+10-17 14:58:56.409 D/EGL_emulation(10631): app_time_stats: avg=102.62ms min=36.84ms max=127.13ms count=10
+10-17 14:58:56.491 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:56.492 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:56.492 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:56.708 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(1)
+10-17 14:58:56.716 D/Maestro (11026): View hierarchy received in 225 ms
+10-17 14:58:56.806 D/OomAdjuster(  520): Not killing cached processes
+10-17 14:58:56.817 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:56.817 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:56.818 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:56.869 D/ActivityManager(  520): sync unfroze 1705 com.google.process.gservices for 7
+10-17 14:58:57.109 D/Maestro (11026): View hierarchy received in 292 ms
+10-17 14:58:57.203 D/TaplEvents( 1096): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=216.0, y[0]=2184.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=331341, downTime=331341, deviceId=-1, source=0x1002, displayId=0, eventId=-1070715430 }
+10-17 14:58:57.258 I/DisplayDeviceRepository(  520): Display device changed: DisplayDeviceInfo{"Built-in Screen": uniqueId="local:4619827259835644672", 1080 x 2400, modeId 1, renderFrameRate 60.000004, defaultModeId 1, supportedModes [{id=1, width=1080, height=2400, fps=60.000004, alternativeRefreshRates=[], supportedHdrTypes=[]}], colorMode 0, supportedColorModes [0], hdrCapabilities HdrCapabilities{mSupportedHdrTypes=[], mMaxLuminance=500.0, mMaxAverageLuminance=500.0, mMinLuminance=0.0}, allmSupported false, gameContentTypeSupported false, density 420, 420.0 x 420.0 dpi, appVsyncOff 1000000, presDeadline 16666666, cutout DisplayCutout{insets=Rect(0, 128 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(492, 0 - 610, 128), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2400 physicalDisplayWidth=1080 physicalDisplayHeight=2400 density={2.625} cutoutSpec={M 507,64 a 33,33 0 1 0 66,0 33,33 0 1 0 -66,0 Z @left} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}}}, touch INTERNAL, rotation 0, type INTERNAL, address {port=0, model=0x401cec6a7a2b7b}, deviceProductInfo DeviceProductInfo{name=EMU_display_0, manufacturerPnpId=GGL, productId=1, modelYear=null, manufactureDate=ManufactureDate{week=27, year=2006}, connectionToSinkType=0}, state ON, committedState ON, frameRateOverride , brightnessMinimum 0.0, brightnessMaximum 1.0, brightnessDefault 0.39763778, hdrSdrRatio NaN, roundedCorners RoundedCorners{[RoundedCorner{position=TopLeft, radius=28, center=Point(28, 28)}, RoundedCorner{position=TopRight, radius=28, center=Point(1052, 28)}, RoundedCorner{position=BottomRight, radius=28, center=Point(1052, 2372)}, RoundedCorner{position=BottomLeft, radius=28, center=Point(28, 2372)}]}, FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY, FLAG_ROTATES_WITH_CONTENT, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS, FLAG_TRUSTED, installOrientation 0, displayShape DisplayShape{ spec=-1893857183 displayWidth=1080 displayHeight=2400 physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}}
+10-17 14:58:57.264 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.265 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.269 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.269 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.269 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.271 W/SimpleC2Component(  462): unknown frame index: 998
+10-17 14:58:57.271 D/SimpleC2Component(  462): work form old generation: was 1 now 0
+10-17 14:58:57.272 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] flushed work; ignored.
+10-17 14:58:57.272 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] Discard frames from previous generation.
+10-17 14:58:57.275 D/CCodecBuffers(10631): [c2.android.aac.decoder#872:1D-Output.Impl[N]] Client returned a buffer it does not own according to our record: 0
+10-17 14:58:57.275 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.276 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.276 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.276 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.276 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.315 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] Ignoring stale input buffer done callback: last flush index = 1003, frameIndex = 1003
+10-17 14:58:57.319 W/SimpleC2Component(  462): unknown frame index: 1003
+10-17 14:58:57.320 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.320 D/SimpleC2Component(  462): work form old generation: was 2 now 1
+10-17 14:58:57.320 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] Ignoring stale input buffer done callback: last flush index = 1007, frameIndex = 1005
+10-17 14:58:57.320 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] flushed work; ignored.
+10-17 14:58:57.320 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] Discard frames from previous generation.
+10-17 14:58:57.323 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.324 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.324 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.324 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.335 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.338 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.341 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.341 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.341 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.348 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.349 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.353 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.354 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.354 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.355 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.355 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.355 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.355 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.374 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.374 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.374 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.374 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.374 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.381 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.381 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.382 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.382 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.382 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.383 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.383 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.383 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.386 D/audioserver(  395): FGS Logger Transaction failed
+10-17 14:58:57.386 D/audioserver(  395): -129
+10-17 14:58:57.388 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.389 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.389 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.389 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.389 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.411 D/audioserver(  395): FGS Logger Transaction failed
+10-17 14:58:57.411 D/audioserver(  395): -129
+10-17 14:58:57.443 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] Ignoring stale input buffer done callback: last flush index = 1007, frameIndex = 1007
+10-17 14:58:57.443 D/EGL_emulation(10631): app_time_stats: avg=102.46ms min=17.90ms max=159.85ms count=10
+10-17 14:58:57.445 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.447 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.447 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.458 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.458 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.458 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.480 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.480 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.480 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.480 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.480 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.490 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.491 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.491 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.491 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.491 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.491 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.492 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.492 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.492 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.509 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.509 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.509 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.509 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.509 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.514 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.514 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.514 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.514 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.514 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.514 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.514 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.514 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.514 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.518 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.519 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.519 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.519 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.519 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.544 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.548 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.552 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.552 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.552 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.553 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.553 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.553 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.553 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.569 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.569 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.570 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.570 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.570 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.611 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.613 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.613 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.614 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.616 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.619 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.619 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.620 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.628 D/SimpleC2Component(  462): work form old generation: was 9 now 8
+10-17 14:58:57.631 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] Ignoring stale input buffer done callback: last flush index = 1009, frameIndex = 1008
+10-17 14:58:57.631 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] flushed work; ignored.
+10-17 14:58:57.632 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] Discard frames from previous generation.
+10-17 14:58:57.640 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.643 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.644 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.644 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.644 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.651 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.651 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.651 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.651 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.651 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.654 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.655 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.655 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.655 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.669 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.669 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.669 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.669 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.669 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.688 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] Ignoring stale input buffer done callback: last flush index = 1009, frameIndex = 1009
+10-17 14:58:57.695 W/AudioFlinger(  395): createTrack_l(): mismatch between requested flags (00000008) and output flags (00000002)
+10-17 14:58:57.696 D/AudioFlinger(  395): Client defaulted notificationFrames to 8024 for frameCount 16048
+10-17 14:58:57.696 D/AF::TrackHandle(  395): OpPlayAudio: track:58 usage:1 not muted
+10-17 14:58:57.749 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.755 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.756 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.756 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.756 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.756 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.757 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.757 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.757 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.758 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.758 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.758 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.758 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.758 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.771 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.771 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.772 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.772 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.772 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.776 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.776 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.776 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.776 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.776 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.782 D/audioserver(  395): FGS Logger Transaction failed
+10-17 14:58:57.783 D/audioserver(  395): -129
+10-17 14:58:57.786 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] Ignoring stale input buffer done callback: last flush index = 1017, frameIndex = 1017
+10-17 14:58:57.812 W/AudioFlinger(  395): createTrack_l(): mismatch between requested flags (00000008) and output flags (00000002)
+10-17 14:58:57.812 D/AudioFlinger(  395): Client defaulted notificationFrames to 8024 for frameCount 16048
+10-17 14:58:57.822 D/AF::TrackHandle(  395): OpPlayAudio: track:59 usage:1 not muted
+10-17 14:58:57.860 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.861 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.872 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.873 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.873 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.873 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.880 W/SimpleC2Component(  462): unknown frame index: 1019
+10-17 14:58:57.880 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.881 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.882 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.882 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.882 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.882 D/SimpleC2Component(  462): work form old generation: was 13 now 12
+10-17 14:58:57.883 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] Ignoring stale input buffer done callback: last flush index = 1023, frameIndex = 1021
+10-17 14:58:57.883 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] flushed work; ignored.
+10-17 14:58:57.883 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] Discard frames from previous generation.
+10-17 14:58:57.893 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.894 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.895 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.906 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.907 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.909 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.909 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.928 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.932 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.932 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.932 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.932 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.933 D/TaplEvents( 1096): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=842.0, y[0]=2184.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=332063, downTime=331341, deviceId=-1, source=0x1002, displayId=0, eventId=-214530393 }
+10-17 14:58:57.933 D/audioserver(  395): FGS Logger Transaction failed
+10-17 14:58:57.933 D/audioserver(  395): -129
+10-17 14:58:57.938 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.939 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] MediaCodec discarded an unknown buffer
+10-17 14:58:57.944 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.944 I/CCodecConfig(10631): query failed after returning 12 values (BAD_INDEX)
+10-17 14:58:57.944 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.944 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.945 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.946 D/MediaCodec(10631): keep callback message for reclaim
+10-17 14:58:57.947 I/CCodecConfig(10631): query failed after returning 20 values (BAD_INDEX)
+10-17 14:58:57.948 W/Codec2Client(10631): query -- param skipped: index = 1342179345.
+10-17 14:58:57.948 W/Codec2Client(10631): query -- param skipped: index = 2415921170.
+10-17 14:58:57.948 W/Codec2Client(10631): query -- param skipped: index = 1610614798.
+10-17 14:58:57.962 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] Ignoring stale input buffer done callback: last flush index = 1024, frameIndex = 1023
+10-17 14:58:57.962 D/SimpleC2Component(  462): work form old generation: was 15 now 13
+10-17 14:58:57.963 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] flushed work; ignored.
+10-17 14:58:57.963 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] Discard frames from previous generation.
+10-17 14:58:57.967 D/BufferPoolAccessor2.0(10631): bufferpool2 0x7c4624a2afb8 : 5(10485760 size) total buffers - 4(8388608 size) used buffers - 1073/1078 (recycle/alloc) - 5/1029 (fetch/transfer)
+10-17 14:58:57.997 D/CCodecBufferChannel(10631): [c2.android.avc.decoder#929] Ignoring stale input buffer done callback: last flush index = 1024, frameIndex = 1024
+10-17 14:58:58.027 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:58.031 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:58.031 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:58.071 I/learn.app.debug(10631): Background young concurrent copying GC freed 231816(7988KB) AllocSpace objects, 3(204KB) LOS objects, 42% free, 10MB/18MB, paused 37us,185us total 225.330ms
+10-17 14:58:58.082 W/AudioFlinger(  395): createTrack_l(): mismatch between requested flags (00000008) and output flags (00000002)
+10-17 14:58:58.082 D/AudioFlinger(  395): Client defaulted notificationFrames to 8024 for frameCount 16048
+10-17 14:58:58.082 D/AF::TrackHandle(  395): OpPlayAudio: track:60 usage:1 not muted
+10-17 14:58:58.188 D/Maestro (11026): View hierarchy received in 161 ms
+10-17 14:58:58.225 I/DialerCallerIdFeedbackDeletionWorker( 2358): com.android.dialer.calleridfeedback.impl.database.retention.CallerIdFeedbackDeletionWorker.startWork:60 startWork
+10-17 14:58:58.225 I/DialerCallerIdFeedbackEnabledFn( 2358): com.android.dialer.calleridfeedback.impl.CallerIdFeedbackEnabledFn.isEnabled:41 Caller ID feedback enabled [CONTEXT ratelimit_period="1 MINUTES [skipped: 1]" ]
+10-17 14:58:58.227 I/WM-WorkerWrapper( 2358): Worker result SUCCESS for Work [ id=4d92ccea-045e-438d-80d2-f2ed85ca68ff, tags={ com.google.apps.tiktok.contrib.work.TikTokListenableWorker, TikTokWorker#com.android.dialer.calleridfeeback.impl.database.retention.CallerIdFeedbackDeletionWorker } ]
+10-17 14:58:58.244 I/DialerCallerIdFeedbackDatabase( 2358): com.android.dialer.calleridfeedback.impl.database.CallerIdFeedbackDatabase.deleteAllMatching:409 feedbackCreationTimestamp list empty
+10-17 14:58:58.244 I/DialerCallerIdFeedbackDatabase( 2358): com.android.dialer.calleridfeedback.impl.database.CallerIdFeedbackDatabase$1.onSuccess:351 Deleted old caller IDs.
+10-17 14:58:58.248 D/Maestro (11026): Requesting view hierarchy
+10-17 14:58:58.249 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:58.249 W/QueryController(11026): Could not detect idle state.
+10-17 14:58:58.291 D/Maestro (11026): View hierarchy received in 43 ms
+10-17 14:58:58.347 D/WindowManager(  520): captureDisplay
+10-17 14:58:58.372 W/System  (10996): A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+10-17 14:58:58.372 W/System  (10996): java.lang.Throwable: Explicit termination method 'HardwareBuffer.close' not called
+10-17 14:58:58.372 W/System  (10996): 	at dalvik.system.CloseGuard.openWithCallSite(CloseGuard.java:288)
+10-17 14:58:58.372 W/System  (10996): 	at dalvik.system.CloseGuard.open(CloseGuard.java:257)
+10-17 14:58:58.372 W/System  (10996): 	at android.hardware.HardwareBuffer.<init>(HardwareBuffer.java:266)
+10-17 14:58:58.372 W/System  (10996): A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+10-17 14:58:58.372 W/System  (10996): java.lang.Throwable: Explicit termination method 'HardwareBuffer.close' not called
+10-17 14:58:58.372 W/System  (10996): 	at dalvik.system.CloseGuard.openWithCallSite(CloseGuard.java:288)
+10-17 14:58:58.372 W/System  (10996): 	at dalvik.system.CloseGuard.open(CloseGuard.java:257)
+10-17 14:58:58.372 W/System  (10996): 	at android.hardware.HardwareBuffer.<init>(HardwareBuffer.java:266)
+10-17 14:58:58.607 I/DialerXatuMetricsWorker( 2358): com.android.dialer.xatu.impl.storage.postcall.XatuMetricsWorker.startWork:66 enter
+10-17 14:58:58.613 W/ProcessStats(  520): Tracking association SourceState{a2f1f33 com.google.android.gms.persistent/10131 BFgs #18893} whose proc state 4 is better than process ProcessState{7001444 com.google.android.gms/10131 pkg=com.google.android.gms} proc state 8 (64 skipped)
+10-17 14:58:58.619 I/WM-WorkerWrapper( 2358): Worker result SUCCESS for Work [ id=566e83b3-ad74-47f9-80e6-ead574f97c08, tags={ com.google.apps.tiktok.contrib.work.TikTokListenableWorker, TikTokWorker#com.android.dialer.xatu.impl.storage.postcall.XatuMetricsWorker } ]
+10-17 14:58:58.621 I/NamespaceManager( 5833): Package com.android.refreshratecontrol name not found! Using module version.
+10-17 14:58:58.622 I/NamespaceManager( 5833): Package com.google.oslo name not found! Using module version.
+10-17 14:58:58.622 W/JobScheduler(  520): Job didn't exist in JobStore: fa30582 #u0a128/7 com.google.android.dialer/androidx.work.impl.background.systemjob.SystemJobService
+10-17 14:58:58.623 I/NamespaceManager( 5833): Package com.android.media name not found! Using module version.
+10-17 14:58:58.623 I/NamespaceManager( 5833): Package com.android.media.swcodec name not found! Using module version.
+10-17 14:58:58.624 I/NamespaceManager( 5833): Package com.android.neuralnetworks name not found! Using module version.
+10-17 14:58:58.624 I/NamespaceManager( 5833): Package com.android.media name not found! Using module version.
+10-17 14:58:58.625 I/NamespaceManager( 5833): Package 1 name not found! Using module version.
+10-17 14:58:58.625 I/NamespaceManager( 5833): Package rkpd name not found! Using module version.
+10-17 14:58:58.625 I/NamespaceManager( 5833): Package android.companion name not found! Using module version.
+10-17 14:58:58.626 I/NamespaceManager( 5833): Package com.google.android.aicore name not found! Using module version.
+10-17 14:58:58.626 I/NamespaceManager( 5833): Package com.google.android.audioproxy name not found! Using module version.
+10-17 14:58:58.626 I/NamespaceManager( 5833): Package com.google.android.apps.pixel.psi name not found! Using module version.
+10-17 14:58:58.626 I/NamespaceManager( 5833): Package com.google.android.apps.safetycore name not found! Using module version.
+10-17 14:58:58.626 I/NamespaceManager( 5833): Package com.google.android.crashrecovery name not found! Using module version.
+10-17 14:58:58.626 I/NamespaceManager( 5833): Package com.google.android.profiling name not found! Using module version.
+10-17 14:58:58.626 I/NamespaceManager( 5833): Package com.google.android.bt name not found! Using module version.
+10-17 14:58:58.626 I/NamespaceManager( 5833): Package com.google.android.nfcservices name not found! Using module version.
+10-17 14:58:58.627 I/NamespaceManager( 5833): Package com.google.android.webapp name not found! Using module version.
+10-17 14:58:58.627 I/NamespaceManager( 5833): Package com.google.android.telephonycore name not found! Using module version.
+10-17 14:58:58.627 I/NamespaceManager( 5833): Package com.google.android.uprobestats name not found! Using module version.
+10-17 14:58:58.640 I/RescueParty(  520): Starting to observe: [com.google.android.ext.services, com.google.android.providers.media.module, android], updated namespace: storage_native_boot
+10-17 14:58:58.641 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:58.641 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [com.google.android.ext.services, com.google.android.providers.media.module, android]
+10-17 14:58:58.642 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.642 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:58.643 I/TranscodeHelper( 1620): Empty transcode compat stale
+10-17 14:58:58.643 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:58.643 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:58.644 I/TranscodeHelper( 1620): Parsed 0 packages from resource
+10-17 14:58:58.644 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.645 I/TranscodeHelper( 1620): Parsed 8 packages from device config
+10-17 14:58:58.645 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:58.645 I/ExplicitHealthCheckController(  520): Not binding to service, service already connecting
+10-17 14:58:58.645 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:58.645 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:58.645 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.645 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:58.645 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:58.646 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:58.647 I/MediaApplication( 1620): PhotoPickerSettingsActivity is now disabled.
+10-17 14:58:58.648 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:58.648 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:58.648 I/RescueParty(  520): Starting to observe: [android], updated namespace: surface_flinger_native_boot
+10-17 14:58:58.648 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:58.648 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:58.648 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:58.650 I/RescueParty(  520): Starting to observe: [android], updated namespace: activity_manager_native_boot
+10-17 14:58:58.650 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:58.650 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android]
+10-17 14:58:58.650 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:58.650 I/PackageWatchdog(  520): Not pruning observers, elapsed time: 0ms
+10-17 14:58:58.647 I/MediaProvider( 1620): Changed PhotoPickerGetContentActivity component state to STATE_ENABLED ( 1 )
+10-17 14:58:58.651 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:58.651 I/PackageWatchdog(  520): Not pruning observers, elapsed time: 0ms
+10-17 14:58:58.651 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android]
+10-17 14:58:58.651 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:58.651 I/PackageWatchdog(  520): Not pruning observers, elapsed time: 0ms
+10-17 14:58:58.651 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:58.652 E/SettingsToPropertiesMapper(  520): key=persist.device_config.storage_native_boot.transcode_compat_manifest value=com.yelp.android,0,com.yy.biu,0,com.groupme.android,0,air.tv.douyu.android,0,com.baidu.mbaby,0,com.vlocker.locker,0,com.znxh.hyhuo,0,com.yixia.xiaokaxiu,0 exceeds system property max length.
+10-17 14:58:58.653 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.654 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:58.654 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:58.655 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:58.655 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:58.655 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.655 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:58.655 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:58.655 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:58.655 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:58.656 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:58.656 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:58.656 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:58.666 I/MediaProvider( 1620): Changed PhotoPickerUserSelectActivity component state to STATE_ENABLED ( 1 )
+10-17 14:58:58.668 I/NetworkScheduler.Stats( 5833): Task com.google.android.gms/com.google.android.gms.tapandpay.gcmtask.TapAndPayGcmTaskService started execution. cause:4 exec_start_elapsed_seconds: 332 [CONTEXT service_id=218 ]
+10-17 14:58:58.668 I/RescueParty(  520): Starting to observe: [android], updated namespace: runtime_native_boot
+10-17 14:58:58.668 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:58.668 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android]
+10-17 14:58:58.669 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:58.669 I/PackageWatchdog(  520): Not pruning observers, elapsed time: 0ms
+10-17 14:58:58.669 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:58.669 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.669 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:58.669 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:58.670 I/bwir    ( 5833): updateFromConfigurations using legacy put method [CONTEXT service_id=204 ]
+10-17 14:58:58.671 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.671 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:58.671 I/ExplicitHealthCheckController(  520): Not binding to service, service already connecting
+10-17 14:58:58.671 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:58.671 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:58.671 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.671 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:58.671 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:58.671 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:58.671 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:58.671 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:58.671 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:58.672 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:58.673 I/NamespaceManager( 5833): Package com.android.refreshratecontrol name not found! Using module version.
+10-17 14:58:58.673 I/NamespaceManager( 5833): Package com.google.oslo name not found! Using module version.
+10-17 14:58:58.673 I/NamespaceManager( 5833): Package com.android.media name not found! Using module version.
+10-17 14:58:58.673 I/NamespaceManager( 5833): Package com.android.media.swcodec name not found! Using module version.
+10-17 14:58:58.673 I/NamespaceManager( 5833): Package com.android.neuralnetworks name not found! Using module version.
+10-17 14:58:58.673 I/NamespaceManager( 5833): Package com.android.media name not found! Using module version.
+10-17 14:58:58.673 I/NamespaceManager( 5833): Package 1 name not found! Using module version.
+10-17 14:58:58.673 I/NamespaceManager( 5833): Package rkpd name not found! Using module version.
+10-17 14:58:58.673 I/NamespaceManager( 5833): Package android.companion name not found! Using module version.
+10-17 14:58:58.673 I/NamespaceManager( 5833): Package com.google.android.aicore name not found! Using module version.
+10-17 14:58:58.673 I/NamespaceManager( 5833): Package com.google.android.audioproxy name not found! Using module version.
+10-17 14:58:58.673 I/NamespaceManager( 5833): Package com.google.android.apps.pixel.psi name not found! Using module version.
+10-17 14:58:58.674 I/NamespaceManager( 5833): Package com.google.android.apps.safetycore name not found! Using module version.
+10-17 14:58:58.674 I/NamespaceManager( 5833): Package com.google.android.crashrecovery name not found! Using module version.
+10-17 14:58:58.674 I/NamespaceManager( 5833): Package com.google.android.profiling name not found! Using module version.
+10-17 14:58:58.674 I/NamespaceManager( 5833): Package com.google.android.bt name not found! Using module version.
+10-17 14:58:58.674 I/NamespaceManager( 5833): Package com.google.android.nfcservices name not found! Using module version.
+10-17 14:58:58.674 I/NamespaceManager( 5833): Package com.google.android.webapp name not found! Using module version.
+10-17 14:58:58.674 I/NamespaceManager( 5833): Package com.google.android.telephonycore name not found! Using module version.
+10-17 14:58:58.674 I/NamespaceManager( 5833): Package com.google.android.uprobestats name not found! Using module version.
+10-17 14:58:58.683 V/NFC     ( 5833): this device does not have NFC support
+10-17 14:58:58.683 W/TapAndPay( 5833): NfcAdapter is null while obtaining CardEmulation instance. [CONTEXT service_id=79 ]
+10-17 14:58:58.683 W/TapAndPay( 5833): java.lang.NullPointerException: NfcAdapter is null
+10-17 14:58:58.683 W/TapAndPay( 5833): 	at android.nfc.cardemulation.CardEmulation.getInstance(CardEmulation.java:152)
+10-17 14:58:58.683 W/TapAndPay( 5833): 	at cdoy.<init>(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
+10-17 14:58:58.683 W/TapAndPay( 5833): 	at com.google.android.gms.tapandpay.hce.task.TapAndPayAidRegistrationTaskOperation.a(:com.google.android.gms@231818047@23.18.18 (190800-535401451):5)
+10-17 14:58:58.683 W/TapAndPay( 5833): 	at com.google.android.gms.tapandpay.gcmtask.TapAndPayGcmTaskChimeraService.a(:com.google.android.gms@231818047@23.18.18 (190800-535401451):4)
+10-17 14:58:58.683 W/TapAndPay( 5833): 	at avzs.call(:com.google.android.gms@231818047@23.18.18 (190800-535401451):4)
+10-17 14:58:58.683 W/TapAndPay( 5833): 	at java.util.concurrent.FutureTask.run(FutureTask.java:264)
+10-17 14:58:58.683 W/TapAndPay( 5833): 	at aced.c(:com.google.android.gms@231818047@23.18.18 (190800-535401451):6)
+10-17 14:58:58.683 W/TapAndPay( 5833): 	at aced.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):7)
+10-17 14:58:58.683 W/TapAndPay( 5833): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-17 14:58:58.683 W/TapAndPay( 5833): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-17 14:58:58.683 W/TapAndPay( 5833): 	at acjn.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
+10-17 14:58:58.683 W/TapAndPay( 5833): 	at java.lang.Thread.run(Thread.java:1012)
+10-17 14:58:58.761 I/RescueParty(  520): Starting to observe: [android], updated namespace: accessibility
+10-17 14:58:58.761 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:58.762 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android]
+10-17 14:58:58.762 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:58.762 I/PackageWatchdog(  520): Not pruning observers, elapsed time: 0ms
+10-17 14:58:58.762 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:58.762 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.762 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:58.762 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:58.766 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.766 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:58.766 I/ExplicitHealthCheckController(  520): Not binding to service, service already connecting
+10-17 14:58:58.766 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:58.766 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:58.766 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.766 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:58.767 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:58.767 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:58.767 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:58.768 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:58.768 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:58.768 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:58.799 I/RescueParty(  520): Starting to observe: [android], updated namespace: netd_native
+10-17 14:58:58.799 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:58.800 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android]
+10-17 14:58:58.800 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:58.800 I/PackageWatchdog(  520): Not pruning observers, elapsed time: 0ms
+10-17 14:58:58.801 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.801 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:58.801 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:58.802 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:58.804 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.804 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:58.804 I/ExplicitHealthCheckController(  520): Not binding to service, service already connecting
+10-17 14:58:58.804 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:58.804 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:58.804 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.804 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:58.804 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:58.804 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:58.804 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:58.804 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:58.804 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:58.805 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:58.890 I/NetworkScheduler.Stats( 5833): Task com.google.android.gms/com.google.android.gms.tapandpay.gcmtask.TapAndPayGcmTaskService finished executing. cause:4 result: 3 elapsed_millis: 115 uptime_millis: 115 exec_start_elapsed_seconds: 332 [CONTEXT service_id=218 ]
+10-17 14:58:58.898 I/RescueParty(  520): Starting to observe: [android], updated namespace: clipboard
+10-17 14:58:58.898 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:58.898 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android]
+10-17 14:58:58.898 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.899 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:58.899 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:58.899 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:58.900 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:58.904 I/RescueParty(  520): Starting to observe: [android], updated namespace: nearby
+10-17 14:58:58.904 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.904 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:58.904 I/ExplicitHealthCheckController(  520): Not binding to service, service already connecting
+10-17 14:58:58.904 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:58.904 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:58.905 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.905 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:58.905 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:58.905 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:58.905 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:58.905 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:58.905 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:58.905 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:58.905 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:58.905 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.905 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:58.906 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:58.906 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android]
+10-17 14:58:58.906 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:58.906 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.906 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:58.906 I/ExplicitHealthCheckController(  520): Not binding to service, service already connecting
+10-17 14:58:58.906 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:58.908 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:58.908 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:58.912 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.912 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:58.912 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:58.912 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:58.912 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:58.912 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:58.912 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:58.912 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:58.995 I/RescueParty(  520): Starting to observe: [android, com.google.android.networkstack], updated namespace: connectivity
+10-17 14:58:58.995 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:58.995 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android, com.google.android.networkstack]
+10-17 14:58:58.996 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:58.996 I/PackageWatchdog(  520): Not pruning observers, elapsed time: 0ms
+10-17 14:58:58.996 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:58.996 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:58.996 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:58.997 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:58.999 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.000 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:59.000 I/ExplicitHealthCheckController(  520): Not binding to service, service already connecting
+10-17 14:58:59.000 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:59.000 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:59.000 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.000 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:59.000 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.000 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.000 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:59.000 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:59.000 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:59.000 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:59.004 I/NetworkScheduler.Stats( 5833): Task com.google.android.gms/com.google.android.gms.auth.account.be.legacy.AuthCronService started execution. cause:5 exec_start_elapsed_seconds: 333 [CONTEXT service_id=218 ]
+10-17 14:58:59.004 I/RescueParty(  520): Starting to observe: [com.google.android.permissioncontroller], updated namespace: permissions
+10-17 14:58:59.004 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:59.005 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.005 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:59.005 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:59.005 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:59.005 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:59.005 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.005 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:59.006 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [com.google.android.permissioncontroller]
+10-17 14:58:59.006 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:59.006 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.006 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:59.006 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:59.006 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.006 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.015 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.015 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:59.015 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:59.015 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:59.016 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.031 D/ActivityManager(  520): sync unfroze 3093 com.google.android.gms.unstable for 6
+10-17 14:58:59.033 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:59.033 I/ExplicitHealthCheckController(  520): Service not ready to get health check requested packages. Binding...
+10-17 14:58:59.034 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:59.035 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:59.035 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:59.035 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.035 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:59.036 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.036 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.036 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:59.036 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:59.036 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:59.036 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:59.071 I/resolv  (  333): GetAddrInfoHandler::run: {100 786532 100 983140 10131 0}
+10-17 14:58:59.072 D/TrafficStats( 3093): tagSocket(103) with statsTag=0x1809, statsUid=-1
+10-17 14:58:59.075 W/libc    ( 3093): Access denied finding property "persist.adb.tls_server.enable"
+10-17 14:58:59.075 W/libc    ( 3093): Access denied finding property "service.adb.tls.port"
+10-17 14:58:59.072 W/binder:3093_9( 3093): type=1400 audit(0.0:105): avc:  denied  { read } for  name="u:object_r:system_adbd_prop:s0" dev="tmpfs" ino=292 scontext=u:r:gmscore_app:s0:c512,c768 tcontext=u:object_r:system_adbd_prop:s0 tclass=file permissive=0 app=com.google.android.gms
+10-17 14:58:59.072 W/binder:3093_9( 3093): type=1400 audit(0.0:106): avc:  denied  { read } for  name="u:object_r:adbd_prop:s0" dev="tmpfs" ino=60 scontext=u:r:gmscore_app:s0:c512,c768 tcontext=u:object_r:adbd_prop:s0 tclass=file permissive=0 app=com.google.android.gms
+10-17 14:58:59.085 W/GmsUrlRequestImpl( 5833): Content-Type header is overwritten.
+10-17 14:58:59.124 I/resolv  (  333): GetAddrInfoHandler::run: {100 786532 100 983140 10131 0}
+10-17 14:58:59.132 I/resolv  (  333): res_nmkquery: (QUERY, IN, AAAA)
+10-17 14:58:59.132 I/resolv  (  333): resolv_cache_lookup: FOUND IN CACHE entry=0x77bc86623710
+10-17 14:58:59.132 I/resolv  (  333): doQuery: rcode=0, ancount=8, return value=264
+10-17 14:58:59.135 I/resolv  (  333): res_nmkquery: (QUERY, IN, A)
+10-17 14:58:59.138 I/resolv  (  333): resolv_cache_lookup: FOUND IN CACHE entry=0x77bce66189b0
+10-17 14:58:59.138 I/resolv  (  333): doQuery: rcode=0, ancount=8, return value=168
+10-17 14:58:59.139 D/TrafficStats( 5833): tagSocket(193) with statsTag=0x401, statsUid=10131
+10-17 14:58:59.144 I/RescueParty(  520): Starting to observe: [android], updated namespace: wifi
+10-17 14:58:59.144 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:59.144 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android]
+10-17 14:58:59.144 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:59.144 I/PackageWatchdog(  520): Not pruning observers, elapsed time: 0ms
+10-17 14:58:59.145 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:59.147 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.147 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:59.148 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:59.149 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:59.149 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:59.149 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.149 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:59.149 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.149 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.149 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:59.149 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:59.149 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:59.150 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:59.157 I/RescueParty(  520): Starting to observe: [android], updated namespace: edgetpu_native
+10-17 14:58:59.157 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:59.157 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android]
+10-17 14:58:59.157 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:59.157 I/PackageWatchdog(  520): Not pruning observers, elapsed time: 0ms
+10-17 14:58:59.157 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:59.160 I/RescueParty(  520): Starting to observe: [android], updated namespace: appsearch
+10-17 14:58:59.164 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:59.164 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android]
+10-17 14:58:59.164 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:59.164 I/PackageWatchdog(  520): Not pruning observers, elapsed time: 0ms
+10-17 14:58:59.164 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:59.167 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.167 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:59.169 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:59.169 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.171 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:59.171 I/ExplicitHealthCheckController(  520): Not binding to service, service already connecting
+10-17 14:58:59.171 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:59.171 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:59.171 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.171 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:59.172 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.172 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.172 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:59.173 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:59.173 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:59.173 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:59.221 D/audioserver(  395): FGS Logger Transaction failed
+10-17 14:58:59.221 D/audioserver(  395): -129
+10-17 14:58:59.225 I/DisplayDeviceRepository(  520): Display device changed: DisplayDeviceInfo{"Built-in Screen": uniqueId="local:4619827259835644672", 1080 x 2400, modeId 1, renderFrameRate 60.000004, defaultModeId 1, supportedModes [{id=1, width=1080, height=2400, fps=60.000004, alternativeRefreshRates=[], supportedHdrTypes=[]}], colorMode 0, supportedColorModes [0], hdrCapabilities HdrCapabilities{mSupportedHdrTypes=[], mMaxLuminance=500.0, mMaxAverageLuminance=500.0, mMinLuminance=0.0}, allmSupported false, gameContentTypeSupported false, density 420, 420.0 x 420.0 dpi, appVsyncOff 1000000, presDeadline 16666666, cutout DisplayCutout{insets=Rect(0, 128 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(492, 0 - 610, 128), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2400 physicalDisplayWidth=1080 physicalDisplayHeight=2400 density={2.625} cutoutSpec={M 507,64 a 33,33 0 1 0 66,0 33,33 0 1 0 -66,0 Z @left} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}}}, touch INTERNAL, rotation 0, type INTERNAL, address {port=0, model=0x401cec6a7a2b7b}, deviceProductInfo DeviceProductInfo{name=EMU_display_0, manufacturerPnpId=GGL, productId=1, modelYear=null, manufactureDate=ManufactureDate{week=27, year=2006}, connectionToSinkType=0}, state ON, committedState ON, frameRateOverride {uid=10192 frameRateHz=60.000004} , brightnessMinimum 0.0, brightnessMaximum 1.0, brightnessDefault 0.39763778, hdrSdrRatio NaN, roundedCorners RoundedCorners{[RoundedCorner{position=TopLeft, radius=28, center=Point(28, 28)}, RoundedCorner{position=TopRight, radius=28, center=Point(1052, 28)}, RoundedCorner{position=BottomRight, radius=28, center=Point(1052, 2372)}, RoundedCorner{position=BottomLeft, radius=28, center=Point(28, 2372)}]}, FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY, FLAG_ROTATES_WITH_CONTENT, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS, FLAG_TRUSTED, installOrientation 0, displayShape DisplayShape{ spec=-1893857183 displayWidth=1080 displayHeight=2400 physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}}
+10-17 14:58:59.240 D/AudioTrack(10631): getTimestamp_l(20): device stall time corrected using current time 333378933088
+10-17 14:58:59.250 I/RescueParty(  520): Starting to observe: [com.google.android.apps.nexuslauncher, com.android.settings, com.android.systemui], updated namespace: interaction_jank_monitor
+10-17 14:58:59.256 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:59.256 W/GLSUser ( 5833): [AppCertManager] Exception while requesting key: 
+10-17 14:58:59.256 W/GLSUser ( 5833): java.util.concurrent.ExecutionException: avvw: Parse Proto Exception.
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at dlnv.s(:com.google.android.gms@231818047@23.18.18 (190800-535401451):3)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at dlnv.get(:com.google.android.gms@231818047@23.18.18 (190800-535401451):7)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at oub.b(:com.google.android.gms@231818047@23.18.18 (190800-535401451):78)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at otz.b(:com.google.android.gms@231818047@23.18.18 (190800-535401451):4)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at otu.a(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at otx.a(:com.google.android.gms@231818047@23.18.18 (190800-535401451):6)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at lzq.call(:com.google.android.gms@231818047@23.18.18 (190800-535401451):14)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at java.util.concurrent.FutureTask.run(FutureTask.java:264)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at aced.c(:com.google.android.gms@231818047@23.18.18 (190800-535401451):6)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at aced.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):7)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at acjn.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at java.lang.Thread.run(Thread.java:1012)
+10-17 14:58:59.256 W/GLSUser ( 5833): Caused by: avvw: Parse Proto Exception.
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at avwn.f(:com.google.android.gms@231818047@23.18.18 (190800-535401451):5)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at avxk.onSucceeded(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at jf.onSucceeded(:com.google.android.gms.dynamite_cronetdynamite@231818047@23.18.18 (190800-0):0)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at ie.run(:com.google.android.gms.dynamite_cronetdynamite@231818047@23.18.18 (190800-0):4)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	... 6 more
+10-17 14:58:59.256 W/GLSUser ( 5833): Caused by: dzfz: Protocol message contained an invalid tag (zero).
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at dzdb.k(:com.google.android.gms@231818047@23.18.18 (190800-535401451):13)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at dzha.c(:com.google.android.gms@231818047@23.18.18 (190800-535401451):47)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at dzha.h(:com.google.android.gms@231818047@23.18.18 (190800-535401451):45)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at dzfd.A(:com.google.android.gms@231818047@23.18.18 (190800-535401451):2)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at dzex.f(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at dzcx.d(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at dzcx.c(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at dzcx.n(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at avwn.h(:com.google.android.gms@231818047@23.18.18 (190800-535401451):7)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	at avwn.f(:com.google.android.gms@231818047@23.18.18 (190800-535401451):1)
+10-17 14:58:59.256 W/GLSUser ( 5833): 	... 9 more
+10-17 14:58:59.257 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [com.google.android.apps.nexuslauncher, com.android.settings, com.android.systemui]
+10-17 14:58:59.266 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:59.266 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:59.267 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.267 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:59.267 I/RescueParty(  520): Starting to observe: [android], updated namespace: wearable_sensing
+10-17 14:58:59.268 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:59.279 D/EGL_emulation(10631): app_time_stats: avg=130.17ms min=15.50ms max=1155.93ms count=14
+10-17 14:58:59.289 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.289 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:59.289 I/ExplicitHealthCheckController(  520): Not binding to service, service already connecting
+10-17 14:58:59.306 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:59.306 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:59.306 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:59.307 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.307 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:59.307 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.307 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.307 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:59.312 I/NetworkScheduler.Stats( 5833): Task com.google.android.gms/com.google.android.gms.auth.account.be.legacy.AuthCronService finished executing. cause:5 result: 3 elapsed_millis: 315 uptime_millis: 315 exec_start_elapsed_seconds: 333 [CONTEXT service_id=218 ]
+10-17 14:58:59.312 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:59.312 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:59.313 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:59.313 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android]
+10-17 14:58:59.313 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:59.313 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.313 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:59.314 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:59.323 D/BufferPoolAccessor2.0(10631): bufferpool2 0x7c4624a2b8f8 : 5(40960 size) total buffers - 1(8192 size) used buffers - 1907/1912 (recycle/alloc) - 5/1841 (fetch/transfer)
+10-17 14:58:59.324 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:59.329 I/RescueParty(  520): Starting to observe: [android], updated namespace: runtime_native
+10-17 14:58:59.331 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:59.331 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.331 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:59.331 I/ExplicitHealthCheckController(  520): Not binding to service, service already connecting
+10-17 14:58:59.331 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android]
+10-17 14:58:59.331 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:59.331 I/PackageWatchdog(  520): Not pruning observers, elapsed time: 0ms
+10-17 14:58:59.331 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.331 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:59.331 I/ExplicitHealthCheckController(  520): Not binding to service, service already connecting
+10-17 14:58:59.331 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:59.334 D/BufferPoolAccessor2.0(  462): bufferpool2 0x7a52b27694c8 : 5(20480 size) total buffers - 1(4096 size) used buffers - 1825/1830 (recycle/alloc) - 11/1829 (fetch/transfer)
+10-17 14:58:59.338 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:59.338 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:59.339 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.339 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:59.339 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.340 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.340 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:59.340 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:59.340 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:59.340 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:59.469 I/RescueParty(  520): Starting to observe: [android], updated namespace: adservices
+10-17 14:58:59.469 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:59.469 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android]
+10-17 14:58:59.469 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.469 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:59.470 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:59.472 D/AudioFlinger(  395): mixer(0x7a1e98c38930) throttle end: throttle time(1)
+10-17 14:58:59.472 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:59.472 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:59.477 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.477 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:59.477 I/ExplicitHealthCheckController(  520): Not binding to service, service already connecting
+10-17 14:58:59.488 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:59.488 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:59.488 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.488 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:59.494 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.494 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.494 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:59.496 I/RescueParty(  520): Starting to observe: [android], updated namespace: tare
+10-17 14:58:59.497 I/PackageWatchdog(  520): Syncing state, reason: observing new packages
+10-17 14:58:59.497 D/PackageWatchdog(  520): rescue-party-observer added the following packages to monitor [android]
+10-17 14:58:59.498 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.498 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:59.499 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.499 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.499 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:59.499 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:59.499 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:59.499 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:59.506 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:59.507 I/PackageWatchdog(  520): Syncing state, reason: updated observers
+10-17 14:58:59.507 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:59.507 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:59.508 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.508 I/ExplicitHealthCheckController(  520): Service not ready to get health check supported packages. Binding...
+10-17 14:58:59.513 I/ExplicitHealthCheckController(  520): Explicit health check service is bound
+10-17 14:58:59.517 I/ExplicitHealthCheckController(  520): Explicit health check service is connected ComponentInfo{com.google.android.ext.services/android.ext.services.watchdog.ExplicitHealthCheckServiceImpl}
+10-17 14:58:59.517 I/ExplicitHealthCheckController(  520): Service initialized, syncing requests
+10-17 14:58:59.517 I/PackageWatchdog(  520): Syncing health check requests for packages: {}
+10-17 14:58:59.517 D/ExplicitHealthCheckController(  520): Getting health check supported packages
+10-17 14:58:59.518 I/ExplicitHealthCheckController(  520): Explicit health check supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.518 D/PackageWatchdog(  520): Received supported packages [PackageConfig{com.google.android.networkstack, 86400000}]
+10-17 14:58:59.518 D/ExplicitHealthCheckController(  520): Getting health check requested packages
+10-17 14:58:59.518 I/PackageWatchdog(  520): Saving observer state to file
+10-17 14:58:59.518 I/ExplicitHealthCheckController(  520): Explicit health check requested packages []
+10-17 14:58:59.518 I/ExplicitHealthCheckController(  520): No more health check requests, unbinding...
+10-17 14:58:59.519 I/ExplicitHealthCheckController(  520): Explicit health check service is unbound
+10-17 14:58:59.779 I/logd    (    0): logdr: UID=2000 GID=2000 PID=12038 n tail=0 logMask=99 pid=0 start=0ns deadline=0ns

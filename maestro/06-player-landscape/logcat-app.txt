@@ -1,0 +1,10 @@
+# logcat-app.txt: W/E/F lines of pid(s) [8249] and of anything naming com.sublearn.app.debug; crash evidence at any level
+10-17 14:57:09.327  8651  8784 W UiDevice: Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-17 14:57:09.451  8651  8784 W UiDevice: Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-17 14:57:09.565  8651  8784 W UiDevice: Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-17 14:57:09.702  8651  8784 W UiDevice: Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-17 14:57:09.791  8651  8784 W UiDevice: Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-17 14:57:09.953  8651  8784 W UiDevice: Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-17 14:57:10.070  8651  8784 W UiDevice: Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-17 14:57:49.444  8249  8249 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=androidx.compose.material3.ModalBottomSheetDialogLayout$Api34Impl$createBackCallback$1@e36cf96
+10-17 14:57:49.486   520   823 W InputManager-JNI: Input channel object 'b823eb com.sublearn.app.debug/com.sublearn.app.MainActivity (client)' was disposed without first being removed with the input manager!
