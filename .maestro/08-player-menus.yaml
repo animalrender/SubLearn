@@ -49,8 +49,6 @@ appId: com.sublearn.app.debug
 - tapOn: "Fill"
 - pressKey: Back
 - pressKey: Back
-- tapOn:
-    point: "50%, 50%"
 - tapOn: "More"
 - tapOn: "Layout mode"
 - assertVisible: "OK"
