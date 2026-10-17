@@ -80,14 +80,7 @@ class MainActivity : ComponentActivity() {
      * the user knows, not an id or a cleaned-up guess.
      */
     private fun displayNameOf(uri: android.net.Uri): String {
-        val fromProvider = runCatching {
-            contentResolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
-                if (cursor.moveToFirst()) cursor.getString(0) else null
-            }
-        }.getOrNull()
-        return fromProvider?.takeIf { it.isNotBlank() }
-            ?: uri.lastPathSegment?.substringAfterLast('/')?.takeIf { it.isNotBlank() }
-            ?: "video"
+        return com.sublearn.core.player.DocumentNames.read(this, uri, "video")
     }
 
     override fun onUserLeaveHint() {

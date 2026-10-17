@@ -10,8 +10,10 @@ import com.sublearn.core.data.InstalledPackRepository
 import com.sublearn.core.lexicon.PackLexiconAccess
 import com.sublearn.core.models.ProcessResourceReader
 import com.sublearn.core.models.ProcessResources
+import com.sublearn.core.nlp.AnalysisTextCleanup
 import com.sublearn.core.nlp.CueSlice
 import com.sublearn.core.nlp.CueStreamPhraseAnalyzer
+import com.sublearn.core.nlp.LexiconEntry
 import com.sublearn.core.nlp.LexiconPosTagger
 import com.sublearn.core.nlp.NlpConfig
 import com.sublearn.core.nlp.PhraseSpan
@@ -86,8 +88,25 @@ data class LabEngineReport(
     val packVersion: String,
 )
 
+/** Where the lab takes its text from: a subtitle file, or text the user pastes (D-93). */
+enum class LabInputMode { FILE, TEXT }
+
+/**
+ * The free-text side of the lab (D-93). [analysis] is the last analysis run; it stays on screen
+ * while the user edits [input], so typing does not blank the result until the next analysis.
+ */
+data class LabTextUi(
+    val input: String = "",
+    val analysis: LabTextAnalysis? = null,
+    val selected: Set<Int> = emptySet(),
+    val tooLong: Boolean = false,
+    val error: String? = null,
+)
+
 /** The lab screen. */
 data class LabUi(
+    val mode: LabInputMode = LabInputMode.FILE,
+    val text: LabTextUi = LabTextUi(),
     val fileName: String? = null,
     val format: String? = null,
     val charset: String? = null,
@@ -151,6 +170,67 @@ class LabViewModel(
     private val analyzer = CueStreamPhraseAnalyzer()
     private val posTagger = LexiconPosTagger()
     private var document: SubtitleDocument? = null
+
+    /** Switch between the subtitle file and the free text; each keeps its own state. */
+    fun setMode(mode: LabInputMode) {
+        _ui.update { it.copy(mode = mode) }
+    }
+
+    /** Keep what the user types; it is analysed only when they ask. */
+    fun setTextInput(input: String) {
+        _ui.update { it.copy(text = it.text.copy(input = input, tooLong = false, error = null)) }
+    }
+
+    /** Flip one word of the analysed text in or out of the selection. */
+    fun toggleTextWord(index: Int) {
+        _ui.update { it.copy(text = it.text.copy(selected = LabTextSelection.toggle(it.text.selected, index))) }
+    }
+
+    /** Select exactly the words of one detected phrase, as if the user had tapped them all. */
+    fun selectSpan(spanIndex: Int) {
+        val analysis = _ui.value.text.analysis ?: return
+        val span = analysis.spans.getOrNull(spanIndex) ?: return
+        _ui.update {
+            it.copy(text = it.text.copy(selected = LabTextSelection.wordsIn(span, analysis.words)))
+        }
+    }
+
+    fun clearTextSelection() {
+        _ui.update { it.copy(text = it.text.copy(selected = emptySet())) }
+    }
+
+    /** Run the same phrase analyser, lookups and ranking as a subtitle block, on the pasted text. */
+    fun analyzeText() {
+        val input = _ui.value.text.input
+        if (_ui.value.analyzing || input.isBlank()) return
+        if (input.length > LabTextSelection.MAX_CHARS) {
+            _ui.update { it.copy(text = it.text.copy(tooLong = true)) }
+            return
+        }
+        viewModelScope.launch {
+            _ui.update { it.copy(analyzing = true, text = it.text.copy(error = null, tooLong = false)) }
+            val outcome = withContext(Dispatchers.Default) { runCatching { analyzeFreeText(input) } }
+            val report = engineCache.lastReport
+            _ui.update {
+                it.copy(
+                    analyzing = false,
+                    engine = LabEngineReport(
+                        meetsProfile = report?.meetsProfile ?: false,
+                        runtimes = report?.runtimeNames.orEmpty(),
+                        diagnostics = report?.diagnostics.orEmpty(),
+                        packId = lexiconAccess.activePackId(),
+                        packVersion = lexiconAccess.activePackVersion(),
+                    ),
+                    resources = resources.read(),
+                    text = it.text.copy(
+                        analysis = outcome.getOrNull(),
+                        selected = emptySet(),
+                        error = outcome.exceptionOrNull()?.message,
+                    ),
+                )
+            }
+        }
+    }
 
     /** Parse the picked subtitle file and show its first block. */
     fun loadSubtitle(uriString: String, name: String) {
@@ -380,6 +460,49 @@ class LabViewModel(
             lookupMs = lookupMs,
             rankMs = rankMs,
         )
+    }
+
+    /**
+     * The pasted text as one cue: cleaned the way subtitle text is, then analysed the way the player
+     * analyses a line, with no neighbouring cues. Phrases are not ranked; the words share the
+     * [RANK_LIMIT] budget, as blocks do.
+     */
+    private suspend fun analyzeFreeText(input: String): LabTextAnalysis {
+        lexiconAccess.ensureInitialized()
+        val text = AnalysisTextCleanup.clean(input)
+        val config = nlpConfig()
+        val spans = if (text.isEmpty()) {
+            emptyList()
+        } else {
+            val cue = CueSlice(cueId = 0L, blockId = 0L, startMs = 0L, endMs = 0L, text = text)
+            analyzer.analyze(listOf(cue), lexiconAccess, config, tagger())[0L].orEmpty()
+                .filter { it.isAboveThreshold(config.confidenceThreshold) }
+        }
+        val words = LabTextSelection.words(text)
+        val ranker = engineCache.senseRanker()
+        val context = text.split(CONTEXT_SEPARATOR).filter { it.isNotBlank() }
+        var ranked = 0
+
+        suspend fun describe(entry: LexiconEntry, rank: Boolean): LabEntryInfo {
+            val senses = lexiconAccess.senses(entry.id)
+            val top = if (rank && senses.size > 1 && ranked < RANK_LIMIT) {
+                ranked++
+                ranker.rank(entry.key, senses, context, entry.pos).firstOrNull()
+            } else {
+                null
+            }
+            return LabEntryInfo(entry.key, entry.pos, entry.cefr, senses, top)
+        }
+
+        val wordInfo = words.map { word ->
+            val form = word.text.lowercase()
+            val keys = (listOf(form) + lexiconAccess.lemmatiser(form)).distinct()
+            keys.firstNotNullOfOrNull { lexiconAccess.lookupWord(it) }?.let { describe(it, rank = true) }
+        }
+        val spanInfo = spans.map { span ->
+            lexiconAccess.lookupWord(span.lemmaKey)?.let { describe(it, rank = false) }
+        }
+        return LabTextAnalysis(text, words, spans, wordInfo, spanInfo)
     }
 
     private suspend fun benchmarkPhrases(doc: SubtitleDocument): LabBenchmark {

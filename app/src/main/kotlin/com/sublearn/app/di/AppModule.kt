@@ -7,6 +7,8 @@ import com.sublearn.core.ai.LlmLoader
 import com.sublearn.core.ai.ModelDownloader
 import com.sublearn.core.ai.ModelStore
 import com.sublearn.core.ai.NlpModelInstaller
+import com.sublearn.app.RemoteModelTestRunner
+import com.sublearn.core.ai.ModelTestRunner
 import com.sublearn.core.ai.NlpModelSelfTest
 import com.sublearn.core.ai.ProfileTier
 import com.sublearn.core.ai.ProfiledNlpEngineCache
@@ -149,6 +151,7 @@ private fun coreModule(): Module = module {
     single { ProcessResourceReader(androidContext()) }
     // The "Test" button next to an installed accuracy model (D-86): the same loaders the player
     // uses, so a pass here means the player's ranker will open the model too.
+    single<ModelTestRunner> { RemoteModelTestRunner(androidContext()) }
     single { NlpModelSelfTest(store = get(), embedderLoader = get(), llmLoader = get()) }
 
     // The engines are registered by asking them whether their native library loads. A build or a

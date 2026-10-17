@@ -102,3 +102,22 @@ integrity, performance, UX consistency, and reference repositories (`dictionaryp
 - **The release bumps itself.** `VERSION` plus `tools/next_version.py` turn every merge to `main`
   into the next patch release, and `versionCode` follows the name, so two releases can never claim
   the same code (D-82).
+
+## 2026-10-17 — provider metadata, real-format fixtures and crash containment
+
+- Filename resolution is shared across picker, restore, intent and sidecar paths, not patched only in
+  the subtitle picker. Persisted URIs are re-queried, repairing already-saved numeric labels.
+- Safetensors fixtures now use the publisher's little-endian format rather than mirroring the broken
+  reader; tensor shape/range checks reject malformed weights before allocating their contents.
+- Native diagnostic calls run outside the UI process: catching Kotlin exceptions alone cannot protect
+  the player from SIGABRT. Reports distinguish insufficient RAM, process death and timeout.
+- Resumed playback no longer requires a blocking confirmation or manual Play; restarting is an optional
+  short-lived action at the bottom, with English and Persian strings.
+
+## 2026-10-17 — feedback that names its cause, profile transparency, free-text lab
+
+- Status lines carry a tone, so a success reads green and a failure red without relying on the words.
+- A model test that dies now says which step it was in, which turns "crashed" into a lead for the next
+  investigation. The RAM pre-check turns some crashes into an honest "not enough free RAM" message.
+- Each accuracy profile lists its steps and models, so the user sees what a profile costs before choosing it.
+- The subtitle lab can analyse pasted text as well as a file, using the same analyser, lookups and ranking.

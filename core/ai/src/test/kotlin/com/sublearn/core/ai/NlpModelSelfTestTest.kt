@@ -63,7 +63,7 @@ class NlpModelSelfTestTest {
 
     private class FakeLlm(private val answer: Int?) : LlmRunner {
         override val runtimeName: String get() = "fake-litert"
-        override val modelId: String get() = "llm-smollm2-360m"
+        override val modelId: String get() = "llm-qwen25-05b"
         var closed = false
             private set
 
@@ -74,6 +74,14 @@ class NlpModelSelfTestTest {
         override fun close() {
             closed = true
         }
+    }
+
+    @Test
+    fun `litertlm bundles are rejected before calling the MediaPipe loader`() {
+        val test = NlpModelSelfTest(store, llmLoader = { _, _, _ -> error("must not enter native code") })
+        val report = test.run("llm-smollm2-360m")
+        assertFalse(report.ok)
+        assertTrue(report.detail, report.detail.contains("LiteRT-LM"))
     }
 
     @Test
@@ -114,6 +122,16 @@ class NlpModelSelfTestTest {
 
         assertFalse(report.ok)
         assertTrue(report.detail, report.detail.contains("ONNX"))
+    }
+
+    @Test
+    fun `a throwing loader is a failed verdict rather than an uncaught crash`() {
+        NlpRuntimeRegistry.register(NlpModelRuntime.ONNX)
+        installAtPublishedSize("emb-minilm-l6-int8")
+        val test = NlpModelSelfTest(store, embedderLoader = { _, _, _ -> throw LinkageError("native load refused") })
+        val report = test.run("emb-minilm-l6-int8")
+        assertFalse(report.ok)
+        assertTrue(report.detail, report.detail.contains("native load refused"))
     }
 
     @Test
@@ -165,11 +183,11 @@ class NlpModelSelfTestTest {
     @Test
     fun `a prompt model that picks an option passes`() {
         NlpRuntimeRegistry.register(NlpModelRuntime.LITERT)
-        installAtPublishedSize("llm-smollm2-360m")
+        installAtPublishedSize("llm-qwen25-05b")
         val llm = FakeLlm(answer = NlpModelSelfTest.LLM_EXPECTED)
         val test = NlpModelSelfTest(store, llmLoader = { _, _, _ -> AppResult.Success(llm) })
 
-        val report = test.run("llm-smollm2-360m")
+        val report = test.run("llm-qwen25-05b")
 
         assertTrue(report.detail, report.ok)
         assertEquals("fake-litert", report.runtimeName)
@@ -180,10 +198,10 @@ class NlpModelSelfTestTest {
     @Test
     fun `a prompt model that matches no option fails`() {
         NlpRuntimeRegistry.register(NlpModelRuntime.LITERT)
-        installAtPublishedSize("llm-smollm2-360m")
+        installAtPublishedSize("llm-qwen25-05b")
         val test = NlpModelSelfTest(store, llmLoader = { _, _, _ -> AppResult.Success(FakeLlm(answer = null)) })
 
-        val report = test.run("llm-smollm2-360m")
+        val report = test.run("llm-qwen25-05b")
 
         assertFalse(report.ok)
         assertTrue(report.detail, report.detail.contains("none of the options"))

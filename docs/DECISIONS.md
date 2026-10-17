@@ -675,3 +675,67 @@ packs are switched from inside the lab and the next analysis uses them. Ranking 
 first eight ambiguous words per block, because ranking is what a tap costs and the SMART profile
 pays for it with an LLM call. The lab writes nothing to My Words or the span cache; it changes only
 the two settings it exists to compare.
+
+**D-88 — SAF names are metadata, not URI IDs; safetensors follows the wire format.**
+`core:player/DocumentNames` reads `OpenableColumns.DISPLAY_NAME` before any path fallback. Pickers,
+restored player subtitle sources, sidecar matching, text imports and external intents share it.
+A numeric content URI segment such as `7880` is not a filename. Safetensors' eight-byte length is
+little-endian; `RandomAccessFile.readLong()` is big-endian, which rejected healthy Potion downloads.
+Fixtures now write the real little-endian format, and shape/offset validation rejects truncated or
+inconsistent tensors before allocation. No model bytes or third-party data are added to the repo.
+
+**D-89 — A model self-test must not share the activity's process.**
+`ModelTestRunner` is a suspend boundary injected into Downloads. The app binds a non-exported
+`ModelTestService` in `:model_test`; it uses the same catalog/store/loaders, checks currently available
+RAM, and returns a small primitive Bundle report through Messenger. An uncaught native signal cannot
+be handled by `try/catch`: binder disconnect becomes an explicit failed report instead. Binding,
+exceptions, cancellation and a two-minute timeout all release the service; its dedicated process is
+terminated on unbind to reclaim native allocations. The player's cached engine is invalidated before
+testing to avoid a second resident copy. This contains diagnostic crashes, not native crashes during
+normal subtitle analysis; the reported unnamed model/device still needs real-device investigation.
+
+**D-90 — Opening a player starts playback; restarting is a passive action.**
+New media explicitly calls `play()` after preparing its queue, and returning to already-loaded media
+also starts playback. A resumed file shows an eight-second bottom turquoise hint with a localized
+"Start over" button; ignoring/dismissing it leaves playback running at the saved position. The action
+seeks to zero and plays. First opens and files without a resumable position do not show it; existing
+remember-position/resume settings and end-of-file guards still apply. Changing media or replacing the
+hint clears its action so it cannot restart another file. This changes no persisted settings schema.
+
+D-89 follow-up: the installed-model audit also found `SmolLM2-360M` is a `.litertlm` file while this
+build uses MediaPipe `LlmInference`, not the separate LiteRT-LM engine. Downloads now explains this
+in EN/FA and does not offer an unusable new download; tests, installer and native loader reject this
+format before invoking MediaPipe. Existing files can still be deleted. A future real LiteRT-LM
+adapter (or a verified compatible `.task` asset) is required to enable that alternative; renaming the
+file is not a conversion. No claim is made that this was the owner's unnamed crashing model.
+
+**D-91 — Feedback says what happened: the colour follows the meaning, and a model-test death names its step.**
+The Downloads status line takes a tone, not a colour: a finished download or a passed checksum is green
+(`Palette.STATUS_SUCCESS_*`, chosen by surface luminance), a failure is the theme's error container, and
+a removal or note stays neutral. The words never decide the colour. The model self-test service
+announces each step (`LOADING_MODEL`, then `PROBING`) to the caller before running it, logs it under the
+`ModelTest` tag, and the caller keeps the last one received. When `:model_test` dies, the dialog keeps its
+original first sentence and adds where the process stopped. Before a test starts, the service refuses
+when free RAM minus the system threshold is below the catalog's `minRamMb`; that refusal is a normal
+failure report. This is a behaviour change: a device that barely passed a model's RAM figure would now be
+refused, and that refusal is the intended outcome. This does not identify the crash (D-89 still holds).
+
+**D-92 — Profile details are generated from the engine's own tables.**
+`ProfileProcess.stepsFor(tier)` lists the stages a line goes through (phrases, lookup, tagging, ranking
+with prior, encoder or prompt model), and reads the same `NlpModelCatalog.runtimeModelsFor` table the engine
+opens. The settings card shows each model with its size, whether it is installed, and whether the analysis
+loads it. A model that is only downloaded for a profile is labelled "not used while analysing" rather than
+implying the profile runs it. Prose descriptions are per profile and sit beside the generated steps. A unit
+test pins each tier's steps and checks that every runtime model is listed in `modelsFor`, so the text cannot
+drift from the engine without a failing test.
+
+**D-93 — "OR" mode in the subtitle lab is a free-text input beside the subtitle file.**
+Interpretation: the owner's "OR" is read as an alternative input mode, so the lab offers "Subtitle file" or
+"Free text" as two modes sharing the profile, pack and resource cards. Free text is cleaned with
+`AnalysisTextCleanup.clean`, analysed as one cue with the player's phrase analyser, and shown as one
+paragraph. Tapping a word toggles it. Words are matched to phrases by character offset, so a selection is
+a phrase only when its words are exactly the words inside the phrase's range; a split phrasal verb needs
+its object selected too. Otherwise each word is shown with its entry, and any phrase it partly overlaps is
+named. Text is capped at 2000 characters and ranking shares the file mode's budget of 8 words. The lab
+imports no `feature:player` code; the selection rules are pure Kotlin with a JVM test. Nothing is written
+to My Words or the span cache.

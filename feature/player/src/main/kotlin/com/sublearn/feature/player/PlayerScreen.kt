@@ -107,13 +107,17 @@ fun PlayerScreen(
     val currentOpenSettings by rememberUpdatedState(onOpenSettings)
     val currentInPip by rememberUpdatedState(inPip)
     var subtitlePickerRole by remember { mutableStateOf<TrackRole?>(null) }
-    val audioPicker = rememberLauncherForActivityResult(OpenDocumentContract(AUDIO_MIMES)) { picked ->
+    val audioPicker = rememberLauncherForActivityResult(
+        OpenDocumentContract(context = LocalContext.current, mimeTypes = AUDIO_MIMES),
+    ) { picked ->
         if (picked != null) {
             OpenDocumentContract.persistReadPermission(context, picked.uri)
             viewModel.setExternalAudioTrack(picked.uri, picked.name)
         }
     }
-    val subtitlePicker = rememberLauncherForActivityResult(OpenDocumentContract(SUBTITLE_MIMES)) { picked ->
+    val subtitlePicker = rememberLauncherForActivityResult(
+        OpenDocumentContract(context = LocalContext.current, mimeTypes = SUBTITLE_MIMES),
+    ) { picked ->
         if (picked != null) {
             OpenDocumentContract.persistReadPermission(context, picked.uri)
             val guessed = SubtitleRoleGuess.guess(picked.name, ui.settings.languages.nativeLanguage).role
@@ -391,6 +395,7 @@ fun PlayerScreen(
             ui.message?.let { text ->
                 Snackbarish(
                     text = text,
+                    onRestart = if (ui.offerRestart) viewModel::restartFromBeginning else null,
                     onDismiss = { viewModel.message(null) },
                     modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = Dimens.snackbarBottom),
                 )

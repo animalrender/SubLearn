@@ -40,7 +40,7 @@ class SafetensorsTest {
         val file = File(dir, name)
         val headerBytes = header.toByteArray(Charsets.UTF_8)
         RandomAccessFile(file, "rw").use { raf ->
-            raf.writeLong(headerBytes.size.toLong())
+            raf.write(ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(headerBytes.size.toLong()).array())
             raf.write(headerBytes)
             raf.write(data)
         }
@@ -156,9 +156,29 @@ class SafetensorsTest {
     fun `a header length beyond the file is rejected`() {
         val file = File(dir, "bad-header.safetensors")
         RandomAccessFile(file, "rw").use { raf ->
-            raf.writeLong(9_999_999L)
+            raf.write(ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(9_999_999L).array())
             raf.write(ByteArray(16))
         }
+        assertTrue(Safetensors.open(file) is AppResult.Failure)
+    }
+
+    @Test
+    fun `a tensor extending beyond downloaded data is rejected before allocation`() {
+        val file = writeFile(
+            "truncated-data.safetensors",
+            """{"w":{"dtype":"F32","shape":[1,2],"data_offsets":[0,8]}}""",
+            floats(1f),
+        )
+        assertTrue(Safetensors.open(file) is AppResult.Failure)
+    }
+
+    @Test
+    fun `a tensor shape inconsistent with its byte range is rejected`() {
+        val file = writeFile(
+            "bad-shape.safetensors",
+            """{"w":{"dtype":"F32","shape":[1,2000000000],"data_offsets":[0,4]}}""",
+            floats(1f),
+        )
         assertTrue(Safetensors.open(file) is AppResult.Failure)
     }
 

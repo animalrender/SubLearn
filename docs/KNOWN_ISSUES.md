@@ -177,3 +177,21 @@ TODO comment; each entry has a route to being fixed.
     pass.** Both bounds are deliberate (a SMART ranking is an LLM call per word), but they mean the
     lab's numbers are a lower bound for a full block. Route: a "rank everything" switch with a
     visible time budget, once the engines have run on a device (#24).
+
+34. **The owner's unnamed model crash still needs a model ID/device and native crash log.** Downloads
+    self-tests now execute in a disposable `:model_test` process (D-89), so a native abort there should
+    produce a failed report without closing the activity. This containment and free-RAM guard have
+    not yet been exercised on hardware. They do not make an incompatible model runnable or isolate
+    normal player/lab inference. CI 38996445061 passed the client failure-path regressions. Route:
+    run the new checks in MANUAL_TEST.md, capture model ID, ABI, Android
+    version and logcat/native tombstone if it fails, then repair the runtime/model-specific cause.
+    D-91 adds step diagnostics: the dialog now says whether the process died while the engine was
+    opening the model or while it was answering the probe, and logcat has `ModelTest` lines for the
+    same steps. Both ONNX models (MiniLM-L6 int8, DistilBERT int8) failed where the non-native potion
+    model installs, which points at the native ONNX path, but this is still unproven. Send the
+    dialog text, the model ID, the `ModelTest` lines and the tombstone (if any) to close it.
+35. **SmolLM2's catalog asset is `.litertlm`, not a MediaPipe `.task`.** This build contains only
+    MediaPipe `LlmInference`. The incompatible format is now explicitly unavailable for new downloads
+    and fails safely before native load/test; existing files are removable. Route: add and validate
+    the separate LiteRT-LM engine, or publish a verified MediaPipe-compatible asset. Other `.task`
+    models are unchanged. This is a confirmed compatibility defect, not proof of the unnamed crash.

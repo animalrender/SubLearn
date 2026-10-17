@@ -123,6 +123,9 @@ class LiteRtLlmRunner private constructor(
             maxTokens: Int = DEFAULT_MAX_TOKENS,
         ): AppResult<LiteRtLlmRunner> {
             val bundle = layout.fileUnder(root, layout.sessionFile ?: "")
+            if (bundle.extension.equals("litertlm", ignoreCase = true)) {
+                return loadFailure("${bundle.name} needs LiteRT-LM; MediaPipe LlmInference only supports .task/TFLite models")
+            }
             if (!bundle.isFile || bundle.length() == 0L) {
                 return loadFailure("model file ${bundle.name} is missing; download the model first")
             }

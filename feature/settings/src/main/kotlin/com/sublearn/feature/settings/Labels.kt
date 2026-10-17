@@ -204,6 +204,17 @@ fun TranslationOrchestrationMode.labelRes(): Int = when (this) {
     TranslationOrchestrationMode.MERGE_ALL -> R.string.settings_trans_mode_merge
 }
 
+/** What a profile does with each line, in one sentence; the steps and models follow it (D-92). */
+fun AccuracyProfileToken.descriptionRes(): Int = when (this) {
+    AccuracyProfileToken.BASIC -> R.string.profile_desc_basic
+    AccuracyProfileToken.LIGHT -> R.string.profile_desc_light
+    AccuracyProfileToken.BALANCED -> R.string.profile_desc_balanced
+    AccuracyProfileToken.PRECISE -> R.string.profile_desc_precise
+    AccuracyProfileToken.ADVANCED -> R.string.profile_desc_advanced
+    AccuracyProfileToken.SMART_EXPERIMENTAL -> R.string.profile_desc_smart
+    AccuracyProfileToken.CUSTOM -> R.string.profile_desc_custom
+}
+
 fun AccuracyProfileToken.labelRes(): Int = when (this) {
     AccuracyProfileToken.BASIC -> R.string.profile_basic
     AccuracyProfileToken.LIGHT -> R.string.profile_light

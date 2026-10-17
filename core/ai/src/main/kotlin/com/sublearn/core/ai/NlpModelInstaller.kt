@@ -91,6 +91,9 @@ class NlpModelInstaller(
     ): AppResult<ModelFileLayout> {
         val layout = store.layoutFor(modelId)
             ?: return failure("this build has no file layout for model $modelId")
+        if (NlpModelCatalog.byId[modelId]?.requiresLiteRtLmEngine == true) {
+            return failure("This .litertlm model requires LiteRT-LM, not the MediaPipe engine in this build. Use a .task model.")
+        }
         if (isInstalled(modelId)) return AppResult.Success(layout)
         if (layout.requiresTermsAcceptance) {
             return failure(

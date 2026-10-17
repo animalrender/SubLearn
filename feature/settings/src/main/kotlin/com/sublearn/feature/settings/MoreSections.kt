@@ -582,7 +582,9 @@ fun DictionarySection(settings: AppSettings, viewModel: SettingsViewModel) {
                 detail = stringResource(R.string.coming_soon_body),
             )
         } else {
-            val picker = rememberLauncherForActivityResult(OpenDocumentContract(arrayOf("application/octet-stream"))) { picked ->
+            val picker = rememberLauncherForActivityResult(
+                OpenDocumentContract(context = LocalContext.current, mimeTypes = arrayOf("application/octet-stream")),
+            ) { picked ->
                 if (picked != null) {
                     viewModel.update { it.copy(dictionary = it.dictionary.copy(databaseFileKey = picked.uri, importEnabled = true)) }
                 }
@@ -720,7 +722,9 @@ fun AboutSection(settings: AppSettings, viewModel: SettingsViewModel, versionNam
                 viewModel.notify(context.getString(R.string.settings_exported))
             }
         })
-        val picker = rememberLauncherForActivityResult(OpenDocumentContract(arrayOf("application/json", "text/plain", "*/*"))) { picked ->
+        val picker = rememberLauncherForActivityResult(
+            OpenDocumentContract(context = LocalContext.current, mimeTypes = arrayOf("application/json", "text/plain", "*/*")),
+        ) { picked ->
             if (picked != null) {
                 scope.launch {
                     val text = context.readTextFile(picked.uri)

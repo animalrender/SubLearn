@@ -96,3 +96,17 @@ before wiring ONNX/MediaPipe models (`14`, `15`) and release workflows (`16`, `1
   process death, plus the screenshots the README should have. The `v0.1.0` tag is cut from the review
   branch by `release.yml` (D-21) so the first installable build exists before the device pass, not
   after it; later tags follow the same route from `main`.
+
+## 2026-10-17 corrective pass (phases 1, 2, 9, 14 and 15)
+
+D-88..D-90 repair numeric SAF labels and safetensors wire-format parsing, isolate Downloads model
+self-tests in a disposable process, and add autoplay with a passive restart action on position resumes.
+Local static checks pass. CI 38996445061 on `47f89b1` passed Debug/Release assembly, unit tests,
+lint and instrumented-source compilation. Phone verification of native crash containment,
+provider-specific filenames and playback UX remains pending.
+
+## 2026-10-17 corrective pass (lab, profiles and feedback)
+
+D-91..D-93 add tone-based status colours and step-named model-test failures, a generated description of
+each accuracy profile, and a free-text mode in the subtitle lab. Local static checks pass; compilation and
+the JVM tests run in CI for the first time with this change. The model-test crash remains open (#34).

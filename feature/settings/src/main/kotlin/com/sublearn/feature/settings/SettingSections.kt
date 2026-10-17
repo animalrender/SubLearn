@@ -268,7 +268,8 @@ fun SubtitlesSection(settings: AppSettings, viewModel: SettingsViewModel) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            val filePicker = rememberLauncherForActivityResult(OpenDocumentContract(arrayOf("text/*",
+            val filePicker = rememberLauncherForActivityResult(OpenDocumentContract(
+                context = LocalContext.current, mimeTypes = arrayOf("text/*",
                 "application/octet-stream"))) { picked ->
                 if (picked != null) {
                     OpenDocumentContract.persistReadPermission(pickerContext, picked.uri)
@@ -721,7 +722,9 @@ fun LearningSection(settings: AppSettings, viewModel: SettingsViewModel) {
             label = { stringResource(it.labelRes()) },
             onSelect = { value -> viewModel.update { it.copy(level = it.level.copy(assumedLevelOfUnknownWords = value)) } },
         )
-        val listPicker = rememberLauncherForActivityResult(OpenDocumentContract(arrayOf("text/plain", "text/*"))) { picked ->
+        val listPicker = rememberLauncherForActivityResult(
+            OpenDocumentContract(context = LocalContext.current, mimeTypes = arrayOf("text/plain", "text/*")),
+        ) { picked ->
             if (picked != null) viewModel.importWordList(picked.uri)
         }
         ActionRow(title = stringResource(R.string.settings_level_import), subtitle = stringResource(R.string.settings_level_import_hint),

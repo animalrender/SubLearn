@@ -1,5 +1,7 @@
 package com.sublearn.feature.settings
 
+import androidx.compose.ui.platform.LocalContext
+
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
@@ -68,7 +70,11 @@ fun LabSection(
     // memory, and leaving mid-load is how the earlier crash reports looked.
     BackHandler(enabled = ui.busy) {}
 
-    val picker = rememberLauncherForActivityResult(OpenDocumentContract(arrayOf("*/*"))) { picked ->
+    val picker = rememberLauncherForActivityResult(
+
+        OpenDocumentContract(context = LocalContext.current, mimeTypes = arrayOf("*/*")),
+
+    ) { picked ->
         if (picked != null) viewModel.loadSubtitle(picked.uri, picked.name)
     }
 
@@ -76,92 +82,120 @@ fun LabSection(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(Dimens.md),
     ) {
-        // --- the file
-        SectionCard(stringResource(R.string.lab_title)) {
-            if (ui.hasFile) {
-                Text(ui.fileName.orEmpty(), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                Text(
-                    text = stringResource(R.string.lab_file_meta, ui.format.orEmpty(), ui.blockCount, ui.charset.orEmpty()),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            } else {
-                Text(
-                    text = stringResource(R.string.lab_no_file),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Button(onClick = { picker.launch(arrayOf("*/*")) }, enabled = !ui.busy) {
-                Icon(Icons.Default.FileOpen, contentDescription = null, modifier = Modifier.size(Dimens.inlineIcon))
-                Spacer(Modifier.width(Dimens.xs))
-                Text(stringResource(R.string.lab_pick_subtitle))
-            }
-            if (ui.busy) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    CircularProgressIndicator(modifier = Modifier.size(Dimens.spinnerSmall), strokeWidth = Dimens.spinnerStroke)
-                    Spacer(Modifier.width(Dimens.sm))
-                    Text(stringResource(R.string.lab_busy), style = MaterialTheme.typography.bodySmall)
-                }
-            }
-            ui.error?.let { message ->
-                Text(
-                    text = stringResource(R.string.lab_error_parse, message),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
+        // --- where the text comes from: a subtitle file, or text the user pastes (D-93)
+        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.xs)) {
+            FilterChip(
+                selected = ui.mode == LabInputMode.FILE,
+                onClick = { viewModel.setMode(LabInputMode.FILE) },
+                enabled = !ui.busy,
+                label = { Text(stringResource(R.string.subtitle_file_name)) },
+            )
+            FilterChip(
+                selected = ui.mode == LabInputMode.TEXT,
+                onClick = { viewModel.setMode(LabInputMode.TEXT) },
+                enabled = !ui.busy,
+                label = { Text(stringResource(R.string.lab_mode_text)) },
+            )
         }
 
-        if (ui.hasFile) {
-            // --- the block
-            SectionCard(
-                stringResource(
-                    R.string.lab_block_position,
-                    ui.index + 1,
-                    ui.blockCount,
-                    TimeUtils.formatClock(ui.blockStartMs),
-                    TimeUtils.formatClock(ui.blockEndMs),
-                ),
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(Dimens.radiusSm),
-                    color = MaterialTheme.colorScheme.surfaceContainer,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    SelectionContainer {
-                        Text(ui.blockText, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(Dimens.sm))
-                    }
-                }
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    IconButton(onClick = viewModel::previous, enabled = ui.index > 0 && !ui.busy) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.lab_previous))
-                    }
-                    IconButton(onClick = viewModel::next, enabled = ui.index < ui.blockCount - 1 && !ui.busy) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.lab_next))
-                    }
-                    Spacer(Modifier.weight(1f))
-                    Button(onClick = viewModel::analyzeCurrent, enabled = !ui.busy) {
-                        Text(stringResource(R.string.lab_analyze))
-                    }
-                }
-                OutlinedButton(onClick = viewModel::benchmark, enabled = !ui.busy) {
-                    Text(stringResource(R.string.lab_benchmark, LabViewModel.BENCHMARK_BLOCKS.coerceAtMost(ui.blockCount)))
-                }
-                ui.benchmark?.let { bench ->
+        if (ui.mode == LabInputMode.FILE) {
+            // --- the file
+            SectionCard(stringResource(R.string.lab_title)) {
+                if (ui.hasFile) {
+                    Text(ui.fileName.orEmpty(), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                     Text(
-                        text = stringResource(
-                            R.string.lab_benchmark_result,
-                            bench.blocks,
-                            bench.totalMs,
-                            "%.1f".format(bench.perBlockMs),
-                            bench.slowestMs,
-                            bench.spans,
-                        ),
+                        text = stringResource(R.string.lab_file_meta, ui.format.orEmpty(), ui.blockCount, ui.charset.orEmpty()),
                         style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.lab_no_file),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Button(onClick = { picker.launch(arrayOf("*/*")) }, enabled = !ui.busy) {
+                    Icon(Icons.Default.FileOpen, contentDescription = null, modifier = Modifier.size(Dimens.inlineIcon))
+                    Spacer(Modifier.width(Dimens.xs))
+                    Text(stringResource(R.string.lab_pick_subtitle))
+                }
+                if (ui.busy) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularProgressIndicator(modifier = Modifier.size(Dimens.spinnerSmall), strokeWidth = Dimens.spinnerStroke)
+                        Spacer(Modifier.width(Dimens.sm))
+                        Text(stringResource(R.string.lab_busy), style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+                ui.error?.let { message ->
+                    Text(
+                        text = stringResource(R.string.lab_error_parse, message),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
                     )
                 }
             }
+
+            if (ui.hasFile) {
+                // --- the block
+                SectionCard(
+                    stringResource(
+                        R.string.lab_block_position,
+                        ui.index + 1,
+                        ui.blockCount,
+                        TimeUtils.formatClock(ui.blockStartMs),
+                        TimeUtils.formatClock(ui.blockEndMs),
+                    ),
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(Dimens.radiusSm),
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        SelectionContainer {
+                            Text(ui.blockText, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(Dimens.sm))
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        IconButton(onClick = viewModel::previous, enabled = ui.index > 0 && !ui.busy) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.lab_previous))
+                        }
+                        IconButton(onClick = viewModel::next, enabled = ui.index < ui.blockCount - 1 && !ui.busy) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.lab_next))
+                        }
+                        Spacer(Modifier.weight(1f))
+                        Button(onClick = viewModel::analyzeCurrent, enabled = !ui.busy) {
+                            Text(stringResource(R.string.lab_analyze))
+                        }
+                    }
+                    OutlinedButton(onClick = viewModel::benchmark, enabled = !ui.busy) {
+                        Text(stringResource(R.string.lab_benchmark, LabViewModel.BENCHMARK_BLOCKS.coerceAtMost(ui.blockCount)))
+                    }
+                    ui.benchmark?.let { bench ->
+                        Text(
+                            text = stringResource(
+                                R.string.lab_benchmark_result,
+                                bench.blocks,
+                                bench.totalMs,
+                                "%.1f".format(bench.perBlockMs),
+                                bench.slowestMs,
+                                bench.spans,
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            }
+        } else {
+            LabTextSection(
+                text = ui.text,
+                busy = ui.busy,
+                onInput = viewModel::setTextInput,
+                onAnalyze = viewModel::analyzeText,
+                onToggleWord = viewModel::toggleTextWord,
+                onSelectSpan = viewModel::selectSpan,
+                onClear = viewModel::clearTextSelection,
+            )
         }
 
         // --- the profile
@@ -241,8 +275,8 @@ fun LabSection(
             }
         }
 
-        // --- the result
-        ui.result?.let { result ->
+        // --- the result (file mode; the text mode shows its own result under its box)
+        ui.result?.takeIf { ui.mode == LabInputMode.FILE }?.let { result ->
             SectionCard(stringResource(R.string.lab_section_result)) {
                 Text(
                     text = stringResource(R.string.lab_timing, result.phraseMs, result.lookupMs, result.rankMs, result.totalMs),
@@ -299,7 +333,7 @@ fun LabSection(
 }
 
 @Composable
-private fun WordRow(word: LabWordRow) {
+internal fun WordRow(word: LabWordRow) {
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.xxs)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(word.word, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)

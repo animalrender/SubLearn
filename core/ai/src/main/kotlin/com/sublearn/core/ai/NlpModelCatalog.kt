@@ -51,6 +51,8 @@ data class NlpModel(
      * the settings card states that instead of offering a download that cannot finish.
      */
     val requiresTermsAcceptance: Boolean = false,
+    /** `.litertlm` is not a MediaPipe `.task`; this build has no LiteRT-LM engine. */
+    val requiresLiteRtLmEngine: Boolean = false,
 )
 
 /**
@@ -98,6 +100,7 @@ object NlpModelCatalog {
         runtime = NlpModelRuntime.LITERT,
         sizeBytes = 373_719_040L,
         minRamMb = 1024,
+        requiresLiteRtLmEngine = true,
     )
 
     val GEMMA3_270M = NlpModel(
