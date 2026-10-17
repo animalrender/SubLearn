@@ -101,7 +101,7 @@ What is on the branch (`<flow>` is the file name without `.yaml`; scratch flows 
 | Path | What it is |
 | --- | --- |
 | `STATUS.md` | Read first: branch, sha, time, build, `app crash: yes/no`, PASS/FAIL per flow, the screenshots to open, the end of the console of every failed flow, the crash lines, the build log tail when the build failed |
-| `results.tsv` | `flow`, `PASS`/`FAIL`, exit code, seconds, number of app-crash matches |
+| `results.tsv` | One tab-separated row per flow: name, `PASS`/`FAIL`, exit code, seconds, number of app-crash matches, a note (`-` when there is none, e.g. "second attempt") |
 | `device.txt`, `run.log`, `build.log`, `maestro-install.txt`, `adb-devices.txt` | The device and runner image, the script's own log, the Gradle log, the setup logs |
 | `maestro/<flow>/shots/<name>.png` | The `takeScreenshot` images of the flow, 600 px wide. **Open these** |
 | `maestro/<flow>/final.png` | The screen at the end of the flow, whatever the flow did or failed to do |
