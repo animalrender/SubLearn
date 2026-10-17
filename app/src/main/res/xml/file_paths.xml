@@ -4,5 +4,5 @@
     <cache-path name="exports" path="exports/" />
     <files-path name="data" path="." />
     <!-- App-private debug emulator fixture; never exposes shared or external storage broadly. -->
-    <external-files-path name="ui-fixtures" path="ui-fixtures/" />
+    <files-path name="ui-fixtures" path="ui-fixtures/" />
 </paths>

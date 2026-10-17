@@ -60,10 +60,15 @@ class MainActivity : ComponentActivity() {
 
 
     private fun startupRequest(intent: android.content.Intent): StartupRequest? {
-        val uri = intent.data
-            ?: intent.getParcelableExtra<android.net.Uri>(android.content.Intent.EXTRA_STREAM)
-            ?: intent.clipData?.getItemAt(0)?.uri
-            ?: return null
+        val useDebugFixture = BuildConfig.DEBUG &&
+            intent.getBooleanExtra("com.sublearn.app.debug.extra.fixture", false)
+        val uri = if (useDebugFixture) {
+            copyDebugFixtureUri()
+        } else {
+            intent.data
+                ?: intent.getParcelableExtra<android.net.Uri>(android.content.Intent.EXTRA_STREAM)
+                ?: intent.clipData?.getItemAt(0)?.uri
+        } ?: return null
         if (intent.flags and android.content.Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION != 0 &&
             intent.flags and android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION != 0
         ) {
@@ -79,6 +84,20 @@ class MainActivity : ComponentActivity() {
         }
         return StartupRequest(uri.toString(), displayNameOf(uri), testOrientation)
     }
+
+    /** Copy the self-generated clip from debug-only APK assets into the app-private FileProvider root. */
+    private fun copyDebugFixtureUri(): android.net.Uri? = runCatching {
+        val file = java.io.File(filesDir, "ui-fixtures/SubLearn-UI-Fixture.mp4")
+        file.parentFile?.mkdirs()
+        assets.open("SubLearn-UI-Fixture.mp4").use { input ->
+            file.outputStream().use { output -> input.copyTo(output) }
+        }
+        androidx.core.content.FileProvider.getUriForFile(
+            this,
+            "${BuildConfig.APPLICATION_ID}.fileprovider",
+            file,
+        )
+    }.getOrNull()
 
     /**
      * The file's real name, as the provider reports it. A `content://media/…/1234` URI has a

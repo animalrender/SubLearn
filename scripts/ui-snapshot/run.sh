@@ -347,17 +347,16 @@ flow_name() {
 prepare_player_fixture() {
   local orientation=${1:-LANDSCAPE}
   local fixture="$ROOT/app/src/debug/assets/SubLearn-UI-Fixture.mp4"
-  local path="/sdcard/Android/data/$PKG/files/ui-fixtures"
   local uri="content://$PKG.fileprovider/ui-fixtures/SubLearn-UI-Fixture.mp4"
   if [ ! -s "$fixture" ]; then
     log "player fixture is missing: $fixture"
     return 1
   fi
-  adb shell mkdir -p "$path" </dev/null || return 1
-  adb push "$fixture" "$path/SubLearn-UI-Fixture.mp4" </dev/null || return 1
   adb shell am start -W -n "$PKG/com.sublearn.app.MainActivity" \
     -a android.intent.action.VIEW -t video/mp4 -d "$uri" \
-    --grant-read-uri-permission --es com.sublearn.app.debug.extra.orientation "$orientation" </dev/null
+    --grant-read-uri-permission \
+    --ez com.sublearn.app.debug.extra.fixture true \
+    --es com.sublearn.app.debug.extra.orientation "$orientation" </dev/null
 }
 
 attempt_flow() {

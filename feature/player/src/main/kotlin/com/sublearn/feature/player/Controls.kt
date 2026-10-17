@@ -6,7 +6,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -804,7 +803,7 @@ private fun QuickActionButton(
             .pointerInput(id, ui.layoutMode, dock, registry) {
                 if (ui.layoutMode && dock != DockMode.FLOATING) {
                     var distance = Offset.Zero
-                    detectDragGesturesAfterLongPress(
+                    detectDragGestures(
                         onDrag = { change, drag ->
                             distance += drag
                             change.consume()
@@ -963,7 +962,7 @@ internal fun LayoutModeDoneButton(
                 .background(LocalSubLearnColors.current.promptBackdrop, RoundedCornerShape(Dimens.radiusMd))
                 .onSizeChanged { buttonSize = it }
                 .pointerInput(maxX, maxY) {
-                    detectDragGesturesAfterLongPress(
+                    detectDragGestures(
                         onDrag = { change, amount ->
                             val dx = if (maxX == 0) 0f else amount.x / maxX
                             val dy = if (maxY == 0) 0f else amount.y / maxY

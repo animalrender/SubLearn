@@ -2,6 +2,9 @@
 # player setting used by Settings. This is a real Player launch with the shared generated video.
 appId: com.sublearn.app.debug
 ---
+- tapOn:
+    text: "Got it"
+    optional: true
 - extendedWaitUntil:
     visible: "360 × 640"
     timeout: 60000
@@ -17,17 +20,16 @@ appId: com.sublearn.app.debug
 # Enter Layout mode, reposition its confirmation button, and use it to leave the mode.
 - tapOn: "More"
 - tapOn: "Layout mode"
-- assertVisible: "Drag a subtitle layer to move it"
+- assertVisible: "Drag subtitle layers to move them"
 - assertVisible: "OK"
 - takeScreenshot: 07-player-portrait-layout-mode
-- longPressAndDrag:
-    from:
-      text: "OK"
-    to:
-      point: "15%, 30%"
+- swipe:
+    start: "80%, 19%"
+    end: "15%, 30%"
+    duration: 800
 - assertVisible: "OK"
 - tapOn: "OK"
-- assertNotVisible: "Drag a subtitle layer to move it"
+- assertNotVisible: "Drag subtitle layers to move them"
 # Scrub in portrait as well; the timeline must span the narrow viewport without losing its thumb.
 - swipe:
     start: "20%, 91%"
