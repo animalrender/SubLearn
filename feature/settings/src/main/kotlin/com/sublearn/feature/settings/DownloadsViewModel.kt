@@ -45,6 +45,16 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
 /**
+ * How a status line reads (D-91): a finished download or a passed check is green, a failure is red,
+ * and everything else (a removal, a stop, a note) stays neutral. The colour comes from the tone,
+ * never from the words, so the same message keeps its meaning in English and Persian.
+ */
+enum class DownloadsStatusTone { NEUTRAL, SUCCESS, FAILURE }
+
+/** One status line on the Downloads screen. */
+data class DownloadsStatus(val text: String, val tone: DownloadsStatusTone)
+
+/**
  * Everything the Downloads screen shows: the offline translation model, the offline lexicon
  * packs, the optional accuracy models and the accuracy profile.
  *
@@ -106,8 +116,8 @@ class DownloadsViewModel(
     private val _nlpModels = MutableStateFlow(nlpModelRows())
     val nlpModels: StateFlow<List<NlpModelRow>> = _nlpModels.asStateFlow()
 
-    private val _statusMessage = MutableStateFlow<String?>(null)
-    val statusMessage: StateFlow<String?> = _statusMessage.asStateFlow()
+    private val _statusMessage = MutableStateFlow<DownloadsStatus?>(null)
+    val statusMessage: StateFlow<DownloadsStatus?> = _statusMessage.asStateFlow()
 
     /**
      * Catalog entries whose file has arrived and is being imported into the database. The
@@ -144,6 +154,11 @@ class DownloadsViewModel(
 
     /** The size of the translation model download, when the pair's size is known. */
     fun translationModelSize(): Long? = translationModels.downloadSizeBytes()
+
+    /** Shows a status line in [tone]; a null or blank text shows nothing. */
+    private fun publish(tone: DownloadsStatusTone, text: String?) {
+        _statusMessage.value = text?.takeIf { it.isNotBlank() }?.let { DownloadsStatus(it, tone) }
+    }
 
     /** The user dismissed the status line. */
     fun clearStatus() {
@@ -197,13 +212,13 @@ class DownloadsViewModel(
         viewModelScope.launch {
             translationModels.download().fold(
                 onSuccess = {
-                    _statusMessage.value = context.getString(R.string.downloads_translation_installed)
+                    publish(DownloadsStatusTone.SUCCESS, context.getString(R.string.downloads_translation_installed))
                 },
                 onFailure = { error ->
-                    _statusMessage.value = context.getString(
+                    publish(DownloadsStatusTone.FAILURE, context.getString(
                         R.string.downloads_translation_failed,
                         error.message.orEmpty(),
-                    )
+                    ))
                 },
             )
         }
@@ -214,13 +229,13 @@ class DownloadsViewModel(
         viewModelScope.launch {
             translationModels.remove().fold(
                 onSuccess = {
-                    _statusMessage.value = context.getString(R.string.downloads_translation_removed)
+                    publish(DownloadsStatusTone.NEUTRAL, context.getString(R.string.downloads_translation_removed))
                 },
                 onFailure = { error ->
-                    _statusMessage.value = context.getString(
+                    publish(DownloadsStatusTone.FAILURE, context.getString(
                         R.string.downloads_translation_failed,
                         error.message.orEmpty(),
-                    )
+                    ))
                 },
             )
         }
@@ -252,7 +267,7 @@ class DownloadsViewModel(
                 }
             } catch (cancelled: CancellationException) {
                 setNlpState(modelId) { NlpModelState.Available }
-                _statusMessage.value = context.getString(R.string.downloads_model_stopped, name)
+                publish(DownloadsStatusTone.NEUTRAL, context.getString(R.string.downloads_model_stopped, name))
                 throw cancelled
             }
 
@@ -261,15 +276,15 @@ class DownloadsViewModel(
                     engineCache.invalidate()
                     _nlpModels.value = nlpModelRows()
                     updateProfileAdvice()
-                    _statusMessage.value = context.getString(R.string.downloads_model_installed, name)
+                    publish(DownloadsStatusTone.SUCCESS, context.getString(R.string.downloads_model_installed, name))
                 },
                 onFailure = { error ->
                     setNlpState(modelId) { NlpModelState.Error(error.message.orEmpty()) }
-                    _statusMessage.value = context.getString(
+                    publish(DownloadsStatusTone.FAILURE, context.getString(
                         R.string.downloads_model_failed,
                         name,
                         error.message.orEmpty(),
-                    )
+                    ))
                 },
             )
         }
@@ -315,10 +330,10 @@ class DownloadsViewModel(
             }
             _nlpModels.value = nlpModelRows()
             updateProfileAdvice()
-            _statusMessage.value = context.getString(
+            publish(if (removed) DownloadsStatusTone.NEUTRAL else DownloadsStatusTone.FAILURE, context.getString(
                 if (removed) R.string.downloads_model_removed else R.string.downloads_model_remove_failed,
                 name,
-            )
+            ))
         }
     }
 
@@ -379,14 +394,14 @@ class DownloadsViewModel(
             val res = importer.importUri(uriString)
             res.fold(
                 onSuccess = { out ->
-                    _statusMessage.value = context.getString(
+                    publish(DownloadsStatusTone.SUCCESS, context.getString(
                         R.string.downloads_pack_imported,
                         out.packId.orEmpty(),
                         out.meta?.entryCount ?: 0,
-                    )
+                    ))
                 },
                 onFailure = { err ->
-                    _statusMessage.value = err.message
+                    publish(DownloadsStatusTone.FAILURE, err.message)
                 },
             )
         }
@@ -398,14 +413,14 @@ class DownloadsViewModel(
             val res = importer.importUri(uriString)
             res.fold(
                 onSuccess = { out ->
-                    _statusMessage.value = context.getString(
+                    publish(DownloadsStatusTone.SUCCESS, context.getString(
                         R.string.downloads_pack_imported,
                         out.packId.orEmpty(),
                         out.meta?.entryCount ?: 0,
-                    )
+                    ))
                 },
                 onFailure = { err ->
-                    _statusMessage.value = err.message
+                    publish(DownloadsStatusTone.FAILURE, err.message)
                 },
             )
         }
@@ -428,16 +443,16 @@ class DownloadsViewModel(
         viewModelScope.launch {
             val file = File(pack.localPath)
             if (!file.exists()) {
-                _statusMessage.value = context.getString(R.string.downloads_pack_missing)
+                publish(DownloadsStatusTone.FAILURE, context.getString(R.string.downloads_pack_missing))
                 return@launch
             }
             val sha = withContext(Dispatchers.IO) { PackDownloader.computeSha256(file) }
-            _statusMessage.value = if (pack.sha256.isBlank()) {
-                context.getString(R.string.downloads_pack_no_hash, sha)
+            if (pack.sha256.isBlank()) {
+                publish(DownloadsStatusTone.NEUTRAL, context.getString(R.string.downloads_pack_no_hash, sha))
             } else if (sha.equals(pack.sha256, ignoreCase = true)) {
-                context.getString(R.string.downloads_pack_verified, sha.take(12))
+                publish(DownloadsStatusTone.SUCCESS, context.getString(R.string.downloads_pack_verified, sha.take(12)))
             } else {
-                context.getString(R.string.downloads_pack_mismatch)
+                publish(DownloadsStatusTone.FAILURE, context.getString(R.string.downloads_pack_mismatch))
             }
         }
     }
@@ -449,7 +464,7 @@ class DownloadsViewModel(
                 !file.exists() || file.delete()
             }
             if (!removed) {
-                _statusMessage.value = context.getString(R.string.downloads_pack_remove_failed, pack.titleEn)
+                publish(DownloadsStatusTone.FAILURE, context.getString(R.string.downloads_pack_remove_failed, pack.titleEn))
                 return@launch
             }
             installedPacksRepo.remove(pack.packId)
@@ -469,7 +484,7 @@ class DownloadsViewModel(
                 dl.download(entry)
             } catch (cancelled: CancellationException) {
                 // The downloader has already marked the entry PAUSED and kept the partial file.
-                _statusMessage.value = context.getString(R.string.downloads_pack_stopped, entry.nameEn)
+                publish(DownloadsStatusTone.NEUTRAL, context.getString(R.string.downloads_pack_stopped, entry.nameEn))
                 throw cancelled
             }
             val downloadedFile = res.getOrNull()
@@ -482,14 +497,14 @@ class DownloadsViewModel(
                         _importingEntries.update { it - entry.id }
                     }
                     if (imported.getOrNull() == null) {
-                        _statusMessage.value = imported.errorOrNull()?.message
+                        publish(DownloadsStatusTone.FAILURE, imported.errorOrNull()?.message)
                         return@launch
                     }
                     lexiconAccess.reloadFromRepository()
                 }
-                _statusMessage.value = context.getString(R.string.downloads_pack_downloaded, entry.nameEn)
+                publish(DownloadsStatusTone.SUCCESS, context.getString(R.string.downloads_pack_downloaded, entry.nameEn))
             } else {
-                _statusMessage.value = res.errorOrNull()?.message
+                publish(DownloadsStatusTone.FAILURE, res.errorOrNull()?.message)
             }
         }
         packJobs[entry.id] = job

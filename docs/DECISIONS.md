@@ -708,3 +708,34 @@ in EN/FA and does not offer an unusable new download; tests, installer and nativ
 format before invoking MediaPipe. Existing files can still be deleted. A future real LiteRT-LM
 adapter (or a verified compatible `.task` asset) is required to enable that alternative; renaming the
 file is not a conversion. No claim is made that this was the owner's unnamed crashing model.
+
+**D-91 — Feedback says what happened: the colour follows the meaning, and a model-test death names its step.**
+The Downloads status line takes a tone, not a colour: a finished download or a passed checksum is green
+(`Palette.STATUS_SUCCESS_*`, chosen by surface luminance), a failure is the theme's error container, and
+a removal or note stays neutral. The words never decide the colour. The model self-test service
+announces each step (`LOADING_MODEL`, then `PROBING`) to the caller before running it, logs it under the
+`ModelTest` tag, and the caller keeps the last one received. When `:model_test` dies, the dialog keeps its
+original first sentence and adds where the process stopped. Before a test starts, the service refuses
+when free RAM minus the system threshold is below the catalog's `minRamMb`; that refusal is a normal
+failure report. This is a behaviour change: a device that barely passed a model's RAM figure would now be
+refused, and that refusal is the intended outcome. This does not identify the crash (D-89 still holds).
+
+**D-92 — Profile details are generated from the engine's own tables.**
+`ProfileProcess.stepsFor(tier)` lists the stages a line goes through (phrases, lookup, tagging, ranking
+with prior, encoder or prompt model), and reads the same `NlpModelCatalog.runtimeModelsFor` table the engine
+opens. The settings card shows each model with its size, whether it is installed, and whether the analysis
+loads it. A model that is only downloaded for a profile is labelled "not used while analysing" rather than
+implying the profile runs it. Prose descriptions are per profile and sit beside the generated steps. A unit
+test pins each tier's steps and checks that every runtime model is listed in `modelsFor`, so the text cannot
+drift from the engine without a failing test.
+
+**D-93 — "OR" mode in the subtitle lab is a free-text input beside the subtitle file.**
+Interpretation: the owner's "OR" is read as an alternative input mode, so the lab offers "Subtitle file" or
+"Free text" as two modes sharing the profile, pack and resource cards. Free text is cleaned with
+`AnalysisTextCleanup.clean`, analysed as one cue with the player's phrase analyser, and shown as one
+paragraph. Tapping a word toggles it. Words are matched to phrases by character offset, so a selection is
+a phrase only when its words are exactly the words inside the phrase's range; a split phrasal verb needs
+its object selected too. Otherwise each word is shown with its entry, and any phrase it partly overlaps is
+named. Text is capped at 2000 characters and ranking shares the file mode's budget of 8 words. The lab
+imports no `feature:player` code; the selection rules are pure Kotlin with a JVM test. Nothing is written
+to My Words or the span cache.

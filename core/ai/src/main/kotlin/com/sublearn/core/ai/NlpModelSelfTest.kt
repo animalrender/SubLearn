@@ -28,6 +28,24 @@ data class ModelSelfTestReport(
 )
 
 /**
+ * The steps one self-test goes through, in order (D-91).
+ *
+ * The app's test runs in its own process, and a process that dies gives no reason of its own. The
+ * last stage it announced is the only evidence of where it stopped, so the stages are named here
+ * and reported through the service.
+ */
+enum class SelfTestStage {
+    /**
+     * The engine is opening the model. The native session is built inside this step, so a process
+     * that dies here died while loading, not while answering.
+     */
+    LOADING_MODEL,
+
+    /** The model is open and answering its probe; a process that dies here died during inference. */
+    PROBING,
+}
+
+/**
  * Proves an installed model works by running it, not by looking at its files (`D-86`).
  *
  * `ModelStore.isInstalled` only says the files are present and non-empty. That is not the same as
@@ -50,13 +68,17 @@ class NlpModelSelfTest(
     private val llmLoader: LlmLoader? = null,
 ) {
 
-    fun run(modelId: String): ModelSelfTestReport = try {
-        runProbe(modelId)
+    /**
+     * Runs the probe. [onStage] is told each step before it starts, so a caller whose process dies
+     * in the middle (a native abort cannot be caught here) can say *where* it died (D-91).
+     */
+    fun run(modelId: String, onStage: (SelfTestStage) -> Unit = {}): ModelSelfTestReport = try {
+        runProbe(modelId, onStage)
     } catch (error: Throwable) {
         failed(modelId, "model test failed: ${error.message ?: error.javaClass.simpleName}")
     }
 
-    private fun runProbe(modelId: String): ModelSelfTestReport {
+    private fun runProbe(modelId: String, onStage: (SelfTestStage) -> Unit): ModelSelfTestReport {
         val model = NlpModelCatalog.byId[modelId]
             ?: return failed(modelId, "the catalog has no model called $modelId")
         if (model.requiresLiteRtLmEngine) {
@@ -85,6 +107,7 @@ class NlpModelSelfTest(
         val runtime = Runtime.getRuntime()
         val heapBefore = runtime.totalMemory() - runtime.freeMemory()
         val loadStart = System.nanoTime()
+        onStage(SelfTestStage.LOADING_MODEL)
         return when (model.runtime) {
             NlpModelRuntime.NONE, NlpModelRuntime.ONNX -> {
                 val loader = if (model.runtime == NlpModelRuntime.NONE) StaticEmbedderLoader else embedderLoader
@@ -93,6 +116,7 @@ class NlpModelSelfTest(
                     is AppResult.Failure -> failed(modelId, loaded.error.message)
                     is AppResult.Success -> loaded.value.use { embedder ->
                         val loadMs = elapsedMs(loadStart)
+                        onStage(SelfTestStage.PROBING)
                         probeEmbedder(modelId, embedder, loadMs, heapBefore)
                     }
                 }
@@ -104,6 +128,7 @@ class NlpModelSelfTest(
                     is AppResult.Failure -> failed(modelId, loaded.error.message)
                     is AppResult.Success -> loaded.value.use { llm ->
                         val loadMs = elapsedMs(loadStart)
+                        onStage(SelfTestStage.PROBING)
                         probeLlm(modelId, llm, loadMs, heapBefore)
                     }
                 }

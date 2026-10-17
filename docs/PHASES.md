@@ -104,3 +104,9 @@ self-tests in a disposable process, and add autoplay with a passive restart acti
 Local static checks pass. CI 38996445061 on `47f89b1` passed Debug/Release assembly, unit tests,
 lint and instrumented-source compilation. Phone verification of native crash containment,
 provider-specific filenames and playback UX remains pending.
+
+## 2026-10-17 corrective pass (lab, profiles and feedback)
+
+D-91..D-93 add tone-based status colours and step-named model-test failures, a generated description of
+each accuracy profile, and a free-text mode in the subtitle lab. Local static checks pass; compilation and
+the JVM tests run in CI for the first time with this change. The model-test crash remains open (#34).

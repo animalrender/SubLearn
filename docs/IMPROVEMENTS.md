@@ -113,3 +113,11 @@ integrity, performance, UX consistency, and reference repositories (`dictionaryp
   the player from SIGABRT. Reports distinguish insufficient RAM, process death and timeout.
 - Resumed playback no longer requires a blocking confirmation or manual Play; restarting is an optional
   short-lived action at the bottom, with English and Persian strings.
+
+## 2026-10-17 — feedback that names its cause, profile transparency, free-text lab
+
+- Status lines carry a tone, so a success reads green and a failure red without relying on the words.
+- A model test that dies now says which step it was in, which turns "crashed" into a lead for the next
+  investigation. The RAM pre-check turns some crashes into an honest "not enough free RAM" message.
+- Each accuracy profile lists its steps and models, so the user sees what a profile costs before choosing it.
+- The subtitle lab can analyse pasted text as well as a file, using the same analyser, lookups and ranking.

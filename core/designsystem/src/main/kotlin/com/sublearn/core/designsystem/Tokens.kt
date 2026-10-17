@@ -40,6 +40,13 @@ object Palette {
     const val PROUD_CARD_BG = 0xFA0F172AL
     const val PROUD_CARD_BORDER = 0x666366F1L
 
+    /** A finished download or import: green on dark surfaces (the owner's colour rule, D-91). */
+    const val STATUS_SUCCESS_DARK_BG = 0xFF14402AL
+    const val STATUS_SUCCESS_DARK_TEXT = 0xFFA7F3D0L
+    /** The same status on a light surface. */
+    const val STATUS_SUCCESS_LIGHT_BG = 0xFFDCFCE7L
+    const val STATUS_SUCCESS_LIGHT_TEXT = 0xFF14532DL
+
     fun accent(token: String): AccentPair = when (token) {
         "INDIGO" -> AccentPair(0xFF7C9BFFL, 0xFF3555C9L)
         "AMBER" -> AccentPair(0xFFFFC46BL, 0xFF8A5A00L)

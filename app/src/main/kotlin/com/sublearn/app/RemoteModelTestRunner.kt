@@ -12,6 +12,7 @@ import android.os.Message
 import android.os.Messenger
 import com.sublearn.core.ai.ModelSelfTestReport
 import com.sublearn.core.ai.ModelTestRunner
+import com.sublearn.core.ai.SelfTestStage
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -30,8 +31,14 @@ class RemoteModelTestRunner(private val context: Context) : ModelTestRunner {
                     fun finish(report: ModelSelfTestReport) {
                         if (continuation.isActive) continuation.resume(report)
                     }
+                    // The last step the service announced: the only evidence of where a dead process stopped.
+                    var lastStage: String? = null
                     val reply = Messenger(Handler(Looper.getMainLooper()) { message ->
-                        finish(message.data.testReport())
+                        if (message.what == ModelTestService.WHAT_STAGE) {
+                            lastStage = message.data.getString(ModelTestService.KEY_STAGE)
+                        } else {
+                            finish(message.data.testReport())
+                        }
                         true
                     })
                     val callback = object : ServiceConnection {
@@ -39,7 +46,7 @@ class RemoteModelTestRunner(private val context: Context) : ModelTestRunner {
                             if (!continuation.isActive) return
                             try {
                                 Messenger(binder).send(Message.obtain().apply {
-                                    data = Bundle().apply { putString("modelId", modelId) }
+                                    data = Bundle().apply { putString(ModelTestService.KEY_MODEL_ID, modelId) }
                                     replyTo = reply
                                 })
                             } catch (error: Exception) {
@@ -48,8 +55,7 @@ class RemoteModelTestRunner(private val context: Context) : ModelTestRunner {
                         }
 
                         override fun onServiceDisconnected(name: ComponentName) {
-                            finish(testFailure(modelId, "The model process crashed or ran out of memory; this model may be " +
-                                "incompatible with this device. Playback has not been closed."))
+                            finish(testFailure(modelId, deadProcessDetail(lastStage)))
                         }
 
                         override fun onNullBinding(name: ComponentName) {
@@ -75,4 +81,21 @@ class RemoteModelTestRunner(private val context: Context) : ModelTestRunner {
     private companion object {
         const val TEST_TIMEOUT_MS = 120_000L
     }
+}
+
+/**
+ * What the dialog says when the test process died (D-91).
+ *
+ * The first sentence is the one the dialog has always shown and is kept word for word. The second
+ * says where the process stopped, which is the one fact that tells a load failure from an inference
+ * failure. When no stage was announced the process died before the probe began.
+ */
+internal fun deadProcessDetail(lastStage: String?): String {
+    val where = when (lastStage) {
+        SelfTestStage.LOADING_MODEL.name -> "It stopped while the engine was opening the model."
+        SelfTestStage.PROBING.name -> "It stopped while the model was answering the probe."
+        else -> "It stopped before the probe started."
+    }
+    return "The model process crashed or ran out of memory; this model may be incompatible with this device. " +
+        "$where Playback has not been closed."
 }

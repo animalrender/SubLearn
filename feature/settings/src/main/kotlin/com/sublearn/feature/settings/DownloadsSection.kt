@@ -44,6 +44,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sublearn.core.ai.ModelFileLayout
 import com.sublearn.core.ai.NlpModel
@@ -53,6 +55,7 @@ import com.sublearn.core.data.InstalledPackEntity
 import com.sublearn.core.designsystem.Dimens
 import com.sublearn.core.designsystem.DownloadItemCard
 import com.sublearn.core.designsystem.DownloadItemState
+import com.sublearn.core.designsystem.Palette
 import com.sublearn.core.designsystem.R
 import com.sublearn.core.designsystem.formatBytes
 import com.sublearn.core.models.ModelCatalogEntry
@@ -122,8 +125,8 @@ fun DownloadsSection(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(Dimens.md),
     ) {
-        statusMessage?.takeIf { it.isNotBlank() }?.let { message ->
-            DownloadsStatusBanner(message = message, onDismiss = viewModel::clearStatus)
+        statusMessage?.let { status ->
+            DownloadsStatusBanner(status = status, onDismiss = viewModel::clearStatus)
         }
 
         // --- 1. the offline translation model
@@ -262,6 +265,10 @@ fun DownloadsSection(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            ProfileDetails(
+                profile = selected,
+                installedIds = modelRows.filter { it.state is NlpModelState.Installed }.map { it.model.id }.toSet(),
+            )
         }
 
         // --- 5. the subtitle lab
@@ -372,19 +379,47 @@ fun DownloadsSection(
     }
 }
 
-/** The one-line status under the title, dismissible so an old message does not sit there all day. */
+/**
+ * The one-line status under the title, dismissible so an old message does not sit there all day.
+ *
+ * The colour follows the [DownloadsStatusTone]: green for a finished download or a passed check, red
+ * for a failure, the neutral tertiary tint for everything else (D-91). Success has no theme role of
+ * its own, so its two tones come from [Palette] and are picked by whether the surface is dark.
+ */
 @Composable
-private fun DownloadsStatusBanner(message: String, onDismiss: () -> Unit) {
+private fun DownloadsStatusBanner(status: DownloadsStatus, onDismiss: () -> Unit) {
+    val dark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val container: Color
+    val content: Color
+    when (status.tone) {
+        DownloadsStatusTone.SUCCESS -> if (dark) {
+            container = Color(Palette.STATUS_SUCCESS_DARK_BG)
+            content = Color(Palette.STATUS_SUCCESS_DARK_TEXT)
+        } else {
+            container = Color(Palette.STATUS_SUCCESS_LIGHT_BG)
+            content = Color(Palette.STATUS_SUCCESS_LIGHT_TEXT)
+        }
+
+        DownloadsStatusTone.FAILURE -> {
+            container = MaterialTheme.colorScheme.errorContainer
+            content = MaterialTheme.colorScheme.onErrorContainer
+        }
+
+        DownloadsStatusTone.NEUTRAL -> {
+            container = MaterialTheme.colorScheme.tertiaryContainer
+            content = MaterialTheme.colorScheme.onTertiaryContainer
+        }
+    }
     Surface(
         shape = RoundedCornerShape(Dimens.radiusSm),
-        color = MaterialTheme.colorScheme.tertiaryContainer,
+        color = container,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = message,
+                text = status.text,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                color = content,
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = Dimens.sm, top = Dimens.sm, bottom = Dimens.sm),
@@ -393,7 +428,7 @@ private fun DownloadsStatusBanner(message: String, onDismiss: () -> Unit) {
                 Icon(
                     Icons.Default.Close,
                     contentDescription = stringResource(R.string.action_close),
-                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                    tint = content,
                     modifier = Modifier.size(Dimens.inlineIcon),
                 )
             }
@@ -800,7 +835,7 @@ private fun modelPurpose(model: NlpModel): String = when (model.id) {
 }
 
 @Composable
-private fun modelRuntime(runtime: NlpModelRuntime): String = when (runtime) {
+internal fun modelRuntime(runtime: NlpModelRuntime): String = when (runtime) {
     NlpModelRuntime.NONE -> stringResource(R.string.settings_models_nlp_runtime_none)
     NlpModelRuntime.ONNX -> stringResource(R.string.settings_models_nlp_runtime_onnx)
     NlpModelRuntime.LITERT -> stringResource(R.string.settings_models_nlp_runtime_litert)

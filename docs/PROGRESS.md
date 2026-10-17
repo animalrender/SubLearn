@@ -1,3 +1,19 @@
+## 2026-10-17 — status colours, profile transparency, free-text lab and model-test diagnostics (D-91..D-93)
+
+**Not compiled or run locally: Gradle and the Android SDK are unavailable in this sandbox. Static checks
+pass; the next CI run is the first compilation of these changes. No phone run is claimed.**
+
+- Downloads status line is tone-based: success is green, failure red, neutral stays tertiary (D-91).
+- Model-test dialog: the service reports its steps and the dead-process message says where it stopped;
+  a RAM pre-check refuses a test that would not fit. Root cause of the `:model_test` death is still not
+  identified (KNOWN_ISSUES #34). Needed from the device: the `ModelTest` logcat lines and the model ID.
+- Accuracy profiles: the selected profile shows its steps, models (installed/used), sizes and memory
+  need, generated from `ProfileProcess` and the engine tables (D-92). English and Persian strings.
+- Subtitle lab: "Free text" mode for pasted words, phrases or sentences, with tappable words, phrase
+  matching, per-word entries and the detected phrases (D-93). `LabTextSelection` has a JVM test.
+- Checked: `check_sources`, `check_symbols`, `check_deps`, `check_resources`, `check_workflows`,
+  `check_docs`, `git diff --check`. Unit tests not run locally.
+
 ## 2026-10-17 — file names, model diagnostics and autoplay (D-88..D-90)
 
 **Code verified on `47f89b1`: [CI 38996445061](https://github.com/animalrender/SubLearn/actions/runs/38996445061)
