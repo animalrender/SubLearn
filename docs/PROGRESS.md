@@ -831,7 +831,7 @@ and rotate. With no network: the same, plus translation only for a previously do
 
 ## 2026-10-17 — player chrome and layout pass (D-95)
 
-**Local Android build/emulator unavailable.** Static source/symbol/dependency/resource checks pass; this change still requires CI compilation and the mandatory UI snapshot run on the exact branch tip. The player itself is not covered by existing Maestro flows (no video fixture; the system picker is not driven), so a green shell snapshot will not prove player visuals or motion.
+**Verified on the exact tip `7d6c35f864c3571226d69ae21cfcf9b65ea65f24`: CI run 39027595502 passed build, tests, lint and Android-test compilation; UI snapshot run 39027595505 passed all five baseline flows with `app crash: no`, and `STATUS.md` matched that SHA. Screenshots were opened and reviewed: Home, Settings, Downloads, My Words, Learn and Dictionary are visible and no app error/crash appears. The Downloads-bottom capture shows the Accuracy profile heading partly clipped at the viewport edge. The Player screen itself is not covered (no video fixture; system picker is not driven), so this pass does not verify the redesigned player visuals or motion on-device.
 
 - Loading stays visible until Media3 reports ready and, for video, a first rendered frame; audio-only media uses ready state. A stale previous-media ready state cannot dismiss the new-media loader.
 - Top and second toolbar use matching synchronized motion; top travels down/up and bottom travels up/down. Floating actions remain visible across chrome auto-hide.
