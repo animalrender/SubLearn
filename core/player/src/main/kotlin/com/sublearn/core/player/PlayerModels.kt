@@ -74,6 +74,8 @@ data class PlaybackState(
     val isPlaying: Boolean = false,
     val isBuffering: Boolean = false,
     val isReady: Boolean = false,
+    /** True only after the current video has produced its first rendered frame. */
+    val hasRenderedFirstFrame: Boolean = false,
     val positionMs: Long = 0L,
     val durationMs: Long = 0L,
     val bufferedMs: Long = 0L,

@@ -129,6 +129,7 @@ object SettingsMigrator {
         3 to { it },
         4 to ::migrateV3ToV4,
         5 to ::migrateV4ToV5,
+        6 to ::migrateV5ToV6,
     )
 
     /**
@@ -142,6 +143,14 @@ object SettingsMigrator {
         if (lock != null && lock != OrientationLock.AUTO.name) return root
         val patched = root.toMutableMap()
         patched["player"] = JsonObject(playerObj + ("orientationLock" to JsonPrimitive(OrientationLock.LANDSCAPE.name)))
+        return JsonObject(patched)
+    }
+
+    /** v6: open the second toolbar by default to match the player reference layout. */
+    private fun migrateV5ToV6(root: JsonObject): JsonObject {
+        val actions = root["quickActions"] as? JsonObject ?: return root
+        val patched = root.toMutableMap()
+        patched["quickActions"] = JsonObject(actions + ("barExpanded" to JsonPrimitive(true)))
         return JsonObject(patched)
     }
 

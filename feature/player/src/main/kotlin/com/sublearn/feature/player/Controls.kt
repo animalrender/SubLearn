@@ -2,12 +2,15 @@ package com.sublearn.feature.player
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +34,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DragIndicator
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Forward10
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.GraphicEq
@@ -61,10 +66,7 @@ import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import com.sublearn.core.designsystem.SubLearnLinearProgress
 import androidx.compose.material3.MaterialTheme
-import com.sublearn.core.designsystem.SubLearnSlider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -80,6 +82,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -107,13 +110,14 @@ import com.sublearn.core.subtitles.TrackRole
 internal fun ChromeVisibility(
     visible: Boolean,
     modifier: Modifier = Modifier,
+    fromTop: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val reduce = LocalReduceMotion.current
     AnimatedVisibility(
         visible = visible,
-        enter = Motion.controlsEnter(reduce),
-        exit = Motion.controlsExit(reduce),
+        enter = Motion.controlsEnter(reduce, fromTop),
+        exit = Motion.controlsExit(reduce, fromTop),
         modifier = modifier,
     ) { content() }
 }
@@ -170,6 +174,7 @@ private fun chromeBrush(towardsBottom: Boolean): Brush {
 }
 
 /** Main top toolbar; docked actions share its row and scroll without pushing off-screen. */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun TopChrome(
     ui: PlayerUi,
@@ -179,11 +184,14 @@ internal fun TopChrome(
     onQuickTap: (QuickActionId) -> Unit,
     onHoldStart: (QuickActionId) -> Unit,
     onHoldEnd: (QuickActionId) -> Unit,
+    onDecoderTap: () -> Unit,
+    onDecoderLongPress: () -> Unit,
+    onReorder: (QuickActionId, DockMode, Int) -> Unit,
     registry: PlayerHitRegistry,
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalSubLearnColors.current
-    val topActions = ui.settings.quickActions.visibleIn(DockMode.TOP).map { it.first }
+    val topActions = ui.settings.quickActions.visibleIn(DockMode.TOP).take(MAX_TOP_ROW_ACTIONS).map { it.first }
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -225,16 +233,43 @@ internal fun TopChrome(
                     onTap = onQuickTap,
                     onHoldStart = onHoldStart,
                     onHoldEnd = onHoldEnd,
+                    onReorder = onReorder,
                     registry = registry,
                     modifier = Modifier.weight(1f),
                 )
             }
+            ChromeIconButton(
+                icon = Icons.Default.MoreVert,
+                contentDescription = stringResource(R.string.player_more),
+                onClick = { onMenuOpenChange(true) },
+            )
+            ChromeIconButton(
+                icon = Icons.Default.Subtitles,
+                contentDescription = stringResource(R.string.player_subtitle_tracks),
+                onClick = { onQuickTap(QuickActionId.SUBTITLE_TRACKS) },
+            )
+            ChromeIconButton(
+                icon = Icons.Default.GraphicEq,
+                contentDescription = stringResource(R.string.player_audio_tracks),
+                onClick = { onQuickTap(QuickActionId.AUDIO_TRACK) },
+            )
+            Surface(
+                modifier = Modifier.size(Dimens.touchTarget).combinedClickable(
+                    onClick = onDecoderTap,
+                    onLongClick = onDecoderLongPress,
+                ),
+                shape = CircleShape,
+                color = colors.strongBackdrop,
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = if (ui.playback.decoder == com.sublearn.core.settings.DecoderMode.SOFTWARE) "SW" else "HW",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = colors.controlActive,
+                    )
+                }
+            }
             Box {
-                ChromeIconButton(
-                    icon = Icons.Default.MoreVert,
-                    contentDescription = stringResource(R.string.player_more),
-                    onClick = { onMenuOpenChange(true) },
-                )
                 DropdownMenu(
                     expanded = ui.menuOpen,
                     onDismissRequest = { onMenuOpenChange(false) },
@@ -269,9 +304,10 @@ data class PlayerMenuItem(
 )
 
 /**
- * Bottom controls follow the MX-style transport layout: seek line, then one scrollable action row.
- * The center of the video is left clear for the picture and subtitles.
+ * Three fixed bottom zones: side actions remain at the edges while the seven transport controls
+ * occupy the centre. The row never scrolls; optional user actions are capped in the edge zones.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun BottomChrome(
     ui: PlayerUi,
@@ -286,15 +322,22 @@ internal fun BottomChrome(
     onNextBlock: () -> Unit,
     onToggleRemainingTime: () -> Unit,
     onQuickTap: (QuickActionId) -> Unit,
+    onAspectTap: () -> Unit,
+    onAspectLongPress: () -> Unit,
+    onToggleLock: () -> Unit,
+    onReorder: (QuickActionId, DockMode, Int) -> Unit,
     onHoldStart: (QuickActionId) -> Unit,
     onHoldEnd: (QuickActionId) -> Unit,
     registry: PlayerHitRegistry,
     modifier: Modifier = Modifier,
 ) {
-    val colors = LocalSubLearnColors.current
     val state = ui.playback
     val live = state.isLive || state.durationMs <= 0L
-    val playbackActions = ui.settings.quickActions.visibleIn(DockMode.PLAYBACK).map { it.first }
+    val edgeActions = ui.settings.quickActions.visibleIn(DockMode.PLAYBACK).map { it.first }
+        .filterNot { it == QuickActionId.REPEAT_BLOCK || it == QuickActionId.SUBTITLE_LIST || it == QuickActionId.ASPECT_RATIO }
+        .take(MAX_PLAYBACK_EDGE_ACTIONS)
+    val leftActions = edgeActions.take((edgeActions.size + 1) / 2)
+    val rightActions = edgeActions.drop(leftActions.size)
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -315,79 +358,155 @@ internal fun BottomChrome(
             onScrubEnd = onScrubEnd,
             onToggleRemainingTime = onToggleRemainingTime,
         )
-        val scroll = rememberScrollState()
-        Box(modifier = Modifier.fillMaxWidth()) {
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val transportIconSize = (maxWidth / 20f)
+                .coerceIn(MIN_TRANSPORT_ICON_DP.dp, MAX_TRANSPORT_ICON_DP.dp)
+            val playIconSize = (transportIconSize * 1.3f).coerceAtMost(Dimens.touchTarget)
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(scroll)
-                    .blocksGestures(registry)
-                    .padding(end = if (scroll.maxValue > 0) Dimens.touchTarget else 0.dp),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.dockGap),
+                modifier = Modifier.fillMaxWidth().height(Dimens.touchTarget + Dimens.sm),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                ChromeIconButton(
-                    icon = Icons.Default.SkipPrevious,
-                    contentDescription = stringResource(R.string.player_previous_video),
-                    onClick = onPreviousVideo,
-                    enabled = state.playlistIndex > 0 || state.positionMs > 2_000L || state.repeat == PlaylistRepeat.ALL,
-                )
-                ChromeIconButton(
-                    icon = Icons.Default.Replay10,
-                    contentDescription = stringResource(R.string.player_seek_backward),
-                    onClick = { onSeekBy(-ui.settings.player.seekStepMs) },
-                )
-                ChromeIconButton(
-                    icon = if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                    contentDescription = stringResource(if (state.isPlaying) R.string.player_pause else R.string.player_play),
-                    onClick = onTogglePlay,
-                )
-                ChromeIconButton(
-                    icon = Icons.Default.Forward10,
-                    contentDescription = stringResource(R.string.player_seek_forward),
-                    onClick = { onSeekBy(ui.settings.player.seekStepMs) },
-                )
-                ChromeIconButton(
-                    icon = Icons.Default.SkipNext,
-                    contentDescription = stringResource(R.string.player_next_video),
-                    onClick = onNextVideo,
-                    enabled = state.playlistIndex < state.playlist.lastIndex || state.repeat == PlaylistRepeat.ALL,
-                )
-                ChromeIconButton(
-                    icon = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.player_previous_subtitle),
-                    onClick = onPreviousBlock,
-                    enabled = ui.canStepBySubtitle,
-                )
-                ChromeIconButton(
-                    icon = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = stringResource(R.string.player_next_subtitle),
-                    onClick = onNextBlock,
-                    enabled = ui.canStepBySubtitle,
-                )
-                playbackActions.forEach { id ->
-                    QuickActionButton(ui, id, onQuickTap, onHoldStart, onHoldEnd, DockMode.PLAYBACK)
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    leftActions.forEach { id ->
+                        QuickActionButton(
+                            ui,
+                            id,
+                            onQuickTap,
+                            onHoldStart,
+                            onHoldEnd,
+                            DockMode.PLAYBACK,
+                            transportIconSize,
+                            onReorder,
+                        )
+                    }
                 }
-            }
-            if (scroll.value > 0) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.player_more_actions_left),
-                    tint = colors.controlIdle,
-                    modifier = Modifier.align(Alignment.CenterStart).size(Dimens.inlineIcon),
-                )
-            }
-            if (scroll.value < scroll.maxValue) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = stringResource(R.string.player_more_actions_right),
-                    tint = colors.controlIdle,
-                    modifier = Modifier.align(Alignment.CenterEnd).size(Dimens.inlineIcon),
-                )
+                Row(
+                    modifier = Modifier.weight(3.5f),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ChromeIconButton(
+                        icon = Icons.Default.SkipPrevious,
+                        contentDescription = stringResource(R.string.player_previous_video),
+                        onClick = onPreviousVideo,
+                        enabled = state.playlistIndex > 0 || state.positionMs > 2_000L || state.repeat == PlaylistRepeat.ALL,
+                        modifier = Modifier.size(transportIconSize),
+                    )
+                    ChromeIconButton(
+                        icon = Icons.Default.Replay10,
+                        contentDescription = stringResource(R.string.player_seek_backward),
+                        onClick = { onSeekBy(-ui.settings.player.seekStepMs) },
+                        modifier = Modifier.size(transportIconSize),
+                    )
+                    ChromeIconButton(
+                        icon = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.player_previous_subtitle),
+                        onClick = onPreviousBlock,
+                        enabled = ui.canStepBySubtitle,
+                        modifier = Modifier.size(transportIconSize),
+                    )
+                    ChromeIconButton(
+                        icon = if (state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = stringResource(
+                            if (state.isPlaying) R.string.player_pause else R.string.player_play,
+                        ),
+                        onClick = onTogglePlay,
+                        modifier = Modifier.size(playIconSize),
+                    )
+                    ChromeIconButton(
+                        icon = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = stringResource(R.string.player_next_subtitle),
+                        onClick = onNextBlock,
+                        enabled = ui.canStepBySubtitle,
+                        modifier = Modifier.size(transportIconSize),
+                    )
+                    ChromeIconButton(
+                        icon = Icons.Default.Forward10,
+                        contentDescription = stringResource(R.string.player_seek_forward),
+                        onClick = { onSeekBy(ui.settings.player.seekStepMs) },
+                        modifier = Modifier.size(transportIconSize),
+                    )
+                    ChromeIconButton(
+                        icon = Icons.Default.SkipNext,
+                        contentDescription = stringResource(R.string.player_next_video),
+                        onClick = onNextVideo,
+                        enabled = state.playlistIndex < state.playlist.lastIndex || state.repeat == PlaylistRepeat.ALL,
+                        modifier = Modifier.size(transportIconSize),
+                    )
+                }
+                Row(
+                    modifier = Modifier.weight(2.5f),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    ChromeIconButton(
+                        icon = Icons.Default.List,
+                        contentDescription = stringResource(R.string.subtitle_list),
+                        onClick = { onQuickTap(QuickActionId.SUBTITLE_LIST) },
+                        selected = ui.list.open,
+                        modifier = Modifier.size(transportIconSize),
+                    )
+                    Surface(
+                        modifier = Modifier.size(transportIconSize).combinedClickable(
+                            onClick = onAspectTap,
+                            onLongClick = onAspectLongPress,
+                        ),
+                        shape = CircleShape,
+                        color = LocalSubLearnColors.current.strongBackdrop,
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = state.aspect.name.take(4),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = LocalSubLearnColors.current.controlActive,
+                            )
+                        }
+                    }
+                    QuickActionButton(
+                        ui,
+                        QuickActionId.REPEAT_BLOCK,
+                        onQuickTap,
+                        onHoldStart,
+                        onHoldEnd,
+                        DockMode.PLAYBACK,
+                        transportIconSize,
+                        onReorder,
+                    )
+                    ChromeIconButton(
+                        icon = if (ui.locked) Icons.Default.LockOpen else Icons.Default.Lock,
+                        contentDescription = stringResource(
+                            if (ui.locked) R.string.player_unlock else R.string.player_lock,
+                        ),
+                        onClick = onToggleLock,
+                        selected = ui.locked,
+                        modifier = Modifier.size(transportIconSize),
+                    )
+                    rightActions.forEach { id ->
+                        QuickActionButton(
+                            ui,
+                            id,
+                            onQuickTap,
+                            onHoldStart,
+                            onHoldEnd,
+                            DockMode.PLAYBACK,
+                            transportIconSize,
+                            onReorder,
+                        )
+                    }
+                }
             }
         }
     }
 }
+
+private const val MAX_TOP_ROW_ACTIONS = 1
+private const val MAX_PLAYBACK_EDGE_ACTIONS = 1
+private const val MIN_TRANSPORT_ICON_DP = 22f
+private const val MAX_TRANSPORT_ICON_DP = 36f
 
 /** The speed the chip reads as "normal" (no highlight). */
 private const val NORMAL_SPEED_PERCENT = 100
@@ -395,7 +514,7 @@ private const val NORMAL_SPEED_PERCENT = 100
 /** Marks "not dragging" in the seekbar's fraction state. */
 private const val NOT_SCRUBBING = -1f
 
-/** One thin timeline with the elapsed/remaining-or-total readouts on the same line. */
+/** A thin MX-like seek line, separate elapsed/remaining clocks and a compact circular thumb. */
 @Composable
 private fun SeekBar(
     positionMs: Long,
@@ -411,61 +530,81 @@ private fun SeekBar(
 ) {
     val colors = LocalSubLearnColors.current
     var scrub by remember { mutableFloatStateOf(NOT_SCRUBBING) }
-    val scrubbing = scrub >= 0f
-    val shown = (if (scrubbing) scrub else progress).coerceIn(0f, 1f)
-    val elapsedMs = if (scrubbing) (scrub * durationMs).toLong() else positionMs
+    val shown = (if (scrub >= 0f) scrub else progress).coerceIn(0f, 1f)
+    val elapsedMs = if (scrub >= 0f) (scrub * durationMs).toLong() else positionMs
     val rightTime = when {
         live -> stringResource(R.string.player_live)
         showRemainingTime -> "−${clock((durationMs - elapsedMs).coerceAtLeast(0L))}"
         else -> clock(durationMs)
     }
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = clock(elapsedMs),
             style = MaterialTheme.typography.labelMedium,
             color = colors.controlActive,
             modifier = Modifier.padding(start = Dimens.xs, end = Dimens.xs),
         )
-        Box(modifier = Modifier.weight(1f).height(Dimens.touchTarget), contentAlignment = Alignment.Center) {
-            SubLearnLinearProgress(
-                progress = { buffered.coerceIn(0f, 1f) },
-                modifier = Modifier.fillMaxWidth().height(Dimens.seekbarTrack),
-                color = colors.controlDisabled,
-                trackColor = colors.controlDisabled.copy(alpha = 0f),
-            )
-            SubLearnSlider(
-                value = shown,
-                onValueChange = { next ->
-                    if (scrub < 0f) onScrubStart()
-                    val target = (next.coerceIn(0f, 1f) * durationMs).toLong()
-                    scrub = next.coerceIn(0f, 1f)
-                    onScrubPreview(target)
-                },
-                onValueChangeFinished = {
-                    if (scrub >= 0f) onScrubEnd((scrub * durationMs).toLong())
-                    scrub = NOT_SCRUBBING
-                },
-                enabled = !live,
-                modifier = Modifier.fillMaxWidth(),
-                colors = SliderDefaults.colors(
-                    thumbColor = colors.controlActive,
-                    activeTrackColor = colors.controlActive,
-                    inactiveTrackColor = colors.controlDisabled.copy(alpha = 0f),
-                ),
-            )
-        }
-        TextButton(
-            onClick = onToggleRemainingTime,
-            modifier = Modifier.height(Dimens.touchTarget),
+        Box(
+            modifier = Modifier.weight(1f).height(Dimens.touchTarget),
+            contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = rightTime,
-                style = MaterialTheme.typography.labelMedium,
-                color = colors.controlIdle,
-            )
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(24.dp)
+                    .then(
+                        if (live) Modifier else Modifier
+                            .pointerInput(durationMs) {
+                                detectTapGestures { point ->
+                                    val fraction = (point.x / size.width.coerceAtLeast(1)).coerceIn(0f, 1f)
+                                    onScrubStart()
+                                    scrub = fraction
+                                    onScrubPreview((fraction * durationMs).toLong())
+                                    onScrubEnd((fraction * durationMs).toLong())
+                                    scrub = NOT_SCRUBBING
+                                }
+                            }
+                            .pointerInput(durationMs) {
+                                detectDragGestures(
+                                    onDragStart = { point ->
+                                        onScrubStart()
+                                        val fraction = (point.x / size.width.coerceAtLeast(1)).coerceIn(0f, 1f)
+                                        scrub = fraction
+                                        onScrubPreview((fraction * durationMs).toLong())
+                                    },
+                                    onDrag = { change, _ ->
+                                        val fraction = (change.position.x / size.width.coerceAtLeast(1)).coerceIn(0f, 1f)
+                                        scrub = fraction
+                                        onScrubPreview((fraction * durationMs).toLong())
+                                        change.consume()
+                                    },
+                                    onDragEnd = {
+                                        val target = (scrub.coerceAtLeast(0f) * durationMs).toLong()
+                                        onScrubEnd(target)
+                                        scrub = NOT_SCRUBBING
+                                    },
+                                    onDragCancel = {
+                                        scrub = NOT_SCRUBBING
+                                        onScrubEnd(positionMs)
+                                    },
+                                )
+                            },
+                    ),
+            ) {
+                val y = size.height / 2f
+                val startX = 2.dp.toPx()
+                val endX = (size.width - startX).coerceAtLeast(startX)
+                val trackWidth = 2.dp.toPx()
+                drawLine(colors.controlDisabled.copy(alpha = 0.72f), Offset(startX, y), Offset(endX, y), trackWidth, StrokeCap.Round)
+                val bufferedX = startX + (endX - startX) * buffered.coerceIn(0f, 1f)
+                drawLine(colors.controlIdle.copy(alpha = 0.72f), Offset(startX, y), Offset(bufferedX, y), trackWidth, StrokeCap.Round)
+                val playedX = startX + (endX - startX) * shown
+                drawLine(colors.controlActive, Offset(startX, y), Offset(playedX, y), trackWidth, StrokeCap.Round)
+                drawCircle(colors.controlActive, radius = 4.dp.toPx(), center = Offset(playedX, y))
+            }
+        }
+        TextButton(onClick = onToggleRemainingTime, modifier = Modifier.height(Dimens.touchTarget)) {
+            Text(text = rightTime, style = MaterialTheme.typography.labelMedium, color = colors.controlIdle)
         }
     }
 }
@@ -500,10 +639,14 @@ internal fun QuickActionDock(
     ui: PlayerUi,
     areaWidth: Dp,
     areaHeight: Dp,
+    barVisible: Boolean,
+    floatingVisible: Boolean,
     onTap: (QuickActionId) -> Unit,
     onHoldStart: (QuickActionId) -> Unit,
     onHoldEnd: (QuickActionId) -> Unit,
     onMoveFloating: (QuickActionId, Float, Float) -> Unit,
+    onToggleExpanded: () -> Unit,
+    onReorder: (QuickActionId, DockMode, Int) -> Unit,
     registry: PlayerHitRegistry,
     modifier: Modifier = Modifier,
 ) {
@@ -512,24 +655,35 @@ internal fun QuickActionDock(
     val floating = settings.visibleIn(DockMode.FLOATING).map { it.first }
     Box(modifier = modifier.fillMaxSize()) {
         if (bar.isNotEmpty()) {
-            QuickActionRail(
-                ui = ui,
-                actions = bar,
-                dock = DockMode.BAR,
-                onTap = onTap,
-                onHoldStart = onHoldStart,
-                onHoldEnd = onHoldEnd,
-                registry = registry,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(
-                        top = Dimens.secondActionRailTop,
-                        start = Dimens.playerEdgeInset,
-                        end = Dimens.playerEdgeInset,
-                    ),
-            )
+            ChromeVisibility(visible = barVisible, modifier = Modifier.fillMaxWidth()) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    QuickActionRail(
+                        ui = ui,
+                        actions = bar,
+                        dock = DockMode.BAR,
+                        onTap = onTap,
+                        onHoldStart = onHoldStart,
+                        onHoldEnd = onHoldEnd,
+                        onReorder = onReorder,
+                        registry = registry,
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(
+                                top = Dimens.secondActionRailTop,
+                                start = Dimens.playerEdgeInset,
+                                end = Dimens.playerEdgeInset,
+                            ),
+                    )
+                    ChromeIconButton(
+                        icon = if (settings.barExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = stringResource(R.string.player_arrange_controls),
+                        onClick = onToggleExpanded,
+                        modifier = Modifier.align(Alignment.TopEnd).padding(top = Dimens.secondActionRailTop),
+                    )
+                }
+            }
         }
-        floating.forEach { id ->
+        if (floatingVisible) floating.forEach { id ->
             FloatingQuickAction(
                 ui = ui,
                 id = id,
@@ -553,6 +707,7 @@ private fun QuickActionRail(
     onTap: (QuickActionId) -> Unit,
     onHoldStart: (QuickActionId) -> Unit,
     onHoldEnd: (QuickActionId) -> Unit,
+    onReorder: (QuickActionId, DockMode, Int) -> Unit = { _, _, _ -> },
     registry: PlayerHitRegistry,
     modifier: Modifier = Modifier,
 ) {
@@ -569,7 +724,7 @@ private fun QuickActionRail(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             actions.forEach { id ->
-                QuickActionButton(ui, id, onTap, onHoldStart, onHoldEnd, dock)
+                QuickActionButton(ui, id, onTap, onHoldStart, onHoldEnd, dock, onReorder = onReorder)
             }
         }
         if (scroll.value > 0) {
@@ -609,42 +764,61 @@ private fun QuickActionButton(
     onHoldEnd: (QuickActionId) -> Unit,
     dock: DockMode = DockMode.BAR,
     maxButtonSize: Dp? = null,
+    onReorder: (QuickActionId, DockMode, Int) -> Unit = { _, _, _ -> },
 ) {
     val colors = LocalSubLearnColors.current
     val spec = ui.settings.quickActions.spec(id)
     val selected = quickSelected(ui, id)
     val label = stringResource(id.labelRes())
-    val expanded = ui.settings.quickActions.barExpanded && dock != DockMode.FLOATING
+    val expanded = ui.settings.quickActions.barExpanded && dock == DockMode.BAR
     val requestedSize = spec.sizeDp.dp.coerceAtLeast(Dimens.touchTarget)
     val buttonSize = maxButtonSize?.let { requestedSize.coerceAtMost(it) } ?: requestedSize
     val iconSize = spec.sizeDp.dp.coerceIn(Dimens.inlineIcon, Dimens.iconButtonLarge)
     val currentTap by rememberUpdatedState(onTap)
     val currentStart by rememberUpdatedState(onHoldStart)
     val currentEnd by rememberUpdatedState(onHoldEnd)
+    val currentReorder by rememberUpdatedState(onReorder)
     Surface(
         modifier = Modifier
             .then(
                 if (expanded) Modifier.height(buttonSize).widthIn(min = buttonSize)
                 else Modifier.size(buttonSize),
             )
-            .pointerInput(id) {
-                var held = false
-                detectTapGestures(
-                    onTap = { currentTap(id) },
-                    onLongPress = {
-                        if (id in HOLDABLE) {
-                            held = true
-                            currentStart(id)
-                        }
-                    },
-                    onPress = {
-                        tryAwaitRelease()
-                        if (held) {
-                            held = false
-                            currentEnd(id)
-                        }
-                    },
-                )
+            .pointerInput(id, ui.layoutMode, dock) {
+                if (ui.layoutMode && dock != DockMode.FLOATING) {
+                    var distanceX = 0f
+                    detectDragGesturesAfterLongPress(
+                        onDrag = { change, drag ->
+                            distanceX += drag.x
+                            change.consume()
+                        },
+                        onDragEnd = {
+                            if (kotlin.math.abs(distanceX) >= size.width / 2f) {
+                                currentReorder(id, dock, if (distanceX > 0f) 1 else -1)
+                            }
+                            distanceX = 0f
+                        },
+                        onDragCancel = { distanceX = 0f },
+                    )
+                } else {
+                    var held = false
+                    detectTapGestures(
+                        onTap = { currentTap(id) },
+                        onLongPress = {
+                            if (id in HOLDABLE) {
+                                held = true
+                                currentStart(id)
+                            }
+                        },
+                        onPress = {
+                            tryAwaitRelease()
+                            if (held) {
+                                held = false
+                                currentEnd(id)
+                            }
+                        },
+                    )
+                }
             },
         shape = if (expanded) RoundedCornerShape(Dimens.radiusMd) else CircleShape,
         color = colors.strongBackdrop.copy(alpha = 1f - spec.transparencyPercent / 100f),
@@ -740,7 +914,16 @@ private fun quickSelected(ui: PlayerUi, id: QuickActionId): Boolean = when (id) 
 
 /** Shown during a layout drag: the one instruction the user needs, and a way out. */
 @Composable
-internal fun LayoutModeBanner(hint: String, onDone: () -> Unit, modifier: Modifier = Modifier) {
+internal fun LayoutModeBanner(
+    hint: String,
+    onDone: () -> Unit,
+    onArrange: () -> Unit,
+    topVisible: Boolean,
+    bottomVisible: Boolean,
+    onToggleTop: () -> Unit,
+    onToggleBottom: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Surface(
         modifier = modifier
             .widthIn(max = Dimens.bannerMaxWidth)
@@ -758,6 +941,21 @@ internal fun LayoutModeBanner(hint: String, onDone: () -> Unit, modifier: Modifi
                 color = LocalSubLearnColors.current.promptText,
                 modifier = Modifier.weight(1f),
             )
+            TextButton(onClick = onToggleTop, modifier = Modifier.height(Dimens.touchTarget)) {
+                Text(
+                    "${stringResource(R.string.quick_dock_top)} ${if (topVisible) "✓" else "○"}",
+                    color = LocalSubLearnColors.current.promptText,
+                )
+            }
+            TextButton(onClick = onToggleBottom, modifier = Modifier.height(Dimens.touchTarget)) {
+                Text(
+                    "${stringResource(R.string.quick_dock_playback)} ${if (bottomVisible) "✓" else "○"}",
+                    color = LocalSubLearnColors.current.promptText,
+                )
+            }
+            TextButton(onClick = onArrange, modifier = Modifier.height(Dimens.touchTarget)) {
+                Text(stringResource(R.string.player_arrange_controls), color = LocalSubLearnColors.current.promptText)
+            }
             TextButton(onClick = onDone, modifier = Modifier.height(Dimens.touchTarget)) {
                 Text(stringResource(R.string.action_ok), color = LocalSubLearnColors.current.promptText)
             }
@@ -781,7 +979,23 @@ internal fun Snackbarish(
             .combinedClickable(onClick = onDismiss),
         color = LocalSubLearnColors.current.promptBackdrop,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        if (onRestart != null) {
+            Row(
+                modifier = Modifier.padding(start = Dimens.lg, end = Dimens.xs, top = Dimens.xs, bottom = Dimens.xs),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+            ) {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = LocalSubLearnColors.current.promptText,
+                    textAlign = TextAlign.Start,
+                )
+                TextButton(onClick = onRestart, modifier = Modifier.height(Dimens.touchTarget)) {
+                    Text(stringResource(R.string.player_restart_action), color = LocalSubLearnColors.current.promptText)
+                }
+            }
+        } else {
             Text(
                 text = text,
                 style = MaterialTheme.typography.bodyMedium,
@@ -789,11 +1003,6 @@ internal fun Snackbarish(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = Dimens.lg, vertical = Dimens.sm),
             )
-            if (onRestart != null) {
-                TextButton(onClick = onRestart, modifier = Modifier.heightIn(min = Dimens.touchTarget)) {
-                    Text(stringResource(R.string.player_restart_action), color = LocalSubLearnColors.current.promptText)
-                }
-            }
         }
     }
 }

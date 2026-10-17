@@ -107,6 +107,14 @@ fun PlayerScreen(
     val currentOpenSettings by rememberUpdatedState(onOpenSettings)
     val currentInPip by rememberUpdatedState(inPip)
     var subtitlePickerRole by remember { mutableStateOf<TrackRole?>(null) }
+    var layoutTopShown by remember { mutableStateOf(true) }
+    var layoutBottomShown by remember { mutableStateOf(true) }
+    LaunchedEffect(ui.layoutMode) {
+        if (ui.layoutMode) {
+            layoutTopShown = true
+            layoutBottomShown = true
+        }
+    }
     val audioPicker = rememberLauncherForActivityResult(
         OpenDocumentContract(context = LocalContext.current, mimeTypes = AUDIO_MIMES),
     ) { picked ->
@@ -226,7 +234,7 @@ fun PlayerScreen(
         PlayerMenuItem(R.string.player_subtitle_options, Icons.Default.Subtitles, checked = false) {
             viewModel.setSheet(Sheet.SUBTITLES)
         },
-        PlayerMenuItem(R.string.player_arrange_controls, Icons.Default.Tune, checked = false) { viewModel.setSheet(Sheet.ACTIONS) },
+        PlayerMenuItem(R.string.player_arrange_controls, Icons.Default.Tune, checked = ui.layoutMode) { viewModel.setLayoutMode(true) },
         PlayerMenuItem(R.string.subtitle_add_file, Icons.Default.Add, checked = false) { subtitlePicker.launch(SUBTITLE_MIMES) },
         PlayerMenuItem(R.string.menu_settings, Icons.Default.Settings, checked = false) { currentOpenSettings() },
     )
@@ -243,10 +251,12 @@ fun PlayerScreen(
         val regionWidth = maxWidth
         val regionHeight = if (listBelow) maxHeight * (1f - Dimens.listPortraitShare) else maxHeight
         val chromeShown = (ui.controlsVisible || ui.playback.isEnded || ui.playback.error != null) &&
-            !ui.layoutMode && !ui.locked && !inPip
-        val persistentChromeShown = !inPip && !ui.layoutMode && !ui.locked &&
-            (chromeShown || !ui.settings.quickActions.autoHideWithControls)
-        val dockShown = persistentChromeShown
+            !ui.locked && !inPip
+        val persistentChromeShown = !inPip && !ui.locked &&
+            (ui.layoutMode || chromeShown || !ui.settings.quickActions.autoHideWithControls)
+        val topChromeShown = persistentChromeShown && (!ui.layoutMode || layoutTopShown)
+        val bottomChromeShown = persistentChromeShown && (!ui.layoutMode || layoutBottomShown)
+        val dockShown = topChromeShown
 
         Box(
             modifier = (if (listBelow) {
@@ -284,22 +294,24 @@ fun PlayerScreen(
                     .playerGestures(gestureMode, registry, viewModel, tuning, readLevel),
             )
 
-            ChromeVisibility(visible = dockShown, modifier = Modifier.fillMaxSize()) {
-                QuickActionDock(
+            QuickActionDock(
                     ui = ui,
                     areaWidth = regionWidth,
                     areaHeight = regionHeight,
+                    barVisible = dockShown,
+                    floatingVisible = !inPip && !ui.locked,
                     onTap = viewModel::onQuickTap,
                     onHoldStart = viewModel::onQuickHoldStart,
                     onHoldEnd = viewModel::onQuickHoldEnd,
                     onMoveFloating = viewModel::moveQuickAction,
+                    onToggleExpanded = viewModel::toggleQuickActionBarExpanded,
+                    onReorder = viewModel::reorderQuickAction,
                     registry = registry,
                     modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing),
-                )
-            }
+            )
 
             Box(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
-                ChromeVisibility(visible = persistentChromeShown, modifier = Modifier.align(Alignment.TopCenter)) {
+                ChromeVisibility(visible = topChromeShown, modifier = Modifier.align(Alignment.TopCenter)) {
                     TopChrome(
                         ui = ui,
                         onBack = { handleBackFrom(ui, viewModel, onBack) },
@@ -308,11 +320,18 @@ fun PlayerScreen(
                         onQuickTap = viewModel::onQuickTap,
                         onHoldStart = viewModel::onQuickHoldStart,
                         onHoldEnd = viewModel::onQuickHoldEnd,
+                        onDecoderTap = viewModel::toggleDecoderMode,
+                        onDecoderLongPress = { viewModel.setSheet(Sheet.DECODER) },
+                        onReorder = viewModel::reorderQuickAction,
                         registry = registry,
                     )
                 }
 
-                ChromeVisibility(visible = persistentChromeShown, modifier = Modifier.align(Alignment.BottomCenter)) {
+                ChromeVisibility(
+                    visible = bottomChromeShown,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    fromTop = false,
+                ) {
                     BottomChrome(
                         ui = ui,
                         onScrubStart = viewModel::onScrubStart,
@@ -326,25 +345,38 @@ fun PlayerScreen(
                         onNextBlock = { viewModel.stepBlock(1) },
                         onToggleRemainingTime = viewModel::toggleRemainingTime,
                         onQuickTap = viewModel::onQuickTap,
+                        onAspectTap = viewModel::cycleAspectMode,
+                        onAspectLongPress = { viewModel.setSheet(Sheet.ASPECT) },
+                        onToggleLock = viewModel::toggleLock,
+                        onReorder = viewModel::reorderQuickAction,
                         onHoldStart = viewModel::onQuickHoldStart,
                         onHoldEnd = viewModel::onQuickHoldEnd,
                         registry = registry,
                     )
                 }
 
-                val lockShown = if (ui.locked) ui.lockButtonVisible else persistentChromeShown
-                ChromeVisibility(
-                    visible = lockShown,
-                    modifier = Modifier.align(Alignment.CenterStart).padding(start = Dimens.playerEdgeInset),
-                ) {
-                    LockButton(locked = ui.locked, onClick = viewModel::toggleLock, registry = registry)
+                if (ui.locked && ui.lockButtonVisible) {
+                    ChromeVisibility(
+                        visible = true,
+                        modifier = Modifier.align(Alignment.BottomEnd).padding(end = Dimens.playerEdgeInset),
+                        fromTop = false,
+                    ) {
+                        LockButton(locked = true, onClick = viewModel::toggleLock, registry = registry)
+                    }
                 }
 
                 if (ui.layoutMode) {
                     LayoutModeBanner(
                         hint = stringResource(R.string.subtitle_layout_hint),
                         onDone = { viewModel.setLayoutMode(false) },
-                        modifier = Modifier.align(Alignment.TopCenter).padding(top = Dimens.xl),
+                        onArrange = { viewModel.setSheet(Sheet.ACTIONS) },
+                        topVisible = layoutTopShown,
+                        bottomVisible = layoutBottomShown,
+                        onToggleTop = { layoutTopShown = !layoutTopShown },
+                        onToggleBottom = { layoutBottomShown = !layoutBottomShown },
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = Dimens.secondActionRailTop + Dimens.touchTarget + Dimens.md),
                     )
                 }
             }

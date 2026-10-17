@@ -52,6 +52,8 @@ class FakePlayerController(
             positionMs = target.startPositionMs,
             error = null,
             isPlaying = true,
+            isReady = true,
+            hasRenderedFirstFrame = true,
             externalAudioName = externalAudioName,
         )
     }

@@ -74,6 +74,14 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun `v5 migration opens the second player toolbar by default`() {
+        val v5 = """{"schemaVersion": 5, "quickActions": {"barExpanded": false}}"""
+        val decoded = SettingsJson.decode(v5).getOrThrow()
+        assertEquals(AppSettings.SCHEMA_VERSION, decoded.schemaVersion)
+        assertTrue(decoded.quickActions.barExpanded)
+    }
+
+    @Test
     fun `update persists and the flow sees it`() = runTest {
         val storage = InMemorySettingsStorage()
         val repo = DefaultSettingsRepository(storage)

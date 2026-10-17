@@ -469,7 +469,10 @@
     <string name="player_more_actions_right">دکمه‌های بیشتری در سمت راست</string>
     <string name="player_toggle_time">تغییر بین زمان کل و زمان باقی‌مانده</string>
     <string name="player_arrange_controls">چیدمان کنترل‌های پلیر</string>
-    <string name="player_arrange_controls_hint">برای هر عملکرد، نوار بالا، ردیف دوم یا ردیف پخش را انتخاب کنید؛ آن را روی ویدیو شناور کنید یا پنهان کنید. با پیکان‌ها ترتیب دکمه‌ها را عوض کنید.</string>
+    <string name="player_arrange_controls_hint">برای هر عملکرد، نوار بالا، ردیف دوم یا ردیف پخش را انتخاب کنید؛ آن را روی ویدیو شناور کنید یا پنهان کنید. برای تغییر ترتیب، لمس کنید و بکشید.</string>
+    <string name="player_action_toggle_visibility">تغییر وضعیت نمایش</string>
+    <string name="player_action_center_vertical">وسط‌چین عمودی</string>
+    <string name="player_action_center_horizontal">وسط‌چین افقی</string>
     <string name="player_expanded_action_labels">نمایش برچسب در ردیف‌های بازشده</string>
     <string name="quick_dock_top">نوار بالایی</string>
     <string name="quick_dock_second_row">نوار دوم</string>

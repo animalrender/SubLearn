@@ -698,8 +698,8 @@ normal subtitle analysis; the reported unnamed model/device still needs real-dev
 
 **D-90 — Opening a player starts playback; restarting is a passive action.**
 New media explicitly calls `play()` after preparing its queue, and returning to already-loaded media
-also starts playback. A resumed file shows an eight-second bottom turquoise hint with a localized
-"Start over" button; ignoring/dismissing it leaves playback running at the saved position. The action
+also starts playback. A resumed file shows a five-second compact turquoise hint with an inline localized
+"Start over" action; ignoring/dismissing it leaves playback running at the saved position. The action
 seeks to zero and plays. First opens and files without a resumable position do not show it; existing
 remember-position/resume settings and end-of-file guards still apply. Changing media or replacing the
 hint clears its action so it cannot restart another file. This changes no persisted settings schema.
@@ -775,3 +775,6 @@ before every flow and a flow that fails with exactly that signature is retried o
 The runner is pinned to `ubuntu-24.04` because `ubuntu-latest` moves to 26.04 on 2026-10-19 and the setup
 was proven on 24.04. Not covered: the player and anything behind a video (no fixture, REQ-13),
 real-device behaviour (performance, picture-in-picture, sensors) and release builds.
+
+**D-95 — Player chrome follows the screen edge; user layout is persisted, while unsupported drag/drop stays explicit.**
+The upper chrome enters downward and exits upward; the lower chrome enters upward and exits downward with the same 220 ms slide / 160 ms fade timing, honoring reduce-motion. A thin custom seek line previews by seeking the actual player during drag, so Media3 and the subtitle layer update before release. The bottom row has fixed left, center and right zones and no horizontal scrolling; its center transport sequence is symmetric around Play/Pause. Floating quick actions remain visible while the chrome auto-hides. Layout mode shows the bars and an OK action, can hide either toolbar temporarily, constrains subtitle dragging to vertical movement and allows long-press reorder inside a dock. The action editor exposes persisted size/transparency and hide/dock/center controls; a v5→v6 settings migration opens the second toolbar by default. A real drag/drop target-preview across docks and a movable/persisted OK banner are not claimed: those remain open in KNOWN_ISSUES. The video player cannot be driven by current UI flows because no sample video is checked in and the system picker is not automated; screenshots and motion still require a user-provided video/device review (REQ-13, D-94).

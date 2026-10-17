@@ -376,7 +376,7 @@ private suspend fun AwaitPointerEventScope.layoutDrag(
         if (!change.pressed) break
         val delta = change.position - last
         last = change.position
-        if (delta != Offset.Zero) viewModel.onLayerDrag(role, delta.x / density, delta.y / density)
+        if (delta != Offset.Zero) viewModel.onLayerDrag(role, 0f, delta.y / density)
         change.consume()
     }
     viewModel.onLayerDragEnd(role)

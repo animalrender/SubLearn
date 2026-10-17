@@ -118,7 +118,11 @@ class Media3PlayerController(
                         positionMs = player.currentPosition.coerceAtLeast(0L),
                         durationMs = 0L,
                         bufferedMs = 0L,
+                        videoWidth = 0,
+                        videoHeight = 0,
+                        videoRotationDegrees = 0,
                         isEnded = false,
+                        hasRenderedFirstFrame = false,
                         externalAudioName = externalForTarget,
                     )
                     _embeddedCues.value = emptyList()
@@ -155,6 +159,11 @@ class Media3PlayerController(
                 _embeddedCues.value = cues
             }
             if (mediaTransition && !targetChanged) flushPositionNow()
+        }
+
+        override fun onRenderedFirstFrame() {
+            _state.value = _state.value.copy(hasRenderedFirstFrame = true)
+            publishSnapshot()
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -338,7 +347,12 @@ class Media3PlayerController(
             positionMs = startPositionMs,
             durationMs = 0L,
             bufferedMs = 0L,
+            videoWidth = 0,
+            videoHeight = 0,
+            videoRotationDegrees = 0,
             isEnded = false,
+            isReady = false,
+            hasRenderedFirstFrame = false,
             externalAudioName = externalAudioName.takeIf { externalAudioTargetUri == pendingTarget?.uri },
         )
         publishTracks(exo)

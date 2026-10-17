@@ -270,7 +270,6 @@ class PlayerViewModel(
             if (settings.player.defaultSpeedPercent != NORMAL_SPEED) controller.setSpeedPercent(settings.player.defaultSpeedPercent)
             controller.setAspect(settings.player.aspect, settings.player.customAspectWidth, settings.player.customAspectHeight)
             if (settings.subtitles.listPanelEnabled) setListOpen(true)
-            _ui.value = _ui.value.copy(opening = false)
             subtitleUris.forEach { picked -> loadFile(picked.role, picked.uri, picked.name) }
             if (subtitleUris.isEmpty()) {
                 if (restoreRememberedFiles) {
@@ -622,6 +621,11 @@ class PlayerViewModel(
     // ------------------------------------------------------------------ position and chrome
 
     private fun onPosition(state: PlaybackState) {
+        val pictureReady = state.isReady && (!state.hasVideo || state.hasRenderedFirstFrame)
+        val openingTargetReady = state.target?.uri == openedTarget?.uri && (pictureReady || state.error != null)
+        if (_ui.value.opening && openingTargetReady) {
+            _ui.value = _ui.value.copy(opening = false)
+        }
         state.target?.let { target ->
             if (target.uri != openedTarget?.uri) onPlaybackTargetChanged(target)
         }
@@ -727,7 +731,7 @@ class PlayerViewModel(
             GestureAction.SEEK_FORWARD -> seekWithHud(player.seekStepMs)
             GestureAction.SEEK_BACKWARD -> seekWithHud(-player.seekStepMs)
             GestureAction.TOGGLE_CONTROLS -> toggleControls()
-            GestureAction.ASPECT_RATIO -> cycleAspect()
+            GestureAction.ASPECT_RATIO -> cycleAspectMode()
             GestureAction.REPEAT_BLOCK -> toggleRepeatBlock(autoRepeat = false)
             GestureAction.TOGGLE_LEARNING_SUBTITLE -> toggleLayerVisible(TrackRole.LEARNING)
             GestureAction.TOGGLE_TRANSLATION_SUBTITLE -> toggleLayerVisible(TrackRole.TRANSLATION)
@@ -1797,12 +1801,20 @@ class PlayerViewModel(
         controller.setAspect(AspectMode.CUSTOM_RATIO, width, height)
     }
 
-    private fun cycleAspect() {
+    fun cycleAspectMode() {
         val order = listOf(AspectMode.FIT, AspectMode.FILL, AspectMode.ZOOM, AspectMode.STRETCH)
         val current = _ui.value.settings.player.aspect
         val next = order[(order.indexOf(current).coerceAtLeast(0) + 1) % order.size]
         setAspect(next)
-        message(application.getString(R.string.player_msg_aspect, application.getString(next.labelRes())))
+    }
+
+    fun toggleDecoderMode() {
+        val next = if (_ui.value.settings.player.decoder == DecoderMode.SOFTWARE) {
+            DecoderMode.HARDWARE
+        } else {
+            DecoderMode.SOFTWARE
+        }
+        setDecoder(next)
     }
 
     fun setDecoder(mode: DecoderMode) {
@@ -2219,7 +2231,7 @@ class PlayerViewModel(
         private const val HUD_LINGER_MS = 350L
         private const val DOUBLE_TAP_HUD_MS = 700L
         private const val MESSAGE_MS = 2_500L
-        private const val RESTART_PROMPT_MS = 8_000L
+        private const val RESTART_PROMPT_MS = 5_000L
         private const val MS_PER_SECOND = 1_000L
         private const val NORMAL_SPEED = 100
         private const val PERCENT = 100f

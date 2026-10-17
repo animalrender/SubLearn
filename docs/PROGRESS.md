@@ -828,3 +828,14 @@ translation toggle to invert it, open the subtitle list and seek by tapping a ro
 and stop-at-end, add a word to My Words and see it styled, open Settings → Fonts and change only the
 learning surface, then Settings → About → export and re-import the JSON, and finally put the app in PiP
 and rotate. With no network: the same, plus translation only for a previously downloaded model.
+
+## 2026-10-17 — player chrome and layout pass (D-95)
+
+**Local Android build/emulator unavailable.** Static source/symbol/dependency/resource checks pass; this change still requires CI compilation and the mandatory UI snapshot run on the exact branch tip. The player itself is not covered by existing Maestro flows (no video fixture; the system picker is not driven), so a green shell snapshot will not prove player visuals or motion.
+
+- Loading stays visible until Media3 reports ready and, for video, a first rendered frame; audio-only media uses ready state. A stale previous-media ready state cannot dismiss the new-media loader.
+- Top and second toolbar use matching synchronized motion; top travels down/up and bottom travels up/down. Floating actions remain visible across chrome auto-hide.
+- The bottom playback controls now use fixed edge/center zones with a non-scrollable transport row, a thin circular-thumb seek timeline, and live seek previews that update Media3/subtitle state before release. Fit cycles on tap; long-press opens the ratio options. The fixed top quick actions are subtitle, audio and SW/HW decoder.
+- Second toolbar labels start expanded (v6 settings migration), with collapse control and per-action size/transparency controls in its editor. Layout mode exposes independently hideable bars, vertical-only subtitle positioning, and hold-drag reorder within a dock; dock/visibility/center controls persist through settings.
+- Start over is an inline five-second action. No changes were made to playback resume semantics.
+- **Still open:** cross-dock drag/drop target preview and arbitrary insertion, making every fixed transport/OK element draggable with persisted position, and a real-video screenshot pass. See KNOWN_ISSUES #17; PLY-1..3, SUB-2..3 remain verification-pending in CHECKLIST.

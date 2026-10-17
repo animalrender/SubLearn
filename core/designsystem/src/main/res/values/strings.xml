@@ -499,7 +499,10 @@
     <string name="player_more_actions_right">More actions to the right</string>
     <string name="player_toggle_time">Toggle between total and remaining time</string>
     <string name="player_arrange_controls">Arrange player controls</string>
-    <string name="player_arrange_controls_hint">Choose a toolbar or playback row for each action, float it over the video, or hide it. Use the arrows to reorder docked actions.</string>
+    <string name="player_arrange_controls_hint">Choose a toolbar or playback row for each action, float it over the video, or hide it. Hold and drag to reorder docked actions.</string>
+    <string name="player_action_toggle_visibility">Toggle visibility</string>
+    <string name="player_action_center_vertical">Center vertically</string>
+    <string name="player_action_center_horizontal">Center horizontally</string>
     <string name="player_expanded_action_labels">Show labels in expanded action rows</string>
     <string name="quick_dock_top">Top toolbar</string>
     <string name="quick_dock_second_row">Second toolbar</string>

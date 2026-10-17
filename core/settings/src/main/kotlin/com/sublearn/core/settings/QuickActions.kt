@@ -111,7 +111,8 @@ data class QuickActionSettings(
     val barIconsPerRow: Int = 8,
     val autoHideWithControls: Boolean = true,
     /** Compact mode keeps the action rail to one line without labels. */
-    val barExpanded: Boolean = false,
+    /** The second toolbar starts in its MX-like labeled state; users can collapse it at any time. */
+    val barExpanded: Boolean = true,
 ) {
     fun spec(id: QuickActionId): QuickActionSpec {
         specs[id.key]?.let { return it }
