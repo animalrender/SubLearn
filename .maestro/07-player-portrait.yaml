@@ -1,0 +1,36 @@
+# Portrait orientation is set through the debug-only startup extra, which updates the same persisted
+# player setting used by Settings. This is a real Player launch with the shared generated video.
+appId: com.sublearn.app.debug
+---
+- extendedWaitUntil:
+    visible: "360 × 640"
+    timeout: 60000
+- assertVisible: "SubLearn-UI-Fixture.mp4"
+- takeScreenshot: 07-player-portrait-first-frame
+- tapOn:
+    point: "50%, 50%"
+- extendedWaitUntil:
+    visible: "More"
+    timeout: 10000
+- assertVisible: "FIT"
+- takeScreenshot: 07-player-portrait-controls
+# Enter Layout mode, reposition its confirmation button, and use it to leave the mode.
+- tapOn: "More"
+- tapOn: "Layout mode"
+- assertVisible: "Drag a subtitle layer to move it"
+- assertVisible: "OK"
+- takeScreenshot: 07-player-portrait-layout-mode
+- longPressAndDrag:
+    from:
+      text: "OK"
+    to:
+      point: "15%, 30%"
+- assertVisible: "OK"
+- tapOn: "OK"
+- assertNotVisible: "Drag a subtitle layer to move it"
+# Scrub in portrait as well; the timeline must span the narrow viewport without losing its thumb.
+- swipe:
+    start: "20%, 91%"
+    end: "78%, 91%"
+    duration: 700
+- takeScreenshot: 07-player-portrait-scrub

@@ -71,7 +71,13 @@ class MainActivity : ComponentActivity() {
                 contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
         }
-        return StartupRequest(uri.toString(), displayNameOf(uri))
+        val testOrientation = if (BuildConfig.DEBUG) {
+            intent.getStringExtra("com.sublearn.app.debug.extra.orientation")
+                ?.let { value -> runCatching { com.sublearn.core.settings.OrientationLock.valueOf(value) }.getOrNull() }
+        } else {
+            null
+        }
+        return StartupRequest(uri.toString(), displayNameOf(uri), testOrientation)
     }
 
     /**
@@ -119,7 +125,12 @@ class MainActivity : ComponentActivity() {
 }
 
 /** A video handed to the app by another application. */
-data class StartupRequest(val uri: String, val title: String)
+data class StartupRequest(
+    val uri: String,
+    val title: String,
+    /** Debug-only emulator hook; callers outside debug builds cannot set player orientation. */
+    val testOrientation: com.sublearn.core.settings.OrientationLock? = null,
+)
 
 /**
  * Applies the in-app language choice. API 33 has a system API for this; below it the only reliable

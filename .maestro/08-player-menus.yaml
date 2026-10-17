@@ -1,0 +1,48 @@
+# Exercise the Player's video, subtitle, audio, aspect-ratio and control-layout sheets.
+appId: com.sublearn.app.debug
+---
+- extendedWaitUntil:
+    visible: "360 × 640"
+    timeout: 60000
+- tapOn:
+    point: "50%, 50%"
+- extendedWaitUntil:
+    visible: "More"
+    timeout: 10000
+- tapOn: "More"
+- assertVisible: "Subtitle options"
+- assertVisible: "Arrange player controls"
+- tapOn: "Subtitle options"
+- assertVisible: "Subtitle tracks"
+- assertVisible: "Learning subtitles"
+- takeScreenshot: 08-player-subtitle-options-sheet
+- pressKey: Back
+- tapOn: "Audio track"
+- assertVisible: "Audio track"
+- takeScreenshot: 08-player-audio-track-sheet
+- pressKey: Back
+- longPressOn: "FIT"
+- assertVisible: "Aspect ratio"
+- assertVisible: "Fit"
+- assertVisible: "Fill"
+- assertVisible: "Zoom"
+- assertVisible: "Stretch"
+- assertVisible: "Custom"
+- takeScreenshot: 08-player-aspect-ratio-sheet
+- tapOn: "Fill"
+- tapOn:
+    point: "50%, 50%"
+- tapOn: "More"
+- tapOn: "Layout mode"
+- assertVisible: "OK"
+- takeScreenshot: 08-player-layout-mode
+# Move the expanded second-row action into the playback dock; this exercises cross-dock drag/drop.
+- longPressAndDrag:
+    from:
+      text: "Repeat this subtitle"
+    to:
+      point: "50%, 92%"
+- takeScreenshot: 08-player-cross-dock-drop
+- tapOn: "Arrange player controls"
+- assertVisible: "Arrange player controls"
+- takeScreenshot: 08-player-action-layout-sheet

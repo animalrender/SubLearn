@@ -87,6 +87,13 @@ fun SubLearnApp(
         val request by startup.collectAsStateWithLifecycle(initialValue = null)
         LaunchedEffect(request) {
             request?.let {
+                it.testOrientation?.let { orientation ->
+                    settingsRepository.update { settings ->
+                        settings.copy(player = settings.player.copy(orientationLock = orientation))
+                    }
+                    // Let the settings StateFlow reach Compose before PlayerScreen reads its lock.
+                    androidx.compose.runtime.withFrameNanos { }
+                }
                 nav.openPlayer(it.uri, it.title)
                 onStartupConsumed()
             }

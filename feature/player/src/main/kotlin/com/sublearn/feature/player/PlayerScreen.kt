@@ -368,7 +368,6 @@ fun PlayerScreen(
                 if (ui.layoutMode) {
                     LayoutModeBanner(
                         hint = stringResource(R.string.subtitle_layout_hint),
-                        onDone = { viewModel.setLayoutMode(false) },
                         onArrange = { viewModel.setSheet(Sheet.ACTIONS) },
                         topVisible = layoutTopShown,
                         bottomVisible = layoutBottomShown,
@@ -377,6 +376,13 @@ fun PlayerScreen(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .padding(top = Dimens.secondActionRailTop + Dimens.touchTarget + Dimens.md),
+                    )
+                    LayoutModeDoneButton(
+                        xFraction = ui.settings.quickActions.layoutDoneXFraction,
+                        yFraction = ui.settings.quickActions.layoutDoneYFraction,
+                        onDone = { viewModel.setLayoutMode(false) },
+                        onMove = viewModel::moveLayoutConfirmation,
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
             }

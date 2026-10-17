@@ -91,7 +91,7 @@
     <string name="subtitle_hide_learning">پنهان کردن زیرنویس یادگیری</string>
     <string name="subtitle_hide_translation">پنهان کردن زیرنویس ترجمه</string>
     <string name="subtitle_layout_mode">حالت چیدمان</string>
-    <string name="subtitle_layout_hint">هر لایه را بکشید تا جابه‌جا شود. در این حالت متن‌ها قابل لمس نیستند.</string>
+    <string name="subtitle_layout_hint">برای جابه‌جایی زیرنویس آن را بکشید؛ برای تغییر جای دکمهٔ تأیید، آن را نگه دارید و بکشید.</string>
     <string name="subtitle_list">فهرست زیرنویس</string>
     <string name="subtitle_list_search">جستجو در زیرنویس‌ها</string>
     <string name="subtitle_list_empty">برای این لایه فایلی بارگذاری نشده است.</string>

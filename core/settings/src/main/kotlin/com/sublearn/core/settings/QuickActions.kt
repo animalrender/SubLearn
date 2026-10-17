@@ -113,6 +113,9 @@ data class QuickActionSettings(
     /** Compact mode keeps the action rail to one line without labels. */
     /** The second toolbar starts in its MX-like labeled state; users can collapse it at any time. */
     val barExpanded: Boolean = true,
+    /** User-adjustable Layout-mode confirmation target, persisted as a screen-relative position. */
+    val layoutDoneXFraction: Float = 0.82f,
+    val layoutDoneYFraction: Float = 0.18f,
 ) {
     fun spec(id: QuickActionId): QuickActionSpec {
         specs[id.key]?.let { return it }

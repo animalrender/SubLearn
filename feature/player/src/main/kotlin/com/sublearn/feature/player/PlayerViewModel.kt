@@ -1885,25 +1885,51 @@ class PlayerViewModel(
     }
 
     fun reorderQuickAction(id: QuickActionId, dock: DockMode, delta: Int) {
-        if (delta == 0) return
+        if (delta < 0 && dock == DockMode.HIDDEN) return
         updateSettings { settings ->
-            val row = settings.quickActions.visibleIn(dock).map { it.first }.toMutableList()
-            val from = row.indexOf(id)
-            if (from < 0) return@updateSettings settings
-            val to = (from + delta).coerceIn(0, row.lastIndex)
-            if (from == to) return@updateSettings settings
-            val moving = row.removeAt(from)
-            row.add(to, moving)
-            val updated = row.mapIndexed { index, action ->
-                action to settings.quickActions.spec(action).copy(order = index)
-            }.toMap()
-            settings.copy(quickActions = settings.quickActions.copy(
-                specs = settings.quickActions.specs + updated.mapKeys { it.key.key }.mapValues { it.value },
-            ))
+            val sourceDock = settings.quickActions.spec(id).dock
+            val source = settings.quickActions.visibleIn(sourceDock).map { it.first }.filterNot { it == id }.toMutableList()
+            val target = if (sourceDock == dock) source else settings.quickActions.visibleIn(dock).map { it.first }.toMutableList()
+            if (sourceDock == dock) {
+                val current = settings.quickActions.visibleIn(dock).map { it.first }
+                val from = current.indexOf(id)
+                if (from < 0 || current.isEmpty() || delta == 0) return@updateSettings settings
+                val to = (from + delta).coerceIn(0, current.lastIndex)
+                if (from == to) return@updateSettings settings
+                val reordered = current.toMutableList().apply { add(to, removeAt(from)) }
+                var result = settings.quickActions
+                reordered.forEachIndexed { index, action ->
+                    result = result.updated(action, result.spec(action).copy(order = index))
+                }
+                return@updateSettings settings.copy(quickActions = result)
+            }
+
+            // In layout mode the signed position is an insertion index in the destination dock.
+            // Normalize both lists in one settings write so the move persists atomically.
+            val insertion = delta.coerceIn(0, target.size)
+            target.add(insertion, id)
+            var result = settings.quickActions
+            source.forEachIndexed { index, action ->
+                result = result.updated(action, result.spec(action).copy(order = index))
+            }
+            target.forEachIndexed { index, action ->
+                result = result.updated(action, result.spec(action).copy(dock = dock, order = index))
+            }
+            result = result.updated(id, result.spec(id).copy(dock = dock, order = insertion))
+            settings.copy(quickActions = result)
         }
     }
 
     fun reorderQuickAction(id: QuickActionId, delta: Int) = reorderQuickAction(id, DockMode.BAR, delta)
+
+    fun moveLayoutConfirmation(xFraction: Float, yFraction: Float) {
+        updateSettings { settings ->
+            settings.copy(quickActions = settings.quickActions.copy(
+                layoutDoneXFraction = xFraction.coerceIn(0f, 1f),
+                layoutDoneYFraction = yFraction.coerceIn(0f, 1f),
+            ))
+        }
+    }
 
     fun toggleQuickActionBarExpanded() {
         updateSettings { settings ->

@@ -1,0 +1,22 @@
+# Opens a generated portrait test clip while the player is explicitly locked to landscape.
+# scripts/ui-snapshot/run.sh grants the FileProvider URI and starts MainActivity before this flow.
+appId: com.sublearn.app.debug
+---
+- extendedWaitUntil:
+    visible: "360 × 640"
+    timeout: 60000
+- assertVisible: "SubLearn-UI-Fixture.mp4"
+- takeScreenshot: 06-player-landscape-first-frame
+- tapOn:
+    point: "50%, 50%"
+- extendedWaitUntil:
+    visible: "More"
+    timeout: 10000
+- assertVisible: "FIT"
+- takeScreenshot: 06-player-landscape-controls
+# Scrub through the clip; the thumb, preview state and time labels must remain interactive.
+- swipe:
+    start: "20%, 88%"
+    end: "78%, 88%"
+    duration: 700
+- takeScreenshot: 06-player-landscape-scrub

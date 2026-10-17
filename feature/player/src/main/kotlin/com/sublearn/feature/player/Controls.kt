@@ -85,12 +85,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.sublearn.core.designsystem.Dimens
 import com.sublearn.core.designsystem.LocalReduceMotion
@@ -101,6 +106,7 @@ import com.sublearn.core.settings.DockMode
 import com.sublearn.core.player.PlaylistRepeat
 import com.sublearn.core.settings.QuickActionId
 import com.sublearn.core.subtitles.TrackRole
+import kotlin.math.roundToInt
 
 /**
  * Fades and slides the chrome in and out. Timing and the reduce-motion variant come from
@@ -363,7 +369,8 @@ internal fun BottomChrome(
                 .coerceIn(MIN_TRANSPORT_ICON_DP.dp, MAX_TRANSPORT_ICON_DP.dp)
             val playIconSize = (transportIconSize * 1.3f).coerceAtMost(Dimens.touchTarget)
             Row(
-                modifier = Modifier.fillMaxWidth().height(Dimens.touchTarget + Dimens.sm),
+                modifier = Modifier.fillMaxWidth().height(Dimens.touchTarget + Dimens.sm)
+                    .onGloballyPositioned { registry.putQuickDock(DockMode.PLAYBACK, it) },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
@@ -381,6 +388,7 @@ internal fun BottomChrome(
                             DockMode.PLAYBACK,
                             transportIconSize,
                             onReorder,
+                            registry,
                         )
                     }
                 }
@@ -475,6 +483,7 @@ internal fun BottomChrome(
                         DockMode.PLAYBACK,
                         transportIconSize,
                         onReorder,
+                        registry,
                     )
                     ChromeIconButton(
                         icon = if (ui.locked) Icons.Default.LockOpen else Icons.Default.Lock,
@@ -495,6 +504,7 @@ internal fun BottomChrome(
                             DockMode.PLAYBACK,
                             transportIconSize,
                             onReorder,
+                            registry,
                         )
                     }
                 }
@@ -717,6 +727,7 @@ private fun QuickActionRail(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .onGloballyPositioned { registry.putQuickDock(dock, it) }
                 .horizontalScroll(scroll)
                 .blocksGestures(registry)
                 .padding(end = if (scroll.maxValue > 0) Dimens.touchTarget else 0.dp),
@@ -724,7 +735,7 @@ private fun QuickActionRail(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             actions.forEach { id ->
-                QuickActionButton(ui, id, onTap, onHoldStart, onHoldEnd, dock, onReorder = onReorder)
+                QuickActionButton(ui, id, onTap, onHoldStart, onHoldEnd, dock, onReorder = onReorder, registry = registry)
             }
         }
         if (scroll.value > 0) {
@@ -765,6 +776,7 @@ private fun QuickActionButton(
     dock: DockMode = DockMode.BAR,
     maxButtonSize: Dp? = null,
     onReorder: (QuickActionId, DockMode, Int) -> Unit = { _, _, _ -> },
+    registry: PlayerHitRegistry? = null,
 ) {
     val colors = LocalSubLearnColors.current
     val spec = ui.settings.quickActions.spec(id)
@@ -778,27 +790,39 @@ private fun QuickActionButton(
     val currentStart by rememberUpdatedState(onHoldStart)
     val currentEnd by rememberUpdatedState(onHoldEnd)
     val currentReorder by rememberUpdatedState(onReorder)
+    var actionCoordinates by remember(id, dock) { mutableStateOf<LayoutCoordinates?>(null) }
     Surface(
         modifier = Modifier
             .then(
                 if (expanded) Modifier.height(buttonSize).widthIn(min = buttonSize)
                 else Modifier.size(buttonSize),
             )
-            .pointerInput(id, ui.layoutMode, dock) {
+            .onGloballyPositioned { coordinates ->
+                actionCoordinates = coordinates
+                if (dock != DockMode.FLOATING) registry?.putQuickAction(dock, id, coordinates)
+            }
+            .pointerInput(id, ui.layoutMode, dock, registry) {
                 if (ui.layoutMode && dock != DockMode.FLOATING) {
-                    var distanceX = 0f
+                    var distance = Offset.Zero
                     detectDragGesturesAfterLongPress(
                         onDrag = { change, drag ->
-                            distanceX += drag.x
+                            distance += drag
                             change.consume()
                         },
                         onDragEnd = {
-                            if (kotlin.math.abs(distanceX) >= size.width / 2f) {
-                                currentReorder(id, dock, if (distanceX > 0f) 1 else -1)
+                            val coordinates = actionCoordinates
+                            val end = coordinates?.localToRoot(
+                                Offset(size.width / 2f + distance.x, size.height / 2f + distance.y),
+                            )
+                            val target = end?.let { registry?.quickActionDropTarget(it) }
+                            if (target != null && target.first != dock) {
+                                currentReorder(id, target.first, target.second)
+                            } else if (kotlin.math.abs(distance.x) >= size.width / 2f) {
+                                currentReorder(id, dock, if (distance.x > 0f) 1 else -1)
                             }
-                            distanceX = 0f
+                            distance = Offset.Zero
                         },
-                        onDragCancel = { distanceX = 0f },
+                        onDragCancel = { distance = Offset.Zero },
                     )
                 } else {
                     var held = false
@@ -912,11 +936,53 @@ private fun quickSelected(ui: PlayerUi, id: QuickActionId): Boolean = when (id) 
     else -> false
 }
 
+/** A draggable, screen-relative confirmation target that cannot be pushed off the layout banner. */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+internal fun LayoutModeDoneButton(
+    xFraction: Float,
+    yFraction: Float,
+    onDone: () -> Unit,
+    onMove: (Float, Float) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val widthPx = constraints.maxWidth
+        val heightPx = constraints.maxHeight
+        var buttonSize by remember { mutableStateOf(IntSize.Zero) }
+        var draft by remember(xFraction, yFraction) {
+            mutableStateOf(Offset(xFraction.coerceIn(0f, 1f), yFraction.coerceIn(0f, 1f)))
+        }
+        val currentDraft by rememberUpdatedState(draft)
+        val maxX = (widthPx - buttonSize.width).coerceAtLeast(0)
+        val maxY = (heightPx - buttonSize.height).coerceAtLeast(0)
+        TextButton(
+            onClick = onDone,
+            modifier = Modifier
+                .offset { IntOffset((draft.x * maxX).roundToInt(), (draft.y * maxY).roundToInt()) }
+                .background(LocalSubLearnColors.current.promptBackdrop, RoundedCornerShape(Dimens.radiusMd))
+                .onSizeChanged { buttonSize = it }
+                .pointerInput(maxX, maxY) {
+                    detectDragGesturesAfterLongPress(
+                        onDrag = { change, amount ->
+                            val dx = if (maxX == 0) 0f else amount.x / maxX
+                            val dy = if (maxY == 0) 0f else amount.y / maxY
+                            draft = Offset((draft.x + dx).coerceIn(0f, 1f), (draft.y + dy).coerceIn(0f, 1f))
+                            change.consume()
+                        },
+                        onDragEnd = { onMove(currentDraft.x, currentDraft.y) },
+                    )
+                },
+        ) {
+            Text(stringResource(R.string.action_ok), color = LocalSubLearnColors.current.promptText)
+        }
+    }
+}
+
 /** Shown during a layout drag: the one instruction the user needs, and a way out. */
 @Composable
 internal fun LayoutModeBanner(
     hint: String,
-    onDone: () -> Unit,
     onArrange: () -> Unit,
     topVisible: Boolean,
     bottomVisible: Boolean,
@@ -955,9 +1021,6 @@ internal fun LayoutModeBanner(
             }
             TextButton(onClick = onArrange, modifier = Modifier.height(Dimens.touchTarget)) {
                 Text(stringResource(R.string.player_arrange_controls), color = LocalSubLearnColors.current.promptText)
-            }
-            TextButton(onClick = onDone, modifier = Modifier.height(Dimens.touchTarget)) {
-                Text(stringResource(R.string.action_ok), color = LocalSubLearnColors.current.promptText)
             }
         }
     }

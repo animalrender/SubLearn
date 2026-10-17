@@ -21,7 +21,9 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.IntSize
+import com.sublearn.core.settings.DockMode
 import com.sublearn.core.settings.GestureAction
+import com.sublearn.core.settings.QuickActionId
 import com.sublearn.core.subtitles.TrackRole
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.abs
@@ -67,6 +69,8 @@ internal class PlayerHitRegistry {
     private var surface: LayoutCoordinates? = null
     private val subtitles = LinkedHashMap<TrackRole, SubtitleSurface>()
     private val blockers = LinkedHashMap<Any, LayoutCoordinates>()
+    private val quickDocks = LinkedHashMap<DockMode, LayoutCoordinates>()
+    private val quickActions = LinkedHashMap<DockMode, LinkedHashMap<QuickActionId, LayoutCoordinates>>()
 
     fun attachSurface(coordinates: LayoutCoordinates) {
         surface = coordinates
@@ -97,6 +101,37 @@ internal class PlayerHitRegistry {
 
     fun removeBlocker(key: Any) {
         blockers.remove(key)
+    }
+
+    fun putQuickDock(dock: DockMode, coordinates: LayoutCoordinates) {
+        quickDocks[dock] = coordinates
+    }
+
+    fun removeQuickDock(dock: DockMode) {
+        quickDocks.remove(dock)
+        quickActions.remove(dock)
+    }
+
+    fun putQuickAction(dock: DockMode, id: QuickActionId, coordinates: LayoutCoordinates) {
+        quickActions.getOrPut(dock) { LinkedHashMap() }[id] = coordinates
+    }
+
+    fun removeQuickAction(dock: DockMode, id: QuickActionId) {
+        quickActions[dock]?.remove(id)
+    }
+
+    /** Find the dock and insertion point under a dragged action's final root-space position. */
+    fun quickActionDropTarget(position: Offset): Pair<DockMode, Int>? {
+        val targetDock = quickDocks.entries.firstOrNull { (_, coordinates) ->
+            coordinates.isAttached && coordinates.boundsInRoot().contains(position)
+        }?.key ?: return null
+        val targetActions = quickActions[targetDock].orEmpty().entries
+            .filter { (_, coordinates) -> coordinates.isAttached }
+            .sortedBy { (_, coordinates) -> coordinates.boundsInRoot().left }
+        val insertion = targetActions.count { (_, coordinates) ->
+            coordinates.boundsInRoot().center.x < position.x
+        }
+        return targetDock to insertion
     }
 
     /** Chrome and popups take their own touches; the surface must not also react to them. */

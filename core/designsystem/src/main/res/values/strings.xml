@@ -113,7 +113,7 @@
     <string name="subtitle_hide_learning">Hide learning subtitles</string>
     <string name="subtitle_hide_translation">Hide translation subtitles</string>
     <string name="subtitle_layout_mode">Layout mode</string>
-    <string name="subtitle_layout_hint">Drag a layer to move it. Its text is not tappable while the layout mode is open.</string>
+    <string name="subtitle_layout_hint">Drag a subtitle layer to move it; hold and drag OK to reposition this button. Arrange controls below.</string>
     <string name="subtitle_list">Subtitle list</string>
     <string name="subtitle_list_search">Search subtitles</string>
     <string name="subtitle_list_empty">No subtitle file is loaded for this layer.</string>
