@@ -191,6 +191,25 @@ clear_system_dialogs() {
     grep -aoE 'Application (Not Responding|Error): [A-Za-z0-9_.]+' | sed -E 's/^.*: //' | sort -u)
 }
 
+# Maestro's launchApp with clearState runs `pm clear` and, about a second later, `am start`. When the app
+# of the PREVIOUS flow is still on screen, `pm clear` removes its task, and the activity manager gives
+# that removal a destroy timeout of about a second (logcat: "Destroy timeout of remove-task") that
+# kills "the process of the task". If the new process has been forked by then, the timeout kills the
+# NEW one: it never attaches, the screen stays black, and the flow dies waiting for its first frame
+# (2 of 8 flows in one run). So the previous app is wiped here, and the timeout is given time to expire,
+# before Maestro starts anything.
+quiesce_app() {
+  adb shell pm clear "$PKG" </dev/null >/dev/null 2>&1
+  adb shell input keyevent KEYCODE_HOME </dev/null >/dev/null 2>&1
+  sleep "${UI_QUIESCE_SECONDS:-3}"
+}
+
+# The signature of that race in a flow's logcat: our new process was killed as part of a removed task, or
+# it never attached. A flow that failed like this says nothing about the app and is retried once.
+launch_race() {
+  grep -aqE "Process ProcessRecord\{[^}]*:$PKG_RE/[^}]*\} failed to attach|Killing [0-9]+:$PKG_RE/[^ ]+ \(adj -10000\): remove task" "$1/logcat-full.txt"
+}
+
 describe_device() {
   {
     echo "model:    $(adb shell getprop ro.product.model </dev/null | tr -d '\r')"
@@ -324,8 +343,29 @@ flow_name() {
   esac
 }
 
+# One attempt: sets ATTEMPT_CODE, ATTEMPT_SECS and ATTEMPT_HITS and leaves the evidence in $dir.
+attempt_flow() {
+  local file=$1 dir=$2 limit=$3 started hits
+  mkdir -p "$dir"
+  quiesce_app
+  clear_system_dialogs
+  adb logcat -b all -c </dev/null >/dev/null 2>&1 || adb logcat -c </dev/null >/dev/null 2>&1
+  started=$(date +%s)
+  timeout --kill-after=20 "$limit" "${MAESTRO[@]}" test "$file" --test-output-dir "$dir" </dev/null 2>&1 |
+    tee "$dir/maestro-console.txt"
+  ATTEMPT_CODE=${PIPESTATUS[0]}
+  ATTEMPT_SECS=$(($(date +%s) - started))
+
+  # Screen first, logcat last: the log then covers everything up to the moment we looked.
+  capture_screen "$dir"
+  hits=$(capture_logcat "$dir")
+  ATTEMPT_HITS=${hits:-0}
+  collect_shots "$dir"
+  shrink_pngs "$dir"
+}
+
 run_flow() {
-  local file=$1 name dir code=0 started elapsed result hits limit left
+  local file=$1 name dir code secs hits note=- result limit left
   name=$(flow_name "$file")
   dir=$OUT/maestro/$name
   mkdir -p "$dir"
@@ -333,41 +373,41 @@ run_flow() {
   left=$((BUDGET - ($(date +%s) - START_EPOCH)))
   if [ "$left" -le 30 ]; then
     log "flow $name: NOT RUN, the ${BUDGET}s budget is used up"
-    printf '%s\tFAIL\t%s\t%s\t%s\n' "$name" "not-run" 0 0 >>"$OUT/results.tsv"
+    printf '%s\tFAIL\t%s\t%s\t%s\t%s\n' "$name" "not-run" 0 0 "the ${BUDGET}s time budget was used up before it started" >>"$OUT/results.tsv"
     echo "FAIL (not run: the ${BUDGET}s time budget was used up before it started)" >"$dir/result.txt"
     return 0
   fi
   limit=$FLOW_TIMEOUT
   [ "$limit" -gt "$left" ] && limit=$left
 
-  clear_system_dialogs
   log "flow $name: start ($file, at most ${limit}s)"
-  adb logcat -b all -c </dev/null >/dev/null 2>&1 || adb logcat -c </dev/null >/dev/null 2>&1
-  started=$(date +%s)
-  timeout --kill-after=20 "$limit" "${MAESTRO[@]}" test "$file" --test-output-dir "$dir" </dev/null 2>&1 |
-    tee "$dir/maestro-console.txt"
-  code=${PIPESTATUS[0]}
-  elapsed=$(($(date +%s) - started))
+  attempt_flow "$file" "$dir" "$limit"
+  code=$ATTEMPT_CODE secs=$ATTEMPT_SECS hits=$ATTEMPT_HITS
+
+  # A launch race says nothing about the app: retry once, keep the first attempt's evidence next to the
+  # second's. A crash is never retried away, and any other failure is a real failure.
+  left=$((BUDGET - ($(date +%s) - START_EPOCH)))
+  if [ "$code" -ne 0 ] && [ "$hits" -eq 0 ] && [ "$left" -gt 90 ] && launch_race "$dir"; then
+    log "flow $name: the app never started (launch race, see quiesce_app); retrying once"
+    mv "$dir" "$dir.first" && mkdir -p "$dir" && mv "$dir.first" "$dir/attempt-1"
+    [ "$limit" -gt "$left" ] && limit=$left
+    attempt_flow "$file" "$dir" "$limit"
+    code=$ATTEMPT_CODE secs=$((secs + ATTEMPT_SECS)) hits=$ATTEMPT_HITS
+    note="second attempt: the first one never started the app (launch race); its evidence is in attempt-1/"
+  fi
 
   result=PASS
   [ "$code" -eq 0 ] || result=FAIL
-
-  # Screen first, logcat last: the log then covers everything up to the moment we looked.
-  capture_screen "$dir"
-  hits=$(capture_logcat "$dir")
-  hits=${hits:-0}
-  collect_shots "$dir"
-  shrink_pngs "$dir"
-
   {
     echo "result:  $result"
     echo "exit:    $code"
-    echo "seconds: $elapsed"
+    echo "seconds: $secs"
     echo "app crash matches: $hits"
     echo "app pids: $(cat "$dir/pids.txt" 2>/dev/null)"
+    [ "$note" = - ] || echo "note:    $note"
   } >"$dir/result.txt"
-  printf '%s\t%s\t%s\t%s\t%s\n' "$name" "$result" "$code" "$elapsed" "$hits" >>"$OUT/results.tsv"
-  log "flow $name: $result (exit $code, ${elapsed}s, $hits app crash match(es))"
+  printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$name" "$result" "$code" "$secs" "$hits" "$note" >>"$OUT/results.tsv"
+  log "flow $name: $result (exit $code, ${secs}s, $hits app crash match(es))"
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -375,10 +415,10 @@ run_flow() {
 # it is right even when the run died half way.
 # ---------------------------------------------------------------------------------------------
 write_status() {
-  local status=$OUT/STATUS.md total=0 passed=0 failed=0 crashes=0 name result code secs hits crash_word build_line emu_line dialog
+  local status=$OUT/STATUS.md total=0 passed=0 failed=0 crashes=0 name result code secs hits crash_word build_line emu_line dialog line
   mkdir -p "$OUT"
   if [ -s "$OUT/results.tsv" ]; then
-    while IFS=$'\t' read -r name result code secs hits; do
+    while IFS=$'\t' read -r name result code secs hits _; do
       total=$((total + 1))
       if [ "$result" = PASS ]; then passed=$((passed + 1)); else failed=$((failed + 1)); fi
       crashes=$((crashes + ${hits:-0}))
@@ -431,8 +471,10 @@ write_status() {
     if [ "$total" -eq 0 ]; then
       echo "none ran"
     else
-      while IFS=$'\t' read -r name result code secs hits; do
-        echo "- $result $name (${secs}s, exit $code, $hits app crash match(es))"
+      while IFS=$'\t' read -r name result code secs hits note; do
+        line="- $result $name (${secs}s, exit $code, $hits app crash match(es))"
+        if [ -n "$note" ] && [ "$note" != - ]; then line="$line; $note"; fi
+        echo "$line"
       done <"$OUT/results.tsv"
     fi
 
@@ -452,7 +494,7 @@ write_status() {
     if [ "$failed" -gt 0 ]; then
       echo
       echo "## Failed flows: the end of the Maestro console"
-      while IFS=$'\t' read -r name result code secs hits; do
+      while IFS=$'\t' read -r name result code secs hits _; do
         [ "$result" = PASS ] && continue
         echo
         echo "### $name"
@@ -480,7 +522,7 @@ write_status() {
       echo "none: no FATAL EXCEPTION, ANR, process death, native crash or am_crash/am_anr event for $PKG."
     else
       echo "Matching lines, first 60 per flow; the whole windows are in maestro/<flow>/app-crash.txt."
-      while IFS=$'\t' read -r name result code secs hits; do
+      while IFS=$'\t' read -r name result code secs hits _; do
         [ "${hits:-0}" -gt 0 ] || continue
         echo
         echo "### $name"
