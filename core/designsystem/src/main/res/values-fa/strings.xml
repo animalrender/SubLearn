@@ -694,4 +694,5 @@
     <string name="player_restart_prompt">این ویدیو را قبلاً دیده‌اید. از ابتدا پخش شود؟</string>
     <string name="player_restart_action">پخش از ابتدا</string>
     <string name="models_litertlm_unsupported">این فایل .litertlm به موتور LiteRT-LM نیاز دارد که در این نسخه موجود نیست. یک مدل .task انتخاب کنید.</string>
+    <string name="subtitle_file_name">فایل زیرنویس</string>
 </resources>

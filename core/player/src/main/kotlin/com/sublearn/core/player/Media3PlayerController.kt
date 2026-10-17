@@ -528,7 +528,9 @@ class Media3PlayerController(
         val position = exo.currentPosition.coerceAtLeast(0L)
         val wasPlaying = exo.isPlaying
         externalAudioUri = uri
-        externalAudioName = if (uri == null) null else displayName?.takeIf { it.isNotBlank() } ?: uri.substringAfterLast('/')
+        externalAudioName = if (uri == null) null else {
+            displayName?.takeIf { it.isNotBlank() } ?: DocumentNames.read(context, Uri.parse(uri))
+        }
         externalAudioTargetUri = if (uri == null) null else targetUri
         _state.value = _state.value.copy(externalAudioName = externalAudioName)
         applyPlaylist(position)

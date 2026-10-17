@@ -710,4 +710,5 @@
     <string name="player_restart_prompt">Previously played. Start from the beginning?</string>
     <string name="player_restart_action">Start over</string>
     <string name="models_litertlm_unsupported">This .litertlm file needs the LiteRT-LM engine, which is not included. Choose a .task model instead.</string>
+    <string name="subtitle_file_name">Subtitle file</string>
 </resources>

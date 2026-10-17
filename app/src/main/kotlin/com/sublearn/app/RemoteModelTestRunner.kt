@@ -26,7 +26,7 @@ class RemoteModelTestRunner(private val context: Context) : ModelTestRunner {
         var connection: ServiceConnection? = null
         try {
             withTimeoutOrNull(TEST_TIMEOUT_MS) {
-                suspendCancellableCoroutine { continuation ->
+                suspendCancellableCoroutine<ModelSelfTestReport> { continuation ->
                     fun finish(report: ModelSelfTestReport) {
                         if (continuation.isActive) continuation.resume(report)
                     }

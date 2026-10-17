@@ -24,7 +24,8 @@ class ModelTestService : Service() {
         executor.execute {
             val report = try {
                 val memory = ActivityManager.MemoryInfo()
-                getSystemService(ActivityManager::class.java).getMemoryInfo(memory)
+                val manager = getSystemService(ActivityManager::class.java) ?: error("Device memory service unavailable")
+                manager.getMemoryInfo(memory)
                 val required = (NlpModelCatalog.byId[modelId]?.minRamMb ?: 0).toLong() * 1024 * 1024
                 if (memory.lowMemory || memory.availMem - memory.threshold < required) {
                     testFailure(modelId, "Not enough free RAM to test this model. Close other apps and try again.")

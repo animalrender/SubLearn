@@ -13,7 +13,9 @@ object DocumentNames {
                 if (column >= 0 && cursor.moveToFirst()) cursor.getString(column) else null
             }
         }.getOrNull()?.takeIf { it.isNotBlank() }
-        return provided ?: uri.lastPathSegment?.substringAfterLast('/')
-            ?.takeIf { it.isNotBlank() && (uri.scheme != "content" || '.' in it) } ?: fallback
+        val segment = uri.lastPathSegment?.substringAfterLast('/')
+        val safeFallback = fallback.takeUnless { uri.scheme == "content" && (it == segment || it == uri.toString()) } ?: "file"
+        return provided ?: segment
+            ?.takeIf { it.isNotBlank() && (uri.scheme != "content" || '.' in it) } ?: safeFallback
     }
 }

@@ -405,7 +405,7 @@ private fun SubtitleManagerSheet(
                 onCheckedChange = { enabled -> viewModel.setExternalFileEnabled(role, key, enabled) },
             )
             Text(
-                text = layer.externalFileNames[key] ?: key.substringAfterLast('/').ifBlank { key },
+                text = layer.externalFileNames[key] ?: stringResource(R.string.subtitle_file_name),
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

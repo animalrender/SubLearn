@@ -59,6 +59,7 @@ class DocumentNamesTest {
     @Test fun missingProviderNameDoesNotDisplayAnOpaqueId() {
         provider(null)
         assertEquals("file", DocumentNames.read(context, uri))
+        assertEquals("file", DocumentNames.read(context, uri, "7880"))
     }
 
     @Test fun fileUriUsesItsFileName() {

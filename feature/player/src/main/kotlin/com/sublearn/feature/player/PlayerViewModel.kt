@@ -2084,7 +2084,7 @@ class PlayerViewModel(
                 else -> LayerSource.NONE
             }
             val names = storedKeys.associateWith { key ->
-                externalTracks.getValue(role)[key]?.track?.name ?: key.substringAfterLast('/').ifBlank { key }
+                externalTracks.getValue(role)[key]?.track?.name ?: application.getString(R.string.subtitle_file_name)
             }
             val block = externalLines.firstOrNull()?.block
             val text = lines.takeIf { it.isNotEmpty() }?.joinToString("\n") { it.text }

@@ -750,3 +750,5 @@ and rotate. With no network: the same, plus translation only for a previously do
   offers the same passive action. Restart clears any prior shadowing plan before seeking to zero.
 - The three new resume-position tests also passed locally with the direct assertion harness. Android
   build/unit tests/lint remain the CI authority; no emulator or phone execution is claimed.
+- Removed numeric-ID UI fallbacks during subtitle restore/loading too; unavailable metadata produces
+  a generic filename label rather than an opaque ID. External-audio fallback uses provider names.
