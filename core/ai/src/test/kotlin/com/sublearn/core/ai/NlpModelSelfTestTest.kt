@@ -77,6 +77,14 @@ class NlpModelSelfTestTest {
     }
 
     @Test
+    fun `litertlm bundles are rejected before calling the MediaPipe loader`() {
+        val test = NlpModelSelfTest(store, llmLoader = { _, _, _ -> error("must not enter native code") })
+        val report = test.run("llm-smollm2-360m")
+        assertFalse(report.ok)
+        assertTrue(report.detail, report.detail.contains("LiteRT-LM"))
+    }
+
+    @Test
     fun `a model that is not installed fails without touching a loader`() {
         var loads = 0
         val test = NlpModelSelfTest(store, embedderLoader = { _, _, _ -> loads++; error("must not load") })

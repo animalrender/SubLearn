@@ -722,11 +722,12 @@ private fun AccuracyModelCard(
         append(" · ")
         append(modelRuntime(row.model.runtime))
     }
+    val formatWarning = if (row.model.requiresLiteRtLmEngine) stringResource(R.string.models_litertlm_unsupported) else null
     val downloading = row.state as? NlpModelState.Downloading
 
     DownloadItemCard(
         name = row.model.name,
-        description = description,
+        description = listOfNotNull(description, formatWarning).joinToString("\n"),
         sizeBytes = row.model.sizeBytes,
         state = row.toDownloadItemState(runtimeAvailable),
         modifier = Modifier.fillMaxWidth(),
@@ -804,6 +805,7 @@ private fun modelRuntime(runtime: NlpModelRuntime): String = when (runtime) {
 @Composable
 private fun NlpModelRow.toDownloadItemState(runtimeAvailable: Boolean): DownloadItemState = when (val current = state) {
     is NlpModelState.Available -> when {
+        model.requiresLiteRtLmEngine -> DownloadItemState.UNAVAILABLE(stringResource(R.string.models_litertlm_unsupported))
         !runtimeAvailable -> DownloadItemState.UNAVAILABLE(
             stringResource(R.string.settings_models_nlp_runtime_missing, model.runtime.name),
         )
@@ -817,7 +819,7 @@ private fun NlpModelRow.toDownloadItemState(runtimeAvailable: Boolean): Download
 
     is NlpModelState.Downloading -> DownloadItemState.DOWNLOADING
     is NlpModelState.Installed -> DownloadItemState.INSTALLED
-    is NlpModelState.Error -> DownloadItemState.ERROR(current.message, retryable = runtimeAvailable)
+    is NlpModelState.Error -> DownloadItemState.ERROR(current.message, retryable = runtimeAvailable && !model.requiresLiteRtLmEngine)
 }
 
 /** The translation model's state, in the shared card's vocabulary. */

@@ -735,3 +735,7 @@ and rotate. With no network: the same, plus translation only for a previously do
   resumes. First-time opens do not ask; the action expires without stopping playback.
 - Local source, symbol, dependency and EN/FA resource checks passed. Android SDK/JVM are absent locally;
   CI build/unit tests/lint and real-device tests are pending at this entry's creation.
+- Follow-up audit: SmolLM2 is a `.litertlm` artifact incorrectly routed to MediaPipe. New downloads
+  are now explicitly unavailable with EN/FA explanation, and installer/test/native loader refuse it
+  before native code. Added a regression ensuring the loader is never called for this asset. Enabling
+  it requires a separate LiteRT-LM engine or a verified `.task`; no unsupported runtime is faked.

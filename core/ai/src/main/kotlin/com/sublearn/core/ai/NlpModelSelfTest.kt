@@ -59,6 +59,9 @@ class NlpModelSelfTest(
     private fun runProbe(modelId: String): ModelSelfTestReport {
         val model = NlpModelCatalog.byId[modelId]
             ?: return failed(modelId, "the catalog has no model called $modelId")
+        if (model.requiresLiteRtLmEngine) {
+            return failed(modelId, "This .litertlm model requires LiteRT-LM, not this build's MediaPipe engine. Use a .task model.")
+        }
         val layout = store.layoutFor(modelId)
             ?: return failed(modelId, "this build has no file layout for $modelId")
         if (!store.isInstalled(modelId)) return failed(modelId, "the model is not installed")

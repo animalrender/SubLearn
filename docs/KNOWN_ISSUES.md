@@ -184,3 +184,8 @@ TODO comment; each entry has a route to being fixed.
     not yet been exercised on hardware. They do not make an incompatible model runnable or isolate
     normal player/lab inference. Route: run the new manual test below, capture model ID, ABI, Android
     version and logcat/native tombstone if it fails, then repair the runtime/model-specific cause.
+35. **SmolLM2's catalog asset is `.litertlm`, not a MediaPipe `.task`.** This build contains only
+    MediaPipe `LlmInference`. The incompatible format is now explicitly unavailable for new downloads
+    and fails safely before native load/test; existing files are removable. Route: add and validate
+    the separate LiteRT-LM engine, or publish a verified MediaPipe-compatible asset. Other `.task`
+    models are unchanged. This is a confirmed compatibility defect, not proof of the unnamed crash.

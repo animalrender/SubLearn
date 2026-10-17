@@ -701,3 +701,10 @@ also starts playback. A resumed file shows an eight-second bottom turquoise hint
 seeks to zero and plays. First opens and files without a resumable position do not show it; existing
 remember-position/resume settings and end-of-file guards still apply. Changing media or replacing the
 hint clears its action so it cannot restart another file. This changes no persisted settings schema.
+
+D-89 follow-up: the installed-model audit also found `SmolLM2-360M` is a `.litertlm` file while this
+build uses MediaPipe `LlmInference`, not the separate LiteRT-LM engine. Downloads now explains this
+in EN/FA and does not offer an unusable new download; tests, installer and native loader reject this
+format before invoking MediaPipe. Existing files can still be deleted. A future real LiteRT-LM
+adapter (or a verified compatible `.task` asset) is required to enable that alternative; renaming the
+file is not a conversion. No claim is made that this was the owner's unnamed crashing model.
