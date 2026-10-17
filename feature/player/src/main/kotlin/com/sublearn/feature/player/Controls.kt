@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -766,7 +767,12 @@ internal fun LayoutModeBanner(hint: String, onDone: () -> Unit, modifier: Modifi
 
 /** A short status line; tapping it dismisses it early. The timing lives in the ViewModel. */
 @Composable
-internal fun Snackbarish(text: String, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+internal fun Snackbarish(
+    text: String,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+    onRestart: (() -> Unit)? = null,
+) {
     Surface(
         modifier = modifier
             .widthIn(max = Dimens.bannerMaxWidth)
@@ -775,13 +781,20 @@ internal fun Snackbarish(text: String, onDismiss: () -> Unit, modifier: Modifier
             .combinedClickable(onClick = onDismiss),
         color = LocalSubLearnColors.current.promptBackdrop,
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyMedium,
-            color = LocalSubLearnColors.current.promptText,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = Dimens.lg, vertical = Dimens.sm),
-        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyMedium,
+                color = LocalSubLearnColors.current.promptText,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = Dimens.lg, vertical = Dimens.sm),
+            )
+            if (onRestart != null) {
+                TextButton(onClick = onRestart, modifier = Modifier.heightIn(min = Dimens.touchTarget)) {
+                    Text(stringResource(R.string.player_restart_action), color = LocalSubLearnColors.current.promptText)
+                }
+            }
+        }
     }
 }
 

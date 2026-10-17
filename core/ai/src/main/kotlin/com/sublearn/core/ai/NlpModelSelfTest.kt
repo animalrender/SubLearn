@@ -50,7 +50,13 @@ class NlpModelSelfTest(
     private val llmLoader: LlmLoader? = null,
 ) {
 
-    fun run(modelId: String): ModelSelfTestReport {
+    fun run(modelId: String): ModelSelfTestReport = try {
+        runProbe(modelId)
+    } catch (error: Throwable) {
+        failed(modelId, "model test failed: ${error.message ?: error.javaClass.simpleName}")
+    }
+
+    private fun runProbe(modelId: String): ModelSelfTestReport {
         val model = NlpModelCatalog.byId[modelId]
             ?: return failed(modelId, "the catalog has no model called $modelId")
         val layout = store.layoutFor(modelId)

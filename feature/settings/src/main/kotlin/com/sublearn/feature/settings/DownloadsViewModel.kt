@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.sublearn.core.ai.NlpModelCatalog
 import com.sublearn.core.ai.ModelFileLayout
 import com.sublearn.core.ai.NlpModelInstaller
-import com.sublearn.core.ai.NlpModelSelfTest
+import com.sublearn.core.ai.ModelTestRunner
 import com.sublearn.core.ai.ProfileAvailability
 import com.sublearn.core.ai.ProfileTier
 import com.sublearn.core.ai.ProfiledNlpEngineCache
@@ -74,7 +74,7 @@ class DownloadsViewModel(
     private val downloader: PackDownloader,
     private val lexiconAccess: PackLexiconAccess,
     private val modelInstaller: NlpModelInstaller,
-    private val modelSelfTest: NlpModelSelfTest,
+    private val modelSelfTest: ModelTestRunner,
     private val engineCache: ProfiledNlpEngineCache,
     private val translationModels: TranslationModelManager,
     private val deviceCapabilities: DeviceCapabilityReader,

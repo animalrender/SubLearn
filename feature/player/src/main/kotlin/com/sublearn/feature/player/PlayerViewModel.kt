@@ -1,5 +1,6 @@
 package com.sublearn.feature.player
 
+import com.sublearn.core.player.DocumentNames
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -202,7 +203,8 @@ class PlayerViewModel(
             val currentState = controller.state.value
             val stillLoaded = openedTarget?.uri == uri && currentState.target?.uri == uri && currentState.error == null
             if (stillLoaded) {
-                // Coming back to the video that is already playing: keep playback and the loaded layers.
+                // Re-entering the player starts playback without rebuilding the loaded layers.
+                controller.play()
                 subtitleUris.forEach { picked -> loadFile(picked.role, picked.uri, picked.name) }
                 // Restore every remembered file-backed track, not just the last one in each layer.
                 TrackRole.entries.forEach { role ->
@@ -217,6 +219,7 @@ class PlayerViewModel(
                 publish()
                 return@launch
             }
+            message(null)
             _ui.value = _ui.value.copy(opening = true)
             mediaGeneration += 1L
             subtitleLoadTokens.clear()
@@ -256,6 +259,7 @@ class PlayerViewModel(
             controller.clearTrackOverride(PlayerTrackType.TEXT)
             val playlist = recentPlaylist(target)
             controller.setPlaylist(playlist, playlist.indexOfFirst { it.uri == uri }.coerceAtLeast(0))
+            controller.play()
             // The default speed and aspect are per session, so they are applied once per opened video.
             if (settings.player.defaultSpeedPercent != NORMAL_SPEED) controller.setSpeedPercent(settings.player.defaultSpeedPercent)
             controller.setAspect(settings.player.aspect, settings.player.customAspectWidth, settings.player.customAspectHeight)
@@ -273,7 +277,7 @@ class PlayerViewModel(
                 if (settings.subtitles.autoLoadExternal) loadSidecars(uri)
             }
             if (saved != null && position > 0L) {
-                message(application.getString(R.string.player_msg_resumed, clock(position)))
+                message(application.getString(R.string.player_restart_prompt), offerRestart = true)
             }
             publish()
         }
@@ -294,6 +298,7 @@ class PlayerViewModel(
 
     /** A queue transition changes media identity just like an explicit open; never reuse old tracks. */
     private fun onPlaybackTargetChanged(target: MediaTarget) {
+        message(null)
         openedTarget = target
         mediaGeneration += 1L
         subtitleLoadTokens.clear()
@@ -382,7 +387,10 @@ class PlayerViewModel(
         subtitleLoadTokens[loadKey] = token
         viewModelScope.launch {
             val config = normalizer ?: _ui.value.settings.subtitles.normalizer
-            val result = subtitles.load(SubtitleFile(key = uri, name = name), role, config)
+            val resolvedName = withContext(Dispatchers.IO) {
+                DocumentNames.read(application, android.net.Uri.parse(uri), name)
+            }
+            val result = subtitles.load(SubtitleFile(key = uri, name = resolvedName), role, config)
             val loaded = result.getOrNull()
             if (loaded != null && generation == mediaGeneration && subtitleLoadTokens[loadKey] == token) {
                 settingsRepository.update { settings ->
@@ -2134,13 +2142,19 @@ class PlayerViewModel(
     private fun documentFor(role: TrackRole): SubtitleDocument? = activeExternalDocuments(role).firstOrNull()?.second?.document
 
     /** A message that clears itself, so a stale hint never sits over the video. */
-    fun message(text: String?) {
+    fun restartFromBeginning() {
+        controller.seekTo(0L)
+        controller.play()
+        message(null)
+    }
+
+    fun message(text: String?, offerRestart: Boolean = false) {
         messageJob?.cancel()
-        _ui.value = _ui.value.copy(message = text)
+        _ui.value = _ui.value.copy(message = text, offerRestart = offerRestart)
         if (text != null) {
             messageJob = viewModelScope.launch {
-                delay(MESSAGE_MS)
-                _ui.value = _ui.value.copy(message = null)
+                delay(if (offerRestart) RESTART_PROMPT_MS else MESSAGE_MS)
+                _ui.value = _ui.value.copy(message = null, offerRestart = false)
             }
         }
     }
@@ -2198,6 +2212,7 @@ class PlayerViewModel(
         private const val HUD_LINGER_MS = 350L
         private const val DOUBLE_TAP_HUD_MS = 700L
         private const val MESSAGE_MS = 2_500L
+        private const val RESTART_PROMPT_MS = 8_000L
         private const val MS_PER_SECOND = 1_000L
         private const val NORMAL_SPEED = 100
         private const val PERCENT = 100f

@@ -675,3 +675,29 @@ packs are switched from inside the lab and the next analysis uses them. Ranking 
 first eight ambiguous words per block, because ranking is what a tap costs and the SMART profile
 pays for it with an LLM call. The lab writes nothing to My Words or the span cache; it changes only
 the two settings it exists to compare.
+
+**D-88 — SAF names are metadata, not URI IDs; safetensors follows the wire format.**
+`core:player/DocumentNames` reads `OpenableColumns.DISPLAY_NAME` before any path fallback. Pickers,
+restored player subtitle sources, sidecar matching, text imports and external intents share it.
+A numeric content URI segment such as `7880` is not a filename. Safetensors' eight-byte length is
+little-endian; `RandomAccessFile.readLong()` is big-endian, which rejected healthy Potion downloads.
+Fixtures now write the real little-endian format, and shape/offset validation rejects truncated or
+inconsistent tensors before allocation. No model bytes or third-party data are added to the repo.
+
+**D-89 — A model self-test must not share the activity's process.**
+`ModelTestRunner` is a suspend boundary injected into Downloads. The app binds a non-exported
+`ModelTestService` in `:model_test`; it uses the same catalog/store/loaders, checks currently available
+RAM, and returns a small primitive Bundle report through Messenger. An uncaught native signal cannot
+be handled by `try/catch`: binder disconnect becomes an explicit failed report instead. Binding,
+exceptions, cancellation and a two-minute timeout all release the service; its dedicated process is
+terminated on unbind to reclaim native allocations. The player's cached engine is invalidated before
+testing to avoid a second resident copy. This contains diagnostic crashes, not native crashes during
+normal subtitle analysis; the reported unnamed model/device still needs real-device investigation.
+
+**D-90 — Opening a player starts playback; restarting is a passive action.**
+New media explicitly calls `play()` after preparing its queue, and returning to already-loaded media
+also starts playback. A resumed file shows an eight-second bottom turquoise hint with a localized
+"Start over" button; ignoring/dismissing it leaves playback running at the saved position. The action
+seeks to zero and plays. First opens and files without a resumable position do not show it; existing
+remember-position/resume settings and end-of-file guards still apply. Changing media or replacing the
+hint clears its action so it cannot restart another file. This changes no persisted settings schema.

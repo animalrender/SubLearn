@@ -25,6 +25,9 @@
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="33">
 
+        <!-- A native abort/OOM during a diagnostic must not kill the player process. -->
+        <service android:name=".ModelTestService" android:exported="false" android:process=":model_test" />
+
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|uiMode"

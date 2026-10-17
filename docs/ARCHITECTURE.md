@@ -307,3 +307,16 @@ Adding a *dictionary* for that language is a different, larger change: see
 - **`FakePlayerController`** exists so the player view model can be driven without Media3: a future
   commit adds view-model-level tests on it (logged in [KNOWN_ISSUES.md](KNOWN_ISSUES.md) as the current
   test gap, not as a passing claim).
+
+## Diagnostic process boundary and document identity (D-88..D-90)
+
+Downloads depends on `core:ai/ModelTestRunner`, bound by app DI to `RemoteModelTestRunner`. The local
+`NlpModelSelfTest` remains the pure verdict/probe implementation, but is invoked by a non-exported
+service in `:model_test`, not by the settings coroutine. Primitive Messenger reports, service-death
+handling, timeout and unbind cleanup keep diagnostic native failures out of the activity process.
+The process has the app UID to read privately installed models; it is not an Android isolated UID.
+
+`DocumentNames` in `core:player` resolves provider metadata for both features and app intents; restored
+subtitle parsing re-queries it on IO before format detection. Playback explicitly starts on open; a
+short-lived `PlayerUi.offerRestart` action accompanies only saved-position resumes and is cleared with
+the associated message on media changes. Neither behaviour adds persisted settings.

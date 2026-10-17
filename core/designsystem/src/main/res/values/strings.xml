@@ -707,4 +707,6 @@
     <string name="lab_res_low">The system reports low memory.</string>
     <string name="lab_error_parse">The file could not be read: %1$s</string>
     <string name="lab_busy">The lab is working; wait for it to finish before leaving.</string>
+    <string name="player_restart_prompt">Previously played. Start from the beginning?</string>
+    <string name="player_restart_action">Start over</string>
 </resources>

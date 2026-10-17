@@ -691,4 +691,6 @@
     <string name="lab_res_low">سیستم کمبود حافظه گزارش می‌دهد.</string>
     <string name="lab_error_parse">فایل خوانده نشد: %1$s</string>
     <string name="lab_busy">آزمایشگاه مشغول است؛ پیش از خروج صبر کنید تا تمام شود.</string>
+    <string name="player_restart_prompt">این ویدیو را قبلاً دیده‌اید. از ابتدا پخش شود؟</string>
+    <string name="player_restart_action">پخش از ابتدا</string>
 </resources>

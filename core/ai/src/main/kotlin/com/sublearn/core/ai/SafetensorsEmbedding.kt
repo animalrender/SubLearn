@@ -64,7 +64,7 @@ object Safetensors {
             val info = tensors[name] ?: return null
             val elementSize = elementSizeOf(info.dtype) ?: return null
             val count = (info.end - info.start) / elementSize
-            if (count <= 0 || count > Int.MAX_VALUE) return null
+            if (count <= 0 || count > Int.MAX_VALUE / elementSize) return null
 
             val bytes = ByteBuffer.allocate((count * elementSize).toInt()).order(ByteOrder.LITTLE_ENDIAN)
             channel.position(headerLength + info.start)
@@ -121,7 +121,7 @@ object Safetensors {
         }
         return try {
             RandomAccessFile(file, "r").use { raf ->
-                val headerLength = raf.readLong()
+                val headerLength = java.lang.Long.reverseBytes(raf.readLong())
                 if (headerLength <= 0 || headerLength > MAX_HEADER_BYTES || 8 + headerLength > file.length()) {
                     return AppResult.failure(
                         SubLearnError(SubLearnError.Kind.MalformedInput, "safetensors header length is not usable: $headerLength"),
@@ -133,11 +133,29 @@ object Safetensors {
                     ?: return AppResult.failure(
                         SubLearnError(SubLearnError.Kind.MalformedInput, "safetensors header is not valid JSON"),
                     )
+                val dataBytes = file.length() - 8 - headerLength
+                if (tensors.values.any { !validTensor(it, dataBytes) }) {
+                    return AppResult.failure(
+                        SubLearnError(SubLearnError.Kind.MalformedInput, "safetensors tensor shape or byte range is invalid"),
+                    )
+                }
                 AppResult.success(SafetensorsFile.create(file, tensors, 8 + headerLength))
             }
         } catch (t: Throwable) {
             AppResult.failure(SubLearnError.from(t))
         }
+    }
+
+    private fun validTensor(info: TensorInfo, dataBytes: Long): Boolean {
+        if (info.start < 0L || info.end < info.start || info.end > dataBytes) return false
+        var count = 1L
+        for (dimension in info.shape) {
+            if (dimension < 0L || dimension > Int.MAX_VALUE) return false
+            if (dimension != 0L && count > Long.MAX_VALUE / dimension) return false
+            count *= dimension
+        }
+        val size = elementSizeOf(info.dtype) ?: return true
+        return count <= Long.MAX_VALUE / size && info.end - info.start == count * size
     }
 
     /**

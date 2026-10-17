@@ -117,6 +117,16 @@ class NlpModelSelfTestTest {
     }
 
     @Test
+    fun `a throwing loader is a failed verdict rather than an uncaught crash`() {
+        NlpRuntimeRegistry.register(NlpModelRuntime.ONNX)
+        installAtPublishedSize("emb-minilm-l6-int8")
+        val test = NlpModelSelfTest(store, embedderLoader = { _, _, _ -> throw LinkageError("native load refused") })
+        val report = test.run("emb-minilm-l6-int8")
+        assertFalse(report.ok)
+        assertTrue(report.detail, report.detail.contains("native load refused"))
+    }
+
+    @Test
     fun `a loader failure is the verdict`() {
         NlpRuntimeRegistry.register(NlpModelRuntime.ONNX)
         installAtPublishedSize("emb-minilm-l6-int8")

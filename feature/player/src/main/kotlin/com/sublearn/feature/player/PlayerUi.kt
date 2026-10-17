@@ -28,6 +28,7 @@ data class PlayerUi(
     val opening: Boolean = false,
     /** Transient one-line status; cleared on its own after a few seconds. */
     val message: String? = null,
+    val offerRestart: Boolean = false,
     val learningMode: LearningMode = LearningMode.ENTERTAINMENT,
     /** SUB-3: subtitle plates are draggable, gestures are off and the chrome is hidden. */
     val layoutMode: Boolean = false,

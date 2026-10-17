@@ -719,3 +719,19 @@ translation toggle to invert it, open the subtitle list and seek by tapping a ro
 and stop-at-end, add a word to My Words and see it styled, open Settings → Fonts and change only the
 learning surface, then Settings → About → export and re-import the JSON, and finally put the app in PiP
 and rotate. With no network: the same, plus translation only for a previously downloaded model.
+
+## 2026-10-17 — file names, model diagnostics and autoplay (D-88..D-90)
+
+- Read the agent handbook and product/architecture, design, decisions and current verification docs.
+- Replaced SAF document-ID labels with shared DISPLAY_NAME resolution, including remembered subtitle
+  loads and sidecar matching. Added provider-backed Robolectric regressions for numeric URIs, missing
+  metadata, local files and canceled picker results.
+- Fixed the safetensors header endianness and the misleading big-endian test fixtures. Added tensor
+  shape/range checks before allocation and regressions for truncated weights and inconsistent shapes.
+- Downloads model tests now bind a non-exported, disposable process. Free-memory checks, exception
+  reports, binder-death reporting, timeout and unbind cleanup protect the main UI from test failures.
+  Added a throwing-loader regression; actual native abort/OOM containment still needs device testing.
+- Player explicitly autoplays and offers a localized, non-blocking restart action only on saved-position
+  resumes. First-time opens do not ask; the action expires without stopping playback.
+- Local source, symbol, dependency and EN/FA resource checks passed. Android SDK/JVM are absent locally;
+  CI build/unit tests/lint and real-device tests are pending at this entry's creation.

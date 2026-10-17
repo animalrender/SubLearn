@@ -391,6 +391,7 @@ fun PlayerScreen(
             ui.message?.let { text ->
                 Snackbarish(
                     text = text,
+                    onRestart = if (ui.offerRestart) viewModel::restartFromBeginning else null,
                     onDismiss = { viewModel.message(null) },
                     modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = Dimens.snackbarBottom),
                 )

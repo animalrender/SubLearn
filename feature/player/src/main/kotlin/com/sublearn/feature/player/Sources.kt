@@ -1,5 +1,6 @@
 package com.sublearn.feature.player
 
+import com.sublearn.core.player.DocumentNames
 import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
@@ -48,7 +49,7 @@ class SafSubtitleFileSource(private val context: Context) : SubtitleFileSource {
 
 private fun Context.listSubtitleChildren(treeUri: String, videoKey: String): List<SubtitleFile> {
     val base = Uri.parse(videoKey)
-    val videoName = base.lastPathSegment?.substringAfterLast('/') ?: return emptyList()
+    val videoName = DocumentNames.read(this, base).takeUnless { it == "file" } ?: return emptyList()
     val stem = videoName.substringBeforeLast('.')
     val children = runCatching {
         DocumentsContract.buildChildDocumentsUriUsingTree(Uri.parse(treeUri), DocumentsContract.getTreeDocumentId(Uri.parse(treeUri)))
@@ -82,7 +83,7 @@ class SafTextResourceReader(private val context: Context) : TextResourceReader {
     override suspend fun readText(uriKey: String): AppResult<Pair<String, String>> = withContext(Dispatchers.IO) {
         runCatching {
             val uri = Uri.parse(uriKey)
-            val name = uri.lastPathSegment?.substringAfterLast('/') ?: "list.txt"
+            val name = DocumentNames.read(context, uri, "list.txt")
             val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
                 ?: return@runCatching AppResult.failure(SubLearnError(SubLearnError.Kind.NotFound, "the file could not be opened"))
             AppResult.success(name to com.sublearn.core.subtitles.CharsetSniffer.decode(bytes).text)

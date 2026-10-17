@@ -177,3 +177,10 @@ TODO comment; each entry has a route to being fixed.
     pass.** Both bounds are deliberate (a SMART ranking is an LLM call per word), but they mean the
     lab's numbers are a lower bound for a full block. Route: a "rank everything" switch with a
     visible time budget, once the engines have run on a device (#24).
+
+34. **The owner's unnamed model crash still needs a model ID/device and native crash log.** Downloads
+    self-tests now execute in a disposable `:model_test` process (D-89), so a native abort there should
+    produce a failed report without closing the activity. This containment and free-RAM guard have
+    not yet been exercised on hardware. They do not make an incompatible model runnable or isolate
+    normal player/lab inference. Route: run the new manual test below, capture model ID, ABI, Android
+    version and logcat/native tombstone if it fails, then repair the runtime/model-specific cause.
