@@ -1,0 +1,47 @@
+# Scratch (deleted before the merge): check the cheatsheet items the docs will recommend, on the
+# real app. hideKeyboard closes the soft keyboard before a tap that a suggestion could steal; back
+# and the toolbar's "Back" step out of a screen; optional: true lets a tap that may not exist pass.
+appId: com.sublearn.app.debug
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Open a video"
+    timeout: 60000
+- tapOn: "Settings"
+- extendedWaitUntil:
+    visible: "Quiz"
+    timeout: 15000
+- tapOn:
+    text: "Settings"
+    below: "Quiz"
+- extendedWaitUntil:
+    visible: "Search settings"
+    timeout: 20000
+- tapOn: "Search settings"
+- inputText: "download"
+- extendedWaitUntil:
+    visible: "Translation model, offline packs, accuracy models"
+    timeout: 10000
+- hideKeyboard
+- takeScreenshot: scratch-keyboard-hidden
+# With the keyboard gone the title is the only "Downloads" left on screen.
+- tapOn: "Downloads"
+- extendedWaitUntil:
+    visible: "Offline translation"
+    timeout: 20000
+- takeScreenshot: scratch-downloads-top
+# The toolbar arrow has the content description "Back". The query survives the trip, so the
+# placeholder "Search settings" stays hidden and the filtered row is the proof we are back.
+- tapOn: "Back"
+- extendedWaitUntil:
+    visible: "Translation model, offline packs, accuracy models"
+    timeout: 10000
+- tapOn:
+    text: "A button that does not exist"
+    optional: true
+- back
+- extendedWaitUntil:
+    visible: "Open a video"
+    timeout: 15000
+- takeScreenshot: scratch-back-on-home

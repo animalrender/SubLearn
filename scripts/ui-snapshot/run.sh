@@ -14,6 +14,7 @@
 # that matters is written down (out/results.tsv) instead of being swallowed.
 
 set -uo pipefail
+# C for grep, awk and sort: logcat is not always valid UTF-8. The JVM is the exception (see MAESTRO).
 export LC_ALL=C
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 2
@@ -27,6 +28,9 @@ BUDGET=${UI_BUDGET_SECONDS:-840}          # seconds for the whole run, so STATUS
 CONTEXT=40                                # lines of logcat kept after every crash match
 SNAPSHOT_BRANCH=ui-snapshots
 START_EPOCH=$(date +%s)
+# Maestro prints the hierarchy with the JVM's default charset, which follows the locale: under C every
+# Persian label and every arrow in a dump would come out as "?". So it, and only it, gets UTF-8.
+MAESTRO=(env LC_ALL=C.UTF-8 maestro)
 
 BRANCH=${GITHUB_REF_NAME:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)}
 SHA=$(git rev-parse HEAD 2>/dev/null || echo unknown)
@@ -160,7 +164,7 @@ install_maestro() {
     fatal "Maestro is not installed; see maestro-install.txt"
     return 1
   fi
-  maestro --version </dev/null 2>&1 | tail -n 1 >"$OUT/maestro-version.txt"
+  "${MAESTRO[@]}" --version </dev/null 2>&1 | tail -n 1 >"$OUT/maestro-version.txt"
   log "maestro $(cat "$OUT/maestro-version.txt")"
 }
 
@@ -200,7 +204,7 @@ capture_screen() {
   [ -s "$dir/final.png" ] || rm -f "$dir/final.png"
 
   # The final-screen hierarchy. Maestro writes its own dump only for some steps, so take one here.
-  if timeout 120 maestro hierarchy </dev/null >"$dir/hierarchy.raw" 2>"$dir/hierarchy.err"; then
+  if timeout 120 "${MAESTRO[@]}" hierarchy </dev/null >"$dir/hierarchy.raw" 2>"$dir/hierarchy.err"; then
     sed -n '/^[[:space:]]*[{[]/,$p' "$dir/hierarchy.raw" >"$dir/hierarchy.json"
   fi
   rm -f "$dir/hierarchy.raw"
@@ -232,7 +236,7 @@ capture_logcat() {
   # Our pids: every "Start proc <pid>:com.sublearn.app.debug" (there are several after restarts, and
   # one more for the :model_test process), plus whatever is running now.
   pids=$({
-    grep -oE "Start proc [0-9]+:$PKG_RE" "$full" | sed -E 's/^Start proc ([0-9]+):.*/\1/'
+    grep -aoE "Start proc [0-9]+:$PKG_RE" "$full" | sed -E 's/^Start proc ([0-9]+):.*/\1/'
     adb shell ps -A -o PID,NAME </dev/null 2>/dev/null | tr -d '\r' | awk -v p="$PKG" 'NR > 1 && index($2, p) == 1 { print $1 }'
   } | sort -un | tr '\n' ' ')
   pids=${pids% }
@@ -314,7 +318,7 @@ run_flow() {
   log "flow $name: start ($file, at most ${limit}s)"
   adb logcat -b all -c </dev/null >/dev/null 2>&1 || adb logcat -c </dev/null >/dev/null 2>&1
   started=$(date +%s)
-  timeout --kill-after=20 "$limit" maestro test "$file" --test-output-dir "$dir" </dev/null 2>&1 |
+  timeout --kill-after=20 "$limit" "${MAESTRO[@]}" test "$file" --test-output-dir "$dir" </dev/null 2>&1 |
     tee "$dir/maestro-console.txt"
   code=${PIPESTATUS[0]}
   elapsed=$(($(date +%s) - started))
@@ -406,6 +410,19 @@ write_status() {
       done <"$OUT/results.tsv"
     fi
 
+    echo
+    echo "## Screenshots: open these (paths are relative to the root of this branch)"
+    echo
+    if [ "$total" -eq 0 ]; then
+      echo "none"
+    else
+      while IFS=$'\t' read -r name _; do
+        for png in "$OUT/maestro/$name/shots/"*.png "$OUT/maestro/$name/final.png"; do
+          [ -f "$png" ] && echo "- ${png#"$OUT"/}"
+        done
+      done <"$OUT/results.tsv"
+    fi
+
     if [ "$failed" -gt 0 ]; then
       echo
       echo "## Failed flows: the end of the Maestro console"
@@ -470,7 +487,6 @@ mode_run() {
   timeout 180 adb wait-for-device </dev/null
   adb devices -l </dev/null >"$OUT/adb-devices.txt" 2>&1
   adb logcat -b all -G 16M </dev/null >/dev/null 2>&1 || adb logcat -G 16M </dev/null >/dev/null 2>&1
-  describe_device
 
   if install_apk && install_maestro; then
     while IFS= read -r file; do
@@ -480,6 +496,7 @@ mode_run() {
     [ "$count" -gt 0 ] || fatal "no flow found in .maestro/*.yaml or .maestro/_scratch/*.yaml"
   fi
 
+  describe_device
   du -sh "$OUT" 2>/dev/null | sed 's/^/out size: /' | tee -a "$OUT/run.log" >&2
   write_status
   trap - EXIT

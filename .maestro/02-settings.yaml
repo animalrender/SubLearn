@@ -19,14 +19,16 @@ appId: com.sublearn.app.debug
     visible: "Search settings"
     timeout: 20000
 - takeScreenshot: 02-settings-root
-# "download", not "downloads": the typed text must not match the "Downloads.*" row it filters to.
 - tapOn: "Search settings"
 - inputText: "download"
+# The keyboard's suggestion strip ("download", "downloads") is part of the hierarchy and is listed
+# before the app, so a selector like "Downloads.*" taps a suggestion, not the row. Wait for and tap
+# the row's own subtitle, which the keyboard cannot produce.
 - extendedWaitUntil:
-    visible: "Downloads.*"
+    visible: "Translation model, offline packs, accuracy models"
     timeout: 10000
 - takeScreenshot: 02-settings-search
-- tapOn: "Downloads.*"
+- tapOn: "Translation model, offline packs, accuracy models"
 - extendedWaitUntil:
     visible: "Offline translation"
     timeout: 20000
