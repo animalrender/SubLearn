@@ -20,16 +20,16 @@ appId: com.sublearn.app.debug
 # Enter Layout mode, reposition its confirmation button, and use it to leave the mode.
 - tapOn: "More"
 - tapOn: "Layout mode"
-- assertVisible: "Drag subtitle layers to move them"
+- assertVisible: "Drag subtitle layers to move them.*"
 - assertVisible: "OK"
 - takeScreenshot: 07-player-portrait-layout-mode
 - swipe:
-    start: "80%, 19%"
-    end: "15%, 30%"
+    start: "80%, 39%"
+    end: "15%, 50%"
     duration: 800
 - assertVisible: "OK"
 - tapOn: "OK"
-- assertNotVisible: "Drag subtitle layers to move them"
+- assertNotVisible: "Drag subtitle layers to move them.*"
 # Scrub in portrait as well; the timeline must span the narrow viewport without losing its thumb.
 - swipe:
     start: "20%, 91%"

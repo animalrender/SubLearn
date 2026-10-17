@@ -82,6 +82,17 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun `v6 migration moves fixed playback controls to the playback dock`() {
+        val v6 = """{"schemaVersion": 6, "quickActions": {"specs": {"repeat_block": {"dock": "BAR", "order": 4}, "subtitle_list": {"dock": "BAR", "order": 5}, "aspect_ratio": {"dock": "TOP", "order": 1}, "toggle_learning": {"dock": "TOP", "order": 2}}}}"""
+        val decoded = SettingsJson.decode(v6).getOrThrow()
+        assertEquals(AppSettings.SCHEMA_VERSION, decoded.schemaVersion)
+        assertEquals(DockMode.PLAYBACK, decoded.quickActions.spec(QuickActionId.REPEAT_BLOCK).dock)
+        assertEquals(DockMode.PLAYBACK, decoded.quickActions.spec(QuickActionId.SUBTITLE_LIST).dock)
+        assertEquals(DockMode.PLAYBACK, decoded.quickActions.spec(QuickActionId.ASPECT_RATIO).dock)
+        assertEquals(DockMode.TOP, decoded.quickActions.spec(QuickActionId.TOGGLE_LEARNING).dock)
+    }
+
+    @Test
     fun `update persists and the flow sees it`() = runTest {
         val storage = InMemorySettingsStorage()
         val repo = DefaultSettingsRepository(storage)
@@ -173,6 +184,12 @@ class SettingsRepositoryTest {
         assertTrue(hidden.visibleIn(DockMode.FLOATING).none { it.first == QuickActionId.AI_EXPLAIN })
         assertTrue(settings.specs.isNotEmpty())
         assertEquals(DockMode.BAR, settings.spec(QuickActionId.TOGGLE_LEARNING).dock)
+        listOf(QuickActionId.REPEAT_BLOCK, QuickActionId.SUBTITLE_LIST, QuickActionId.ASPECT_RATIO).forEach { id ->
+            assertTrue(id.fixedInPlaybackRow)
+            assertEquals(DockMode.PLAYBACK, settings.spec(id).dock)
+            assertTrue(settings.visibleIn(DockMode.PLAYBACK).any { it.first == id })
+            assertTrue(settings.visibleIn(DockMode.BAR).none { it.first == id })
+        }
 
         val oldSettings = QuickActionSettings(specs = QuickActionSpec.defaults - QuickActionId.TOGGLE_MUTE.key)
         assertEquals(DockMode.BAR, oldSettings.spec(QuickActionId.TOGGLE_MUTE).dock)

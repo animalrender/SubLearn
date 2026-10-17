@@ -533,7 +533,7 @@ private fun ActionLayoutSheet(ui: PlayerUi, viewModel: PlayerViewModel) {
                                     change.consume()
                                 },
                                 onDragEnd = {
-                                    if (abs(dragDistance) >= 32f && spec.dock != DockMode.HIDDEN) {
+                                    if (!id.fixedInPlaybackRow && abs(dragDistance) >= 32f && spec.dock != DockMode.HIDDEN) {
                                         viewModel.reorderQuickAction(id, spec.dock, if (dragDistance > 0f) 1 else -1)
                                     }
                                     dragDistance = 0f
@@ -553,20 +553,27 @@ private fun ActionLayoutSheet(ui: PlayerUi, viewModel: PlayerViewModel) {
                     )
                     IconButton(
                         onClick = { viewModel.reorderQuickAction(id, spec.dock, -1) },
-                        enabled = dockOrder > 0 && spec.dock != DockMode.HIDDEN,
+                        enabled = !id.fixedInPlaybackRow && dockOrder > 0 && spec.dock != DockMode.HIDDEN,
                     ) {
                         Icon(Icons.Default.KeyboardArrowUp, contentDescription = stringResource(R.string.settings_move_up))
                     }
                     IconButton(
                         onClick = { viewModel.reorderQuickAction(id, spec.dock, 1) },
-                        enabled = spec.dock != DockMode.HIDDEN && dockOrder >= 0 && dockOrder < dockActions.lastIndex,
+                        enabled = !id.fixedInPlaybackRow && spec.dock != DockMode.HIDDEN &&
+                            dockOrder >= 0 && dockOrder < dockActions.lastIndex,
                     ) {
                         Icon(Icons.Default.KeyboardArrowDown, contentDescription = stringResource(R.string.settings_move_down))
                     }
                     IconButton(onClick = { appearanceOpen = !appearanceOpen }) {
                         Icon(Icons.Default.Tune, contentDescription = stringResource(R.string.player_arrange_controls))
                     }
-                    Box {
+                    if (id.fixedInPlaybackRow) {
+                        Text(
+                            stringResource(DockMode.PLAYBACK.labelRes()),
+                            maxLines = 1,
+                            modifier = Modifier.padding(horizontal = Dimens.xs),
+                        )
+                    } else Box {
                         TextButton(onClick = { menuOpen = true }) {
                             Text(stringResource(spec.dock.labelRes()), maxLines = 1)
                         }

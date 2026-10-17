@@ -197,7 +197,9 @@ internal fun TopChrome(
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalSubLearnColors.current
-    val topActions = ui.settings.quickActions.visibleIn(DockMode.TOP).take(MAX_TOP_ROW_ACTIONS).map { it.first }
+    val topActions = ui.settings.quickActions.visibleIn(DockMode.TOP).map { it.first }
+        .filterNot { it.fixedInPlaybackRow }
+        .take(MAX_TOP_ROW_ACTIONS)
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -340,7 +342,7 @@ internal fun BottomChrome(
     val state = ui.playback
     val live = state.isLive || state.durationMs <= 0L
     val edgeActions = ui.settings.quickActions.visibleIn(DockMode.PLAYBACK).map { it.first }
-        .filterNot { it == QuickActionId.REPEAT_BLOCK || it == QuickActionId.SUBTITLE_LIST || it == QuickActionId.ASPECT_RATIO }
+        .filterNot { it.fixedInPlaybackRow }
         .take(MAX_PLAYBACK_EDGE_ACTIONS)
     val leftActions = edgeActions.take((edgeActions.size + 1) / 2)
     val rightActions = edgeActions.drop(leftActions.size)
@@ -368,16 +370,36 @@ internal fun BottomChrome(
             val transportIconSize = (maxWidth / 20f)
                 .coerceIn(MIN_TRANSPORT_ICON_DP.dp, MAX_TRANSPORT_ICON_DP.dp)
             val playIconSize = (transportIconSize * 1.3f).coerceAtMost(Dimens.touchTarget)
+            val aspectSpec = ui.settings.quickActions.spec(QuickActionId.ASPECT_RATIO)
             Row(
                 modifier = Modifier.fillMaxWidth().height(Dimens.touchTarget + Dimens.sm)
                     .onGloballyPositioned { registry.putQuickDock(DockMode.PLAYBACK, it) },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
-                    modifier = Modifier.weight(1f),
-                    horizontalArrangement = Arrangement.Start,
+                    modifier = Modifier.weight(1.5f),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.xs),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    ChromeIconButton(
+                        icon = if (ui.locked) Icons.Default.LockOpen else Icons.Default.Lock,
+                        contentDescription = stringResource(
+                            if (ui.locked) R.string.player_unlock else R.string.player_lock,
+                        ),
+                        onClick = onToggleLock,
+                        selected = ui.locked,
+                        modifier = Modifier.size(transportIconSize),
+                    )
+                    QuickActionButton(
+                        ui,
+                        QuickActionId.REPEAT_BLOCK,
+                        onQuickTap,
+                        onHoldStart,
+                        onHoldEnd,
+                        DockMode.PLAYBACK,
+                        transportIconSize,
+                        onReorder = { _, _, _ -> },
+                    )
                     leftActions.forEach { id ->
                         QuickActionButton(
                             ui,
@@ -447,53 +469,10 @@ internal fun BottomChrome(
                     )
                 }
                 Row(
-                    modifier = Modifier.weight(2.5f),
-                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.weight(2f),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.xs, Arrangement.End),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    ChromeIconButton(
-                        icon = Icons.Default.List,
-                        contentDescription = stringResource(R.string.subtitle_list),
-                        onClick = { onQuickTap(QuickActionId.SUBTITLE_LIST) },
-                        selected = ui.list.open,
-                        modifier = Modifier.size(transportIconSize),
-                    )
-                    Surface(
-                        modifier = Modifier.size(transportIconSize).combinedClickable(
-                            onClick = onAspectTap,
-                            onLongClick = onAspectLongPress,
-                        ),
-                        shape = CircleShape,
-                        color = LocalSubLearnColors.current.strongBackdrop,
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = state.aspect.name.take(4),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = LocalSubLearnColors.current.controlActive,
-                            )
-                        }
-                    }
-                    QuickActionButton(
-                        ui,
-                        QuickActionId.REPEAT_BLOCK,
-                        onQuickTap,
-                        onHoldStart,
-                        onHoldEnd,
-                        DockMode.PLAYBACK,
-                        transportIconSize,
-                        onReorder,
-                        registry,
-                    )
-                    ChromeIconButton(
-                        icon = if (ui.locked) Icons.Default.LockOpen else Icons.Default.Lock,
-                        contentDescription = stringResource(
-                            if (ui.locked) R.string.player_unlock else R.string.player_lock,
-                        ),
-                        onClick = onToggleLock,
-                        selected = ui.locked,
-                        modifier = Modifier.size(transportIconSize),
-                    )
                     rightActions.forEach { id ->
                         QuickActionButton(
                             ui,
@@ -507,6 +486,34 @@ internal fun BottomChrome(
                             registry,
                         )
                     }
+                    Surface(
+                        modifier = Modifier.size(aspectSpec.sizeDp.dp.coerceAtMost(transportIconSize)).combinedClickable(
+                            onClick = onAspectTap,
+                            onLongClick = onAspectLongPress,
+                        ),
+                        shape = CircleShape,
+                        color = LocalSubLearnColors.current.strongBackdrop.copy(
+                            alpha = 1f - aspectSpec.transparencyPercent / 100f,
+                        ),
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = state.aspect.name.take(4),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = aspectSpec.iconTintArgb?.let { androidx.compose.ui.graphics.Color(it) }
+                                    ?: LocalSubLearnColors.current.controlActive,
+                            )
+                        }
+                    }
+                    QuickActionButton(
+                        ui,
+                        QuickActionId.SUBTITLE_LIST,
+                        onQuickTap,
+                        onHoldStart,
+                        onHoldEnd,
+                        DockMode.PLAYBACK,
+                        transportIconSize,
+                    )
                 }
             }
         }
@@ -661,8 +668,8 @@ internal fun QuickActionDock(
     modifier: Modifier = Modifier,
 ) {
     val settings = ui.settings.quickActions
-    val bar = settings.visibleIn(DockMode.BAR).map { it.first }
-    val floating = settings.visibleIn(DockMode.FLOATING).map { it.first }
+    val bar = settings.visibleIn(DockMode.BAR).map { it.first }.filterNot { it.fixedInPlaybackRow }
+    val floating = settings.visibleIn(DockMode.FLOATING).map { it.first }.filterNot { it.fixedInPlaybackRow }
     Box(modifier = modifier.fillMaxSize()) {
         if (bar.isNotEmpty()) {
             ChromeVisibility(visible = barVisible, modifier = Modifier.fillMaxWidth()) {
