@@ -1,3 +1,53 @@
+## 2026-10-17 — see and drive the running app: the UI check (D-94)
+
+**Verified on `eff2408`: [UI snapshot run 39018158334](https://github.com/animalrender/SubLearn/actions/runs/39018158334)
+ran 8 flows (the five baseline flows and three scratch flows), all PASS, `app crash: no`, and its `STATUS.md`
+named that sha; [CI 39018158418](https://github.com/animalrender/SubLearn/actions/runs/39018158418) passed on the
+same commit. The commit that is merged only removes the scratch flows and adds documentation; its own UI check
+is the merge gate and is recorded in the pull request. This is the first time the app has been seen running
+anywhere; no phone run is claimed.**
+
+- **What exists.** `.github/workflows/ui-snapshot.yml` and `scripts/ui-snapshot/run.sh` build the debug APK,
+  boot an API 34 `google_apis` Pixel 6 emulator (KVM works on the runner of this public repository), install
+  the x86_64 APK and Maestro, run every flow in `.maestro/*.yaml` and then `.maestro/_scratch/*.yaml` one by
+  one, and force-push the evidence as one orphan commit to `ui-snapshots`: `STATUS.md` (branch, sha, per-flow
+  PASS/FAIL, `app crash: yes|no`), screenshots, view-hierarchy dumps, the full and the app-only logcat. It
+  starts on `workflow_dispatch` or on an empty last commit whose message has `[ui]`, and is red on a failed
+  build, a failed flow, no flow at all, or a real crash of our own process. Baseline flows: `01-home`,
+  `02-settings` (search "download", Downloads from top to bottom), `03-my-words`, `04-learn`, `05-dictionary`.
+- **The rules around it.** [UI_VERIFICATION.md](UI_VERIFICATION.md) is the single source of truth: when the check
+  is mandatory, how to trigger it, how to read it and verify the sha, the review checklist, how to write flows,
+  stop rules, cleanup and the merge gate. AGENTS.md has the section "Seeing and driving the app" and step 6 of
+  the per-task loop; CLAUDE.md, README and the docs index point to it. D-94 records the decision. REQ-7 is
+  resolved for the app shell; KNOWN_ISSUES 12, 13, 21 and 30 no longer say the app never ran anywhere, and 36
+  to 38 are new; the KVM statements in `instrumented.yml`, ARCHITECTURE, CHECKLIST and D-17 are corrected.
+- **What the runs showed** (five runs on this branch before the gate). Run 1 (`fb1c77c`): 6 of 7 flows green;
+  the screenshot of the failed one showed Gboard's suggestion strip tapped instead of the Downloads row (the
+  flow now taps the row's own subtitle). Run 2 (`f2b4c09`): all 8 flows failed under a "Pixel Launcher isn't
+  responding" dialog raised right after the boot, `app crash: no` (system dialogs are now switched off and a
+  leftover one is removed before each flow). Run 3 (`df0dad1`): 8 of 8. Run 4 (`40ff82c`): 2 of 8 flows
+  showed a black screen; the logcat of all 8 shows why: `pm clear` followed by `am start` races the activity
+  manager's destroy timeout for the previous task, which killed the new process (the app is now wiped and given
+  three seconds before every flow, and a flow that fails with exactly that signature is retried once). Run 5
+  (`eff2408`): 8 of 8, no flow shows the timeout any more. A push without the marker skipped its run and did
+  not cancel the marked run in progress. End to end a run takes about eight minutes (7 m 52 s for 8 flows).
+- **Looked at** (the images of those runs): Home with its two buttons (the second wraps onto two lines) and
+  the empty "Continue watching" card; the Settings list with the search box; the filtered result with the
+  keyboard up and with it hidden; Downloads at its top (translation card, both packs, import buttons) and at
+  its bottom (profile chips and details, the subtitle lab card), nothing clipped, the profile advice reading
+  "Basic" on the emulator; My Words (the filter chips scroll off the right edge, as built); Learn ("Coming
+  soon"); the Dictionary tab; and Home and the Dictionary tab in Persian, mirrored as expected. That review
+  also found two Persian strings whose arrow points the wrong way (KNOWN_ISSUES 38, not fixed here).
+- **Checked:** `check_sources`, `check_symbols`, `check_deps`, `check_resources`, `check_docs`, `check_schema`,
+  `check_catalog`, `check_workflows` (with PyYAML installed), `git diff --check`; `run.sh` with `bash -n`,
+  shellcheck and against fake `adb`/`maestro` binaries: the crash scan (Java crash, ANR, process death, native
+  crash, `am_crash`, and third-party noise that must not be flagged), `STATUS.md`, publishing to a bare
+  repository, the verdict, the time budget, the dialog removal and the retry.
+- **Not verified:** the player and everything behind a video (no flow can open one yet); real-device behaviour
+  (performance, picture-in-picture, sensors, Bluetooth); release (R8) builds; the "isn't responding" guard on a
+  real dialog (the flake has not come back since it was added); and every workflow on `ubuntu-latest` after its
+  move to Ubuntu 26.04 on 2026-10-19 (KNOWN_ISSUES 37).
+
 ## 2026-10-17 — status colours, profile transparency, free-text lab and model-test diagnostics (D-91..D-93)
 
 **Not compiled or run locally: Gradle and the Android SDK are unavailable in this sandbox. Static checks

@@ -218,9 +218,11 @@ TODO comment; each entry has a route to being fixed.
     assertion. Logcat shows `Killing ...: remove task` and `failed to attach`. It hit 2 of the 8 flows of run
     39017266425 and none of the 15 flows of the first and the third run. The script now wipes the app and presses
     Home, waits three seconds before every flow, and retries a flow once when it fails with exactly that
-    signature and no crash; `STATUS.md` says so and keeps the first attempt in `attempt-1/`. Route if either
-    comes back: more cores for the emulator (`cores: 4`), or look at what else the logcat of the failed
-    attempt shows.
+    signature and no crash; `STATUS.md` says so and keeps the first attempt in `attempt-1/`. In the run
+    after the fix (39018158334) all 8 flows started cleanly and no flow's logcat has the destroy timeout
+    any more, because it now expires during the wait; that shows the timer is out of the way, it does not
+    prove the race cannot happen. Route if either comes back: more cores for the emulator (`cores: 4`), or
+    look at what else the logcat of the failed attempt shows.
 37. **`ubuntu-latest` becomes Ubuntu 26.04 on 2026-10-19, and only `ui-snapshot.yml` is ready for it.** The
     notice appeared in the annotations of a UI-check run. `ci.yml`, `instrumented.yml`, the release workflows
     and the others still say `ubuntu-latest`, and what they rely on (the preinstalled Android SDK path,

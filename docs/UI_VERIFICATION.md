@@ -50,7 +50,8 @@ gh run watch <run-id> --exit-status     # or poll: gh run view <run-id> --json s
   run appears after a minute or two, say so; do not assume one is coming. Causes: the marker is missing
   from the tip commit, or the workflow file is invalid YAML (GitHub then shows "Invalid workflow file").
   The comparison in one line:
-  `[ "$(gh run list --branch <b> --workflow ui-snapshot.yml --limit 1 --json headSha --jq '.[0].headSha')" = "$(git rev-parse HEAD)" ] && echo same`
+  `[ "$(gh run list --branch <b> --workflow ui-snapshot.yml --limit 1 --json headSha --jq '.[0].headSha')" = "$(git rev-parse HEAD)" ] && echo same`.
+  A run whose conclusion is `skipped` is a push without the marker: its job never started.
 - `gh workflow run` fails with 403 in the sandbox, so the push marker is the only trigger from here. A
   human can start it from the Actions tab (UI snapshot, Run workflow) once the workflow is on `main`.
 - It takes about **eight minutes** in this repository (measured: 7 m 52 s for 8 flows): checkout and
