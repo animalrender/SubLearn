@@ -739,3 +739,6 @@ and rotate. With no network: the same, plus translation only for a previously do
   are now explicitly unavailable with EN/FA explanation, and installer/test/native loader refuse it
   before native code. Added a regression ensuring the loader is never called for this asset. Enabling
   it requires a separate LiteRT-LM engine or a verified `.task`; no unsupported runtime is faked.
+- Added client-side Robolectric regressions for service death, refused binding, timeout and coroutine
+  cancellation, plus a picker-recreation regression. Picker contracts receive application context at
+  construction so a pending result after Activity recreation can still resolve provider metadata.

@@ -9,8 +9,8 @@ import androidx.activity.result.contract.ActivityResultContract
 import com.sublearn.core.subtitles.SubtitleFormat
 
 /** Opens a document picker for videos; SAF means no storage permission is needed (GEN-5). */
-class OpenVideoContract : ActivityResultContract<Unit, PickedMedia?>() {
-    private var applicationContext: Context? = null
+class OpenVideoContract(context: Context? = null) : ActivityResultContract<Unit, PickedMedia?>() {
+    private var applicationContext: Context? = context?.applicationContext
 
     override fun createIntent(context: Context, input: Unit): Intent {
         applicationContext = context.applicationContext
@@ -52,8 +52,11 @@ class OpenVideoContract : ActivityResultContract<Unit, PickedMedia?>() {
 data class PickedMedia(val uri: String, val title: String)
 
 /** Opens any file (used for subtitle files and for importing word lists). */
-class OpenAnyFileContract(private val mimeTypes: Array<String> = arrayOf("*/*")) : ActivityResultContract<Array<String>, PickedFile?>() {
-    private var applicationContext: Context? = null
+class OpenAnyFileContract(
+    private val mimeTypes: Array<String> = arrayOf("*/*"),
+    context: Context? = null,
+) : ActivityResultContract<Array<String>, PickedFile?>() {
+    private var applicationContext: Context? = context?.applicationContext
 
     override fun createIntent(context: Context, input: Array<String>): Intent {
         applicationContext = context.applicationContext

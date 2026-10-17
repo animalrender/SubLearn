@@ -49,6 +49,13 @@ class DocumentNamesTest {
         assertNull(picker.parseResult(Activity.RESULT_CANCELED, intent))
     }
 
+    @Test fun restoredPickerCanResolveAResultWithoutCreatingAnotherIntent() {
+        provider("Movie.fa.srt")
+        val recreatedPicker = OpenDocumentContract(context = context)
+        val result = recreatedPicker.parseResult(Activity.RESULT_OK, Intent().setData(uri))
+        assertEquals("Movie.fa.srt", result?.name)
+    }
+
     @Test fun missingProviderNameDoesNotDisplayAnOpaqueId() {
         provider(null)
         assertEquals("file", DocumentNames.read(context, uri))

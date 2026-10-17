@@ -1,5 +1,7 @@
 package com.sublearn.feature.settings
 
+import androidx.compose.ui.platform.LocalContext
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -103,10 +105,12 @@ fun DownloadsSection(
     var catalogInfo by remember { mutableStateOf<ModelCatalogEntry?>(null) }
     var modelInfo by remember { mutableStateOf<NlpModel?>(null) }
 
-    val v2Picker = rememberLauncherForActivityResult(OpenDocumentContract(arrayOf("*/*"))) { picked ->
+    val v2Picker = rememberLauncherForActivityResult(OpenDocumentContract(
+                context = LocalContext.current, mimeTypes = arrayOf("*/*"))) { picked ->
         if (picked != null) viewModel.importV2Pack(picked.uri)
     }
-    val v1Picker = rememberLauncherForActivityResult(OpenDocumentContract(arrayOf("*/*"))) { picked ->
+    val v1Picker = rememberLauncherForActivityResult(OpenDocumentContract(
+                context = LocalContext.current, mimeTypes = arrayOf("*/*"))) { picked ->
         if (picked != null) viewModel.importLegacyV1Pack(picked.uri)
     }
 

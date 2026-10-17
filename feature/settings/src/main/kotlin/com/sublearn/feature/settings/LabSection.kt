@@ -1,5 +1,7 @@
 package com.sublearn.feature.settings
 
+import androidx.compose.ui.platform.LocalContext
+
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
@@ -68,7 +70,8 @@ fun LabSection(
     // memory, and leaving mid-load is how the earlier crash reports looked.
     BackHandler(enabled = ui.busy) {}
 
-    val picker = rememberLauncherForActivityResult(OpenDocumentContract(arrayOf("*/*"))) { picked ->
+    val picker = rememberLauncherForActivityResult(OpenDocumentContract(
+                context = LocalContext.current, mimeTypes = arrayOf("*/*"))) { picked ->
         if (picked != null) viewModel.loadSubtitle(picked.uri, picked.name)
     }
 

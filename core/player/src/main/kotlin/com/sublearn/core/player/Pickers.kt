@@ -19,10 +19,13 @@ data class PickedFile(val uri: String, val name: String) {
     val isProbablyReadable: Boolean get() = uri.startsWith("content://") || uri.startsWith("file://")
 }
 
-class OpenDocumentContract(private val mimeTypes: Array<String> = arrayOf("*/*")) :
+class OpenDocumentContract(
+    private val mimeTypes: Array<String> = arrayOf("*/*"),
+    context: Context? = null,
+) :
     ActivityResultContract<Array<String>, PickedFile?>() {
 
-    private var applicationContext: Context? = null
+    private var applicationContext: Context? = context?.applicationContext
 
     override fun createIntent(context: Context, input: Array<String>): Intent {
         applicationContext = context.applicationContext

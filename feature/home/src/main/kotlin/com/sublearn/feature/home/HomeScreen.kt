@@ -67,7 +67,7 @@ fun HomeScreen(
     val recent by viewModel.recent.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var showUrlDialog by remember { mutableStateOf(false) }
-    val videoPicker = rememberLauncherForActivityResult(OpenVideoContract()) { picked ->
+    val videoPicker = rememberLauncherForActivityResult(OpenVideoContract(context)) { picked ->
         picked?.let {
             OpenVideoContract.persistReadPermission(context, it.uri)
             // The exact file name, as the provider reports it: the title bar and the recent list
