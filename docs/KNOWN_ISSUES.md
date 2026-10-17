@@ -182,7 +182,8 @@ TODO comment; each entry has a route to being fixed.
     self-tests now execute in a disposable `:model_test` process (D-89), so a native abort there should
     produce a failed report without closing the activity. This containment and free-RAM guard have
     not yet been exercised on hardware. They do not make an incompatible model runnable or isolate
-    normal player/lab inference. Route: run the new manual test below, capture model ID, ABI, Android
+    normal player/lab inference. CI 38996445061 passed the client failure-path regressions. Route:
+    run the new checks in MANUAL_TEST.md, capture model ID, ABI, Android
     version and logcat/native tombstone if it fails, then repair the runtime/model-specific cause.
 35. **SmolLM2's catalog asset is `.litertlm`, not a MediaPipe `.task`.** This build contains only
     MediaPipe `LlmInference`. The incompatible format is now explicitly unavailable for new downloads

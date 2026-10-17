@@ -1,3 +1,46 @@
+## 2026-10-17 — file names, model diagnostics and autoplay (D-88..D-90)
+
+**Code verified on `47f89b1`: [CI 38996445061](https://github.com/animalrender/SubLearn/actions/runs/38996445061)
+passed `assembleDebug`, `assembleRelease`, `test`, `lintDebug` and `assembleDebugAndroidTest`
+(10m52s). No phone/emulator execution is claimed.**
+
+- Read the agent handbook and product/architecture, design, decisions and current verification docs.
+- Replaced SAF document-ID labels with shared DISPLAY_NAME resolution, including remembered subtitle
+  loads and sidecar matching. Added provider-backed Robolectric regressions for numeric URIs, missing
+  metadata, local files and canceled picker results.
+- Fixed the safetensors header endianness and the misleading big-endian test fixtures. Added tensor
+  shape/range checks before allocation and regressions for truncated weights and inconsistent shapes.
+- Downloads model tests now bind a non-exported, disposable process. Free-memory checks, exception
+  reports, binder-death reporting, timeout and unbind cleanup protect the main UI from test failures.
+  Added a throwing-loader regression; actual native abort/OOM containment still needs device testing.
+- Player explicitly autoplays and offers a localized, non-blocking restart action only on saved-position
+  resumes. First-time opens do not ask; the action expires without stopping playback.
+- Local source, symbol, dependency and EN/FA resource checks passed. Android SDK/JVM are absent locally;
+  CI build/unit tests/lint and real-device tests are pending at this entry's creation.
+- Follow-up audit: SmolLM2 is a `.litertlm` artifact incorrectly routed to MediaPipe. New downloads
+  are now explicitly unavailable with EN/FA explanation, and installer/test/native loader refuse it
+  before native code. Added a regression ensuring the loader is never called for this asset. Enabling
+  it requires a separate LiteRT-LM engine or a verified `.task`; no unsupported runtime is faked.
+- Added client-side Robolectric regressions for service death, refused binding, timeout and coroutine
+  cancellation, plus a picker-recreation regression. Picker contracts receive application context at
+  construction so a pending result after Activity recreation can still resolve provider metadata.
+- Bootstrapped a temporary JRE 17 + Kotlin 2.0.21 outside tracked sources: all 17 Safetensors tests
+  passed through a direct assertion harness (not a full Gradle/JUnit run). Workflow YAML/shell
+  validation also ran with PyYAML installed and passed all 10 workflows.
+- Added pure resume-position tests, including a previously watched two-second file, finished and
+  invalid positions; short viewings now resume too. Returning to a paused already-loaded player
+  offers the same passive action. Restart clears any prior shadowing plan before seeking to zero.
+- The three new resume-position tests also passed locally with the direct assertion harness. Android
+  build/unit tests/lint remain the CI authority; no emulator or phone execution is claimed.
+- Removed numeric-ID UI fallbacks during subtitle restore/loading too; unavailable metadata produces
+  a generic filename label rather than an opaque ID. External-audio fallback uses provider names.
+- All 10 model-self-test verdict cases passed locally with the same direct harness (30 cases total
+  with Safetensors/resume). The two positive/negative fake LLM probes now use the supported Qwen
+  `.task` layout; a separate regression retains SmolLM2 to prove its format is rejected pre-native.
+- The local Python tooling suite passed all 49 tests. CI also passed the provider-backed picker and
+  remote-model-service regression test sources. Native crash containment still requires the device
+  checks in MANUAL_TEST.md; the unnamed crashing model has not been identified.
+
 ## 2026-10-16 — the Downloads screen made usable, the player made quiet, and a lab for the packs
 
 **Implemented on `arena/6da9d669-sublearn`; CI green on `917bd34` ([run 38975245322](https://github.com/animalrender/SubLearn/actions/runs/38975245322)); no device run claimed.**
@@ -719,39 +762,3 @@ translation toggle to invert it, open the subtitle list and seek by tapping a ro
 and stop-at-end, add a word to My Words and see it styled, open Settings → Fonts and change only the
 learning surface, then Settings → About → export and re-import the JSON, and finally put the app in PiP
 and rotate. With no network: the same, plus translation only for a previously downloaded model.
-
-## 2026-10-17 — file names, model diagnostics and autoplay (D-88..D-90)
-
-- Read the agent handbook and product/architecture, design, decisions and current verification docs.
-- Replaced SAF document-ID labels with shared DISPLAY_NAME resolution, including remembered subtitle
-  loads and sidecar matching. Added provider-backed Robolectric regressions for numeric URIs, missing
-  metadata, local files and canceled picker results.
-- Fixed the safetensors header endianness and the misleading big-endian test fixtures. Added tensor
-  shape/range checks before allocation and regressions for truncated weights and inconsistent shapes.
-- Downloads model tests now bind a non-exported, disposable process. Free-memory checks, exception
-  reports, binder-death reporting, timeout and unbind cleanup protect the main UI from test failures.
-  Added a throwing-loader regression; actual native abort/OOM containment still needs device testing.
-- Player explicitly autoplays and offers a localized, non-blocking restart action only on saved-position
-  resumes. First-time opens do not ask; the action expires without stopping playback.
-- Local source, symbol, dependency and EN/FA resource checks passed. Android SDK/JVM are absent locally;
-  CI build/unit tests/lint and real-device tests are pending at this entry's creation.
-- Follow-up audit: SmolLM2 is a `.litertlm` artifact incorrectly routed to MediaPipe. New downloads
-  are now explicitly unavailable with EN/FA explanation, and installer/test/native loader refuse it
-  before native code. Added a regression ensuring the loader is never called for this asset. Enabling
-  it requires a separate LiteRT-LM engine or a verified `.task`; no unsupported runtime is faked.
-- Added client-side Robolectric regressions for service death, refused binding, timeout and coroutine
-  cancellation, plus a picker-recreation regression. Picker contracts receive application context at
-  construction so a pending result after Activity recreation can still resolve provider metadata.
-- Bootstrapped a temporary JRE 17 + Kotlin 2.0.21 outside tracked sources: all 17 Safetensors tests
-  passed through a direct assertion harness (not a full Gradle/JUnit run). Workflow YAML/shell
-  validation also ran with PyYAML installed and passed all 10 workflows.
-- Added pure resume-position tests, including a previously watched two-second file, finished and
-  invalid positions; short viewings now resume too. Returning to a paused already-loaded player
-  offers the same passive action. Restart clears any prior shadowing plan before seeking to zero.
-- The three new resume-position tests also passed locally with the direct assertion harness. Android
-  build/unit tests/lint remain the CI authority; no emulator or phone execution is claimed.
-- Removed numeric-ID UI fallbacks during subtitle restore/loading too; unavailable metadata produces
-  a generic filename label rather than an opaque ID. External-audio fallback uses provider names.
-- All 10 model-self-test verdict cases passed locally with the same direct harness (30 cases total
-  with Safetensors/resume). The two positive/negative fake LLM probes now use the supported Qwen
-  `.task` layout; a separate regression retains SmolLM2 to prove its format is rejected pre-native.

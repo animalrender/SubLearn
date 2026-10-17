@@ -101,5 +101,6 @@ before wiring ONNX/MediaPipe models (`14`, `15`) and release workflows (`16`, `1
 
 D-88..D-90 repair numeric SAF labels and safetensors wire-format parsing, isolate Downloads model
 self-tests in a disposable process, and add autoplay with a passive restart action on position resumes.
-Local static checks pass; new JVM/Robolectric regressions and Android assembly/lint await CI. Phone
-verification of native crash containment, provider-specific filenames and playback UX remains pending.
+Local static checks pass. CI 38996445061 on `47f89b1` passed Debug/Release assembly, unit tests,
+lint and instrumented-source compilation. Phone verification of native crash containment,
+provider-specific filenames and playback UX remains pending.
