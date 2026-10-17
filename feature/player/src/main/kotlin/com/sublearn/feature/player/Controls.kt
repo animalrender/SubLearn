@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -991,35 +992,45 @@ internal fun LayoutModeBanner(
 ) {
     Surface(
         modifier = modifier
+            .wrapContentSize()
             .widthIn(max = Dimens.bannerMaxWidth)
             .padding(horizontal = Dimens.lg),
         shape = RoundedCornerShape(Dimens.radiusMd),
         color = LocalSubLearnColors.current.promptBackdrop,
     ) {
-        Row(
-            modifier = Modifier.padding(start = Dimens.lg, end = Dimens.xs),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier = Modifier.padding(horizontal = Dimens.md, vertical = Dimens.xs),
+            verticalArrangement = Arrangement.spacedBy(Dimens.xs),
         ) {
             Text(
                 text = hint,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodySmall,
                 color = LocalSubLearnColors.current.promptText,
-                modifier = Modifier.weight(1f),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
-            TextButton(onClick = onToggleTop, modifier = Modifier.height(Dimens.touchTarget)) {
-                Text(
-                    "${stringResource(R.string.quick_dock_top)} ${if (topVisible) "✓" else "○"}",
-                    color = LocalSubLearnColors.current.promptText,
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextButton(onClick = onToggleTop, modifier = Modifier.height(Dimens.touchTarget)) {
+                    Text(
+                        "${stringResource(R.string.quick_dock_top)} ${if (topVisible) "✓" else "○"}",
+                        color = LocalSubLearnColors.current.promptText,
+                    )
+                }
+                TextButton(onClick = onToggleBottom, modifier = Modifier.height(Dimens.touchTarget)) {
+                    Text(
+                        "${stringResource(R.string.quick_dock_playback)} ${if (bottomVisible) "✓" else "○"}",
+                        color = LocalSubLearnColors.current.promptText,
+                    )
+                }
             }
-            TextButton(onClick = onToggleBottom, modifier = Modifier.height(Dimens.touchTarget)) {
-                Text(
-                    "${stringResource(R.string.quick_dock_playback)} ${if (bottomVisible) "✓" else "○"}",
-                    color = LocalSubLearnColors.current.promptText,
-                )
-            }
-            TextButton(onClick = onArrange, modifier = Modifier.height(Dimens.touchTarget)) {
-                Text(stringResource(R.string.player_arrange_controls), color = LocalSubLearnColors.current.promptText)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onArrange, modifier = Modifier.height(Dimens.touchTarget)) {
+                    Text(stringResource(R.string.player_arrange_controls), color = LocalSubLearnColors.current.promptText)
+                }
             }
         }
     }

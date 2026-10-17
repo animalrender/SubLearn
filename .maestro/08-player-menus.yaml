@@ -27,6 +27,11 @@ appId: com.sublearn.app.debug
 - longPressOn: "FIT"
 - assertVisible: "Aspect ratio"
 - assertVisible: "Fit"
+# The initial portrait bottom-sheet peek shows only the first few rows; expand it before checking all options.
+- swipe:
+    start: "50%, 90%"
+    end: "50%, 45%"
+    duration: 700
 - assertVisible: "Fill"
 - assertVisible: "Zoom"
 - assertVisible: "Stretch"
@@ -42,7 +47,7 @@ appId: com.sublearn.app.debug
 # Move the expanded second-row action into the playback dock; this exercises cross-dock drag/drop.
 - swipe:
     from:
-      text: "Repeat this subtitle"
+      text: "Layout mode"
     direction: DOWN
     duration: 900
 - takeScreenshot: 08-player-cross-dock-drop
