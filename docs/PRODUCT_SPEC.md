@@ -65,6 +65,11 @@ meaning so that `docs/CHECKLIST.md` can point at an ID for every claim of comple
 - **PLY-10** Player prompts/status messages, including missing AI/API setup prompts, use the app's
   translucent turquoise surface with high-contrast dark text.
 
+- **PLY-11** Opening the player starts playback immediately. A previously watched file with a valid
+  saved position resumes there and offers a small, temporary bottom "Start over" action; ignoring it
+  must not pause playback. A first-time file does not show this prompt. Remember-position/resume
+  settings and end-of-file handling remain respected.
+
 ## Subtitle controls
 
 - **SUB-1** Two toggle buttons (learning, translation), in Quick Actions by default: tap = toggle

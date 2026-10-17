@@ -105,12 +105,16 @@ fun DownloadsSection(
     var catalogInfo by remember { mutableStateOf<ModelCatalogEntry?>(null) }
     var modelInfo by remember { mutableStateOf<NlpModel?>(null) }
 
-    val v2Picker = rememberLauncherForActivityResult(OpenDocumentContract(
-                context = LocalContext.current, mimeTypes = arrayOf("*/*"))) { picked ->
+    val v2Picker = rememberLauncherForActivityResult(
+
+        OpenDocumentContract(context = LocalContext.current, mimeTypes = arrayOf("*/*")),
+
+    ) { picked ->
         if (picked != null) viewModel.importV2Pack(picked.uri)
     }
-    val v1Picker = rememberLauncherForActivityResult(OpenDocumentContract(
-                context = LocalContext.current, mimeTypes = arrayOf("*/*"))) { picked ->
+    val v1Picker = rememberLauncherForActivityResult(
+        OpenDocumentContract(context = LocalContext.current, mimeTypes = arrayOf("*/*")),
+    ) { picked ->
         if (picked != null) viewModel.importLegacyV1Pack(picked.uri)
     }
 

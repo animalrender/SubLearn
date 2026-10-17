@@ -742,3 +742,11 @@ and rotate. With no network: the same, plus translation only for a previously do
 - Added client-side Robolectric regressions for service death, refused binding, timeout and coroutine
   cancellation, plus a picker-recreation regression. Picker contracts receive application context at
   construction so a pending result after Activity recreation can still resolve provider metadata.
+- Bootstrapped a temporary JRE 17 + Kotlin 2.0.21 outside tracked sources: all 17 Safetensors tests
+  passed through a direct assertion harness (not a full Gradle/JUnit run). Workflow YAML/shell
+  validation also ran with PyYAML installed and passed all 10 workflows.
+- Added pure resume-position tests, including a previously watched two-second file, finished and
+  invalid positions; short viewings now resume too. Returning to a paused already-loaded player
+  offers the same passive action. Restart clears any prior shadowing plan before seeking to zero.
+- The three new resume-position tests also passed locally with the direct assertion harness. Android
+  build/unit tests/lint remain the CI authority; no emulator or phone execution is claimed.

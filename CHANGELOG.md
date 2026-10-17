@@ -44,6 +44,16 @@ Unreleased work lands on phase branches; `main` only ever contains merged, CI-gr
 ## [Unreleased]
 
 ### Fixed
+- Subtitle and imported file names use provider metadata instead of numeric SAF IDs, including
+  restored sources and pending picker results after recreation.
+- Healthy Potion safetensors models load with the correct little-endian header; malformed tensor
+  shapes and ranges are rejected before allocation.
+- Accuracy-model tests run in a separate process, with free-RAM checks and failure/timeout reports
+  rather than closing the player on a native diagnostic crash. SmolLM2's incompatible `.litertlm`
+  artifact is explicitly unavailable until its LiteRT-LM engine is supported.
+- Opening the player starts playback, with a short-lived bottom "Start over" action for resumed
+  files instead of a blocking prompt. New files do not show it.
+
 - Settings → Downloads no longer overflows in Persian: every item is one stacked card with real
   spacing tokens, the import buttons and profile chips wrap, and the status line can be dismissed.
 - The player pauses when its screen is left, when the Activity stops (except in picture-in-picture)

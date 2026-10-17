@@ -205,6 +205,12 @@ class PlayerViewModel(
             if (stillLoaded) {
                 // Re-entering the player starts playback without rebuilding the loaded layers.
                 controller.play()
+                val playerSettings = _ui.value.settings.player
+                if (!currentState.isPlaying && playerSettings.rememberPosition && playerSettings.resumeOnOpen &&
+                    playbackResumePosition(currentState.positionMs, currentState.durationMs) > 0L
+                ) {
+                    message(application.getString(R.string.player_restart_prompt), offerRestart = true)
+                }
                 subtitleUris.forEach { picked -> loadFile(picked.role, picked.uri, picked.name) }
                 // Restore every remembered file-backed track, not just the last one in each layer.
                 TrackRole.entries.forEach { role ->
@@ -253,7 +259,7 @@ class PlayerViewModel(
             } else {
                 null
             }
-            val position = saved?.lastPositionMs?.takeIf { it > RESUME_THRESHOLD_MS && it < (saved.durationMs - 3_000L) } ?: 0L
+            val position = playbackResumePosition(saved?.lastPositionMs, saved?.durationMs ?: 0L)
             val target = MediaTarget(uri = uri, title = title, startPositionMs = position)
             openedTarget = target
             controller.clearTrackOverride(PlayerTrackType.TEXT)
@@ -2143,6 +2149,8 @@ class PlayerViewModel(
 
     /** A message that clears itself, so a stale hint never sits over the video. */
     fun restartFromBeginning() {
+        plan = null
+        pendingAdvance?.cancel()
         controller.seekTo(0L)
         controller.play()
         message(null)
@@ -2205,7 +2213,6 @@ class PlayerViewModel(
         /** Everything that is not a letter or a digit separates context words. */
         private val CONTEXT_SEPARATOR = Regex("[^\\p{L}\\p{N}']+")
 
-        private const val RESUME_THRESHOLD_MS = 8_000L
         private const val PAUSE_LEAD_MS = 4_000L
         private const val MIN_AUTO_HIDE_MS = 1_000L
         private const val LOCK_BUTTON_MS = 2_500L
