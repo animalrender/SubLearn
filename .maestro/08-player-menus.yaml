@@ -22,6 +22,7 @@ appId: com.sublearn.app.debug
 - assertVisible: "Soft subtitles in this video"
 - takeScreenshot: 08-player-subtitle-options-sheet
 - pressKey: Back
+- pressKey: Back
 - tapOn: "Audio track"
 - assertVisible: "Audio track"
 - swipe:
@@ -30,6 +31,7 @@ appId: com.sublearn.app.debug
     duration: 700
 - assertVisible: "Player volume"
 - takeScreenshot: 08-player-audio-track-sheet
+- pressKey: Back
 - pressKey: Back
 - longPressOn: "FIT"
 - assertVisible: "Aspect ratio"
@@ -45,6 +47,7 @@ appId: com.sublearn.app.debug
 - assertVisible: "Custom"
 - takeScreenshot: 08-player-aspect-ratio-sheet
 - tapOn: "Fill"
+- pressKey: Back
 - pressKey: Back
 - tapOn:
     point: "50%, 50%"

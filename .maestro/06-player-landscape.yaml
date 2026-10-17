@@ -28,10 +28,13 @@ appId: com.sublearn.app.debug
     start: "50%, 90%"
     end: "50%, 45%"
     duration: 700
-- assertVisible: "eng"
-- tapOn: "eng"
+- assertVisible: "en"
+- tapOn: "en"
 - pressKey: Back
-- assertVisible: "The last train leaves at midnight\\.|Every journey starts with one step\\.|Follow the lights to the platform\\.|Thanks for testing SubLearn Player\\."
+- pressKey: Back
+- extendedWaitUntil:
+    visible: "The last train leaves at midnight\\.|Every journey starts with one step\\.|Follow the lights to the platform\\.|Thanks for testing SubLearn Player\\."
+    timeout: 15000
 - takeScreenshot: 06-player-landscape-embedded-subtitle
 # Scrub through the clip; the thumb, preview state and time labels must remain interactive.
 - swipe:

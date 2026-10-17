@@ -87,7 +87,9 @@ class MainActivity : ComponentActivity() {
         } else {
             null
         }
-        return StartupRequest(uri.toString(), displayNameOf(uri), testOrientation, testControlsAutoHideMs)
+        val testSoftwareDecoder = BuildConfig.DEBUG &&
+            intent.getBooleanExtra("com.sublearn.app.debug.extra.softwareDecoder", false)
+        return StartupRequest(uri.toString(), displayNameOf(uri), testOrientation, testControlsAutoHideMs, testSoftwareDecoder)
     }
 
     /** Copy the self-generated clip from debug-only APK assets into the app-private FileProvider root. */
@@ -156,6 +158,8 @@ data class StartupRequest(
     val testOrientation: com.sublearn.core.settings.OrientationLock? = null,
     /** Keeps fixture controls stable while Maestro takes screenshots; release intents cannot set it. */
     val testControlsAutoHideMs: Long? = null,
+    /** Uses the emulator's software codec to avoid goldfish MediaCodec crashes in fixture runs. */
+    val testSoftwareDecoder: Boolean = false,
 )
 
 /**
