@@ -6,6 +6,9 @@
 #            flow in .maestro/*.yaml and then .maestro/_scratch/*.yaml one by one, and collect the
 #            evidence into out/. android-emulator-runner executes its `script:` input line by line
 #            with sh, so all the logic lives in this file and the workflow calls it as one line.
+#   install-maestro
+#            Only install Maestro. The workflow does this before the emulator boots, so that the
+#            315 MB download and unzip do not compete with a freshly booted emulator for the CPU.
 #   publish  Write out/STATUS.md and force-push out/ as ONE orphan commit to the branch
 #            `ui-snapshots` using GITHUB_TOKEN. Safe to run after a failed build or a dead emulator.
 #   verdict  Exit non-zero unless the build, every flow and the crash scan are clean.
@@ -168,6 +171,26 @@ install_maestro() {
   log "maestro $(cat "$OUT/maestro-version.txt")"
 }
 
+# The emulator's own apps (Pixel Launcher, Play services) now and then stop responding while the
+# freshly booted system is busy, and Android puts an "isn't responding" dialog over whatever is on
+# screen. Maestro then sees only the dialog: in one run all 8 flows failed on their first assertion.
+# Layer 1: do not show such dialogs at all (our own crashes and ANRs are judged from logcat anyway).
+hide_system_dialogs() {
+  adb shell settings put global hide_error_dialogs 1 </dev/null >/dev/null 2>&1
+}
+
+# Layer 2, before every flow: a dialog that got through (or one raised for another reason) is removed
+# by stopping the process it names. Never ours: that one is evidence, and the crash scan reports it.
+clear_system_dialogs() {
+  local who
+  while IFS= read -r who; do
+    [ -n "$who" ] && [ "$who" != "$PKG" ] || continue
+    log "an \"isn't responding\" dialog of $who covers the screen; stopping that process"
+    adb shell am force-stop "$who" </dev/null >/dev/null 2>&1
+  done < <(adb shell dumpsys window windows </dev/null 2>/dev/null | tr -d '\r' |
+    grep -aoE 'Application (Not Responding|Error): [A-Za-z0-9_.]+' | sed -E 's/^.*: //' | sort -u)
+}
+
 describe_device() {
   {
     echo "model:    $(adb shell getprop ro.product.model </dev/null | tr -d '\r')"
@@ -175,6 +198,8 @@ describe_device() {
     echo "abi:      $(adb shell getprop ro.product.cpu.abi </dev/null | tr -d '\r')"
     echo "screen:   $(adb shell wm size </dev/null | tr -d '\r' | tail -n 1), $(adb shell wm density </dev/null | tr -d '\r' | tail -n 1)"
     echo "app:      $(adb shell dumpsys package "$PKG" </dev/null | tr -d '\r' | grep -m1 versionName | sed 's/^ *//')"
+    echo "load:     $(adb shell cat /proc/loadavg </dev/null | tr -d '\r') (1, 5, 15 minutes; running/total; last pid)"
+    echo "runner:   $(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME"), image ${ImageOS:-?} ${ImageVersion:-?}, $(nproc) cpus"
   } >"$OUT/device.txt" 2>&1
 }
 
@@ -315,6 +340,7 @@ run_flow() {
   limit=$FLOW_TIMEOUT
   [ "$limit" -gt "$left" ] && limit=$left
 
+  clear_system_dialogs
   log "flow $name: start ($file, at most ${limit}s)"
   adb logcat -b all -c </dev/null >/dev/null 2>&1 || adb logcat -c </dev/null >/dev/null 2>&1
   started=$(date +%s)
@@ -349,7 +375,7 @@ run_flow() {
 # it is right even when the run died half way.
 # ---------------------------------------------------------------------------------------------
 write_status() {
-  local status=$OUT/STATUS.md total=0 passed=0 failed=0 crashes=0 name result code secs hits crash_word build_line emu_line
+  local status=$OUT/STATUS.md total=0 passed=0 failed=0 crashes=0 name result code secs hits crash_word build_line emu_line dialog
   mkdir -p "$OUT"
   if [ -s "$OUT/results.tsv" ]; then
     while IFS=$'\t' read -r name result code secs hits; do
@@ -431,6 +457,12 @@ write_status() {
         echo
         echo "### $name"
         echo
+        dialog=$(grep -aiE "isn't responding|keeps stopping|has stopped" "$OUT/maestro/$name/hierarchy-text.txt" 2>/dev/null | head -n 1 | cut -f2,3 | tr -d '\t')
+        if [ -n "$dialog" ]; then
+          echo "A system dialog is on screen at the end of this flow: \"$dialog\". It covers the app, so every"
+          echo "selector fails behind it. That is emulator noise, not an app crash, unless it names $PKG."
+          echo
+        fi
         if [ -s "$OUT/maestro/$name/maestro-console.txt" ]; then
           tail -n 25 "$OUT/maestro/$name/maestro-console.txt" | sed 's/^/    /'
         else
@@ -485,6 +517,7 @@ mode_run() {
 
   export PATH="$PATH:${ANDROID_HOME:-/usr/local/lib/android/sdk}/platform-tools"
   timeout 180 adb wait-for-device </dev/null
+  hide_system_dialogs
   adb devices -l </dev/null >"$OUT/adb-devices.txt" 2>&1
   adb logcat -b all -G 16M </dev/null >/dev/null 2>&1 || adb logcat -G 16M </dev/null >/dev/null 2>&1
 
@@ -586,12 +619,18 @@ mode_verdict() {
   log "VERDICT: clean: $ran flow(s) passed, no app crash"
 }
 
+mode_install_maestro() {
+  mkdir -p "$OUT"
+  install_maestro
+}
+
 case ${1:-run} in
   run) mode_run ;;
+  install-maestro) mode_install_maestro ;;
   publish) mode_publish ;;
   verdict) mode_verdict ;;
   *)
-    echo "usage: $0 [run|publish|verdict]" >&2
+    echo "usage: $0 [run|install-maestro|publish|verdict]" >&2
     exit 2
     ;;
 esac

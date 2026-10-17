@@ -22,7 +22,9 @@ jobs:
   ui:
     name: Build, boot an emulator, run the flows
     if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[ui]') }}
-    runs-on: ubuntu-latest
+    # Pinned, not ubuntu-latest: that label moves to Ubuntu 26.04 on 2026-10-19, and this setup (KVM,
+    # the preinstalled Android SDK, the emulator) was proven on 24.04. Move it on purpose, with a run.
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     permissions:
       # Only to force-push the ui-snapshots branch; the job never touches any other ref.
@@ -71,6 +73,16 @@ jobs:
           mkdir -p out
           ./gradlew assembleDebug --stacktrace --console=plain 2>&1 | tee out/build.log
 
+      - name: Stop the Gradle and Kotlin daemons
+        # They idle on about 2 GB and some CPU the emulator will want; the build is finished.
+        run: ./gradlew --stop || true; pkill -f KotlinCompileDaemon || true
+
+      - name: Install Maestro
+        # Before the emulator boots: the 315 MB download and unzip must not compete with a freshly
+        # booted emulator for the CPU (one run lost every flow to a "Pixel Launcher isn't responding"
+        # dialog raised right after the boot).
+        run: bash scripts/ui-snapshot/run.sh install-maestro
+
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm.rules
@@ -95,6 +107,7 @@ jobs:
           # google_apis, not default: ML Kit needs Play services. profile: without one the AVD is 320x640.
           target: google_apis
           profile: pixel_6
+          ram-size: 4096M
           disable-animations: true
           # The runner executes this input line by line with sh, so the logic is in the script.
           script: bash scripts/ui-snapshot/run.sh
