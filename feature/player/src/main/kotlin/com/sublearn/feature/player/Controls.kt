@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentSize
@@ -522,6 +523,7 @@ internal fun BottomChrome(
 
 private const val MAX_TOP_ROW_ACTIONS = 1
 private const val MAX_PLAYBACK_EDGE_ACTIONS = 1
+private val QUICK_ACTION_LABEL_WIDTH = 88.dp
 private const val MIN_TRANSPORT_ICON_DP = 22f
 private const val MAX_TRANSPORT_ICON_DP = 36f
 
@@ -811,12 +813,14 @@ private fun QuickActionButton(
     var actionCoordinates by remember(id, dock) { mutableStateOf<LayoutCoordinates?>(null) }
     val reduceMotion = LocalReduceMotion.current
     val labelFadeMs = if (reduceMotion) Motion.MICRO_MS else Motion.SHORT_MS
+    val actionItemWidth = if (expanded) maxOf(buttonSize, QUICK_ACTION_LABEL_WIDTH) else buttonSize
     Column(
-        modifier = Modifier.widthIn(min = buttonSize, max = buttonSize),
+        modifier = Modifier.width(actionItemWidth),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Surface(
             modifier = Modifier
+                .align(Alignment.CenterHorizontally)
                 .size(buttonSize)
                 .onGloballyPositioned { coordinates ->
                     actionCoordinates = coordinates
@@ -887,10 +891,10 @@ private fun QuickActionButton(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
                 color = colors.controlActive,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = Dimens.xxs),
+                modifier = Modifier.width(actionItemWidth).padding(top = Dimens.xxs),
             )
         }
     }
