@@ -854,5 +854,7 @@ and rotate. With no network: the same, plus translation only for a previously do
   passed 8/8 with no crash. Screenshot review found expanded labels needed more width; the follow-up CI
   40096205233 passed, but UI 40096205229 passed 7/8 because Maestro tapped a clipped duplicate Audio
   track label instead of the fixed top shortcut. The label cells now have room, the UI flow targets the
-  fixed shortcut, and player idle controls use a high-contrast video foreground in light theme. A fresh
-  CI/UI run and screenshot review are required before the experimental release.
+  fixed shortcut, and player idle controls use a high-contrast video foreground in light theme. CI
+  40097758432 and UI 40097758443 now pass on `d30d157`; all eight flows pass with no crash. Reviewed
+  landscape/portrait controls, compact/expanded rail, embedded subtitle and audio sheet captures. Normal
+  auto-hide, hardware decoder and animation/performance remain outside the emulator pass.

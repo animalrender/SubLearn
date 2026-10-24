@@ -65,6 +65,21 @@ gh run watch <run-id> --exit-status     # or poll: gh run view <run-id> --json s
 - A red job still publishes. Failed build, failed flows, a dead emulator: the publish step runs anyway
   and the branch carries the reason.
 
+## Latest reviewed Player pass (2026-10-24)
+
+- Commit: `d30d15732ca0ee4bf545c36b753e3044c183e619`.
+- CI: run `40097758432` passed build, unit tests and lint.
+- UI snapshot: run `40097758443` passed all 8 flows, `app crash: no`, on the API 34 x86_64 emulator.
+- Opened and reviewed: `06-player-landscape-controls`, `06-player-landscape-embedded-subtitle`,
+  `07-player-portrait-controls`, `08-player-compact-action-rail`,
+  `08-player-expanded-action-rail` and `08-player-audio-track-sheet`. The top-right order is audio,
+  subtitles, SW/HW and overflow from left to right; the compact rail shows the right-edge `>`; expanded
+  labels are below icons and have enough horizontal width; the icon surface does not surround labels;
+  idle icons remain legible over dark video in the light app theme.
+- The fixture uses software decode and a ten-minute control timeout, while the UI workflow disables
+  animations. This is not evidence of hardware-codec support, normal three-second auto-hide or animation
+  timing/performance. Real-device verification remains open.
+
 ## c) How to read the results
 
 ```bash
