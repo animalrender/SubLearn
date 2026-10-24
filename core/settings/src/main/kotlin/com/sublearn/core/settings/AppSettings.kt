@@ -514,7 +514,7 @@ data class AppSettings(
     fun subtitleLayer(role: TrackRole): SubtitleLayerSettings = subtitles.layer(role)
 
     companion object {
-        const val SCHEMA_VERSION = 5
+        const val SCHEMA_VERSION = 8
 
         val DEFAULT = AppSettings()
     }

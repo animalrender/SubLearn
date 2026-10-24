@@ -54,6 +54,7 @@ import com.sublearn.core.lexicon.LaterCapabilities
 import com.sublearn.feature.home.HomeScreen
 import com.sublearn.feature.home.HomeViewModel
 import com.sublearn.feature.learn.DictionaryScreen
+import com.sublearn.core.settings.DecoderMode
 import com.sublearn.feature.player.PlayerScreen
 import com.sublearn.feature.player.PlayerViewModel
 import com.sublearn.feature.settings.SettingsScreen
@@ -87,6 +88,22 @@ fun SubLearnApp(
         val request by startup.collectAsStateWithLifecycle(initialValue = null)
         LaunchedEffect(request) {
             request?.let {
+                if (it.testOrientation != null || it.testControlsAutoHideMs != null || it.testSoftwareDecoder) {
+                    settingsRepository.update { settings ->
+                        settings.copy(
+                            player = settings.player.copy(
+                                orientationLock = it.testOrientation ?: settings.player.orientationLock,
+                                controlsAutoHideMs = it.testControlsAutoHideMs ?: settings.player.controlsAutoHideMs,
+                                decoder = if (it.testSoftwareDecoder) DecoderMode.SOFTWARE else settings.player.decoder,
+                            ),
+                        )
+                    }
+                    // Let the test-only settings reach PlayerScreen before it opens the fixture.
+                    androidx.compose.runtime.withFrameNanos { }
+                    if (it.testSoftwareDecoder) {
+                        playerViewModel.controller.setDecoderMode(DecoderMode.SOFTWARE)
+                    }
+                }
                 nav.openPlayer(it.uri, it.title)
                 onStartupConsumed()
             }

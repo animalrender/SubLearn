@@ -113,7 +113,7 @@
     <string name="subtitle_hide_learning">Hide learning subtitles</string>
     <string name="subtitle_hide_translation">Hide translation subtitles</string>
     <string name="subtitle_layout_mode">Layout mode</string>
-    <string name="subtitle_layout_hint">Drag a layer to move it. Its text is not tappable while the layout mode is open.</string>
+    <string name="subtitle_layout_hint">Drag subtitle layers to move them, drag controls across rows to rearrange, and drag OK to reposition it.</string>
     <string name="subtitle_list">Subtitle list</string>
     <string name="subtitle_list_search">Search subtitles</string>
     <string name="subtitle_list_empty">No subtitle file is loaded for this layer.</string>
@@ -499,7 +499,10 @@
     <string name="player_more_actions_right">More actions to the right</string>
     <string name="player_toggle_time">Toggle between total and remaining time</string>
     <string name="player_arrange_controls">Arrange player controls</string>
-    <string name="player_arrange_controls_hint">Choose a toolbar or playback row for each action, float it over the video, or hide it. Use the arrows to reorder docked actions.</string>
+    <string name="player_arrange_controls_hint">Choose a toolbar or playback row for each action, float it over the video, or hide it. Hold and drag to reorder docked actions.</string>
+    <string name="player_action_toggle_visibility">Toggle visibility</string>
+    <string name="player_action_center_vertical">Center vertically</string>
+    <string name="player_action_center_horizontal">Center horizontally</string>
     <string name="player_expanded_action_labels">Show labels in expanded action rows</string>
     <string name="quick_dock_top">Top toolbar</string>
     <string name="quick_dock_second_row">Second toolbar</string>

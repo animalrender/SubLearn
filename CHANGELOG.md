@@ -66,6 +66,11 @@ Unreleased work lands on phase branches; `main` only ever contains merged, CI-gr
 - Duplicate Settings/My Words toolbars and stale subtitle styling after level/mode changes.
 
 ### Changed
+- The player's upper-right controls now read audio, subtitles, SW/HW and overflow from left to right.
+  The second action rail starts compact with a right-edge expand affordance; expanding it or using an
+  action fades labels in below the icons without enlarging their circular surfaces. Existing settings
+  migrate to the new compact default (schema v8), and the expanded preference remains persisted.
+  Idle overlay controls use a light high-contrast foreground in both app themes for readability over video.
 - The player opens in landscape by default and turns over with the phone even when the system's
   rotation lock is on (`SENSOR_LANDSCAPE`); a stored "Automatic" becomes "Landscape" once
   (settings schema 5). The orientation labels say what they do.

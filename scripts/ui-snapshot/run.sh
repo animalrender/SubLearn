@@ -344,12 +344,37 @@ flow_name() {
 }
 
 # One attempt: sets ATTEMPT_CODE, ATTEMPT_SECS and ATTEMPT_HITS and leaves the evidence in $dir.
+prepare_player_fixture() {
+  local orientation=${1:-LANDSCAPE}
+  local fixture="$ROOT/app/src/debug/assets/SubLearn-UI-Fixture.mp4"
+  local uri="content://$PKG.fileprovider/ui-fixtures/SubLearn-UI-Fixture.mp4"
+  if [ ! -s "$fixture" ]; then
+    log "player fixture is missing: $fixture"
+    return 1
+  fi
+  # Fixture-only stability knobs: a long auto-hide interval keeps selectors/screenshots deterministic,
+  # and the software codec avoids goldfish MediaCodec DEAD_OBJECT failures. Both are debug-only; app data
+  # (including these settings) is wiped before every flow.
+  adb shell am start -W -n "$PKG/com.sublearn.app.MainActivity" \
+    -a android.intent.action.VIEW -t video/mp4 -d "$uri" \
+    --grant-read-uri-permission \
+    --ez com.sublearn.app.debug.extra.fixture true \
+    --es com.sublearn.app.debug.extra.orientation "$orientation" \
+    --el com.sublearn.app.debug.extra.controlsAutoHideMs 600000 \
+    --ez com.sublearn.app.debug.extra.softwareDecoder true </dev/null
+}
+
 attempt_flow() {
-  local file=$1 dir=$2 limit=$3 started hits
+  local file=$1 dir=$2 limit=$3 started hits flow
   mkdir -p "$dir"
   quiesce_app
   clear_system_dialogs
   adb logcat -b all -c </dev/null >/dev/null 2>&1 || adb logcat -c </dev/null >/dev/null 2>&1
+  flow=$(basename "$file")
+  case "$flow" in
+    *player-portrait*) prepare_player_fixture PORTRAIT ;;
+    *player*) prepare_player_fixture LANDSCAPE ;;
+  esac
   started=$(date +%s)
   timeout --kill-after=20 "$limit" "${MAESTRO[@]}" test "$file" --test-output-dir "$dir" </dev/null 2>&1 |
     tee "$dir/maestro-console.txt"

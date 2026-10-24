@@ -2,6 +2,7 @@ package com.sublearn.feature.player
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Checkbox
@@ -58,6 +60,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -80,6 +83,7 @@ import com.sublearn.core.settings.FontSpec
 import com.sublearn.core.settings.QuickActionId
 import com.sublearn.core.settings.SubtitleLayerRole
 import com.sublearn.core.subtitles.TrackRole
+import kotlin.math.abs
 
 /** Milliseconds per click of the subtitle delay buttons. */
 private const val DELAY_STEP_MS = 100L
@@ -516,8 +520,27 @@ private fun ActionLayoutSheet(ui: PlayerUi, viewModel: PlayerViewModel) {
                 val dockActions = ui.settings.quickActions.visibleIn(spec.dock)
                 val dockOrder = dockActions.indexOfFirst { it.first == id }
                 var menuOpen by remember { mutableStateOf(false) }
+                var appearanceOpen by remember { mutableStateOf(false) }
                 Row(
-                    modifier = Modifier.fillMaxWidth().heightIn(min = Dimens.touchTarget),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = Dimens.touchTarget)
+                        .pointerInput(id, spec.dock) {
+                            var dragDistance = 0f
+                            detectDragGesturesAfterLongPress(
+                                onDrag = { change, amount ->
+                                    dragDistance += amount.y
+                                    change.consume()
+                                },
+                                onDragEnd = {
+                                    if (!id.fixedInPlaybackRow && abs(dragDistance) >= 32f && spec.dock != DockMode.HIDDEN) {
+                                        viewModel.reorderQuickAction(id, spec.dock, if (dragDistance > 0f) 1 else -1)
+                                    }
+                                    dragDistance = 0f
+                                },
+                                onDragCancel = { dragDistance = 0f },
+                            )
+                        },
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(id.icon(), contentDescription = null, tint = LocalSubLearnColors.current.controlIdle)
@@ -530,21 +553,56 @@ private fun ActionLayoutSheet(ui: PlayerUi, viewModel: PlayerViewModel) {
                     )
                     IconButton(
                         onClick = { viewModel.reorderQuickAction(id, spec.dock, -1) },
-                        enabled = dockOrder > 0 && spec.dock != DockMode.HIDDEN,
+                        enabled = !id.fixedInPlaybackRow && dockOrder > 0 && spec.dock != DockMode.HIDDEN,
                     ) {
                         Icon(Icons.Default.KeyboardArrowUp, contentDescription = stringResource(R.string.settings_move_up))
                     }
                     IconButton(
                         onClick = { viewModel.reorderQuickAction(id, spec.dock, 1) },
-                        enabled = spec.dock != DockMode.HIDDEN && dockOrder >= 0 && dockOrder < dockActions.lastIndex,
+                        enabled = !id.fixedInPlaybackRow && spec.dock != DockMode.HIDDEN &&
+                            dockOrder >= 0 && dockOrder < dockActions.lastIndex,
                     ) {
                         Icon(Icons.Default.KeyboardArrowDown, contentDescription = stringResource(R.string.settings_move_down))
                     }
-                    Box {
+                    IconButton(onClick = { appearanceOpen = !appearanceOpen }) {
+                        Icon(Icons.Default.Tune, contentDescription = stringResource(R.string.player_arrange_controls))
+                    }
+                    if (id.fixedInPlaybackRow) {
+                        Text(
+                            stringResource(DockMode.PLAYBACK.labelRes()),
+                            maxLines = 1,
+                            modifier = Modifier.padding(horizontal = Dimens.xs),
+                        )
+                    } else Box {
                         TextButton(onClick = { menuOpen = true }) {
                             Text(stringResource(spec.dock.labelRes()), maxLines = 1)
                         }
                         DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.player_action_toggle_visibility)) },
+                                onClick = {
+                                    menuOpen = false
+                                    viewModel.moveQuickAction(id, if (spec.dock == DockMode.HIDDEN) DockMode.BAR else DockMode.HIDDEN)
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.player_action_center_vertical)) },
+                                onClick = {
+                                    menuOpen = false
+                                    viewModel.updateQuickAction(id) {
+                                        it.copy(dock = DockMode.FLOATING, yFraction = 0.5f)
+                                    }
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.player_action_center_horizontal)) },
+                                onClick = {
+                                    menuOpen = false
+                                    viewModel.updateQuickAction(id) {
+                                        it.copy(dock = DockMode.FLOATING, xFraction = 0.5f)
+                                    }
+                                },
+                            )
                             DockMode.entries.forEach { dock ->
                                 DropdownMenuItem(
                                     text = { Text(stringResource(dock.labelRes())) },
@@ -555,6 +613,32 @@ private fun ActionLayoutSheet(ui: PlayerUi, viewModel: PlayerViewModel) {
                                 )
                             }
                         }
+                    }
+                }
+                if (appearanceOpen) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(start = Dimens.xl, end = Dimens.lg)) {
+                        Text(
+                            "${stringResource(R.string.subtitle_size)} · ${spec.sizeDp.toInt()} dp",
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                        SubLearnSlider(
+                            value = spec.sizeDp,
+                            valueRange = 24f..96f,
+                            onValueChange = { value ->
+                                viewModel.updateQuickAction(id) { it.copy(sizeDp = value) }
+                            },
+                        )
+                        Text(
+                            "${stringResource(R.string.subtitle_transparency)} · ${spec.transparencyPercent}%",
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                        SubLearnSlider(
+                            value = spec.transparencyPercent.toFloat(),
+                            valueRange = 0f..90f,
+                            onValueChange = { value ->
+                                viewModel.updateQuickAction(id) { it.copy(transparencyPercent = value.toInt()) }
+                            },
+                        )
                     }
                 }
             }

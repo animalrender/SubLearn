@@ -828,3 +828,33 @@ translation toggle to invert it, open the subtitle list and seek by tapping a ro
 and stop-at-end, add a word to My Words and see it styled, open Settings → Fonts and change only the
 learning surface, then Settings → About → export and re-import the JSON, and finally put the app in PiP
 and rotate. With no network: the same, plus translation only for a previously downloaded model.
+
+## 2026-10-17 — player chrome and layout pass (D-95)
+
+**Verified on the exact tip `7d6c35f864c3571226d69ae21cfcf9b65ea65f24`: CI run 39027595502 passed build, tests, lint and Android-test compilation; UI snapshot run 39027595505 passed all five baseline flows with `app crash: no`, and `STATUS.md` matched that SHA. Screenshots were opened and reviewed: Home, Settings, Downloads, My Words, Learn and Dictionary are visible and no app error/crash appears. The Downloads-bottom capture shows the Accuracy profile heading partly clipped at the viewport edge. The Player screen itself is not covered (no video fixture; system picker is not driven), so this pass does not verify the redesigned player visuals or motion on-device.
+
+- Loading stays visible until Media3 reports ready and, for video, a first rendered frame; audio-only media uses ready state. A stale previous-media ready state cannot dismiss the new-media loader.
+- Top and second toolbar use matching synchronized motion; top travels down/up and bottom travels up/down. Floating actions remain visible across chrome auto-hide.
+- The bottom playback controls now use fixed edge/center zones with a non-scrollable transport row, a thin circular-thumb seek timeline, and live seek previews that update Media3/subtitle state before release. Fit cycles on tap; long-press opens the ratio options. The fixed top quick actions are subtitle, audio and SW/HW decoder.
+- Second toolbar labels start expanded (v6 settings migration), with collapse control and per-action size/transparency controls in its editor. Layout mode exposes independently hideable bars, vertical-only subtitle positioning, and hold-drag reorder within a dock; dock/visibility/center controls persist through settings.
+- Start over is an inline five-second action. No changes were made to playback resume semantics.
+- **Still open:** cross-dock drag/drop target preview and arbitrary insertion, making every fixed transport/OK element draggable with persisted position, and a real-video screenshot pass. See KNOWN_ISSUES #17; PLY-1..3, SUB-2..3 remain verification-pending in CHECKLIST.
+
+## 2026-10-24 — MX-style action rail follow-up
+
+- Reordered the upper-right shortcuts to audio → subtitles → SW/HW → overflow; this is the requested
+  left-to-right physical order.
+- The second action rail now defaults to icon-only with a right-edge `>` affordance. Expanding it or
+  tapping an action reveals labels below the icon with a reduce-motion-aware fade; the circular
+  background and touch target enclose only the icon.
+- Added settings schema v8 migration, compact-default and migration tests, plus Maestro evidence for
+  compact and expanded states. Updated the product spec, decision log, checklist, known issue and
+  changelog.
+- Static repository checks and Python test suites pass. CI 40094835673 passed, and UI 40094835664
+  passed 8/8 with no crash. Screenshot review found expanded labels needed more width; the follow-up CI
+  40096205233 passed, but UI 40096205229 passed 7/8 because Maestro tapped a clipped duplicate Audio
+  track label instead of the fixed top shortcut. The label cells now have room, the UI flow targets the
+  fixed shortcut, and player idle controls use a high-contrast video foreground in light theme. CI
+  40097758432 and UI 40097758443 now pass on `d30d157`; all eight flows pass with no crash. Reviewed
+  landscape/portrait controls, compact/expanded rail, embedded subtitle and audio sheet captures. Normal
+  auto-hide, hardware decoder and animation/performance remain outside the emulator pass.

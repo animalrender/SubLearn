@@ -1,0 +1,44 @@
+# Opens a generated portrait test clip while the player is explicitly locked to landscape.
+# scripts/ui-snapshot/run.sh grants the FileProvider URI and starts MainActivity before this flow.
+appId: com.sublearn.app.debug
+---
+- tapOn:
+    text: "Got it"
+    optional: true
+- extendedWaitUntil:
+    visible: "360 × 640"
+    timeout: 60000
+- assertVisible: "SubLearn-UI-Fixture.mp4"
+- assertVisible: "FIT"
+- assertVisible: "Subtitle list"
+- assertVisible: "Repeat this subtitle"
+- assertVisible: "Lock"
+- assertVisible: "Previous video"
+- assertVisible: "Seek backward"
+- assertVisible: "Previous subtitle"
+- assertVisible: "Play|Pause"
+- assertVisible: "Next subtitle"
+- assertVisible: "Seek forward"
+- assertVisible: "Next video"
+- takeScreenshot: 06-player-landscape-controls
+# Select the real embedded subtitle track and verify its cue is rendered over the playing picture.
+- tapOn: "Subtitle tracks"
+- assertVisible: "Subtitle tracks"
+- swipe:
+    start: "50%, 90%"
+    end: "50%, 45%"
+    duration: 700
+- assertVisible: "en"
+- tapOn: "en"
+- pressKey: Back
+- pressKey: Back
+- extendedWaitUntil:
+    visible: "The last train leaves at midnight\\.|Every journey starts with one step\\.|Follow the lights to the platform\\.|Thanks for testing SubLearn Player\\."
+    timeout: 15000
+- takeScreenshot: 06-player-landscape-embedded-subtitle
+# Scrub through the clip; the thumb, preview state and time labels must remain interactive.
+- swipe:
+    start: "20%, 88%"
+    end: "78%, 88%"
+    duration: 700
+- takeScreenshot: 06-player-landscape-scrub

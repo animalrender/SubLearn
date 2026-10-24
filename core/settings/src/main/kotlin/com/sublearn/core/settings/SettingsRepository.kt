@@ -129,6 +129,9 @@ object SettingsMigrator {
         3 to { it },
         4 to ::migrateV3ToV4,
         5 to ::migrateV4ToV5,
+        6 to ::migrateV5ToV6,
+        7 to ::migrateV6ToV7,
+        8 to ::migrateV7ToV8,
     )
 
     /**
@@ -142,6 +145,42 @@ object SettingsMigrator {
         if (lock != null && lock != OrientationLock.AUTO.name) return root
         val patched = root.toMutableMap()
         patched["player"] = JsonObject(playerObj + ("orientationLock" to JsonPrimitive(OrientationLock.LANDSCAPE.name)))
+        return JsonObject(patched)
+    }
+
+    /** v6: open the second toolbar by default to match the player reference layout. */
+    private fun migrateV5ToV6(root: JsonObject): JsonObject {
+        val actions = root["quickActions"] as? JsonObject ?: return root
+        val patched = root.toMutableMap()
+        patched["quickActions"] = JsonObject(actions + ("barExpanded" to JsonPrimitive(true)))
+        return JsonObject(patched)
+    }
+
+    /** v7: dedicated bottom controls live in the playback dock, not twice across two rows. */
+    private fun migrateV6ToV7(root: JsonObject): JsonObject {
+        val actions = root["quickActions"] as? JsonObject ?: return root
+        val specs = actions["specs"] as? JsonObject ?: return root
+        val fixedControls = listOf(
+            QuickActionId.REPEAT_BLOCK,
+            QuickActionId.SUBTITLE_LIST,
+            QuickActionId.ASPECT_RATIO,
+        )
+        val migratedSpecs = JsonObject(specs.toMutableMap().apply {
+            fixedControls.forEach { id ->
+                val spec = this[id.key] as? JsonObject ?: return@forEach
+                this[id.key] = JsonObject(spec + ("dock" to JsonPrimitive(DockMode.PLAYBACK.name)))
+            }
+        })
+        val patched = root.toMutableMap()
+        patched["quickActions"] = JsonObject(actions + ("specs" to migratedSpecs))
+        return JsonObject(patched)
+    }
+
+    /** v8: start the MX-style action rail compact, with labels shown on explicit expand/interaction. */
+    private fun migrateV7ToV8(root: JsonObject): JsonObject {
+        val actions = root["quickActions"] as? JsonObject ?: return root
+        val patched = root.toMutableMap()
+        patched["quickActions"] = JsonObject(actions + ("barExpanded" to JsonPrimitive(false)))
         return JsonObject(patched)
     }
 

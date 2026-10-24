@@ -72,7 +72,7 @@ rendering. Each is unit-tested in isolation, which is the only reason the stylin
 
 **D-13 — Settings are one `@Serializable AppSettings` with a schema version.** Migration is a
 `DataStore`-level `TransformSpec`-style upgrade; adding a field with a default does *not* need a bump
-(currently SCHEMA_VERSION 3), removing or reshaping one does. JSON export/import is the same
+(currently SCHEMA_VERSION 8), removing or reshaping one does. JSON export/import is the same
 serialization, which is what makes the settings screen and the file format impossible to drift apart.
 
 **D-14 — Secrets: Keystore AES-GCM, ciphertext in DataStore, never plaintext on disk.**
@@ -698,8 +698,8 @@ normal subtitle analysis; the reported unnamed model/device still needs real-dev
 
 **D-90 — Opening a player starts playback; restarting is a passive action.**
 New media explicitly calls `play()` after preparing its queue, and returning to already-loaded media
-also starts playback. A resumed file shows an eight-second bottom turquoise hint with a localized
-"Start over" button; ignoring/dismissing it leaves playback running at the saved position. The action
+also starts playback. A resumed file shows a five-second compact turquoise hint with an inline localized
+"Start over" action; ignoring/dismissing it leaves playback running at the saved position. The action
 seeks to zero and plays. First opens and files without a resumable position do not show it; existing
 remember-position/resume settings and end-of-file guards still apply. Changing media or replacing the
 hint clears its action so it cannot restart another file. This changes no persisted settings schema.
@@ -773,5 +773,12 @@ flows to it), so system error dialogs are switched off and a leftover one is rem
 can kill the new process (2 of 8 flows in one run), so the previous app is wiped and given three seconds
 before every flow and a flow that fails with exactly that signature is retried once, never when it crashed.
 The runner is pinned to `ubuntu-24.04` because `ubuntu-latest` moves to 26.04 on 2026-10-19 and the setup
-was proven on 24.04. Not covered: the player and anything behind a video (no fixture, REQ-13),
-real-device behaviour (performance, picture-in-picture, sensors) and release builds.
+was proven on 24.04. At the time of this decision, not covered: the player and anything behind a video
+(no fixture, REQ-13), real-device behaviour (performance, picture-in-picture, sensors) and release builds.
+**Update 2026-10-17:** a debug-only MP4 with embedded English cues is now launched from FileProvider by
+Player Maestro flows, removing the dependency on the system picker for the in-app playback surface. The
+current branch still needs its marked UI run and screenshot review; the picker and external-file flows
+remain unautomated.
+
+**D-95 — Player chrome follows the screen edge; its fixed three-zone bottom row has explicit ordering.**
+The upper chrome enters downward and exits upward; the lower chrome enters upward and exits downward with the same 220 ms slide / 160 ms fade timing, honoring reduce-motion. A thin custom seek line previews by seeking the actual player during drag, so Media3 and the subtitle layer update before release. The bottom row has fixed left, center and right zones and no horizontal scrolling. The center zone, read from right to left, is Next video → seek forward 10 s → next cue → Play/Pause → previous cue → seek backward 10 s → Previous video. At the far right, read from the edge inward, are Subtitle list then FIT scale. At the far left, read from the center outward, are Repeat cue then Lock. These fixed controls are reserved to the playback row and filtered out of the configurable rails to prevent duplicates. Floating quick actions remain visible while the chrome auto-hides. Layout mode shows the bars and an OK action, can hide either toolbar temporarily, constrains subtitle dragging to vertical movement and allows long-press reorder inside a dock. The action editor exposes persisted size/transparency and hide/dock/center controls; v5→v6 opened the second toolbar, v6→v7 moved Repeat, Subtitle list and aspect ratio into the dedicated playback dock, and v7→v8 makes the second row compact by default. On expansion or the first action tap, labels fade in below the icons while the right-edge expand affordance fades away; the action surface stays around the icon only. The top-right controls read left-to-right as audio, subtitles, SW/HW, then overflow. Player idle controls use a theme-independent light foreground so they remain legible over dark video/scrim even when the app theme is light. A real drag/drop target-preview across docks and a movable/persisted OK banner remain tracked separately in KNOWN_ISSUES. The fixture-backed emulator pass 40097758443 passed all eight flows with no crash; compact/expanded rail, landscape, portrait, embedded-subtitle and audio-sheet screenshots were opened and reviewed. Real-device animation/performance needs separate review.

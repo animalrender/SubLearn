@@ -60,10 +60,15 @@ class MainActivity : ComponentActivity() {
 
 
     private fun startupRequest(intent: android.content.Intent): StartupRequest? {
-        val uri = intent.data
-            ?: intent.getParcelableExtra<android.net.Uri>(android.content.Intent.EXTRA_STREAM)
-            ?: intent.clipData?.getItemAt(0)?.uri
-            ?: return null
+        val useDebugFixture = BuildConfig.DEBUG &&
+            intent.getBooleanExtra("com.sublearn.app.debug.extra.fixture", false)
+        val uri = if (useDebugFixture) {
+            copyDebugFixtureUri()
+        } else {
+            intent.data
+                ?: intent.getParcelableExtra<android.net.Uri>(android.content.Intent.EXTRA_STREAM)
+                ?: intent.clipData?.getItemAt(0)?.uri
+        } ?: return null
         if (intent.flags and android.content.Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION != 0 &&
             intent.flags and android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION != 0
         ) {
@@ -71,8 +76,35 @@ class MainActivity : ComponentActivity() {
                 contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
         }
-        return StartupRequest(uri.toString(), displayNameOf(uri))
+        val testOrientation = if (BuildConfig.DEBUG) {
+            intent.getStringExtra("com.sublearn.app.debug.extra.orientation")
+                ?.let { value -> runCatching { com.sublearn.core.settings.OrientationLock.valueOf(value) }.getOrNull() }
+        } else {
+            null
+        }
+        val testControlsAutoHideMs = if (BuildConfig.DEBUG && intent.hasExtra("com.sublearn.app.debug.extra.controlsAutoHideMs")) {
+            intent.getLongExtra("com.sublearn.app.debug.extra.controlsAutoHideMs", 0L).takeIf { it in 3_000L..600_000L }
+        } else {
+            null
+        }
+        val testSoftwareDecoder = BuildConfig.DEBUG &&
+            intent.getBooleanExtra("com.sublearn.app.debug.extra.softwareDecoder", false)
+        return StartupRequest(uri.toString(), displayNameOf(uri), testOrientation, testControlsAutoHideMs, testSoftwareDecoder)
     }
+
+    /** Copy the self-generated clip from debug-only APK assets into the app-private FileProvider root. */
+    private fun copyDebugFixtureUri(): android.net.Uri? = runCatching {
+        val file = java.io.File(filesDir, "ui-fixtures/SubLearn-UI-Fixture.mp4")
+        file.parentFile?.mkdirs()
+        assets.open("SubLearn-UI-Fixture.mp4").use { input ->
+            file.outputStream().use { output -> input.copyTo(output) }
+        }
+        androidx.core.content.FileProvider.getUriForFile(
+            this,
+            "${BuildConfig.APPLICATION_ID}.fileprovider",
+            file,
+        )
+    }.getOrNull()
 
     /**
      * The file's real name, as the provider reports it. A `content://media/…/1234` URI has a
@@ -119,7 +151,16 @@ class MainActivity : ComponentActivity() {
 }
 
 /** A video handed to the app by another application. */
-data class StartupRequest(val uri: String, val title: String)
+data class StartupRequest(
+    val uri: String,
+    val title: String,
+    /** Debug-only emulator hook; callers outside debug builds cannot set player orientation. */
+    val testOrientation: com.sublearn.core.settings.OrientationLock? = null,
+    /** Keeps fixture controls stable while Maestro takes screenshots; release intents cannot set it. */
+    val testControlsAutoHideMs: Long? = null,
+    /** Uses the emulator's software codec to avoid goldfish MediaCodec crashes in fixture runs. */
+    val testSoftwareDecoder: Boolean = false,
+)
 
 /**
  * Applies the in-app language choice. API 33 has a system API for this; below it the only reliable

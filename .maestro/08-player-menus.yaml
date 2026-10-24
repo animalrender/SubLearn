@@ -1,0 +1,82 @@
+# Exercise the Player's video, subtitle, audio, aspect-ratio and control-layout sheets.
+appId: com.sublearn.app.debug
+---
+- tapOn:
+    text: "Got it"
+    optional: true
+- extendedWaitUntil:
+    visible: "360 × 640"
+    timeout: 60000
+- assertVisible: "SubLearn-UI-Fixture.mp4"
+- assertVisible: "More"
+# The second rail starts compact with a right-facing expand affordance; expanding shows labels below icons.
+- assertVisible: "Arrange player controls"
+- takeScreenshot: 08-player-compact-action-rail
+- tapOn: "Arrange player controls"
+- assertVisible: "Learning subtitles"
+- takeScreenshot: 08-player-expanded-action-rail
+- tapOn: "More"
+- assertVisible: "Subtitle options"
+- assertVisible: "Arrange player controls"
+- tapOn: "Subtitle options"
+- assertVisible: "Subtitle tracks"
+- assertVisible: "Learning subtitles"
+- swipe:
+    start: "50%, 90%"
+    end: "50%, 45%"
+    duration: 700
+- assertVisible: "Soft subtitles in this video"
+- takeScreenshot: 08-player-subtitle-options-sheet
+- pressKey: Back
+- pressKey: Back
+# The expanded rail also has an Audio track action; tap the fixed top-right shortcut by its stable
+# landscape position so Maestro doesn't select the partially clipped duplicate label in the rail.
+- tapOn:
+    point: "82%, 6%"
+- assertVisible: "Audio track"
+- swipe:
+    start: "50%, 90%"
+    end: "50%, 45%"
+    duration: 700
+- assertVisible: "Player volume"
+- takeScreenshot: 08-player-audio-track-sheet
+- pressKey: Back
+- pressKey: Back
+- longPressOn: "FIT"
+- assertVisible: "Aspect ratio"
+- assertVisible: "Fit"
+# The initial portrait bottom-sheet peek shows only the first few rows; expand it before checking all options.
+- swipe:
+    start: "50%, 90%"
+    end: "50%, 45%"
+    duration: 700
+- assertVisible: "Fill"
+- assertVisible: "Zoom"
+- assertVisible: "Stretch"
+- assertVisible: "Custom"
+- takeScreenshot: 08-player-aspect-ratio-sheet
+- tapOn: "Fill"
+- pressKey: Back
+- pressKey: Back
+- tapOn: "More"
+- tapOn: "Layout mode"
+- assertVisible: "OK"
+- takeScreenshot: 08-player-layout-mode
+# Move the expanded second-row action into the playback dock; this exercises cross-dock drag/drop.
+- swipe:
+    from:
+      text: "Layout mode"
+    direction: DOWN
+    duration: 900
+- takeScreenshot: 08-player-cross-dock-drop
+- tapOn:
+    text: "Arrange player controls"
+    below: "Drag subtitle layers to move them.*"
+- assertVisible: "Choose a toolbar or playback row.*"
+- swipe:
+    start: "50%, 90%"
+    end: "50%, 45%"
+    duration: 700
+- assertVisible: "Repeat this subtitle"
+- assertVisible: "Playback row"
+- takeScreenshot: 08-player-action-layout-sheet

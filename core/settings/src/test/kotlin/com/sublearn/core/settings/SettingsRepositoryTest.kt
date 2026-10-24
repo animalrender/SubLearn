@@ -17,6 +17,7 @@ class SettingsRepositoryTest {
         assertEquals(AppSettings.SCHEMA_VERSION, AppSettings.DEFAULT.schemaVersion)
         assertTrue(AppSettings.DEFAULT.subtitles.layers.size == 2)
         assertEquals(3_000L, AppSettings.DEFAULT.player.controlsAutoHideMs)
+        assertFalse(AppSettings.DEFAULT.quickActions.barExpanded)
     }
 
     @Test
@@ -71,6 +72,33 @@ class SettingsRepositoryTest {
         val absent = """{"schemaVersion": 4, "player": {"seekStepMs": 5000}}"""
         assertEquals(OrientationLock.LANDSCAPE, SettingsJson.decode(absent).getOrThrow().player.orientationLock)
         assertEquals(OrientationLock.LANDSCAPE, AppSettings.DEFAULT.player.orientationLock)
+    }
+
+    @Test
+    fun `v5 migrations use the new compact second-toolbar default`() {
+        val v5 = """{"schemaVersion": 5, "quickActions": {"barExpanded": true}}"""
+        val decoded = SettingsJson.decode(v5).getOrThrow()
+        assertEquals(AppSettings.SCHEMA_VERSION, decoded.schemaVersion)
+        assertFalse(decoded.quickActions.barExpanded)
+    }
+
+    @Test
+    fun `v7 migration collapses the action rail for the MX-style default`() {
+        val v7 = """{"schemaVersion": 7, "quickActions": {"barExpanded": true}}"""
+        val decoded = SettingsJson.decode(v7).getOrThrow()
+        assertEquals(AppSettings.SCHEMA_VERSION, decoded.schemaVersion)
+        assertFalse(decoded.quickActions.barExpanded)
+    }
+
+    @Test
+    fun `v6 migration moves fixed playback controls to the playback dock`() {
+        val v6 = """{"schemaVersion": 6, "quickActions": {"specs": {"repeat_block": {"dock": "BAR", "order": 4}, "subtitle_list": {"dock": "BAR", "order": 5}, "aspect_ratio": {"dock": "TOP", "order": 1}, "toggle_learning": {"dock": "TOP", "order": 2}}}}"""
+        val decoded = SettingsJson.decode(v6).getOrThrow()
+        assertEquals(AppSettings.SCHEMA_VERSION, decoded.schemaVersion)
+        assertEquals(DockMode.PLAYBACK, decoded.quickActions.spec(QuickActionId.REPEAT_BLOCK).dock)
+        assertEquals(DockMode.PLAYBACK, decoded.quickActions.spec(QuickActionId.SUBTITLE_LIST).dock)
+        assertEquals(DockMode.PLAYBACK, decoded.quickActions.spec(QuickActionId.ASPECT_RATIO).dock)
+        assertEquals(DockMode.TOP, decoded.quickActions.spec(QuickActionId.TOGGLE_LEARNING).dock)
     }
 
     @Test
@@ -165,10 +193,16 @@ class SettingsRepositoryTest {
         assertTrue(hidden.visibleIn(DockMode.FLOATING).none { it.first == QuickActionId.AI_EXPLAIN })
         assertTrue(settings.specs.isNotEmpty())
         assertEquals(DockMode.BAR, settings.spec(QuickActionId.TOGGLE_LEARNING).dock)
+        listOf(QuickActionId.REPEAT_BLOCK, QuickActionId.SUBTITLE_LIST, QuickActionId.ASPECT_RATIO).forEach { id ->
+            assertTrue(id.fixedInPlaybackRow)
+            assertEquals(DockMode.PLAYBACK, settings.spec(id).dock)
+            assertTrue(settings.visibleIn(DockMode.PLAYBACK).any { it.first == id })
+            assertTrue(settings.visibleIn(DockMode.BAR).none { it.first == id })
+        }
 
         val oldSettings = QuickActionSettings(specs = QuickActionSpec.defaults - QuickActionId.TOGGLE_MUTE.key)
         assertEquals(DockMode.BAR, oldSettings.spec(QuickActionId.TOGGLE_MUTE).dock)
-        assertEquals(QuickActionSpec.defaults.size, oldSettings.spec(QuickActionId.TOGGLE_MUTE).order)
+        assertEquals(settings.visibleIn(DockMode.BAR).size, oldSettings.spec(QuickActionId.TOGGLE_MUTE).order)
         assertTrue(oldSettings.visibleIn(DockMode.BAR).any { it.first == QuickActionId.TOGGLE_MUTE })
     }
 

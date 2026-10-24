@@ -43,11 +43,21 @@ object Motion {
             slideInVertically(tween(OVERLAY_MS, easing = emphasized)) { -it / 6 }
     }
 
-    fun controlsExit(reduceMotion: Boolean): ExitTransition = if (reduceMotion) {
+    fun controlsExit(reduceMotion: Boolean): ExitTransition = controlsExit(reduceMotion, fromTop = true)
+
+    /** Top chrome enters from above and exits upward; bottom chrome enters from below and exits downward. */
+    fun controlsEnter(reduceMotion: Boolean, fromTop: Boolean): EnterTransition = if (reduceMotion) {
+        fadeIn(tween(MICRO_MS))
+    } else {
+        fadeIn(tween(SHORT_MS, easing = decelerate)) +
+            slideInVertically(tween(OVERLAY_MS, easing = emphasized)) { distance -> if (fromTop) -distance / 8 else distance / 8 }
+    }
+
+    fun controlsExit(reduceMotion: Boolean, fromTop: Boolean): ExitTransition = if (reduceMotion) {
         fadeOut(tween(MICRO_MS))
     } else {
         fadeOut(tween(SHORT_MS, easing = accelerate)) +
-            slideOutVertically(tween(OVERLAY_MS, easing = emphasized)) { -it / 6 }
+            slideOutVertically(tween(OVERLAY_MS, easing = emphasized)) { distance -> if (fromTop) -distance / 8 else distance / 8 }
     }
 
     fun popupEnter(

@@ -133,3 +133,12 @@ integrity, performance, UX consistency, and reference repositories (`dictionaryp
   suggestion strip is clickable and listed before the app, non-ASCII labels printed as `?` under a C
   locale, the emulator's own "isn't responding" dialog can cover the app for a whole run, and a launch right
   after `pm clear` can lose a race with the previous task's removal and start no process at all.
+
+## 2026-10-17 — directional player chrome and fixed transport layout (D-95)
+
+- The first frame, not the duration of a timer, now ends the open-player loading state; decoder readiness is tracked separately from first-frame rendering.
+- Top and bottom chrome animate from/to their respective screen edges with shared timing. Floating actions no longer vanish with auto-hidden chrome.
+- Replaced the seek slider's prominent thumb/buffer treatment with a thin rail and small circular thumb; seeking remains live during drag so picture and subtitle cues preview before release.
+- Rebuilt playback into fixed edge/center zones, kept transport centered and removed the row's scroll behavior. Compact icons scale with available width.
+- Default second-row labels are expanded and persisted by settings migration. The control editor now offers per-action size/transparency and visibility/center controls; layout mode supports hideable rails, vertical-only subtitle adjustment and hold-drag ordering within a dock.
+- Added a debug-only three-minute MP4 fixture with an embedded English subtitle track, launched through FileProvider, plus landscape, portrait and Player-menu Maestro flows. The current UI run must still be checked against this branch before the fixture-backed Player surface is marked verified; external-file-picker behaviour and animation/performance remain device-only. The cross-dock drop and persisted movable OK target are tracked separately in KNOWN_ISSUES.

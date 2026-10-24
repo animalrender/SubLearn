@@ -1,10 +1,12 @@
 # UI verification: seeing and driving the running app
 
 The agent sandbox has no JVM, no emulator, and no way to read the Actions log or artifact hosts, so a
-change to a screen used to be "verified" by compiling it. This file is the single source of truth for
-the check that closes that gap. CI builds the debug APK, boots an Android emulator, drives the app with
-[Maestro](https://docs.maestro.dev) flows, and publishes screenshots, view-hierarchy dumps and logs to
-the orphan branch `ui-snapshots`, which the sandbox reads with plain `git`.
+change to a screen cannot be verified locally by compiling it. This file is the single source of truth
+for the on-device check that closes that gap. CI builds the debug APK, boots an Android emulator, drives
+the app with [Maestro](https://docs.maestro.dev) flows, and publishes screenshots, view-hierarchy dumps
+and logs to the orphan branch `ui-snapshots`, which the sandbox reads with plain `git`. Player flows
+use the debug-only embedded-subtitle fixture and FileProvider launch path; external-file-picker behaviour
+is still outside automation.
 
 | Piece | Where |
 | --- | --- |
@@ -62,6 +64,21 @@ gh run watch <run-id> --exit-status     # or poll: gh run view <run-id> --json s
   that was working on the previous marked commit).
 - A red job still publishes. Failed build, failed flows, a dead emulator: the publish step runs anyway
   and the branch carries the reason.
+
+## Latest reviewed Player pass (2026-10-24)
+
+- Commit: `d30d15732ca0ee4bf545c36b753e3044c183e619`.
+- CI: run `40097758432` passed build, unit tests and lint.
+- UI snapshot: run `40097758443` passed all 8 flows, `app crash: no`, on the API 34 x86_64 emulator.
+- Opened and reviewed: `06-player-landscape-controls`, `06-player-landscape-embedded-subtitle`,
+  `07-player-portrait-controls`, `08-player-compact-action-rail`,
+  `08-player-expanded-action-rail` and `08-player-audio-track-sheet`. The top-right order is audio,
+  subtitles, SW/HW and overflow from left to right; the compact rail shows the right-edge `>`; expanded
+  labels are below icons and have enough horizontal width; the icon surface does not surround labels;
+  idle icons remain legible over dark video in the light app theme.
+- The fixture uses software decode and a ten-minute control timeout, while the UI workflow disables
+  animations. This is not evidence of hardware-codec support, normal three-second auto-hide or animation
+  timing/performance. Real-device verification remains open.
 
 ## c) How to read the results
 
@@ -146,9 +163,12 @@ What is on the branch (`<flow>` is the file name without `.yaml`; scratch flows 
    then `failed to attach`). The script avoids it (it wipes the previous app and waits before each flow)
    and retries a flow once when it finds exactly that signature; `STATUS.md` then says "second attempt"
    and the first attempt is in `attempt-1/`. A crash is never retried away.
-7. **What is not covered.** Nothing behind a video (the player, subtitles, the word card): the repository
-   has no video and the system file picker is not driven; see the limits at the end. The screenshots are
-   600 px wide, so look at `hierarchy-text.txt` for exact strings and bounds, not at the image.
+7. **Player coverage.** The debug-only fixture-backed flows are intended to drive the real Player surface,
+   embedded subtitle selection/rendering, portrait and landscape chrome, scrub, and Player sheets. Their
+   PASS status and screenshots must be checked against the exact branch SHA before calling them verified.
+   The system file picker and external subtitle/audio attachment flows are not driven; see the limits at
+   the end. Screenshots are 600 px wide, so use `hierarchy-text.txt` for exact strings and bounds, not for
+   visual layout.
 
 ## e) How to write flows
 
@@ -310,7 +330,13 @@ with 2.11.0; set it if a newer release breaks the flows), `UI_FLOW_TIMEOUT` (240
 `UI_BUDGET_SECONDS` (840 s for the whole run; flows that do not start in time are reported as not run).
 The `ui-snapshots` branch is generated: never edit it, merge it or delete it by hand.
 
-**Limits.** The player and everything behind a video are not covered: there is no video in the
-repository (REQ-13) and the system file picker is not driven. Downloads are looked at, not performed.
-The emulator is x86_64 with a software GPU and animations off, so it says nothing about performance,
-animation timing, picture-in-picture, sensors or Bluetooth. Release (R8) builds are not run here.
+**Limits.** The debug-only fixture is a synthetic 3-minute clip with one embedded English subtitle
+track; the Player flows use it to test controls and subtitle rendering without depending on a user's
+media library. Debug-only startup extras select the software codec (the emulator's goldfish H.264 codec
+reported `DEAD_OBJECT`) and extend control auto-hide to ten minutes so selectors/screenshots are stable.
+These flows do **not** verify the hardware decoder or normal three-second auto-hide timer. Mark Player
+coverage verified only when the exact-sha UI run passes and its screenshots are reviewed.
+The Android system file picker is not driven, so external subtitle/audio attachment, SAF grants and
+real-library resume remain unverified. Downloads are looked at, not performed. The emulator is x86_64
+with a software GPU and animations off, so it says nothing about performance, animation timing,
+picture-in-picture, sensors or Bluetooth. Release (R8) builds are not run by the UI workflow.

@@ -16,23 +16,23 @@ enum class DockMode {
     FLOATING,
     /** Not shown in the player. */
     HIDDEN,
-    /** In the bottom transport row beside play and subtitle stepping. */
+    /** Reserved for the fixed bottom transport controls and any optional playback-dock actions. */
     PLAYBACK,
 }
 
 /** Stable ids; renaming one is a settings migration, so keep these strings stable. */
 @Serializable
-enum class QuickActionId(val key: String) {
+enum class QuickActionId(val key: String, val fixedInPlaybackRow: Boolean = false) {
     TOGGLE_LEARNING("toggle_learning"),
     TOGGLE_TRANSLATION("toggle_translation"),
-    REPEAT_BLOCK("repeat_block"),
+    REPEAT_BLOCK("repeat_block", fixedInPlaybackRow = true),
     STOP_AT_BLOCK_END("stop_at_block_end"),
     LAYOUT_MODE("layout_mode"),
-    SUBTITLE_LIST("subtitle_list"),
+    SUBTITLE_LIST("subtitle_list", fixedInPlaybackRow = true),
     AI_EXPLAIN("ai_explain"),
     MY_WORDS("my_words"),
     PLAYLIST("playlist"),
-    ASPECT_RATIO("aspect_ratio"),
+    ASPECT_RATIO("aspect_ratio", fixedInPlaybackRow = true),
     DECODER("decoder"),
     AUDIO_TRACK("audio_track"),
     SUBTITLE_TRACKS("subtitle_tracks"),
@@ -70,8 +70,8 @@ data class QuickActionSpec(
 
     companion object {
         /**
-         * Default layout: the two subtitle toggles and the learning tools lead the bar, the rest of
-         * the set follows in a fixed order so an update that adds an action does not shuffle the dock.
+         * The subtitle-list, fit-scale and repeat controls belong to the fixed playback row; the
+         * remaining tools follow the two subtitle toggles in a stable, labeled second-row order.
          */
         val defaults: Map<String, QuickActionSpec> = buildMap {
             val bar = listOf(
@@ -79,13 +79,10 @@ data class QuickActionSpec(
                 QuickActionId.TOGGLE_TRANSLATION,
                 QuickActionId.TOGGLE_MUTE,
                 QuickActionId.LAYOUT_MODE,
-                QuickActionId.REPEAT_BLOCK,
                 QuickActionId.STOP_AT_BLOCK_END,
-                QuickActionId.SUBTITLE_LIST,
                 QuickActionId.AI_EXPLAIN,
                 QuickActionId.MY_WORDS,
                 QuickActionId.PLAYLIST,
-                QuickActionId.ASPECT_RATIO,
                 QuickActionId.DECODER,
                 QuickActionId.AUDIO_TRACK,
                 QuickActionId.SUBTITLE_TRACKS,
@@ -96,6 +93,11 @@ data class QuickActionSpec(
                 QuickActionId.SETTINGS,
             )
             bar.forEachIndexed { index, id -> put(id.key, QuickActionSpec(dock = DockMode.BAR, order = index)) }
+            listOf(
+                QuickActionId.REPEAT_BLOCK,
+                QuickActionId.SUBTITLE_LIST,
+                QuickActionId.ASPECT_RATIO,
+            ).forEachIndexed { index, id -> put(id.key, QuickActionSpec(dock = DockMode.PLAYBACK, order = index)) }
         }
 
     }
@@ -110,8 +112,11 @@ data class QuickActionSettings(
     /** Legacy setting; the player now uses one horizontal scroll rail rather than a grid. */
     val barIconsPerRow: Int = 8,
     val autoHideWithControls: Boolean = true,
-    /** Compact mode keeps the action rail to one line without labels. */
+    /** The second toolbar starts as icon-only; opening it reveals MX-like labels below each icon. */
     val barExpanded: Boolean = false,
+    /** User-adjustable Layout-mode confirmation target, persisted as a screen-relative position. */
+    val layoutDoneXFraction: Float = 0.82f,
+    val layoutDoneYFraction: Float = 0.38f,
 ) {
     fun spec(id: QuickActionId): QuickActionSpec {
         specs[id.key]?.let { return it }
