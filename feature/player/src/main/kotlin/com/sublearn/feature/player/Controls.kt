@@ -1,6 +1,9 @@
 package com.sublearn.feature.player
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -12,7 +15,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,8 +36,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DragIndicator
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Forward10
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.GraphicEq
@@ -247,19 +247,14 @@ internal fun TopChrome(
                 )
             }
             ChromeIconButton(
-                icon = Icons.Default.MoreVert,
-                contentDescription = stringResource(R.string.player_more),
-                onClick = { onMenuOpenChange(true) },
+                icon = Icons.Default.GraphicEq,
+                contentDescription = stringResource(R.string.player_audio_tracks),
+                onClick = { onQuickTap(QuickActionId.AUDIO_TRACK) },
             )
             ChromeIconButton(
                 icon = Icons.Default.Subtitles,
                 contentDescription = stringResource(R.string.player_subtitle_tracks),
                 onClick = { onQuickTap(QuickActionId.SUBTITLE_TRACKS) },
-            )
-            ChromeIconButton(
-                icon = Icons.Default.GraphicEq,
-                contentDescription = stringResource(R.string.player_audio_tracks),
-                onClick = { onQuickTap(QuickActionId.AUDIO_TRACK) },
             )
             Surface(
                 modifier = Modifier.size(Dimens.touchTarget).combinedClickable(
@@ -278,6 +273,11 @@ internal fun TopChrome(
                 }
             }
             Box {
+                ChromeIconButton(
+                    icon = Icons.Default.MoreVert,
+                    contentDescription = stringResource(R.string.player_more),
+                    onClick = { onMenuOpenChange(true) },
+                )
                 DropdownMenu(
                     expanded = ui.menuOpen,
                     onDismissRequest = { onMenuOpenChange(false) },
@@ -678,11 +678,15 @@ internal fun QuickActionDock(
                         ui = ui,
                         actions = bar,
                         dock = DockMode.BAR,
-                        onTap = onTap,
+                        onTap = { id ->
+                            if (!settings.barExpanded) onToggleExpanded()
+                            onTap(id)
+                        },
                         onHoldStart = onHoldStart,
                         onHoldEnd = onHoldEnd,
                         onReorder = onReorder,
                         registry = registry,
+                        reserveEndSpace = !settings.barExpanded,
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .padding(
@@ -691,12 +695,18 @@ internal fun QuickActionDock(
                                 end = Dimens.playerEdgeInset,
                             ),
                     )
-                    ChromeIconButton(
-                        icon = if (settings.barExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = stringResource(R.string.player_arrange_controls),
-                        onClick = onToggleExpanded,
+                    AnimatedVisibility(
+                        visible = !settings.barExpanded,
+                        enter = fadeIn(tween(Motion.SHORT_MS, easing = Motion.decelerate)),
+                        exit = fadeOut(tween(Motion.SHORT_MS, easing = Motion.accelerate)),
                         modifier = Modifier.align(Alignment.TopEnd).padding(top = Dimens.secondActionRailTop),
-                    )
+                    ) {
+                        ChromeIconButton(
+                            icon = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = stringResource(R.string.player_arrange_controls),
+                            onClick = onToggleExpanded,
+                        )
+                    }
                 }
             }
         }
@@ -727,6 +737,7 @@ private fun QuickActionRail(
     onReorder: (QuickActionId, DockMode, Int) -> Unit = { _, _, _ -> },
     registry: PlayerHitRegistry,
     modifier: Modifier = Modifier,
+    reserveEndSpace: Boolean = false,
 ) {
     val scroll = rememberScrollState()
     val colors = LocalSubLearnColors.current
@@ -737,7 +748,7 @@ private fun QuickActionRail(
                 .onGloballyPositioned { registry.putQuickDock(dock, it) }
                 .horizontalScroll(scroll)
                 .blocksGestures(registry)
-                .padding(end = if (scroll.maxValue > 0) Dimens.touchTarget else 0.dp),
+                .padding(end = if ((scroll.maxValue > 0 && dock != DockMode.BAR) || reserveEndSpace) Dimens.touchTarget else 0.dp),
             horizontalArrangement = Arrangement.spacedBy(Dimens.dockGap),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -745,7 +756,7 @@ private fun QuickActionRail(
                 QuickActionButton(ui, id, onTap, onHoldStart, onHoldEnd, dock, onReorder = onReorder, registry = registry)
             }
         }
-        if (scroll.value > 0) {
+        if (dock != DockMode.BAR && scroll.value > 0) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(R.string.player_more_actions_left),
@@ -753,7 +764,7 @@ private fun QuickActionRail(
                 modifier = Modifier.align(Alignment.CenterStart).size(Dimens.inlineIcon),
             )
         }
-        if (scroll.value < scroll.maxValue) {
+        if (dock != DockMode.BAR && scroll.value < scroll.maxValue) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = stringResource(R.string.player_more_actions_right),
@@ -798,78 +809,89 @@ private fun QuickActionButton(
     val currentEnd by rememberUpdatedState(onHoldEnd)
     val currentReorder by rememberUpdatedState(onReorder)
     var actionCoordinates by remember(id, dock) { mutableStateOf<LayoutCoordinates?>(null) }
-    Surface(
-        modifier = Modifier
-            .then(
-                if (expanded) Modifier.height(buttonSize).widthIn(min = buttonSize)
-                else Modifier.size(buttonSize),
-            )
-            .onGloballyPositioned { coordinates ->
-                actionCoordinates = coordinates
-                if (dock != DockMode.FLOATING) registry?.putQuickAction(dock, id, coordinates)
-            }
-            .pointerInput(id, ui.layoutMode, dock, registry) {
-                if (ui.layoutMode && dock != DockMode.FLOATING) {
-                    var distance = Offset.Zero
-                    detectDragGestures(
-                        onDrag = { change, drag ->
-                            distance += drag
-                            change.consume()
-                        },
-                        onDragEnd = {
-                            val coordinates = actionCoordinates
-                            val end = coordinates?.localToRoot(
-                                Offset(size.width / 2f + distance.x, size.height / 2f + distance.y),
-                            )
-                            val target = end?.let { registry?.quickActionDropTarget(it) }
-                            if (target != null && target.first != dock) {
-                                currentReorder(id, target.first, target.second)
-                            } else if (kotlin.math.abs(distance.x) >= size.width / 2f) {
-                                currentReorder(id, dock, if (distance.x > 0f) 1 else -1)
-                            }
-                            distance = Offset.Zero
-                        },
-                        onDragCancel = { distance = Offset.Zero },
-                    )
-                } else {
-                    var held = false
-                    detectTapGestures(
-                        onTap = { currentTap(id) },
-                        onLongPress = {
-                            if (id in HOLDABLE) {
-                                held = true
-                                currentStart(id)
-                            }
-                        },
-                        onPress = {
-                            tryAwaitRelease()
-                            if (held) {
-                                held = false
-                                currentEnd(id)
-                            }
-                        },
-                    )
-                }
-            },
-        shape = if (expanded) RoundedCornerShape(Dimens.radiusMd) else CircleShape,
-        color = colors.strongBackdrop.copy(alpha = 1f - spec.transparencyPercent / 100f),
+    val reduceMotion = LocalReduceMotion.current
+    val labelFadeMs = if (reduceMotion) Motion.MICRO_MS else Motion.SHORT_MS
+    Column(
+        modifier = Modifier.widthIn(min = buttonSize, max = buttonSize),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(
-            modifier = Modifier.then(if (expanded) Modifier.padding(horizontal = Dimens.sm) else Modifier.fillMaxSize()),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
+        Surface(
+            modifier = Modifier
+                .size(buttonSize)
+                .onGloballyPositioned { coordinates ->
+                    actionCoordinates = coordinates
+                    if (dock != DockMode.FLOATING) registry?.putQuickAction(dock, id, coordinates)
+                }
+                .pointerInput(id, ui.layoutMode, dock, registry) {
+                    if (ui.layoutMode && dock != DockMode.FLOATING) {
+                        var distance = Offset.Zero
+                        detectDragGestures(
+                            onDrag = { change, drag ->
+                                distance += drag
+                                change.consume()
+                            },
+                            onDragEnd = {
+                                val coordinates = actionCoordinates
+                                val end = coordinates?.localToRoot(
+                                    Offset(size.width / 2f + distance.x, size.height / 2f + distance.y),
+                                )
+                                val target = end?.let { registry?.quickActionDropTarget(it) }
+                                if (target != null && target.first != dock) {
+                                    currentReorder(id, target.first, target.second)
+                                } else if (kotlin.math.abs(distance.x) >= size.width / 2f) {
+                                    currentReorder(id, dock, if (distance.x > 0f) 1 else -1)
+                                }
+                                distance = Offset.Zero
+                            },
+                            onDragCancel = { distance = Offset.Zero },
+                        )
+                    } else {
+                        var held = false
+                        detectTapGestures(
+                            onTap = { currentTap(id) },
+                            onLongPress = {
+                                if (id in HOLDABLE) {
+                                    held = true
+                                    currentStart(id)
+                                }
+                            },
+                            onPress = {
+                                tryAwaitRelease()
+                                if (held) {
+                                    held = false
+                                    currentEnd(id)
+                                }
+                            },
+                        )
+                    }
+                },
+            shape = CircleShape,
+            color = colors.strongBackdrop.copy(alpha = 1f - spec.transparencyPercent / 100f),
         ) {
-            Icon(
-                imageVector = id.icon(),
-                contentDescription = label,
-                tint = spec.iconTintArgb?.let { androidx.compose.ui.graphics.Color(it) }
-                    ?: if (selected) colors.controlActive else colors.controlIdle,
-                modifier = Modifier.size(iconSize),
-            )
-            if (expanded) {
-                Spacer(Modifier.size(Dimens.xs))
-                Text(label, style = MaterialTheme.typography.labelSmall, color = colors.controlActive, maxLines = 1)
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = id.icon(),
+                    contentDescription = label,
+                    tint = spec.iconTintArgb?.let { androidx.compose.ui.graphics.Color(it) }
+                        ?: if (selected) colors.controlActive else colors.controlIdle,
+                    modifier = Modifier.size(iconSize),
+                )
             }
+        }
+        AnimatedVisibility(
+            visible = expanded,
+            enter = fadeIn(tween(labelFadeMs, easing = Motion.decelerate)),
+            exit = fadeOut(tween(labelFadeMs, easing = Motion.accelerate)),
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.controlActive,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = Dimens.xxs),
+            )
         }
     }
 }

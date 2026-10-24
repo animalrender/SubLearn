@@ -131,6 +131,7 @@ object SettingsMigrator {
         5 to ::migrateV4ToV5,
         6 to ::migrateV5ToV6,
         7 to ::migrateV6ToV7,
+        8 to ::migrateV7ToV8,
     )
 
     /**
@@ -172,6 +173,14 @@ object SettingsMigrator {
         })
         val patched = root.toMutableMap()
         patched["quickActions"] = JsonObject(actions + ("specs" to migratedSpecs))
+        return JsonObject(patched)
+    }
+
+    /** v8: start the MX-style action rail compact, with labels shown on explicit expand/interaction. */
+    private fun migrateV7ToV8(root: JsonObject): JsonObject {
+        val actions = root["quickActions"] as? JsonObject ?: return root
+        val patched = root.toMutableMap()
+        patched["quickActions"] = JsonObject(actions + ("barExpanded" to JsonPrimitive(false)))
         return JsonObject(patched)
     }
 

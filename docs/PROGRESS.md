@@ -839,3 +839,17 @@ and rotate. With no network: the same, plus translation only for a previously do
 - Second toolbar labels start expanded (v6 settings migration), with collapse control and per-action size/transparency controls in its editor. Layout mode exposes independently hideable bars, vertical-only subtitle positioning, and hold-drag reorder within a dock; dock/visibility/center controls persist through settings.
 - Start over is an inline five-second action. No changes were made to playback resume semantics.
 - **Still open:** cross-dock drag/drop target preview and arbitrary insertion, making every fixed transport/OK element draggable with persisted position, and a real-video screenshot pass. See KNOWN_ISSUES #17; PLY-1..3, SUB-2..3 remain verification-pending in CHECKLIST.
+
+## 2026-10-24 — MX-style action rail follow-up
+
+- Reordered the upper-right shortcuts to audio → subtitles → SW/HW → overflow; this is the requested
+  left-to-right physical order.
+- The second action rail now defaults to icon-only with a right-edge `>` affordance. Expanding it or
+  tapping an action reveals labels below the icon with a reduce-motion-aware fade; the circular
+  background and touch target enclose only the icon.
+- Added settings schema v8 migration, compact-default and migration tests, plus Maestro evidence for
+  compact and expanded states. Updated the product spec, decision log, checklist, known issue and
+  changelog.
+- Static repository checks and Python test suites pass. Local Android compilation is unavailable in
+  this sandbox (no JDK); a CI build and fresh 8-flow UI run, including review of the player screenshots,
+  are still required before the experimental release.

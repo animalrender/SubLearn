@@ -112,9 +112,8 @@ data class QuickActionSettings(
     /** Legacy setting; the player now uses one horizontal scroll rail rather than a grid. */
     val barIconsPerRow: Int = 8,
     val autoHideWithControls: Boolean = true,
-    /** Compact mode keeps the action rail to one line without labels. */
-    /** The second toolbar starts in its MX-like labeled state; users can collapse it at any time. */
-    val barExpanded: Boolean = true,
+    /** The second toolbar starts as icon-only; opening it reveals MX-like labels below each icon. */
+    val barExpanded: Boolean = false,
     /** User-adjustable Layout-mode confirmation target, persisted as a screen-relative position. */
     val layoutDoneXFraction: Float = 0.82f,
     val layoutDoneYFraction: Float = 0.38f,

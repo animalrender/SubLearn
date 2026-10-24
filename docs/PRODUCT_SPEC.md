@@ -35,8 +35,10 @@ meaning so that `docs/CHECKLIST.md` can point at an ID for every claim of comple
   including PiP. Audio, subtitle and decoder actions remain quick actions rather than fixed controls.
   Quick actions can be docked in the top toolbar,
   one horizontally scrollable second toolbar row, the bottom playback row, or floated over/hidden.
-  The manager supports reordering and docking; expanded docked rows show labels, compact and floating
-  actions do not. Overflow cues reveal more actions without letting a row spill off-screen.
+  The second row starts compact with icon-only actions and a right-edge expand affordance; expanded
+  actions fade in their labels below the icon. The label is outside the icon's circular surface.
+  The manager supports reordering and docking; floating actions remain icon-only. Overflow cues
+  reveal more actions without letting a row spill off-screen.
 - **PLY-2** Controls overlay the video and auto-hide after 3 s idle; a single tap shows them. Top and
   bottom chrome, including the second toolbar, fade in/out through the reduce-motion-aware motion tokens.
 - **PLY-3** Keep the picture centre clear of transport buttons. Bottom: a thin seek line with buffer

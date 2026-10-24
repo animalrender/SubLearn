@@ -9,6 +9,12 @@ appId: com.sublearn.app.debug
     timeout: 60000
 - assertVisible: "SubLearn-UI-Fixture.mp4"
 - assertVisible: "More"
+# The second rail starts compact with a right-facing expand affordance; expanding shows labels below icons.
+- assertVisible: "Arrange player controls"
+- takeScreenshot: 08-player-compact-action-rail
+- tapOn: "Arrange player controls"
+- assertVisible: "Learning subtitles"
+- takeScreenshot: 08-player-expanded-action-rail
 - tapOn: "More"
 - assertVisible: "Subtitle options"
 - assertVisible: "Arrange player controls"
