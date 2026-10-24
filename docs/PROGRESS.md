@@ -850,6 +850,9 @@ and rotate. With no network: the same, plus translation only for a previously do
 - Added settings schema v8 migration, compact-default and migration tests, plus Maestro evidence for
   compact and expanded states. Updated the product spec, decision log, checklist, known issue and
   changelog.
-- Static repository checks and Python test suites pass. Local Android compilation is unavailable in
-  this sandbox (no JDK); a CI build and fresh 8-flow UI run, including review of the player screenshots,
-  are still required before the experimental release.
+- Static repository checks and Python test suites pass. CI 40094835673 passed, and UI 40094835664
+  passed 8/8 with no crash. Screenshot review found expanded labels needed more width; the follow-up CI
+  40096205233 passed, but UI 40096205229 passed 7/8 because Maestro tapped a clipped duplicate Audio
+  track label instead of the fixed top shortcut. The label cells now have room, the UI flow targets the
+  fixed shortcut, and player idle controls use a high-contrast video foreground in light theme. A fresh
+  CI/UI run and screenshot review are required before the experimental release.

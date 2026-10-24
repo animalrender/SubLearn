@@ -133,6 +133,7 @@ private fun semanticColors(dark: Boolean, amoled: Boolean): SubLearnColors = Sub
     promptBackdrop = Color(Palette.PROMPT_TURQUOISE),
     promptText = Color(Palette.PROMPT_TEXT),
     overlayOutline = Color(Palette.OUTLINE_SUBTITLE),
+    playerControlIdle = Color(0xFFE8EEF2L),
     controlIdle = if (dark) Color(0xFFE8EEF2L) else Color(0xFF14181DL),
     controlActive = Color(Palette.accent("TEAL").let { if (dark) it.dark else it.light }),
     controlDisabled = Color(0x669FB0BFL),

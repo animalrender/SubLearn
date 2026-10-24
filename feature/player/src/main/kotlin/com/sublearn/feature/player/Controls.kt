@@ -148,7 +148,7 @@ internal fun ChromeIconButton(
     val tint = when {
         !enabled -> colors.controlDisabled
         selected -> colors.controlActive
-        else -> colors.controlIdle
+        else -> colors.playerControlIdle
     }
     Box(
         modifier = modifier
@@ -229,7 +229,7 @@ internal fun TopChrome(
                     Text(
                         text = "${ui.playback.videoWidth} × ${ui.playback.videoHeight}",
                         style = MaterialTheme.typography.labelSmall,
-                        color = colors.controlIdle,
+                        color = colors.playerControlIdle,
                         maxLines = 1,
                     )
                 }
@@ -616,14 +616,14 @@ private fun SeekBar(
                 val trackWidth = 2.dp.toPx()
                 drawLine(colors.controlDisabled.copy(alpha = 0.72f), Offset(startX, y), Offset(endX, y), trackWidth, StrokeCap.Round)
                 val bufferedX = startX + (endX - startX) * buffered.coerceIn(0f, 1f)
-                drawLine(colors.controlIdle.copy(alpha = 0.72f), Offset(startX, y), Offset(bufferedX, y), trackWidth, StrokeCap.Round)
+                drawLine(colors.playerControlIdle.copy(alpha = 0.72f), Offset(startX, y), Offset(bufferedX, y), trackWidth, StrokeCap.Round)
                 val playedX = startX + (endX - startX) * shown
                 drawLine(colors.controlActive, Offset(startX, y), Offset(playedX, y), trackWidth, StrokeCap.Round)
                 drawCircle(colors.controlActive, radius = 4.dp.toPx(), center = Offset(playedX, y))
             }
         }
         TextButton(onClick = onToggleRemainingTime, modifier = Modifier.height(Dimens.touchTarget)) {
-            Text(text = rightTime, style = MaterialTheme.typography.labelMedium, color = colors.controlIdle)
+            Text(text = rightTime, style = MaterialTheme.typography.labelMedium, color = colors.playerControlIdle)
         }
     }
 }
@@ -762,7 +762,7 @@ private fun QuickActionRail(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(R.string.player_more_actions_left),
-                tint = colors.controlIdle,
+                tint = colors.playerControlIdle,
                 modifier = Modifier.align(Alignment.CenterStart).size(Dimens.inlineIcon),
             )
         }
@@ -770,7 +770,7 @@ private fun QuickActionRail(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = stringResource(R.string.player_more_actions_right),
-                tint = colors.controlIdle,
+                tint = colors.playerControlIdle,
                 modifier = Modifier.align(Alignment.CenterEnd).size(Dimens.inlineIcon),
             )
         }
@@ -877,7 +877,7 @@ private fun QuickActionButton(
                     imageVector = id.icon(),
                     contentDescription = label,
                     tint = spec.iconTintArgb?.let { androidx.compose.ui.graphics.Color(it) }
-                        ?: if (selected) colors.controlActive else colors.controlIdle,
+                        ?: if (selected) colors.controlActive else colors.playerControlIdle,
                     modifier = Modifier.size(iconSize),
                 )
             }

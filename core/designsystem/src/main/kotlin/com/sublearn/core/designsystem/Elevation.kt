@@ -22,6 +22,8 @@ data class SubLearnColors(
     val promptBackdrop: Color,
     val promptText: Color,
     val overlayOutline: Color,
+    /** High-contrast neutral for controls rendered over arbitrary video imagery in either theme. */
+    val playerControlIdle: Color,
     val controlIdle: Color,
     val controlActive: Color,
     val controlDisabled: Color,

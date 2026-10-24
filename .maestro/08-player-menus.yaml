@@ -29,7 +29,10 @@ appId: com.sublearn.app.debug
 - takeScreenshot: 08-player-subtitle-options-sheet
 - pressKey: Back
 - pressKey: Back
-- tapOn: "Audio track"
+# The expanded rail also has an Audio track action; tap the fixed top-right shortcut by its stable
+# landscape position so Maestro doesn't select the partially clipped duplicate label in the rail.
+- tapOn:
+    point: "82%, 6%"
 - assertVisible: "Audio track"
 - swipe:
     start: "50%, 90%"
