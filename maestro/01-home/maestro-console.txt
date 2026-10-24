@@ -1,0 +1,8 @@
+Running on test
+ > Flow 01-home
+Launch app "com.sublearn.app.debug" with clear state... COMPLETED
+Assert that "Open a video" is visible... COMPLETED
+Assert that "Open URL or stream" is visible... COMPLETED
+Assert that "Continue watching" is visible... COMPLETED
+Assert that "No videos yet.*" is visible... COMPLETED
+Take screenshot 01-home... COMPLETED

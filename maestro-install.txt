@@ -1,0 +1,21 @@
+* Create distribution directories...
+* Downloading...
+#=#=#                                                                          ##O#-#                                                                         #                                                                          1.4%#########                                                                 13.3%#############                                                             18.7%################                                                          23.3%###############################                                           43.3%#################################                                         46.7%########################################                                  56.6%##############################################                            64.2%###########################################################               82.3%#####################################################################     96.6%######################################################################## 100.0%
+* Checking archive integrity...
+* Extracting archive...
+* Remove previous installation (if any)
+* Copying archive contents...
+* Cleaning up...
+
+Attempt update of interactive bash profile on regular UNIX...
+
+Installation was successful!
+Please open a new terminal OR run the following in the existing one:
+
+    export PATH="$PATH":"$HOME/.maestro/bin"
+
+Then run the following command:
+
+    maestro
+
+Welcome to Maestro!

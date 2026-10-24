@@ -1,0 +1,13 @@
+# logcat-app.txt: W/E/F lines of pid(s) [12714] and of anything naming com.sublearn.app.debug; crash evidence at any level
+10-24 13:31:18.302 12714 12714 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=androidx.compose.ui.window.Api33Impl$$ExternalSyntheticLambda0@3e33725
+10-24 13:31:28.403 12714 12714 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=androidx.compose.material3.ModalBottomSheetDialogLayout$Api34Impl$createBackCallback$1@19c66e7
+10-24 13:31:28.489   522   593 W InputManager-JNI: Input channel object 'cc016d6 com.sublearn.app.debug/com.sublearn.app.MainActivity (client)' was disposed without first being removed with the input manager!
+10-24 13:31:36.783 12714 12714 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=androidx.compose.material3.ModalBottomSheetDialogLayout$Api34Impl$createBackCallback$1@debfb85
+10-24 13:31:36.861   522  1703 W InputManager-JNI: Input channel object 'db6a922 com.sublearn.app.debug/com.sublearn.app.MainActivity (client)' was disposed without first being removed with the input manager!
+10-24 13:31:55.081 12714 12714 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=androidx.compose.material3.ModalBottomSheetDialogLayout$Api34Impl$createBackCallback$1@2c61824
+10-24 13:31:55.104   522  2285 W InputManager-JNI: Input channel object 'fdeee32 com.sublearn.app.debug/com.sublearn.app.MainActivity (client)' was disposed without first being removed with the input manager!
+10-24 13:32:06.649 12714 12714 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=androidx.compose.ui.window.Api33Impl$$ExternalSyntheticLambda0@a0c93b4
+10-24 13:32:21.567 12714 12722 W learn.app.debug: Cleared Reference was only reachable from finalizer (only reported once)
+10-24 13:32:31.774 12714 12760 W Codec2Client: query -- param skipped: index = 1342179345.
+10-24 13:32:31.774 12714 12760 W Codec2Client: query -- param skipped: index = 2415921170.
+10-24 13:32:31.774 12714 12760 W Codec2Client: query -- param skipped: index = 1610614798.

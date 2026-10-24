@@ -1,0 +1,767 @@
+--------- beginning of main
+10-24 13:29:51.356 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:51.362 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:51.362 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:51.521 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(5)
+10-24 13:29:51.864 D/Maestro (10997): View hierarchy received in 508 ms
+10-24 13:29:52.086 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(2)
+10-24 13:29:52.101 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:52.101 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:52.102 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:52.238 I/AidlLazyServiceRegistrar(10471): Process has 0 (of 1 available) client(s) in use after notification artd has clients: 0
+10-24 13:29:52.238 I/AidlLazyServiceRegistrar(10471): Trying to shut down the service. No clients in use for any service in process.
+--------- beginning of kernel
+10-24 13:29:52.408 I/servicemanager(    0): Notifying artd they don't (previously: do) have clients when we now have no record of a client
+10-24 13:29:52.410 I/servicemanager(    0): Unregistering artd
+10-24 13:29:52.411 I/BpBinder(    0): onLastStrongRef automatically unlinking death recipients:
+10-24 13:29:52.241 I/AidlLazyServiceRegistrar(10471): Unregistered all clients and exiting
+10-24 13:29:52.415 I/init    (    0): Service 'artd' (pid 10471) exited with status 0 oneshot service took 24.636000 seconds in background
+10-24 13:29:52.416 I/init    (    0): Sending signal 9 to service 'artd' (pid 10471) process group...
+10-24 13:29:52.248 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc40038 : 6(24576 size) total buffers - 1(4096 size) used buffers - 671/677 (recycle/alloc) - 9/676 (fetch/transfer)
+10-24 13:29:52.417 I/libprocessgroup(    0): Successfully killed process cgroup uid 1082 pid 10471 in 0ms
+10-24 13:29:52.291 D/EGL_emulation(10579): app_time_stats: avg=119.95ms min=94.23ms max=141.43ms count=9
+10-24 13:29:52.348 D/Maestro (10997): View hierarchy received in 247 ms
+10-24 13:29:52.403 D/BufferPoolAccessor2.0(10579): bufferpool2 0x7794cc412cb8 : 5(10485760 size) total buffers - 5(10485760 size) used buffers - 385/390 (recycle/alloc) - 5/389 (fetch/transfer)
+10-24 13:29:52.450 D/BufferPoolAccessor2.0(10579): bufferpool2 0x7794cc426298 : 5(40960 size) total buffers - 1(8192 size) used buffers - 685/690 (recycle/alloc) - 5/689 (fetch/transfer)
+10-24 13:29:52.459 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:52.460 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:52.460 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:52.641 D/Maestro (10997): View hierarchy received in 182 ms
+10-24 13:29:52.706 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:52.707 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:52.707 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:52.967 D/Maestro (10997): View hierarchy received in 261 ms
+10-24 13:29:53.068 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:29:53.118 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:53.118 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:53.119 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:53.379 D/EGL_emulation(10579): app_time_stats: avg=120.84ms min=94.33ms max=140.17ms count=9
+10-24 13:29:53.405 D/Maestro (10997): View hierarchy received in 287 ms
+10-24 13:29:53.527 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:53.527 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:53.529 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:53.688 D/Maestro (10997): View hierarchy received in 161 ms
+10-24 13:29:53.801 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:53.801 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:53.801 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:53.940 D/Maestro (10997): View hierarchy received in 139 ms
+10-24 13:29:54.042 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:54.042 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:54.044 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:54.313 D/Maestro (10997): View hierarchy received in 271 ms
+10-24 13:29:54.402 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:54.404 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:54.404 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:54.479 D/EGL_emulation(10579): app_time_stats: avg=122.16ms min=112.06ms max=133.15ms count=9
+10-24 13:29:54.599 I/DialerOmtpVvmCarrierConfigHelper( 2835): com.android.voicemail.impl.OmtpVvmCarrierConfigHelper.handleEvent:527 OmtpEvent:CONFIG_STATUS_SMS_TIME_OUT PhoneAccountHandle: [ComponentName: com.android.phone/com.android.services.telephony.TelephonyConnectionService subId: 1] [CONTEXT enable_persistent_logger=true ]
+10-24 13:29:54.600 I/DialerRetryPolicy( 2835): com.android.voicemail.impl.scheduling.RetryPolicy.onCompleted:118 discarding deferred status [CONTEXT enable_persistent_logger=true ]
+--------- beginning of system
+10-24 13:29:54.605 D/OomAdjuster(  522): Not killing cached processes
+10-24 13:29:54.606 I/DialerTaskExecutor( 2835): com.android.voicemail.impl.scheduling.TaskExecutor.prepareStop:371 no more tasks, stopping service if no task are added in 5000 millis [CONTEXT enable_persistent_logger=true ]
+10-24 13:29:54.606 I/DialerLogcatLoggingBindings( 2835): com.android.dialer.logging.logcat.LogcatLoggingBindings.logImpression:41 Impression: VVM_AUTO_RETRY_ACTIVATION
+10-24 13:29:54.606 I/DialerTaskReceiver( 2835): com.android.voicemail.impl.scheduling.TaskReceiver.onReceive:68 task received [CONTEXT enable_persistent_logger=true ]
+10-24 13:29:54.607 I/DialerTaskReceiver( 2835): com.android.voicemail.impl.scheduling.TaskReceiver.onReceive:73 TaskExecutor already running [CONTEXT enable_persistent_logger=true ]
+10-24 13:29:54.607 I/DialerTasks( 2835): com.android.voicemail.impl.scheduling.Tasks.createTask:59 Task.createTask create task:com.android.voicemail.impl.ActivationTask [CONTEXT enable_persistent_logger=true ]
+10-24 13:29:54.607 I/DialerRetryPolicy( 2835): com.android.voicemail.impl.scheduling.RetryPolicy.onCreate:81 retry #4 for com.android.voicemail.impl.ActivationTask@b67b598 queued, executing in 5000 [CONTEXT enable_persistent_logger=true ]
+10-24 13:29:54.617 I/DialerTaskExecutor( 2835): com.android.voicemail.impl.scheduling.TaskExecutor.addTask:299 com.android.voicemail.impl.ActivationTask@b67b598 added [CONTEXT enable_persistent_logger=true ]
+10-24 13:29:54.617 I/DialerTaskExecutor( 2835): com.android.voicemail.impl.scheduling.TaskExecutor.runNextTask:345 minimal wait time:4989 [CONTEXT enable_persistent_logger=true ]
+10-24 13:29:54.617 I/DialerTaskExecutor( 2835): com.android.voicemail.impl.scheduling.TaskExecutor.sleep:355 sleep for 4989 millis [CONTEXT enable_persistent_logger=true ]
+10-24 13:29:54.618 W/ProcessStats(  522): Tracking association SourceState{ca94298 com.google.android.gms.persistent/10131 BFgs #17918} whose proc state 4 is better than process ProcessState{d92c5f8 com.google.android.gms/10131 pkg=com.google.android.gms} proc state 9 (843 skipped)
+10-24 13:29:54.655 D/Maestro (10997): View hierarchy received in 253 ms
+10-24 13:29:54.785 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:54.786 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:54.786 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:55.037 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:29:55.055 D/Maestro (10997): View hierarchy received in 270 ms
+10-24 13:29:55.099 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(20)
+10-24 13:29:55.233 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:55.233 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:55.234 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:55.237 D/StatusBarIconController(  835): ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-24 13:29:55.262 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(5)
+10-24 13:29:55.496 D/Maestro (10997): View hierarchy received in 263 ms
+10-24 13:29:55.501 D/EGL_emulation(10579): app_time_stats: avg=127.72ms min=89.11ms max=183.26ms count=8
+10-24 13:29:55.575 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:55.575 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:55.576 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:55.703 D/Maestro (10997): View hierarchy received in 128 ms
+10-24 13:29:55.780 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:55.781 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:55.781 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:55.948 D/Maestro (10997): View hierarchy received in 168 ms
+10-24 13:29:56.010 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(9)
+10-24 13:29:56.028 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:56.028 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:56.029 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:56.199 D/Maestro (10997): View hierarchy received in 171 ms
+10-24 13:29:56.261 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:56.262 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:56.262 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:56.505 D/EGL_emulation(10579): app_time_stats: avg=125.49ms min=108.80ms max=155.28ms count=8
+10-24 13:29:56.522 D/Maestro (10997): View hierarchy received in 261 ms
+10-24 13:29:56.599 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:56.600 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:56.601 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:56.754 D/Maestro (10997): View hierarchy received in 155 ms
+10-24 13:29:56.823 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:56.824 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:56.824 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:57.000 D/Maestro (10997): View hierarchy received in 177 ms
+10-24 13:29:57.038 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:57.039 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:57.039 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:57.250 D/Maestro (10997): View hierarchy received in 212 ms
+10-24 13:29:57.340 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:57.341 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:57.341 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:57.579 D/BufferPoolAccessor2.0(10579): bufferpool2 0x7794cc412cb8 : 5(10485760 size) total buffers - 5(10485760 size) used buffers - 509/514 (recycle/alloc) - 5/513 (fetch/transfer)
+10-24 13:29:57.592 D/EGL_emulation(10579): app_time_stats: avg=120.64ms min=88.02ms max=145.30ms count=9
+10-24 13:29:57.653 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc40038 : 6(24576 size) total buffers - 1(4096 size) used buffers - 905/911 (recycle/alloc) - 10/910 (fetch/transfer)
+10-24 13:29:57.659 D/Maestro (10997): View hierarchy received in 319 ms
+10-24 13:29:57.742 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:57.742 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:57.743 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:57.846 D/BufferPoolAccessor2.0(10579): bufferpool2 0x7794cc426298 : 5(40960 size) total buffers - 1(8192 size) used buffers - 917/922 (recycle/alloc) - 5/921 (fetch/transfer)
+10-24 13:29:57.913 E/A       ( 1737): disposing SearchServiceClient after timeout []
+10-24 13:29:57.916 D/Maestro (10997): View hierarchy received in 174 ms
+10-24 13:29:58.003 D/Maestro (10997): Requesting view hierarchy
+10-24 13:29:58.003 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:58.003 W/QueryController(10997): Could not detect idle state.
+10-24 13:29:58.134 D/Maestro (10997): View hierarchy received in 131 ms
+10-24 13:29:58.197 I/keystore2(  157): system/security/keystore2/src/watchdog.rs:319 - Watchdog thread idle -> terminating. Have a great day.
+10-24 13:29:58.569 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(3)
+10-24 13:29:58.588 D/WindowManager(  522): captureDisplay
+10-24 13:29:58.811 I/servicemanager(    0): Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest.
+10-24 13:29:58.651 I/hwservicemanager(  136): getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+10-24 13:29:58.651 I/Gralloc4(10964): mapper 4.x is not supported
+10-24 13:29:58.691 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(2)
+10-24 13:29:58.740 D/libEGL  (10964): loaded /vendor/lib64/egl/libEGL_emulation.so
+10-24 13:29:58.741 D/libEGL  (10964): loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+10-24 13:29:58.742 D/libEGL  (10964): loaded /vendor/lib64/egl/libGLESv2_emulation.so
+10-24 13:29:58.787 W/OpenGLRenderer(10964): Failed to initialize 101010-2 format, error = EGL_SUCCESS
+10-24 13:29:58.835 D/EGL_emulation(10579): app_time_stats: avg=138.08ms min=75.14ms max=260.12ms count=9
+10-24 13:29:58.953 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:29:59.030 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(36)
+10-24 13:29:59.070 I/.mobile.maestro(10997): Background concurrent copying GC freed 210279(11MB) AllocSpace objects, 126(6720KB) LOS objects, 49% free, 12MB/24MB, paused 23us,23us total 531.589ms
+10-24 13:29:59.451 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:29:59.615 I/DialerTaskExecutor( 2835): com.android.voicemail.impl.scheduling.TaskExecutor$WorkerThreadHandler.handleMessage:221 executing task com.android.voicemail.impl.ActivationTask@b67b598 [CONTEXT enable_persistent_logger=true ]
+10-24 13:29:59.617 I/DialerLogcatLoggingBindings( 2835): com.android.dialer.logging.logcat.LogcatLoggingBindings.logImpression:41 Impression: VVM_ACTIVATION_STARTED
+10-24 13:29:59.640 I/DialerPreOMigrationHandler( 2835): com.android.voicemail.impl.PreOMigrationHandler.migrate:76 ComponentInfo{com.android.phone/com.android.services.telephony.TelephonyConnectionService}, 1, UserHandle{0} already migrated [CONTEXT enable_persistent_logger=true ]
+10-24 13:29:59.649 I/DialerOmtpVvmCarrierConfigHelper( 2835): com.android.voicemail.impl.OmtpVvmCarrierConfigHelper.isCarrierAppInstalled:637 carrier app not installed in this device [CONTEXT ratelimit_period="1 MINUTES [skipped: 4]" ]
+10-24 13:29:59.649 I/DialerVoicemailStatus( 2835): com.android.voicemail.impl.VoicemailStatus$Editor.apply:112 enter
+10-24 13:29:59.650 I/DialerVoicemailStatusDataServiceImpl( 2835): com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.insertOrUpdateVoicemailStatus:196 enter
+10-24 13:29:59.714 I/DialerRestVoicemailEnabledFn( 2835): com.android.dialer.voicemail.service.impl.vvmclients.rest.RestVoicemailEnabledFn.isEnabled:51 disabled by flag [CONTEXT ratelimit_period="1 MINUTES [skipped: 23]" ]
+10-24 13:29:59.715 I/DialerCvvmEnabledFn( 2835): com.android.dialer.voicemail.service.impl.vvmclients.omtp.protocol.cvvm.CvvmEnabledFn.isEnabled:37 disabled by flag [CONTEXT ratelimit_period="1 MINUTES [skipped: 11]" ]
+10-24 13:29:59.837 W/Settings( 2835): Setting airplane_mode_on has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+10-24 13:29:59.837 I/DialerVoicemailStatusDataServiceImpl( 2835): com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.lambda$insertOrUpdateVoicemailStatus$5:213 merged status: # kee@6600c263
+10-24 13:29:59.838 I/DialerActivationTask( 2835): com.android.voicemail.impl.ActivationTask.onExecuteInBackgroundThread:292 VVM content provider configured - vvm_type_cvvm PhoneAccountHandle: [ComponentName: com.android.phone/com.android.services.telephony.TelephonyConnectionService subId: 1] [CONTEXT enable_persistent_logger=true ]
+10-24 13:29:59.839 I/DialerActivationTask( 2835): com.android.voicemail.impl.ActivationTask.updateVoicemailsWithIccId:477 conversion disabled [CONTEXT enable_persistent_logger=true ]
+10-24 13:29:59.849 I/DialerOmtpVvmCarrierConfigHelper( 2835): com.android.voicemail.impl.OmtpVvmCarrierConfigHelper.handleEvent:527 OmtpEvent:CONFIG_ACTIVATING PhoneAccountHandle: [ComponentName: com.android.phone/com.android.services.telephony.TelephonyConnectionService subId: 1] [CONTEXT enable_persistent_logger=true ]
+10-24 13:29:59.849 I/DialerVoicemailStatus( 2835): com.android.voicemail.impl.VoicemailStatus$Editor.apply:112 enter
+10-24 13:29:59.868 I/DialerVoicemailStatusDataServiceImpl( 2835): com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.insertOrUpdateVoicemailStatus:196 enter
+10-24 13:29:59.940 D/EGL_emulation(10579): app_time_stats: avg=122.72ms min=48.51ms max=158.07ms count=9
+10-24 13:29:59.984 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(1)
+10-24 13:30:00.054 W/Settings( 2835): Setting airplane_mode_on has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+10-24 13:30:00.057 I/DialerVoicemailStatusDataServiceImpl( 2835): com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.lambda$insertOrUpdateVoicemailStatus$5:213 merged status: # kee@6600c263
+10-24 13:30:00.064 I/AiAiEcho( 1617): Predicting[0]: 
+10-24 13:30:00.064 I/AiAiEcho( 1617): EchoTargets: 
+10-24 13:30:00.064 I/AiAiEcho( 1617): Filtered by AiAi flag check: 
+10-24 13:30:00.064 I/AiAiEcho( 1617): Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-24 13:30:00.065 I/AiAiEcho( 1617): #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+10-24 13:30:00.077 I/DialerActivationTask( 2835): com.android.voicemail.impl.ActivationTask.onExecuteInBackgroundThread:339 sending an activation request [CONTEXT enable_persistent_logger=true ]
+10-24 13:30:00.101 D/SmsNumberUtils( 1047): enter filterDestAddr. destAddr="[BajqU4K5_YhSYbs-7QUn0dOwcmI]"
+10-24 13:30:00.101 D/SmsNumberUtils( 1047): destAddr is not formatted.
+10-24 13:30:00.102 D/SmsNumberUtils( 1047): leave filterDestAddr, new destAddr="[BajqU4K5_YhSYbs-7QUn0dOwcmI]"
+10-24 13:30:00.155 I/DialerLogcatLoggingBindings( 2835): com.android.dialer.logging.logcat.LogcatLoggingBindings.logImpression:46 Impression: CVVM_SEND_VVM_SMS
+10-24 13:30:00.157 D/EGL_emulation(  835): app_time_stats: avg=12722.48ms min=45.67ms max=25399.29ms count=2
+10-24 13:30:00.164 W/PageIndicator(  835): Total number of pages invalid: 0. Assuming 1 page.
+10-24 13:30:00.647 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:00.651 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:00.651 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:00.668 I/DialerStatusSmsFetcher( 2835): com.android.voicemail.impl.sms.StatusSmsFetcher.onReceive:106 Request SMS successfully sent [CONTEXT enable_persistent_logger=true ]
+10-24 13:30:00.923 D/Maestro (10997): View hierarchy received in 276 ms
+10-24 13:30:00.932 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(1)
+10-24 13:30:00.965 D/EGL_emulation(10579): app_time_stats: avg=113.88ms min=88.43ms max=134.27ms count=9
+10-24 13:30:01.075 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:01.076 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:01.082 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:01.158 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(3)
+10-24 13:30:01.409 D/Maestro (10997): View hierarchy received in 334 ms
+10-24 13:30:01.435 I/netd    (  335): tetherGetStats() -> {[]} <0.37ms>
+10-24 13:30:01.438 I/netd    (  335): bandwidthSetGlobalAlert(2097152) <0.11ms>
+10-24 13:30:01.495 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:01.496 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:01.496 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:01.643 D/Maestro (10997): View hierarchy received in 148 ms
+10-24 13:30:01.740 D/WindowManager(  522): captureDisplay
+10-24 13:30:01.840 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(3)
+10-24 13:30:01.855 W/System  (10964): A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+10-24 13:30:01.855 W/System  (10964): java.lang.Throwable: Explicit termination method 'HardwareBuffer.close' not called
+10-24 13:30:01.855 W/System  (10964): 	at dalvik.system.CloseGuard.openWithCallSite(CloseGuard.java:288)
+10-24 13:30:01.855 W/System  (10964): 	at dalvik.system.CloseGuard.open(CloseGuard.java:257)
+10-24 13:30:01.855 W/System  (10964): 	at android.hardware.HardwareBuffer.<init>(HardwareBuffer.java:266)
+10-24 13:30:01.855 W/System  (10964): A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+10-24 13:30:01.855 W/System  (10964): java.lang.Throwable: Explicit termination method 'HardwareBuffer.close' not called
+10-24 13:30:01.855 W/System  (10964): 	at dalvik.system.CloseGuard.openWithCallSite(CloseGuard.java:288)
+10-24 13:30:01.855 W/System  (10964): 	at dalvik.system.CloseGuard.open(CloseGuard.java:257)
+10-24 13:30:01.855 W/System  (10964): 	at android.hardware.HardwareBuffer.<init>(HardwareBuffer.java:266)
+10-24 13:30:02.006 D/EGL_emulation(10579): app_time_stats: avg=130.10ms min=61.15ms max=219.57ms count=8
+10-24 13:30:02.557 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(29)
+10-24 13:30:02.923 D/BufferPoolAccessor2.0(10579): bufferpool2 0x7794cc412cb8 : 5(10485760 size) total buffers - 4(8388608 size) used buffers - 637/642 (recycle/alloc) - 5/641 (fetch/transfer)
+10-24 13:30:03.008 D/BufferPoolAccessor2.0(10579): bufferpool2 0x7794cc426298 : 5(40960 size) total buffers - 3(24576 size) used buffers - 1136/1141 (recycle/alloc) - 5/1139 (fetch/transfer)
+10-24 13:30:03.024 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc40038 : 6(24576 size) total buffers - 1(4096 size) used buffers - 1130/1136 (recycle/alloc) - 10/1135 (fetch/transfer)
+10-24 13:30:03.081 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:03.081 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:03.082 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:03.090 D/EGL_emulation(10579): app_time_stats: avg=119.89ms min=80.72ms max=145.60ms count=9
+10-24 13:30:03.098 D/OomAdjuster(  522): Not killing cached processes
+10-24 13:30:03.215 D/Maestro (10997): View hierarchy received in 134 ms
+10-24 13:30:03.309 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:03.324 D/UiDevice(10997): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-24 13:30:03.838 W/UiDevice(10997): Timed out waiting 500ms on window update.
+10-24 13:30:03.838 W/UiDevice(10997): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-24 13:30:03.838 W/UiDevice(10997): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-24 13:30:03.838 W/UiDevice(10997): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-24 13:30:03.838 W/UiDevice(10997): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-24 13:30:03.838 W/UiDevice(10997): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-24 13:30:03.838 W/UiDevice(10997): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-24 13:30:03.838 W/UiDevice(10997): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-24 13:30:03.838 W/UiDevice(10997): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-24 13:30:03.838 W/UiDevice(10997): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-24 13:30:03.838 W/UiDevice(10997): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-24 13:30:03.838 W/UiDevice(10997): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-24 13:30:03.838 W/UiDevice(10997): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-24 13:30:03.838 W/UiDevice(10997): 	at java.lang.Thread.run(Thread.java:1012)
+10-24 13:30:03.904 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:03.908 D/UiDevice(10997): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-24 13:30:03.985 I/netd    (  335): tetherGetStats() -> {[]} <0.33ms>
+10-24 13:30:03.987 I/netd    (  335): bandwidthSetGlobalAlert(2097152) <0.08ms>
+10-24 13:30:03.991 I/netd    (  335): bandwidthRemoveInterfaceQuota(eth0) <0.75ms>
+10-24 13:30:03.994 I/netd    (  335): bandwidthSetInterfaceQuota(eth0, 9223372036854775807) <3.11ms>
+10-24 13:30:04.150 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(2)
+10-24 13:30:04.179 D/EGL_emulation(10579): app_time_stats: avg=120.90ms min=96.90ms max=147.70ms count=9
+10-24 13:30:04.410 W/UiDevice(10997): Timed out waiting 500ms on window update.
+10-24 13:30:04.410 W/UiDevice(10997): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-24 13:30:04.410 W/UiDevice(10997): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-24 13:30:04.410 W/UiDevice(10997): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-24 13:30:04.410 W/UiDevice(10997): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-24 13:30:04.410 W/UiDevice(10997): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-24 13:30:04.410 W/UiDevice(10997): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-24 13:30:04.410 W/UiDevice(10997): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-24 13:30:04.410 W/UiDevice(10997): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-24 13:30:04.410 W/UiDevice(10997): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-24 13:30:04.410 W/UiDevice(10997): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-24 13:30:04.410 W/UiDevice(10997): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-24 13:30:04.410 W/UiDevice(10997): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-24 13:30:04.410 W/UiDevice(10997): 	at java.lang.Thread.run(Thread.java:1012)
+10-24 13:30:04.488 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:04.489 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:04.489 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:04.702 D/Maestro (10997): View hierarchy received in 214 ms
+10-24 13:30:04.957 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:04.957 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:04.958 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:05.089 D/Maestro (10997): View hierarchy received in 132 ms
+10-24 13:30:05.181 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=990.0, y[0]=197.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=308286, downTime=308286, deviceId=-1, source=0x1002, displayId=0, eventId=-162895704 }
+10-24 13:30:05.239 D/StatusBarIconController(  835): ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-24 13:30:05.292 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=990.0, y[0]=197.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=308408, downTime=308286, deviceId=-1, source=0x1002, displayId=0, eventId=-248024922 }
+10-24 13:30:05.350 D/EGL_emulation(10579): app_time_stats: avg=130.04ms min=111.14ms max=180.99ms count=9
+10-24 13:30:05.462 D/CompatibilityChangeReporter(  522): Compat change id reported: 168419799; UID 10192; state: DISABLED
+10-24 13:30:05.462 D/CompatibilityChangeReporter(  522): Compat change id reported: 273564678; UID 10192; state: DISABLED
+10-24 13:30:05.530 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(4)
+10-24 13:30:05.538 D/CoreBackPreview(  522): Window{e1a0ec5 u0 Pop-Up Window}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@87a4528, mPriority=1000000, mIsAnimationCallback=false}
+10-24 13:30:05.571 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(16)
+10-24 13:30:05.884 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(36)
+10-24 13:30:06.085 W/healthd (    0): battery l=100 v=5000 t=25.0 h=2 st=2 c=900000 fc=3000000 cc=10 chg=a
+10-24 13:30:05.937 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(4)
+10-24 13:30:06.147 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(22)
+10-24 13:30:06.291 I/ImeTracker(  522): com.sublearn.app.debug:12d8c3cd: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+10-24 13:30:06.291 I/ImeTracker(  522): com.sublearn.app.debug:12d8c3cd: onCancelled at PHASE_SERVER_SHOULD_HIDE
+10-24 13:30:06.323 I/GoogleInputMethodService( 1533): GoogleInputMethodService.onFinishInput():3227 
+10-24 13:30:06.330 I/GoogleInputMethodService( 1533): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 0, unlocked = true
+10-24 13:30:06.331 I/GoogleInputMethodService( 1533): GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=com.sublearn.app.debug fieldId=0 fieldName=null extras=null}, false)
+10-24 13:30:06.331 I/GoogleInputMethodService( 1533): GoogleInputMethodService.shouldHideHeaderOnInitialState():4008 ShouldHideHeaderOnInitialState = false
+10-24 13:30:06.334 I/GoogleInputMethodService( 1533): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 2, unlocked = true
+10-24 13:30:06.337 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:06.373 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:06.380 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:06.381 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:06.459 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(120)
+10-24 13:30:06.470 D/EGL_emulation(10579): app_time_stats: avg=223.91ms min=59.81ms max=626.62ms count=5
+10-24 13:30:06.670 D/Maestro (10997): View hierarchy received in 297 ms
+10-24 13:30:06.759 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(37)
+10-24 13:30:07.086 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:07.098 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:07.098 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:07.154 D/Maestro (10997): View hierarchy received in 68 ms
+10-24 13:30:07.161 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:30:07.225 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:07.225 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:07.225 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:07.239 D/Maestro (10997): View hierarchy received in 14 ms
+10-24 13:30:07.315 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:07.316 D/UiDevice(10997): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-24 13:30:07.543 D/EGL_emulation(10579): app_time_stats: avg=134.11ms min=72.93ms max=202.57ms count=8
+10-24 13:30:07.658 I/ResourceTimer(  522): GetResourceValue count=14169 pvalues=1000,5000,8000,20000
+10-24 13:30:07.658 I/ResourceTimer(  522): RetrieveAttributes count=35465 pvalues=1000,1000,2000,9000
+10-24 13:30:07.818 W/UiDevice(10997): Timed out waiting 500ms on window update.
+10-24 13:30:07.818 W/UiDevice(10997): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-24 13:30:07.818 W/UiDevice(10997): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-24 13:30:07.818 W/UiDevice(10997): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-24 13:30:07.818 W/UiDevice(10997): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-24 13:30:07.818 W/UiDevice(10997): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-24 13:30:07.818 W/UiDevice(10997): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-24 13:30:07.818 W/UiDevice(10997): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-24 13:30:07.818 W/UiDevice(10997): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-24 13:30:07.818 W/UiDevice(10997): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-24 13:30:07.818 W/UiDevice(10997): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-24 13:30:07.818 W/UiDevice(10997): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-24 13:30:07.818 W/UiDevice(10997): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-24 13:30:07.818 W/UiDevice(10997): 	at java.lang.Thread.run(Thread.java:1012)
+10-24 13:30:07.886 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:07.902 D/UiDevice(10997): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-24 13:30:08.364 D/BufferPoolAccessor2.0(10579): bufferpool2 0x7794cc412cb8 : 5(10485760 size) total buffers - 4(8388608 size) used buffers - 763/768 (recycle/alloc) - 5/768 (fetch/transfer)
+10-24 13:30:08.403 W/UiDevice(10997): Timed out waiting 500ms on window update.
+10-24 13:30:08.403 W/UiDevice(10997): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-24 13:30:08.403 W/UiDevice(10997): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-24 13:30:08.403 W/UiDevice(10997): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-24 13:30:08.403 W/UiDevice(10997): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-24 13:30:08.403 W/UiDevice(10997): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-24 13:30:08.403 W/UiDevice(10997): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-24 13:30:08.403 W/UiDevice(10997): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-24 13:30:08.403 W/UiDevice(10997): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-24 13:30:08.403 W/UiDevice(10997): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-24 13:30:08.403 W/UiDevice(10997): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-24 13:30:08.403 W/UiDevice(10997): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-24 13:30:08.403 W/UiDevice(10997): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-24 13:30:08.403 W/UiDevice(10997): 	at java.lang.Thread.run(Thread.java:1012)
+10-24 13:30:08.430 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(5)
+10-24 13:30:08.436 D/ActivityManager(  522): freezing 2078 com.android.keychain
+10-24 13:30:08.437 D/ActivityManager(  522): freezing 1048 com.android.settings
+10-24 13:30:08.437 D/ActivityManager(  522): freezing 3622 com.android.dynsystem:dynsystem
+10-24 13:30:08.437 D/ActivityManager(  522): freezing 3592 com.android.dynsystem
+10-24 13:30:08.437 D/ActivityManager(  522): freezing 2506 com.android.localtransport
+10-24 13:30:08.478 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:08.479 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:08.480 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:08.491 D/Maestro (10997): View hierarchy received in 13 ms
+10-24 13:30:08.507 D/BufferPoolAccessor2.0(10579): bufferpool2 0x7794cc426298 : 5(40960 size) total buffers - 1(8192 size) used buffers - 1367/1372 (recycle/alloc) - 5/1371 (fetch/transfer)
+10-24 13:30:08.518 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc40038 : 6(24576 size) total buffers - 1(4096 size) used buffers - 1362/1368 (recycle/alloc) - 10/1367 (fetch/transfer)
+10-24 13:30:08.583 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=744.0, y[0]=717.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=311676, downTime=311676, deviceId=-1, source=0x1002, displayId=0, eventId=-796441315 }
+10-24 13:30:08.623 D/EGL_emulation(10579): app_time_stats: avg=545.66ms min=110.64ms max=2085.25ms count=5
+10-24 13:30:08.667 D/EGL_emulation(10579): app_time_stats: avg=124.84ms min=105.93ms max=144.47ms count=9
+10-24 13:30:08.757 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=744.0, y[0]=717.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=311868, downTime=311676, deviceId=-1, source=0x1002, displayId=0, eventId=-843760016 }
+10-24 13:30:08.869 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(32)
+10-24 13:30:09.099 W/WindowOnBackDispatcher(10579): sendCancelIfRunning: isInProgress=falsecallback=androidx.compose.ui.window.Api33Impl$$ExternalSyntheticLambda0@36db27c
+10-24 13:30:09.108 D/CoreBackPreview(  522): Window{e1a0ec5 u0 Pop-Up Window}: Setting back callback null
+10-24 13:30:09.110 W/InputManager-JNI(  522): Input channel object 'e1a0ec5 Pop-Up Window (client)' was disposed without first being removed with the input manager!
+10-24 13:30:09.211 I/ImeTracker(  522): com.sublearn.app.debug:722d10e8: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+10-24 13:30:09.211 I/ImeTracker(  522): com.sublearn.app.debug:722d10e8: onCancelled at PHASE_SERVER_SHOULD_HIDE
+10-24 13:30:09.213 I/GoogleInputMethodService( 1533): GoogleInputMethodService.onFinishInput():3227 
+10-24 13:30:09.216 I/GoogleInputMethodService( 1533): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 0, unlocked = true
+10-24 13:30:09.216 I/GoogleInputMethodService( 1533): GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=com.sublearn.app.debug fieldId=0 fieldName=null extras=null}, false)
+10-24 13:30:09.216 I/GoogleInputMethodService( 1533): GoogleInputMethodService.shouldHideHeaderOnInitialState():4008 ShouldHideHeaderOnInitialState = false
+10-24 13:30:09.226 I/GoogleInputMethodService( 1533): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 2, unlocked = true
+10-24 13:30:09.249 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(1)
+10-24 13:30:09.719 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:09.722 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:09.723 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:09.723 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:09.740 D/EGL_emulation(10579): app_time_stats: avg=153.27ms min=92.63ms max=392.88ms count=7
+10-24 13:30:10.001 D/Maestro (10997): View hierarchy received in 279 ms
+10-24 13:30:10.114 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:10.115 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:10.115 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:10.404 D/Maestro (10997): View hierarchy received in 290 ms
+10-24 13:30:10.581 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:10.582 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:10.582 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:10.758 D/Maestro (10997): View hierarchy received in 177 ms
+10-24 13:30:10.829 D/EGL_emulation(10579): app_time_stats: avg=121.06ms min=94.84ms max=137.96ms count=9
+10-24 13:30:10.872 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:10.873 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:10.874 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:11.121 D/Maestro (10997): View hierarchy received in 249 ms
+10-24 13:30:11.213 D/WindowManager(  522): captureDisplay
+10-24 13:30:11.422 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(65)
+10-24 13:30:11.513 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(4)
+10-24 13:30:11.847 D/EGL_emulation(10579): app_time_stats: avg=127.09ms min=92.79ms max=178.50ms count=8
+10-24 13:30:12.595 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=864.0, y[0]=936.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=315709, downTime=315709, deviceId=-1, source=0x1002, displayId=0, eventId=-719504632 }
+10-24 13:30:12.922 D/EGL_emulation(10579): app_time_stats: avg=119.49ms min=98.45ms max=136.96ms count=9
+10-24 13:30:13.392 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=162.0, y[0]=1200.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=316509, downTime=315709, deviceId=-1, source=0x1002, displayId=0, eventId=-726046896 }
+10-24 13:30:13.467 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:13.468 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:13.468 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:13.505 I/netd    (  335): tetherGetStats() -> {[]} <0.22ms>
+10-24 13:30:13.506 I/netd    (  335): bandwidthSetGlobalAlert(2097152) <0.06ms>
+10-24 13:30:13.536 D/BufferPoolAccessor2.0(10579): bufferpool2 0x7794cc412cb8 : 5(10485760 size) total buffers - 5(10485760 size) used buffers - 886/891 (recycle/alloc) - 5/890 (fetch/transfer)
+10-24 13:30:13.587 D/Maestro (10997): View hierarchy received in 120 ms
+10-24 13:30:13.675 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:13.675 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:13.676 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:13.823 D/Maestro (10997): View hierarchy received in 148 ms
+10-24 13:30:13.895 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:13.896 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:13.896 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:13.902 D/BufferPoolAccessor2.0(10579): bufferpool2 0x7794cc426298 : 5(40960 size) total buffers - 1(8192 size) used buffers - 1600/1605 (recycle/alloc) - 5/1604 (fetch/transfer)
+10-24 13:30:14.005 D/EGL_emulation(10579): app_time_stats: avg=120.25ms min=97.22ms max=150.01ms count=9
+10-24 13:30:14.044 D/ActivityManager(  522): freezing 848 com.google.android.permissioncontroller
+10-24 13:30:14.064 D/Maestro (10997): View hierarchy received in 169 ms
+10-24 13:30:14.090 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc40038 : 6(24576 size) total buffers - 1(4096 size) used buffers - 1602/1608 (recycle/alloc) - 12/1607 (fetch/transfer)
+10-24 13:30:14.129 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:14.136 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:14.138 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:14.355 D/Maestro (10997): View hierarchy received in 226 ms
+10-24 13:30:14.421 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:14.430 D/UiDevice(10997): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-24 13:30:14.931 W/UiDevice(10997): Timed out waiting 500ms on window update.
+10-24 13:30:14.931 W/UiDevice(10997): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-24 13:30:14.931 W/UiDevice(10997): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-24 13:30:14.931 W/UiDevice(10997): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-24 13:30:14.931 W/UiDevice(10997): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-24 13:30:14.931 W/UiDevice(10997): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-24 13:30:14.931 W/UiDevice(10997): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-24 13:30:14.931 W/UiDevice(10997): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-24 13:30:14.931 W/UiDevice(10997): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-24 13:30:14.931 W/UiDevice(10997): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-24 13:30:14.931 W/UiDevice(10997): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-24 13:30:14.931 W/UiDevice(10997): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-24 13:30:14.931 W/UiDevice(10997): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-24 13:30:14.931 W/UiDevice(10997): 	at java.lang.Thread.run(Thread.java:1012)
+10-24 13:30:15.003 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:15.007 D/UiDevice(10997): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-24 13:30:15.118 D/EGL_emulation(10579): app_time_stats: avg=123.69ms min=85.53ms max=160.96ms count=9
+10-24 13:30:15.206 D/ConnectivityService(  522): releasing NetworkRequest [ REQUEST id=158, [ Transports: CELLULAR Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10132 RequestorUid: 10132 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ] (release request)
+10-24 13:30:15.206 I/ConnectivityService(  522): Update capabilities for net 101 : -FOREGROUND
+10-24 13:30:15.212 I/netd    (  335): networkSetPermissionForNetwork(101, 1) <6.29ms>
+10-24 13:30:15.213 D/OomAdjuster(  522): Not killing cached processes
+10-24 13:30:15.239 D/StatusBarIconController(  835): ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-24 13:30:15.507 W/UiDevice(10997): Timed out waiting 500ms on window update.
+10-24 13:30:15.507 W/UiDevice(10997): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-24 13:30:15.507 W/UiDevice(10997): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-24 13:30:15.507 W/UiDevice(10997): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-24 13:30:15.507 W/UiDevice(10997): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-24 13:30:15.507 W/UiDevice(10997): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-24 13:30:15.507 W/UiDevice(10997): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-24 13:30:15.507 W/UiDevice(10997): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-24 13:30:15.507 W/UiDevice(10997): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-24 13:30:15.507 W/UiDevice(10997): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-24 13:30:15.507 W/UiDevice(10997): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-24 13:30:15.507 W/UiDevice(10997): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-24 13:30:15.507 W/UiDevice(10997): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-24 13:30:15.507 W/UiDevice(10997): 	at java.lang.Thread.run(Thread.java:1012)
+10-24 13:30:15.578 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:15.579 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:15.579 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:15.764 D/Maestro (10997): View hierarchy received in 186 ms
+10-24 13:30:16.036 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:16.036 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:16.036 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:16.164 D/Maestro (10997): View hierarchy received in 128 ms
+10-24 13:30:16.214 D/EGL_emulation(10579): app_time_stats: avg=121.70ms min=98.14ms max=149.77ms count=9
+10-24 13:30:16.251 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=837.0, y[0]=1007.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=319355, downTime=319355, deviceId=-1, source=0x1002, displayId=0, eventId=-110126211 }
+10-24 13:30:16.363 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=837.0, y[0]=1007.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=319475, downTime=319355, deviceId=-1, source=0x1002, displayId=0, eventId=-329337292 }
+10-24 13:30:16.879 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:16.880 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:16.880 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:16.998 D/Maestro (10997): View hierarchy received in 119 ms
+10-24 13:30:17.079 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:17.080 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:17.080 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:17.166 D/Maestro (10997): View hierarchy received in 87 ms
+10-24 13:30:17.242 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:17.243 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:17.243 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:17.319 D/EGL_emulation(10579): app_time_stats: avg=91.35ms min=40.70ms max=125.62ms count=12
+10-24 13:30:17.361 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(16)
+10-24 13:30:17.375 D/Maestro (10997): View hierarchy received in 132 ms
+10-24 13:30:17.483 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:17.484 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:17.485 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:17.670 D/Maestro (10997): View hierarchy received in 187 ms
+10-24 13:30:17.739 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:17.739 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:17.739 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:17.886 D/Maestro (10997): View hierarchy received in 147 ms
+10-24 13:30:17.956 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:17.959 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:17.964 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:18.056 D/Maestro (10997): View hierarchy received in 100 ms
+10-24 13:30:18.086 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(4)
+10-24 13:30:18.161 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=216.0, y[0]=2184.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=321278, downTime=321278, deviceId=-1, source=0x1002, displayId=0, eventId=-218257752 }
+10-24 13:30:18.206 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.206 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.206 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.206 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.206 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.208 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.208 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.208 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.208 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.208 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.213 I/DisplayDeviceRepository(  522): Display device changed: DisplayDeviceInfo{"Built-in Screen": uniqueId="local:4619827259835644672", 1080 x 2400, modeId 1, renderFrameRate 60.000004, defaultModeId 1, supportedModes [{id=1, width=1080, height=2400, fps=60.000004, alternativeRefreshRates=[], supportedHdrTypes=[]}], colorMode 0, supportedColorModes [0], hdrCapabilities HdrCapabilities{mSupportedHdrTypes=[], mMaxLuminance=500.0, mMaxAverageLuminance=500.0, mMinLuminance=0.0}, allmSupported false, gameContentTypeSupported false, density 420, 420.0 x 420.0 dpi, appVsyncOff 1000000, presDeadline 16666666, cutout DisplayCutout{insets=Rect(0, 128 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(492, 0 - 610, 128), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2400 physicalDisplayWidth=1080 physicalDisplayHeight=2400 density={2.625} cutoutSpec={M 507,64 a 33,33 0 1 0 66,0 33,33 0 1 0 -66,0 Z @left} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}}}, touch INTERNAL, rotation 0, type INTERNAL, address {port=0, model=0x401cec6a7a2b7b}, deviceProductInfo DeviceProductInfo{name=EMU_display_0, manufacturerPnpId=GGL, productId=1, modelYear=null, manufactureDate=ManufactureDate{week=27, year=2006}, connectionToSinkType=0}, state ON, committedState ON, frameRateOverride , brightnessMinimum 0.0, brightnessMaximum 1.0, brightnessDefault 0.39763778, hdrSdrRatio NaN, roundedCorners RoundedCorners{[RoundedCorner{position=TopLeft, radius=28, center=Point(28, 28)}, RoundedCorner{position=TopRight, radius=28, center=Point(1052, 28)}, RoundedCorner{position=BottomRight, radius=28, center=Point(1052, 2372)}, RoundedCorner{position=BottomLeft, radius=28, center=Point(28, 2372)}]}, FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY, FLAG_ROTATES_WITH_CONTENT, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS, FLAG_TRUSTED, installOrientation 0, displayShape DisplayShape{ spec=-1893857183 displayWidth=1080 displayHeight=2400 physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}}
+10-24 13:30:18.215 W/SimpleC2Component(  469): unknown frame index: 998
+10-24 13:30:18.215 D/SimpleC2Component(  469): work form old generation: was 1 now 0
+10-24 13:30:18.215 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] Ignoring stale input buffer done callback: last flush index = 1003, frameIndex = 1000
+10-24 13:30:18.216 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] flushed work; ignored.
+10-24 13:30:18.216 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] Discard frames from previous generation.
+10-24 13:30:18.224 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] Ignoring stale input buffer done callback: last flush index = 1003, frameIndex = 1003
+10-24 13:30:18.264 W/AudioFlinger(  397): createTrack_l(): mismatch between requested flags (00000008) and output flags (00000002)
+10-24 13:30:18.264 D/AudioFlinger(  397): Client defaulted notificationFrames to 8024 for frameCount 16048
+10-24 13:30:18.265 D/AF::TrackHandle(  397): OpPlayAudio: track:58 usage:1 not muted
+10-24 13:30:18.311 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.312 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.313 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.313 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.313 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.324 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.327 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.328 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.328 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.328 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.335 D/audioserver(  397): FGS Logger Transaction failed
+10-24 13:30:18.336 D/audioserver(  397): -129
+10-24 13:30:18.337 W/SimpleC2Component(  469): unknown frame index: 1015
+10-24 13:30:18.337 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] Ignoring stale input buffer done callback: last flush index = 1020, frameIndex = 1017
+10-24 13:30:18.337 D/SimpleC2Component(  469): work form old generation: was 2 now 1
+10-24 13:30:18.339 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] flushed work; ignored.
+10-24 13:30:18.339 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] Discard frames from previous generation.
+10-24 13:30:18.339 D/EGL_emulation(10579): app_time_stats: avg=113.34ms min=51.64ms max=143.18ms count=9
+10-24 13:30:18.355 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] Ignoring stale input buffer done callback: last flush index = 1020, frameIndex = 1020
+10-24 13:30:18.358 D/audioserver(  397): FGS Logger Transaction failed
+10-24 13:30:18.358 D/audioserver(  397): -129
+10-24 13:30:18.373 W/AudioFlinger(  397): createTrack_l(): mismatch between requested flags (00000008) and output flags (00000002)
+10-24 13:30:18.373 D/AudioFlinger(  397): Client defaulted notificationFrames to 8024 for frameCount 16048
+10-24 13:30:18.374 D/AF::TrackHandle(  397): OpPlayAudio: track:59 usage:1 not muted
+10-24 13:30:18.387 W/SimpleC2Component(  469): unknown frame index: 1022
+10-24 13:30:18.388 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.388 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.388 D/SimpleC2Component(  469): work form old generation: was 3 now 2
+10-24 13:30:18.389 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] Ignoring stale input buffer done callback: last flush index = 1026, frameIndex = 1024
+10-24 13:30:18.389 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.389 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.389 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.389 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] flushed work; ignored.
+10-24 13:30:18.389 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] Discard frames from previous generation.
+10-24 13:30:18.391 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.391 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.392 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.392 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.392 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.392 D/audioserver(  397): FGS Logger Transaction failed
+10-24 13:30:18.392 D/audioserver(  397): -129
+10-24 13:30:18.408 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.416 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.417 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.417 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.417 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.433 D/audioserver(  397): FGS Logger Transaction failed
+10-24 13:30:18.433 D/audioserver(  397): -129
+10-24 13:30:18.434 D/SimpleC2Component(  469): work form old generation: was 4 now 3
+10-24 13:30:18.434 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] Ignoring stale input buffer done callback: last flush index = 1028, frameIndex = 1026
+10-24 13:30:18.434 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] flushed work; ignored.
+10-24 13:30:18.435 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] Discard frames from previous generation.
+10-24 13:30:18.435 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.435 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.439 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.439 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.439 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.445 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.447 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.449 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.450 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.450 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.450 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.455 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.456 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.456 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.456 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.456 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.457 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.471 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.471 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.471 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.472 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.472 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.472 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.472 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.472 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.478 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.479 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.479 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.479 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.479 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.513 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.514 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.514 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.517 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.520 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.521 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.536 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.536 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.536 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.552 I/learn.app.debug(10579): Background young concurrent copying GC freed 250048(8594KB) AllocSpace objects, 0(0B) LOS objects, 43% free, 10MB/18MB, paused 3.823ms,32us total 236.122ms
+10-24 13:30:18.557 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.565 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.568 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.568 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.568 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.578 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.582 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.611 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.619 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.619 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.620 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.620 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.620 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.632 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.636 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.636 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.636 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.636 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.640 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.652 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.653 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.653 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.654 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.654 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.654 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.654 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.655 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.655 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.655 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.655 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.656 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.656 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.657 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.657 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.657 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.659 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.659 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.659 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.661 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.663 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.663 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.663 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.663 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.672 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.674 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.685 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.685 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.690 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.691 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.695 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.695 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.696 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.732 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.734 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.735 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.735 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.735 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.742 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.745 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.748 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.748 D/BufferPoolAccessor2.0(10579): bufferpool2 0x7794cc412cb8 : 5(10485760 size) total buffers - 1(2097152 size) used buffers - 1062/1067 (recycle/alloc) - 5/1034 (fetch/transfer)
+10-24 13:30:18.751 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.751 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.751 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.790 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.790 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.791 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.791 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.791 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.795 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.796 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.797 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.798 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.801 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.801 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.801 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.802 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.803 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.803 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.803 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.803 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.804 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.804 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.804 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.804 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.804 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.805 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.805 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.805 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.806 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.806 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.806 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.806 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.806 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.823 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.827 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.828 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.828 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.832 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.833 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.833 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.833 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.843 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.843 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.844 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.844 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.844 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.862 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.868 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.872 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.873 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.879 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.900 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.900 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.901 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.905 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=842.0, y[0]=2184.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=322017, downTime=321278, deviceId=-1, source=0x1002, displayId=0, eventId=-437341286 }
+10-24 13:30:18.906 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.906 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.906 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.906 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.906 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.940 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.941 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.946 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] MediaCodec discarded an unknown buffer
+10-24 13:30:18.950 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.951 I/CCodecConfig(10579): query failed after returning 12 values (BAD_INDEX)
+10-24 13:30:18.951 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.951 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.951 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:18.991 D/MediaCodec(10579): keep callback message for reclaim
+10-24 13:30:18.991 I/CCodecConfig(10579): query failed after returning 20 values (BAD_INDEX)
+10-24 13:30:18.992 W/Codec2Client(10579): query -- param skipped: index = 1342179345.
+10-24 13:30:18.992 W/Codec2Client(10579): query -- param skipped: index = 2415921170.
+10-24 13:30:18.992 W/Codec2Client(10579): query -- param skipped: index = 1610614798.
+10-24 13:30:19.006 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:19.007 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:19.007 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:19.045 D/CCodecBufferChannel(10579): [c2.android.avc.decoder#477] Ignoring stale input buffer done callback: last flush index = 1028, frameIndex = 1028
+10-24 13:30:19.045 W/AudioFlinger(  397): createTrack_l(): mismatch between requested flags (00000008) and output flags (00000002)
+10-24 13:30:19.046 D/AudioFlinger(  397): Client defaulted notificationFrames to 8024 for frameCount 16048
+10-24 13:30:19.046 D/AF::TrackHandle(  397): OpPlayAudio: track:60 usage:1 not muted
+10-24 13:30:19.143 D/Maestro (10997): View hierarchy received in 137 ms
+10-24 13:30:19.195 D/Maestro (10997): Requesting view hierarchy
+10-24 13:30:19.196 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:19.196 W/QueryController(10997): Could not detect idle state.
+10-24 13:30:19.288 D/Maestro (10997): View hierarchy received in 93 ms
+10-24 13:30:19.345 D/WindowManager(  522): captureDisplay
+10-24 13:30:19.385 W/System  (10964): A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+10-24 13:30:19.385 W/System  (10964): java.lang.Throwable: Explicit termination method 'HardwareBuffer.close' not called
+10-24 13:30:19.385 W/System  (10964): 	at dalvik.system.CloseGuard.openWithCallSite(CloseGuard.java:288)
+10-24 13:30:19.385 W/System  (10964): 	at dalvik.system.CloseGuard.open(CloseGuard.java:257)
+10-24 13:30:19.385 W/System  (10964): 	at android.hardware.HardwareBuffer.<init>(HardwareBuffer.java:266)
+10-24 13:30:19.385 W/System  (10964): A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+10-24 13:30:19.385 W/System  (10964): java.lang.Throwable: Explicit termination method 'HardwareBuffer.close' not called
+10-24 13:30:19.385 W/System  (10964): 	at dalvik.system.CloseGuard.openWithCallSite(CloseGuard.java:288)
+10-24 13:30:19.385 W/System  (10964): 	at dalvik.system.CloseGuard.open(CloseGuard.java:257)
+10-24 13:30:19.385 W/System  (10964): 	at android.hardware.HardwareBuffer.<init>(HardwareBuffer.java:266)
+10-24 13:30:20.105 D/audioserver(  397): FGS Logger Transaction failed
+10-24 13:30:20.105 D/audioserver(  397): -129
+10-24 13:30:20.110 I/DisplayDeviceRepository(  522): Display device changed: DisplayDeviceInfo{"Built-in Screen": uniqueId="local:4619827259835644672", 1080 x 2400, modeId 1, renderFrameRate 60.000004, defaultModeId 1, supportedModes [{id=1, width=1080, height=2400, fps=60.000004, alternativeRefreshRates=[], supportedHdrTypes=[]}], colorMode 0, supportedColorModes [0], hdrCapabilities HdrCapabilities{mSupportedHdrTypes=[], mMaxLuminance=500.0, mMaxAverageLuminance=500.0, mMinLuminance=0.0}, allmSupported false, gameContentTypeSupported false, density 420, 420.0 x 420.0 dpi, appVsyncOff 1000000, presDeadline 16666666, cutout DisplayCutout{insets=Rect(0, 128 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(492, 0 - 610, 128), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2400 physicalDisplayWidth=1080 physicalDisplayHeight=2400 density={2.625} cutoutSpec={M 507,64 a 33,33 0 1 0 66,0 33,33 0 1 0 -66,0 Z @left} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}}}, touch INTERNAL, rotation 0, type INTERNAL, address {port=0, model=0x401cec6a7a2b7b}, deviceProductInfo DeviceProductInfo{name=EMU_display_0, manufacturerPnpId=GGL, productId=1, modelYear=null, manufactureDate=ManufactureDate{week=27, year=2006}, connectionToSinkType=0}, state ON, committedState ON, frameRateOverride {uid=10192 frameRateHz=60.000004} , brightnessMinimum 0.0, brightnessMaximum 1.0, brightnessDefault 0.39763778, hdrSdrRatio NaN, roundedCorners RoundedCorners{[RoundedCorner{position=TopLeft, radius=28, center=Point(28, 28)}, RoundedCorner{position=TopRight, radius=28, center=Point(1052, 28)}, RoundedCorner{position=BottomRight, radius=28, center=Point(1052, 2372)}, RoundedCorner{position=BottomLeft, radius=28, center=Point(28, 2372)}]}, FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY, FLAG_ROTATES_WITH_CONTENT, FLAG_SECURE, FLAG_SUPPORTS_PROTECTED_BUFFERS, FLAG_TRUSTED, installOrientation 0, displayShape DisplayShape{ spec=-1893857183 displayWidth=1080 displayHeight=2400 physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}}
+10-24 13:30:20.127 D/AudioTrack(10579): getTimestamp_l(20): device stall time corrected using current time 323244904294
+10-24 13:30:20.177 D/BufferPoolAccessor2.0(10579): bufferpool2 0x7794cc426298 : 5(40960 size) total buffers - 1(8192 size) used buffers - 1912/1917 (recycle/alloc) - 5/1836 (fetch/transfer)
+10-24 13:30:20.188 D/EGL_emulation(10579): app_time_stats: avg=101.95ms min=15.19ms max=1109.58ms count=18
+10-24 13:30:20.189 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc40038 : 6(24576 size) total buffers - 1(4096 size) used buffers - 1819/1825 (recycle/alloc) - 14/1824 (fetch/transfer)

@@ -1,0 +1,21 @@
+[ui-snapshot 13:23:41] installing Maestro
+[ui-snapshot 13:23:48] maestro 2.11.0
+[ui-snapshot 13:25:31] installing /home/runner/work/SubLearn/SubLearn/app/build/outputs/apk/debug/app-x86_64-debug.apk
+[ui-snapshot 13:25:39] maestro 2.11.0
+[ui-snapshot 13:25:39] flow 01-home: start (.maestro/01-home.yaml, at most 240s)
+[ui-snapshot 13:26:11] flow 01-home: PASS (exit 0, 18s, 0 app crash match(es))
+[ui-snapshot 13:26:11] flow 02-settings: start (.maestro/02-settings.yaml, at most 240s)
+[ui-snapshot 13:27:00] flow 02-settings: PASS (exit 0, 40s, 0 app crash match(es))
+[ui-snapshot 13:27:00] flow 03-my-words: start (.maestro/03-my-words.yaml, at most 240s)
+[ui-snapshot 13:27:25] flow 03-my-words: PASS (exit 0, 15s, 0 app crash match(es))
+[ui-snapshot 13:27:25] flow 04-learn: start (.maestro/04-learn.yaml, at most 240s)
+[ui-snapshot 13:27:47] flow 04-learn: PASS (exit 0, 13s, 0 app crash match(es))
+[ui-snapshot 13:27:47] flow 05-dictionary: start (.maestro/05-dictionary.yaml, at most 240s)
+[ui-snapshot 13:28:08] flow 05-dictionary: PASS (exit 0, 13s, 0 app crash match(es))
+[ui-snapshot 13:28:08] flow 06-player-landscape: start (.maestro/06-player-landscape.yaml, at most 240s)
+[ui-snapshot 13:29:29] flow 06-player-landscape: PASS (exit 0, 63s, 0 app crash match(es))
+[ui-snapshot 13:29:29] flow 07-player-portrait: start (.maestro/07-player-portrait.yaml, at most 240s)
+[ui-snapshot 13:30:37] flow 07-player-portrait: PASS (exit 0, 48s, 0 app crash match(es))
+[ui-snapshot 13:30:37] flow 08-player-menus: start (.maestro/08-player-menus.yaml, at most 240s)
+[ui-snapshot 13:32:47] flow 08-player-menus: PASS (exit 0, 103s, 0 app crash match(es))
+out size: 16M	/home/runner/work/SubLearn/SubLearn/out

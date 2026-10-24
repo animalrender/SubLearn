@@ -1,0 +1,28 @@
+Running on test
+ > Flow 06-player-landscape
+Tap on (Optional) "Got it"... COMPLETED
+Assert that "360 × 640" is visible... COMPLETED
+Assert that "SubLearn-UI-Fixture.mp4" is visible... COMPLETED
+Assert that "FIT" is visible... COMPLETED
+Assert that "Subtitle list" is visible... COMPLETED
+Assert that "Repeat this subtitle" is visible... COMPLETED
+Assert that "Lock" is visible... COMPLETED
+Assert that "Previous video" is visible... COMPLETED
+Assert that "Seek backward" is visible... COMPLETED
+Assert that "Previous subtitle" is visible... COMPLETED
+Assert that "Play|Pause" is visible... COMPLETED
+Assert that "Next subtitle" is visible... COMPLETED
+Assert that "Seek forward" is visible... COMPLETED
+Assert that "Next video" is visible... COMPLETED
+Take screenshot 06-player-landscape-controls... COMPLETED
+Tap on "Subtitle tracks"... COMPLETED
+Assert that "Subtitle tracks" is visible... COMPLETED
+Swipe from (50%, 90%) to (50%, 45%) in 700 ms... COMPLETED
+Assert that "en" is visible... COMPLETED
+Tap on "en"... COMPLETED
+Press Back key... COMPLETED
+Press Back key... COMPLETED
+Assert that "The last train leaves at midnight\.|Every journey starts with one step\.|Follow the lights to the platform\.|Thanks for testing SubLearn Player\." is visible... COMPLETED
+Take screenshot 06-player-landscape-embedded-subtitle... COMPLETED
+Swipe from (20%, 88%) to (78%, 88%) in 700 ms... COMPLETED
+Take screenshot 06-player-landscape-scrub... COMPLETED

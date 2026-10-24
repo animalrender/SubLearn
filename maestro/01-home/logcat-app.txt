@@ -1,0 +1,17 @@
+# logcat-app.txt: W/E/F lines of pid(s) [4871] and of anything naming com.sublearn.app.debug; crash evidence at any level
+10-24 13:25:55.555  4871  4871 W learn.app.debug: Unexpected CPU variant for x86: x86_64.
+10-24 13:25:55.555  4871  4871 W learn.app.debug: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+10-24 13:25:55.785  4871  4871 W ziparchive: Unable to open '/data/app/~~VFqbBjCDVZmBV8u-haTqLw==/com.sublearn.app.debug-QSJVzdNn6PUo2B4ntF1jRw==/base.dm': No such file or directory
+10-24 13:25:55.785  4871  4871 W ziparchive: Unable to open '/data/app/~~VFqbBjCDVZmBV8u-haTqLw==/com.sublearn.app.debug-QSJVzdNn6PUo2B4ntF1jRw==/base.dm': No such file or directory
+10-24 13:25:56.432  4871  4871 W OpenGLRenderer: Unknown dataspace 0
+10-24 13:25:56.584  4871  4871 W learn.app.debug: Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+10-24 13:25:56.584  4871  4871 W learn.app.debug: Common causes for lock verification issues are non-optimized dex code
+10-24 13:25:56.584  4871  4871 W learn.app.debug: and incorrect proguard optimizations.
+10-24 13:25:56.584  4871  4871 W learn.app.debug: Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+10-24 13:25:56.584  4871  4871 W learn.app.debug: Method java.lang.Object androidx.compose.runtime.snapshots.SnapshotStateList.mutate(kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+10-24 13:25:56.584  4871  4871 W learn.app.debug: Method void androidx.compose.runtime.snapshots.SnapshotStateList.update(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+10-24 13:25:56.584  4871  4871 W learn.app.debug: Method void androidx.compose.runtime.snapshots.SnapshotStateList.update$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+10-24 13:25:56.633  4871  4871 W learn.app.debug: Accessing hidden method Landroid/media/AudioTrack;->getLatency()I (unsupported, reflection, allowed)
+10-24 13:25:57.004  4871  4901 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+10-24 13:25:57.394   522   539 W ziparchive: Unable to open '/data/app/~~VFqbBjCDVZmBV8u-haTqLw==/com.sublearn.app.debug-QSJVzdNn6PUo2B4ntF1jRw==/base.dm': No such file or directory
+10-24 13:25:57.434   522  2516 W InputManager-JNI: Input channel object '4471198 Splash Screen com.sublearn.app.debug (client)' was disposed without first being removed with the input manager!

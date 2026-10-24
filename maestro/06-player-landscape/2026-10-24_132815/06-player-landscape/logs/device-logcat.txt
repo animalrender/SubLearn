@@ -1,0 +1,716 @@
+--------- beginning of main
+10-24 13:28:30.021 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:30.047 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:30.048 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:30.208 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(28)
+10-24 13:28:30.348 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(7)
+10-24 13:28:30.434 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(9)
+10-24 13:28:30.490 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:28:30.559 D/EGL_emulation( 8305): app_time_stats: avg=130.76ms min=64.32ms max=193.18ms count=9
+10-24 13:28:30.631 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(27)
+--------- beginning of system
+10-24 13:28:30.864 D/ActivityManager(  522): freezing 3797 com.google.android.rkpdapp
+10-24 13:28:31.044 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(7)
+10-24 13:28:31.123 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(32)
+10-24 13:28:31.428 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(47)
+10-24 13:28:31.769 D/EGL_emulation( 8305): app_time_stats: avg=172.78ms min=102.39ms max=278.46ms count=7
+10-24 13:28:31.809 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(5)
+10-24 13:28:31.839 D/ActivityManager(  522): freezing 3174 com.google.android.gms.unstable
+10-24 13:28:31.987 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(33)
+10-24 13:28:32.188 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(54)
+10-24 13:28:32.281 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(23)
+10-24 13:28:32.421 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:28:32.491 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc42788 : 5(20480 size) total buffers - 1(4096 size) used buffers - 665/670 (recycle/alloc) - 11/669 (fetch/transfer)
+10-24 13:28:32.501 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc425018 : 5(40960 size) total buffers - 5(40960 size) used buffers - 674/679 (recycle/alloc) - 5/675 (fetch/transfer)
+10-24 13:28:32.517 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(47)
+10-24 13:28:32.749 D/Maestro ( 8713): View hierarchy received in 2729 ms
+10-24 13:28:32.905 D/EGL_emulation( 8305): app_time_stats: avg=141.93ms min=55.32ms max=214.58ms count=8
+10-24 13:28:33.033 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(7)
+10-24 13:28:33.124 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc424238 : 5(10485760 size) total buffers - 5(10485760 size) used buffers - 384/389 (recycle/alloc) - 5/388 (fetch/transfer)
+10-24 13:28:33.133 D/OomAdjuster(  522): Not killing cached processes
+10-24 13:28:33.138 W/ProcessStats(  522): Tracking association SourceState{ca94298 com.google.android.gms.persistent/10131 BFgs #17075} whose proc state 4 is better than process ProcessState{d92c5f8 com.google.android.gms/10131 pkg=com.google.android.gms} proc state 9 (996 skipped)
+10-24 13:28:33.149 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.177 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(5)
+10-24 13:28:33.178 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.190 W/UiDevice( 8713): Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-24 13:28:33.308 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.314 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.316 W/UiDevice( 8713): Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-24 13:28:33.403 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.424 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.437 W/UiDevice( 8713): Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-24 13:28:33.505 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.510 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.514 W/UiDevice( 8713): Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-24 13:28:33.591 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.596 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.600 W/UiDevice( 8713): Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-24 13:28:33.666 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.667 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.670 W/UiDevice( 8713): Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-24 13:28:33.734 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.739 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.745 W/UiDevice( 8713): Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-24 13:28:33.817 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.840 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(7)
+10-24 13:28:33.841 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.845 W/UiDevice( 8713): Skipping wait as package com.sublearn.app.debug does not match current window android.
+10-24 13:28:33.940 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:28:33.978 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:33.979 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.979 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:33.990 D/EGL_emulation( 8305): app_time_stats: avg=119.92ms min=29.58ms max=191.64ms count=9
+10-24 13:28:34.092 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(7)
+10-24 13:28:34.151 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(6)
+10-24 13:28:34.189 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(18)
+10-24 13:28:34.899 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(17)
+10-24 13:28:34.943 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:28:35.023 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(36)
+10-24 13:28:35.110 D/EGL_emulation( 8305): app_time_stats: avg=139.62ms min=83.12ms max=227.65ms count=8
+10-24 13:28:35.312 D/Maestro ( 8713): View hierarchy received in 1334 ms
+10-24 13:28:35.313 D/StatusBarIconController(  835): ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-24 13:28:35.540 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(8)
+10-24 13:28:35.702 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(5)
+10-24 13:28:35.764 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:35.767 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(2)
+10-24 13:28:35.767 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:35.768 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:35.843 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(6)
+10-24 13:28:35.988 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(4)
+10-24 13:28:36.024 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(6)
+10-24 13:28:36.183 D/EGL_emulation( 8305): app_time_stats: avg=134.11ms min=79.97ms max=273.66ms count=8
+10-24 13:28:36.218 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(20)
+10-24 13:28:36.257 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(5)
+10-24 13:28:36.512 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:28:36.560 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(20)
+10-24 13:28:36.734 D/Maestro ( 8713): View hierarchy received in 970 ms
+10-24 13:28:36.897 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(29)
+10-24 13:28:36.907 I/keystore2(  157): system/security/keystore2/src/watchdog.rs:319 - Watchdog thread idle -> terminating. Have a great day.
+10-24 13:28:37.036 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(18)
+10-24 13:28:37.174 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:37.175 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:37.175 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:37.192 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(19)
+10-24 13:28:37.205 D/EGL_emulation( 8305): app_time_stats: avg=111.09ms min=20.91ms max=190.02ms count=9
+10-24 13:28:37.251 I/.mobile.maestro( 8713): Background concurrent copying GC freed 80465(5823KB) AllocSpace objects, 18(1116KB) LOS objects, 49% free, 9982KB/19MB, paused 21us,8us total 105.455ms
+10-24 13:28:37.353 D/Maestro ( 8713): View hierarchy received in 179 ms
+10-24 13:28:37.540 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc425018 : 5(40960 size) total buffers - 1(8192 size) used buffers - 886/891 (recycle/alloc) - 5/891 (fetch/transfer)
+10-24 13:28:37.541 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc42788 : 5(20480 size) total buffers - 3(12288 size) used buffers - 882/887 (recycle/alloc) - 13/886 (fetch/transfer)
+10-24 13:28:37.699 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:37.699 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:37.700 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:37.716 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(15)
+10-24 13:28:38.072 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(23)
+10-24 13:28:38.104 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(6)
+10-24 13:28:38.141 E/A       ( 1737): disposing SearchServiceClient after timeout []
+10-24 13:28:38.264 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(4)
+10-24 13:28:38.265 D/EGL_emulation( 8305): app_time_stats: avg=151.41ms min=113.47ms max=227.29ms count=7
+10-24 13:28:38.325 D/OomAdjuster(  522): Not killing cached processes
+10-24 13:28:38.341 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(29)
+10-24 13:28:38.377 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(3)
+10-24 13:28:38.496 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc424238 : 5(10485760 size) total buffers - 5(10485760 size) used buffers - 513/518 (recycle/alloc) - 5/517 (fetch/transfer)
+10-24 13:28:38.715 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(15)
+10-24 13:28:38.990 D/ActivityManager(  522): sync unfroze 5910 com.google.android.gms.ui for 3
+10-24 13:28:39.203 D/Maestro ( 8713): View hierarchy received in 1503 ms
+10-24 13:28:39.282 D/EGL_emulation( 8305): app_time_stats: avg=122.56ms min=50.41ms max=164.80ms count=8
+10-24 13:28:39.354 I/GMS_MM_Logger( 5910): Memory Metric Logging not allowed. Stopping.
+10-24 13:28:39.435 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(21)
+10-24 13:28:39.503 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(38)
+10-24 13:28:39.589 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:39.590 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:39.590 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:39.754 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(1)
+10-24 13:28:39.805 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(14)
+10-24 13:28:39.956 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(46)
+10-24 13:28:40.326 W/Looper  (  522): Slow dispatch took 165ms android.ui h=android.view.AccessibilityInteractionController$PrivateHandler c=null m=2
+10-24 13:28:40.370 D/Maestro ( 8713): View hierarchy received in 781 ms
+10-24 13:28:40.378 D/EGL_emulation( 8305): app_time_stats: avg=136.51ms min=76.09ms max=268.60ms count=8
+10-24 13:28:40.390 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(2)
+10-24 13:28:40.701 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:40.705 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:40.705 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:41.053 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(25)
+10-24 13:28:41.127 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(37)
+10-24 13:28:41.408 D/EGL_emulation( 8305): app_time_stats: avg=114.53ms min=53.03ms max=176.96ms count=9
+10-24 13:28:41.598 D/Maestro ( 8713): View hierarchy received in 897 ms
+10-24 13:28:41.890 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:41.891 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:41.891 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:42.007 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(49)
+10-24 13:28:42.436 D/EGL_emulation( 8305): app_time_stats: avg=128.11ms min=90.84ms max=159.73ms count=8
+10-24 13:28:42.487 D/ActivityManager(  522): sync unfroze 1648 com.google.process.gservices for 7
+10-24 13:28:42.736 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc42788 : 5(20480 size) total buffers - 1(4096 size) used buffers - 1100/1105 (recycle/alloc) - 13/1104 (fetch/transfer)
+10-24 13:28:42.882 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(8)
+10-24 13:28:42.918 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc425018 : 5(40960 size) total buffers - 1(8192 size) used buffers - 1114/1119 (recycle/alloc) - 5/1118 (fetch/transfer)
+10-24 13:28:42.933 D/Maestro ( 8713): View hierarchy received in 1043 ms
+10-24 13:28:43.238 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:43.243 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:43.245 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:43.466 D/EGL_emulation( 8305): app_time_stats: avg=128.70ms min=58.69ms max=201.10ms count=8
+10-24 13:28:43.719 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(13)
+10-24 13:28:43.743 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc424238 : 5(10485760 size) total buffers - 5(10485760 size) used buffers - 637/642 (recycle/alloc) - 5/641 (fetch/transfer)
+10-24 13:28:44.059 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(4)
+10-24 13:28:44.525 D/EGL_emulation( 8305): app_time_stats: avg=130.10ms min=56.19ms max=224.74ms count=8
+10-24 13:28:44.875 D/Maestro ( 8713): View hierarchy received in 1637 ms
+10-24 13:28:44.905 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(1)
+10-24 13:28:45.104 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(16)
+10-24 13:28:45.142 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:45.147 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:45.147 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:45.281 D/StatusBarIconController(  835): ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-24 13:28:45.283 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(40)
+10-24 13:28:45.303 D/OomAdjuster(  522): Not killing cached processes
+10-24 13:28:45.303 W/ProcessStats(  522): Tracking association SourceState{41e35ec com.google.android.apps.nexuslauncher/10169 BFgs #17096} whose proc state 4 is better than process ProcessState{79303c4 com.google.android.googlequicksearchbox:search/10132 pkg=com.google.android.googlequicksearchbox} proc state 5 (24 skipped)
+10-24 13:28:45.374 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(1)
+10-24 13:28:45.489 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(3)
+10-24 13:28:45.566 D/EGL_emulation( 8305): app_time_stats: avg=114.70ms min=48.12ms max=211.54ms count=9
+10-24 13:28:45.645 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:28:45.739 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(5)
+10-24 13:28:45.985 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(13)
+10-24 13:28:46.280 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:28:46.569 D/EGL_emulation( 8305): app_time_stats: avg=143.22ms min=64.71ms max=176.23ms count=7
+10-24 13:28:46.612 I/WorkerManager( 1737): dispose()
+10-24 13:28:46.615 W/A       ( 1737): Queue length for executor EventBus is now 11. Perhaps some tasks are too long, or the pool is too small.
+10-24 13:28:46.616 D/Maestro ( 8713): View hierarchy received in 1474 ms
+10-24 13:28:46.989 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:46.990 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:46.993 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:47.549 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(84)
+10-24 13:28:47.619 D/EGL_emulation( 8305): app_time_stats: avg=145.62ms min=50.09ms max=311.67ms count=7
+10-24 13:28:47.679 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(20)
+10-24 13:28:47.708 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(8)
+10-24 13:28:47.749 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc42788 : 5(20480 size) total buffers - 1(4096 size) used buffers - 1313/1318 (recycle/alloc) - 14/1317 (fetch/transfer)
+10-24 13:28:47.766 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:28:47.904 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(21)
+10-24 13:28:47.972 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(40)
+10-24 13:28:48.143 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(4)
+10-24 13:28:48.188 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(22)
+10-24 13:28:48.222 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(1)
+10-24 13:28:48.326 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc425018 : 5(40960 size) total buffers - 1(8192 size) used buffers - 1340/1345 (recycle/alloc) - 5/1344 (fetch/transfer)
+10-24 13:28:48.358 D/ActivityManager(  522): freezing 2078 com.android.keychain
+10-24 13:28:48.363 D/ActivityManager(  522): freezing 1048 com.android.settings
+10-24 13:28:48.370 D/ActivityManager(  522): freezing 3622 com.android.dynsystem:dynsystem
+10-24 13:28:48.370 D/ActivityManager(  522): freezing 3592 com.android.dynsystem
+10-24 13:28:48.370 D/ActivityManager(  522): freezing 2506 com.android.localtransport
+10-24 13:28:48.389 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(22)
+10-24 13:28:48.490 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(43)
+10-24 13:28:48.635 D/EGL_emulation( 8305): app_time_stats: avg=145.04ms min=113.29ms max=254.84ms count=7
+10-24 13:28:48.963 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc424238 : 5(10485760 size) total buffers - 5(10485760 size) used buffers - 754/759 (recycle/alloc) - 5/758 (fetch/transfer)
+10-24 13:28:48.992 D/ActivityManager(  522): freezing 5910 com.google.android.gms.ui
+10-24 13:28:49.219 D/Maestro ( 8713): View hierarchy received in 2230 ms
+10-24 13:28:49.387 I/DialerOmtpVvmCarrierConfigHelper( 2835): com.android.voicemail.impl.OmtpVvmCarrierConfigHelper.handleEvent:527 OmtpEvent:CONFIG_STATUS_SMS_TIME_OUT PhoneAccountHandle: [ComponentName: com.android.phone/com.android.services.telephony.TelephonyConnectionService subId: 1] [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:49.388 I/DialerRetryPolicy( 2835): com.android.voicemail.impl.scheduling.RetryPolicy.onCompleted:118 discarding deferred status [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:49.389 I/DialerTaskExecutor( 2835): com.android.voicemail.impl.scheduling.TaskExecutor.prepareStop:371 no more tasks, stopping service if no task are added in 5000 millis [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:49.390 I/DialerLogcatLoggingBindings( 2835): com.android.dialer.logging.logcat.LogcatLoggingBindings.logImpression:41 Impression: VVM_AUTO_RETRY_ACTIVATION
+10-24 13:28:49.390 I/DialerTaskReceiver( 2835): com.android.voicemail.impl.scheduling.TaskReceiver.onReceive:68 task received [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:49.390 I/DialerTaskReceiver( 2835): com.android.voicemail.impl.scheduling.TaskReceiver.onReceive:73 TaskExecutor already running [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:49.390 I/DialerTasks( 2835): com.android.voicemail.impl.scheduling.Tasks.createTask:59 Task.createTask create task:com.android.voicemail.impl.ActivationTask [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:49.390 I/DialerRetryPolicy( 2835): com.android.voicemail.impl.scheduling.RetryPolicy.onCreate:81 retry #3 for com.android.voicemail.impl.ActivationTask@909bcf2 queued, executing in 5000 [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:49.393 I/DialerTaskExecutor( 2835): com.android.voicemail.impl.scheduling.TaskExecutor.addTask:299 com.android.voicemail.impl.ActivationTask@909bcf2 added [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:49.393 I/DialerTaskExecutor( 2835): com.android.voicemail.impl.scheduling.TaskExecutor.runNextTask:345 minimal wait time:4998 [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:49.393 I/DialerTaskExecutor( 2835): com.android.voicemail.impl.scheduling.TaskExecutor.sleep:355 sleep for 4998 millis [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:49.532 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(2)
+10-24 13:28:49.630 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=1542.0, y[0]=527.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=232671, downTime=232671, deviceId=-1, source=0x1002, displayId=0, eventId=-730765478 }
+10-24 13:28:49.633 D/AutofillManager(  522): Fill dialog is enabled:false, hints=[password, passwordAuto, creditCardNumber, creditCardSecurityCode, creditCardExpirationDate]
+10-24 13:28:49.655 D/EGL_emulation( 8305): app_time_stats: avg=127.52ms min=21.69ms max=249.42ms count=8
+10-24 13:28:49.787 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=1542.0, y[0]=527.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=232854, downTime=232671, deviceId=-1, source=0x1002, displayId=0, eventId=-949508372 }
+10-24 13:28:50.075 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(10)
+10-24 13:28:50.199 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(6)
+10-24 13:28:50.201 D/EGL_emulation(  522): app_time_stats: avg=8778.76ms min=5.52ms max=34111.76ms count=4
+10-24 13:28:50.233 W/Looper  (  522): Slow dispatch took 494ms android.ui h=android.view.Choreographer$FrameHandler c=android.view.Choreographer$FrameDisplayEventReceiver@6bb037b m=0
+10-24 13:28:50.234 W/Looper  (  522): Slow delivery took 300ms android.ui h=android.view.GestureDetector$GestureHandler c=null m=3
+10-24 13:28:50.234 W/Looper  (  522): Drained
+10-24 13:28:50.237 I/AiAiEcho( 1617): Settings changed for uri: content://settings/secure/immersive_mode_confirmations
+10-24 13:28:50.237 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(13)
+10-24 13:28:50.238 I/AiAiEcho( 1617): Predicting[0]: 
+10-24 13:28:50.238 I/AiAiEcho( 1617): EchoTargets: 
+10-24 13:28:50.238 I/AiAiEcho( 1617): Filtered by AiAi flag check: 
+10-24 13:28:50.238 I/AiAiEcho( 1617): Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-24 13:28:50.239 I/AiAiEcho( 1617): Predicting[0]: 
+10-24 13:28:50.239 I/AiAiEcho( 1617): EchoTargets: 
+10-24 13:28:50.239 I/AiAiEcho( 1617): Filtered by AiAi flag check: 
+10-24 13:28:50.239 I/AiAiEcho( 1617): Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-24 13:28:50.240 W/AudioFlinger(  397): createTrack_l(): mismatch between requested flags (00000004) and output flags (00000002)
+10-24 13:28:50.241 D/AF::TrackHandle(  397): OpPlayAudio: track:56 usage:13 not muted
+10-24 13:28:50.248 I/AiAiEcho( 1617): #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+10-24 13:28:50.250 I/AiAiEcho( 1617): #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+10-24 13:28:50.268 W/PageIndicator(  835): Total number of pages invalid: 0. Assuming 1 page.
+10-24 13:28:50.272 D/audioserver(  397): FGS Logger Transaction failed
+10-24 13:28:50.273 D/audioserver(  397): -129
+10-24 13:28:50.313 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(1)
+10-24 13:28:50.344 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(4)
+10-24 13:28:50.381 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:50.382 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:50.382 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:50.387 W/Looper  (  522): Slow dispatch took 152ms android.ui h=android.view.ViewRootImpl$ViewRootHandler c=android.view.View$PerformClick@6a2df8f m=0
+10-24 13:28:50.387 W/WindowOnBackDispatcher(  522): sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@14a84e
+10-24 13:28:50.387 D/CoreBackPreview(  522): Window{cfff820 u0 ImmersiveModeConfirmation}: Setting back callback null
+10-24 13:28:50.388 W/InputManager-JNI(  522): Input channel object 'cfff820 ImmersiveModeConfirmation (client)' was disposed without first being removed with the input manager!
+10-24 13:28:50.402 W/UiDevice( 8713): Active window root not found.
+10-24 13:28:50.403 W/UiDevice( 8713): Skipping null root node for window: AccessibilityWindowInfo[title=null, displayId=0, id=125, taskId=-1, type=TYPE_SYSTEM, layer=1, region=SkRegion((765,0,1763,653)), bounds=Rect(765, 0 - 1763, 653), focused=true, active=true, pictureInPicture=false, transitionTime=211773, hasParent=false, isAnchored=false, hasChildren=false]
+10-24 13:28:50.450 V/WindowManager(  522): Unknown focus tokens, dropping reportFocusChanged
+10-24 13:28:50.456 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(4)
+10-24 13:28:50.554 I/ImeTracker(  522): com.sublearn.app.debug:ca7ca9a1: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+10-24 13:28:50.554 I/ImeTracker(  522): com.sublearn.app.debug:ca7ca9a1: onCancelled at PHASE_SERVER_SHOULD_HIDE
+10-24 13:28:50.563 D/audioserver(  397): FGS Logger Transaction failed
+10-24 13:28:50.563 D/audioserver(  397): -129
+10-24 13:28:50.564 I/GoogleInputMethodService( 1533): GoogleInputMethodService.onFinishInput():3227 
+10-24 13:28:50.565 I/GoogleInputMethodService( 1533): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 0, unlocked = true
+10-24 13:28:50.565 I/GoogleInputMethodService( 1533): GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=com.sublearn.app.debug fieldId=0 fieldName=null extras=null}, false)
+10-24 13:28:50.566 I/GoogleInputMethodService( 1533): GoogleInputMethodService.shouldHideHeaderOnInitialState():4008 ShouldHideHeaderOnInitialState = false
+10-24 13:28:50.566 I/GoogleInputMethodService( 1533): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 2, unlocked = true
+10-24 13:28:50.668 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(50)
+10-24 13:28:50.729 D/EGL_emulation( 8305): app_time_stats: avg=130.11ms min=76.14ms max=207.05ms count=8
+10-24 13:28:50.871 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(1)
+10-24 13:28:50.994 D/Maestro ( 8713): View hierarchy received in 613 ms
+10-24 13:28:51.095 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:51.095 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:51.096 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:51.260 D/Maestro ( 8713): View hierarchy received in 165 ms
+10-24 13:28:51.340 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:51.340 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:51.352 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:51.580 D/Maestro ( 8713): View hierarchy received in 240 ms
+10-24 13:28:51.670 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:51.671 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:51.671 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:51.689 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(2)
+10-24 13:28:51.797 D/EGL_emulation( 8305): app_time_stats: avg=118.66ms min=90.02ms max=143.02ms count=9
+10-24 13:28:51.838 D/Maestro ( 8713): View hierarchy received in 168 ms
+10-24 13:28:51.922 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:51.928 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:51.928 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:52.122 D/Maestro ( 8713): View hierarchy received in 200 ms
+10-24 13:28:52.193 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:52.195 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:52.195 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:52.217 D/ActivityManager(  522): freezing 848 com.google.android.permissioncontroller
+10-24 13:28:52.309 D/Maestro ( 8713): View hierarchy received in 116 ms
+10-24 13:28:52.369 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:52.371 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:52.371 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:52.483 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(6)
+10-24 13:28:52.798 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc42788 : 5(20480 size) total buffers - 1(4096 size) used buffers - 1528/1533 (recycle/alloc) - 16/1532 (fetch/transfer)
+10-24 13:28:52.830 D/Maestro ( 8713): View hierarchy received in 461 ms
+10-24 13:28:52.886 D/EGL_emulation( 8305): app_time_stats: avg=120.97ms min=84.05ms max=184.26ms count=9
+10-24 13:28:52.931 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:52.931 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:52.932 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:53.037 I/GMS_MM_Logger( 5739): Memory Metric Logging not allowed. Stopping.
+10-24 13:28:53.079 D/Maestro ( 8713): View hierarchy received in 148 ms
+10-24 13:28:53.165 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:53.165 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:53.165 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:53.306 D/Maestro ( 8713): View hierarchy received in 141 ms
+10-24 13:28:53.414 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:53.415 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:53.415 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:53.655 D/Maestro ( 8713): View hierarchy received in 241 ms
+10-24 13:28:53.781 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:53.782 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:53.783 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:53.871 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc425018 : 5(40960 size) total buffers - 1(8192 size) used buffers - 1578/1583 (recycle/alloc) - 5/1582 (fetch/transfer)
+10-24 13:28:53.931 D/Maestro ( 8713): View hierarchy received in 150 ms
+10-24 13:28:53.980 D/EGL_emulation( 8305): app_time_stats: avg=121.54ms min=103.10ms max=138.89ms count=9
+10-24 13:28:54.022 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(1)
+10-24 13:28:54.026 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:54.027 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:54.027 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:54.140 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc424238 : 5(10485760 size) total buffers - 4(8388608 size) used buffers - 893/898 (recycle/alloc) - 5/897 (fetch/transfer)
+10-24 13:28:54.169 I/learn.app.debug( 8305): Background young concurrent copying GC freed 257249(8928KB) AllocSpace objects, 0(0B) LOS objects, 48% free, 9693KB/18MB, paused 5.802ms,14us total 47.072ms
+10-24 13:28:54.243 D/Maestro ( 8713): View hierarchy received in 217 ms
+10-24 13:28:54.303 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:54.304 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:54.304 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:54.397 I/DialerTaskExecutor( 2835): com.android.voicemail.impl.scheduling.TaskExecutor$WorkerThreadHandler.handleMessage:221 executing task com.android.voicemail.impl.ActivationTask@909bcf2 [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:54.397 I/DialerLogcatLoggingBindings( 2835): com.android.dialer.logging.logcat.LogcatLoggingBindings.logImpression:41 Impression: VVM_ACTIVATION_STARTED
+10-24 13:28:54.400 I/DialerPreOMigrationHandler( 2835): com.android.voicemail.impl.PreOMigrationHandler.migrate:76 ComponentInfo{com.android.phone/com.android.services.telephony.TelephonyConnectionService}, 1, UserHandle{0} already migrated [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:54.414 I/DialerOmtpVvmCarrierConfigHelper( 2835): com.android.voicemail.impl.OmtpVvmCarrierConfigHelper.isCarrierAppInstalled:637 carrier app not installed in this device [CONTEXT ratelimit_period="1 MINUTES [skipped: 4]" ]
+10-24 13:28:54.414 I/DialerVoicemailStatus( 2835): com.android.voicemail.impl.VoicemailStatus$Editor.apply:112 enter
+10-24 13:28:54.415 I/DialerVoicemailStatusDataServiceImpl( 2835): com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.insertOrUpdateVoicemailStatus:196 enter
+10-24 13:28:54.467 I/DialerRestVoicemailEnabledFn( 2835): com.android.dialer.voicemail.service.impl.vvmclients.rest.RestVoicemailEnabledFn.isEnabled:51 disabled by flag [CONTEXT ratelimit_period="1 MINUTES [skipped: 23]" ]
+10-24 13:28:54.467 I/DialerCvvmEnabledFn( 2835): com.android.dialer.voicemail.service.impl.vvmclients.omtp.protocol.cvvm.CvvmEnabledFn.isEnabled:37 disabled by flag [CONTEXT ratelimit_period="1 MINUTES [skipped: 11]" ]
+10-24 13:28:54.521 W/Settings( 2835): Setting airplane_mode_on has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+10-24 13:28:54.521 I/DialerVoicemailStatusDataServiceImpl( 2835): com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.lambda$insertOrUpdateVoicemailStatus$5:213 merged status: # kee@6600c263
+10-24 13:28:54.525 I/DialerActivationTask( 2835): com.android.voicemail.impl.ActivationTask.onExecuteInBackgroundThread:292 VVM content provider configured - vvm_type_cvvm PhoneAccountHandle: [ComponentName: com.android.phone/com.android.services.telephony.TelephonyConnectionService subId: 1] [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:54.526 I/DialerActivationTask( 2835): com.android.voicemail.impl.ActivationTask.updateVoicemailsWithIccId:477 conversion disabled [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:54.526 I/DialerOmtpVvmCarrierConfigHelper( 2835): com.android.voicemail.impl.OmtpVvmCarrierConfigHelper.handleEvent:527 OmtpEvent:CONFIG_ACTIVATING PhoneAccountHandle: [ComponentName: com.android.phone/com.android.services.telephony.TelephonyConnectionService subId: 1] [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:54.526 I/DialerVoicemailStatus( 2835): com.android.voicemail.impl.VoicemailStatus$Editor.apply:112 enter
+10-24 13:28:54.530 I/DialerVoicemailStatusDataServiceImpl( 2835): com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.insertOrUpdateVoicemailStatus:196 enter
+10-24 13:28:54.564 W/Settings( 2835): Setting airplane_mode_on has moved from android.provider.Settings.System to android.provider.Settings.Global, returning read-only value.
+10-24 13:28:54.564 I/DialerVoicemailStatusDataServiceImpl( 2835): com.android.dialer.voicemailstatus.dataservice.impl.VoicemailStatusDataServiceImpl.lambda$insertOrUpdateVoicemailStatus$5:213 merged status: # kee@6600c263
+10-24 13:28:54.578 I/DialerActivationTask( 2835): com.android.voicemail.impl.ActivationTask.onExecuteInBackgroundThread:339 sending an activation request [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:54.580 D/SmsNumberUtils( 1047): enter filterDestAddr. destAddr="[BajqU4K5_YhSYbs-7QUn0dOwcmI]"
+10-24 13:28:54.581 D/SmsNumberUtils( 1047): destAddr is not formatted.
+10-24 13:28:54.581 D/SmsNumberUtils( 1047): leave filterDestAddr, new destAddr="[BajqU4K5_YhSYbs-7QUn0dOwcmI]"
+10-24 13:28:54.586 I/DialerLogcatLoggingBindings( 2835): com.android.dialer.logging.logcat.LogcatLoggingBindings.logImpression:46 Impression: CVVM_SEND_VVM_SMS
+10-24 13:28:54.654 D/Maestro ( 8713): View hierarchy received in 351 ms
+10-24 13:28:54.730 I/netd    (  335): tetherGetStats() -> {[]} <0.38ms>
+10-24 13:28:54.733 I/netd    (  335): bandwidthSetGlobalAlert(2097152) <0.11ms>
+10-24 13:28:54.743 I/netd    (  335): bandwidthRemoveInterfaceQuota(eth0) <1.31ms>
+10-24 13:28:54.744 I/netd    (  335): bandwidthSetInterfaceQuota(eth0, 9223372036854775807) <0.43ms>
+10-24 13:28:54.778 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:54.779 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:54.779 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:54.900 D/Maestro ( 8713): View hierarchy received in 122 ms
+10-24 13:28:55.068 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(2)
+10-24 13:28:55.077 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:55.078 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:55.086 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:55.094 I/DialerStatusSmsFetcher( 2835): com.android.voicemail.impl.sms.StatusSmsFetcher.onReceive:106 Request SMS successfully sent [CONTEXT enable_persistent_logger=true ]
+10-24 13:28:55.112 D/EGL_emulation( 8305): app_time_stats: avg=125.75ms min=114.61ms max=138.81ms count=9
+10-24 13:28:55.134 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(19)
+10-24 13:28:55.229 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(1)
+10-24 13:28:55.235 D/StatusBarIconController(  835): ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-24 13:28:55.260 D/EGL_emulation(  835): app_time_stats: avg=29938.56ms min=29938.56ms max=29938.56ms count=1
+10-24 13:28:55.349 D/Maestro ( 8713): View hierarchy received in 272 ms
+10-24 13:28:55.469 D/WindowManager(  522): captureDisplay
+10-24 13:28:55.652 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(2)
+10-24 13:28:55.662 I/hwservicemanager(  136): getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+10-24 13:28:55.662 I/Gralloc4( 8683): mapper 4.x is not supported
+--------- beginning of kernel
+10-24 13:28:55.831 I/servicemanager(    0): Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest.
+10-24 13:28:55.699 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(32)
+10-24 13:28:55.731 D/libEGL  ( 8683): loaded /vendor/lib64/egl/libEGL_emulation.so
+10-24 13:28:55.733 D/libEGL  ( 8683): loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+10-24 13:28:55.735 D/libEGL  ( 8683): loaded /vendor/lib64/egl/libGLESv2_emulation.so
+10-24 13:28:55.786 W/OpenGLRenderer( 8683): Failed to initialize 101010-2 format, error = EGL_SUCCESS
+10-24 13:28:56.130 D/EGL_emulation( 8305): app_time_stats: avg=126.82ms min=71.12ms max=204.21ms count=8
+10-24 13:28:56.312 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(18)
+10-24 13:28:56.504 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:56.505 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:56.506 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:56.717 D/Maestro ( 8713): View hierarchy received in 213 ms
+10-24 13:28:56.783 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:56.785 D/UiDevice( 8713): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-24 13:28:57.189 D/EGL_emulation( 8305): app_time_stats: avg=117.58ms min=102.08ms max=142.49ms count=9
+10-24 13:28:57.286 W/UiDevice( 8713): Timed out waiting 500ms on window update.
+10-24 13:28:57.286 W/UiDevice( 8713): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-24 13:28:57.286 W/UiDevice( 8713): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-24 13:28:57.286 W/UiDevice( 8713): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-24 13:28:57.286 W/UiDevice( 8713): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-24 13:28:57.286 W/UiDevice( 8713): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-24 13:28:57.286 W/UiDevice( 8713): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-24 13:28:57.286 W/UiDevice( 8713): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-24 13:28:57.286 W/UiDevice( 8713): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-24 13:28:57.286 W/UiDevice( 8713): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-24 13:28:57.286 W/UiDevice( 8713): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-24 13:28:57.286 W/UiDevice( 8713): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-24 13:28:57.286 W/UiDevice( 8713): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-24 13:28:57.286 W/UiDevice( 8713): 	at java.lang.Thread.run(Thread.java:1012)
+10-24 13:28:57.395 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:57.396 D/UiDevice( 8713): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-24 13:28:57.897 W/UiDevice( 8713): Timed out waiting 500ms on window update.
+10-24 13:28:57.897 W/UiDevice( 8713): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-24 13:28:57.897 W/UiDevice( 8713): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-24 13:28:57.897 W/UiDevice( 8713): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-24 13:28:57.897 W/UiDevice( 8713): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-24 13:28:57.897 W/UiDevice( 8713): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-24 13:28:57.897 W/UiDevice( 8713): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-24 13:28:57.897 W/UiDevice( 8713): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-24 13:28:57.897 W/UiDevice( 8713): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-24 13:28:57.897 W/UiDevice( 8713): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-24 13:28:57.897 W/UiDevice( 8713): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-24 13:28:57.897 W/UiDevice( 8713): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-24 13:28:57.897 W/UiDevice( 8713): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-24 13:28:57.897 W/UiDevice( 8713): 	at java.lang.Thread.run(Thread.java:1012)
+10-24 13:28:57.977 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:57.977 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:57.978 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:58.105 D/Maestro ( 8713): View hierarchy received in 128 ms
+10-24 13:28:58.187 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc42788 : 5(20480 size) total buffers - 1(4096 size) used buffers - 1761/1766 (recycle/alloc) - 17/1765 (fetch/transfer)
+10-24 13:28:58.314 D/EGL_emulation( 8305): app_time_stats: avg=125.04ms min=112.84ms max=135.73ms count=9
+10-24 13:28:58.360 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:58.361 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:58.361 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:58.535 D/Maestro ( 8713): View hierarchy received in 174 ms
+10-24 13:28:58.626 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=1488.0, y[0]=226.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=241714, downTime=241714, deviceId=-1, source=0x1002, displayId=0, eventId=-883380895 }
+10-24 13:28:58.736 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=1488.0, y[0]=226.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=241853, downTime=241714, deviceId=-1, source=0x1002, displayId=0, eventId=-129951912 }
+10-24 13:28:58.914 D/EGL_emulation(  835): app_time_stats: avg=14709.68ms min=189.49ms max=43295.55ms count=3
+10-24 13:28:58.953 D/CoreBackPreview(  522): Window{4570d50 u0 com.sublearn.app.debug/com.sublearn.app.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@f41958b, mPriority=-1, mIsAnimationCallback=false}
+10-24 13:28:58.953 D/CoreBackPreview(  522): Window{4570d50 u0 com.sublearn.app.debug/com.sublearn.app.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@eff3668, mPriority=0, mIsAnimationCallback=true}
+10-24 13:28:58.953 D/CoreBackPreview(  522): Window{4570d50 u0 com.sublearn.app.debug/com.sublearn.app.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@1ae0a81, mPriority=0, mIsAnimationCallback=true}
+10-24 13:28:59.254 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc425018 : 5(40960 size) total buffers - 1(8192 size) used buffers - 1815/1820 (recycle/alloc) - 5/1820 (fetch/transfer)
+10-24 13:28:59.268 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc424238 : 5(10485760 size) total buffers - 4(8388608 size) used buffers - 1014/1019 (recycle/alloc) - 5/1019 (fetch/transfer)
+10-24 13:28:59.371 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(15)
+10-24 13:28:59.595 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(8)
+10-24 13:28:59.722 I/ImeTracker(  522): com.sublearn.app.debug:75ae8acc: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+10-24 13:28:59.722 I/ImeTracker(  522): com.sublearn.app.debug:75ae8acc: onCancelled at PHASE_SERVER_SHOULD_HIDE
+10-24 13:28:59.724 I/GoogleInputMethodService( 1533): GoogleInputMethodService.onFinishInput():3227 
+10-24 13:28:59.740 I/GoogleInputMethodService( 1533): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 0, unlocked = true
+10-24 13:28:59.751 I/GoogleInputMethodService( 1533): GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=com.sublearn.app.debug fieldId=0 fieldName=null extras=null}, false)
+10-24 13:28:59.751 I/GoogleInputMethodService( 1533): GoogleInputMethodService.shouldHideHeaderOnInitialState():4008 ShouldHideHeaderOnInitialState = false
+10-24 13:28:59.763 I/GoogleInputMethodService( 1533): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 2, unlocked = true
+10-24 13:28:59.783 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:59.788 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:28:59.789 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:59.793 W/QueryController( 8713): Could not detect idle state.
+10-24 13:28:59.879 D/EGL_emulation( 8305): app_time_stats: avg=259.97ms min=103.24ms max=579.41ms count=6
+10-24 13:29:00.035 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(85)
+10-24 13:29:00.127 D/EGL_emulation(  835): app_time_stats: avg=1213.08ms min=1213.08ms max=1213.08ms count=1
+10-24 13:29:00.135 I/AiAiEcho( 1617): Predicting[0]: 
+10-24 13:29:00.136 I/AiAiEcho( 1617): EchoTargets: 
+10-24 13:29:00.136 I/AiAiEcho( 1617): Filtered by AiAi flag check: 
+10-24 13:29:00.136 I/AiAiEcho( 1617): Ranked targets strategy: SORT, count: 0, ranking metadata: 
+10-24 13:29:00.144 I/AiAiEcho( 1617): #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+10-24 13:29:00.184 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(6)
+10-24 13:29:00.213 D/EGL_emulation(  835): app_time_stats: avg=4952.73ms min=4952.73ms max=4952.73ms count=1
+10-24 13:29:00.222 W/PageIndicator(  835): Total number of pages invalid: 0. Assuming 1 page.
+10-24 13:29:00.280 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:29:00.381 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:29:00.434 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(33)
+10-24 13:29:00.534 D/Maestro ( 8713): View hierarchy received in 746 ms
+10-24 13:29:00.789 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(1)
+10-24 13:29:00.858 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:00.883 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:00.883 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:00.933 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(25)
+10-24 13:29:01.022 D/EGL_emulation( 8305): app_time_stats: avg=140.94ms min=30.07ms max=285.98ms count=8
+10-24 13:29:01.069 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(19)
+10-24 13:29:01.255 D/Maestro ( 8713): View hierarchy received in 397 ms
+10-24 13:29:01.256 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(19)
+10-24 13:29:01.292 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(3)
+10-24 13:29:01.369 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:01.370 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:01.371 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:01.556 D/Maestro ( 8713): View hierarchy received in 187 ms
+10-24 13:29:01.745 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(3)
+10-24 13:29:01.872 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=1200.0, y[0]=972.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=244986, downTime=244986, deviceId=-1, source=0x1002, displayId=0, eventId=-558990782 }
+10-24 13:29:01.888 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(29)
+10-24 13:29:02.042 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(29)
+10-24 13:29:02.077 D/EGL_emulation( 8305): app_time_stats: avg=580.42ms min=152.02ms max=1893.52ms count=5
+10-24 13:29:02.082 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:29:02.128 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(22)
+10-24 13:29:02.360 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(23)
+10-24 13:29:02.391 D/EGL_emulation( 8305): app_time_stats: avg=149.57ms min=17.40ms max=388.66ms count=9
+10-24 13:29:02.396 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(2)
+10-24 13:29:02.462 D/OomAdjuster(  522): Not killing cached processes
+10-24 13:29:02.657 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=1200.0, y[0]=486.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=245774, downTime=244986, deviceId=-1, source=0x1002, displayId=0, eventId=-690554820 }
+10-24 13:29:02.777 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(2)
+10-24 13:29:02.826 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:02.842 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:02.843 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:03.189 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(2)
+10-24 13:29:03.231 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc42788 : 5(20480 size) total buffers - 1(4096 size) used buffers - 1971/1976 (recycle/alloc) - 17/1975 (fetch/transfer)
+10-24 13:29:03.431 D/EGL_emulation( 8305): app_time_stats: avg=173.35ms min=100.11ms max=240.80ms count=6
+10-24 13:29:03.607 D/Maestro ( 8713): View hierarchy received in 781 ms
+10-24 13:29:03.839 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:03.843 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:03.844 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:04.002 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(3)
+10-24 13:29:04.195 D/Maestro ( 8713): View hierarchy received in 356 ms
+10-24 13:29:04.411 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc425018 : 5(40960 size) total buffers - 5(40960 size) used buffers - 2028/2033 (recycle/alloc) - 5/2029 (fetch/transfer)
+10-24 13:29:04.478 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc424238 : 5(10485760 size) total buffers - 5(10485760 size) used buffers - 1123/1128 (recycle/alloc) - 5/1127 (fetch/transfer)
+10-24 13:29:04.505 D/EGL_emulation( 8305): app_time_stats: avg=119.26ms min=70.33ms max=203.09ms count=9
+10-24 13:29:04.510 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:04.514 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:04.515 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:04.665 D/Maestro ( 8713): View hierarchy received in 155 ms
+10-24 13:29:04.865 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:04.866 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:04.866 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:05.064 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:29:05.103 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:29:05.155 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(27)
+10-24 13:29:05.163 D/Maestro ( 8713): View hierarchy received in 298 ms
+10-24 13:29:05.236 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:05.246 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(16)
+10-24 13:29:05.253 D/UiDevice( 8713): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-24 13:29:05.260 D/StatusBarIconController(  835): ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-24 13:29:05.277 I/ndroid.systemui(  835): Background young concurrent copying GC freed 190334(8883KB) AllocSpace objects, 11(220KB) LOS objects, 30% free, 20MB/28MB, paused 51us,47us total 170.250ms
+10-24 13:29:05.517 D/EGL_emulation( 8305): app_time_stats: avg=126.55ms min=69.60ms max=190.49ms count=8
+10-24 13:29:05.564 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(12)
+10-24 13:29:05.665 D/StatusBarIconController(  835): ignoring old pipeline callback because the new wifi icon is enabled
+10-24 13:29:05.774 W/UiDevice( 8713): Timed out waiting 500ms on window update.
+10-24 13:29:05.774 W/UiDevice( 8713): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-24 13:29:05.774 W/UiDevice( 8713): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-24 13:29:05.774 W/UiDevice( 8713): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-24 13:29:05.774 W/UiDevice( 8713): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-24 13:29:05.774 W/UiDevice( 8713): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-24 13:29:05.774 W/UiDevice( 8713): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-24 13:29:05.774 W/UiDevice( 8713): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-24 13:29:05.774 W/UiDevice( 8713): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-24 13:29:05.774 W/UiDevice( 8713): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-24 13:29:05.774 W/UiDevice( 8713): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-24 13:29:05.774 W/UiDevice( 8713): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-24 13:29:05.774 W/UiDevice( 8713): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-24 13:29:05.774 W/UiDevice( 8713): 	at java.lang.Thread.run(Thread.java:1012)
+10-24 13:29:06.081 W/healthd (    0): battery l=100 v=5000 t=25.0 h=2 st=2 c=900000 fc=3000000 cc=10 chg=a
+10-24 13:29:05.971 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:06.002 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(24)
+10-24 13:29:06.022 D/UiDevice( 8713): Waiting 500ms for window update of package com.sublearn.app.debug.
+10-24 13:29:06.059 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(18)
+10-24 13:29:06.524 W/UiDevice( 8713): Timed out waiting 500ms on window update.
+10-24 13:29:06.524 W/UiDevice( 8713): java.util.concurrent.TimeoutException: Expected event not received within: 500 ms among: []
+10-24 13:29:06.524 W/UiDevice( 8713): 	at android.app.UiAutomation.executeAndWaitForEvent(UiAutomation.java:1071)
+10-24 13:29:06.524 W/UiDevice( 8713): 	at androidx.test.uiautomator.UiDevice.waitForWindowUpdate(UiDevice.java:1253)
+10-24 13:29:06.524 W/UiDevice( 8713): 	at dev.mobile.maestro.Service.isWindowUpdating(MaestroDriverService.kt:359)
+10-24 13:29:06.524 W/UiDevice( 8713): 	at maestro_android.MaestroDriverGrpc$MethodHandlers.invoke(MaestroDriverGrpc.java:965)
+10-24 13:29:06.524 W/UiDevice( 8713): 	at io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
+10-24 13:29:06.524 W/UiDevice( 8713): 	at io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:355)
+10-24 13:29:06.524 W/UiDevice( 8713): 	at io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:867)
+10-24 13:29:06.524 W/UiDevice( 8713): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+10-24 13:29:06.524 W/UiDevice( 8713): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+10-24 13:29:06.524 W/UiDevice( 8713): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-24 13:29:06.524 W/UiDevice( 8713): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-24 13:29:06.524 W/UiDevice( 8713): 	at java.lang.Thread.run(Thread.java:1012)
+10-24 13:29:06.606 D/EGL_emulation( 8305): app_time_stats: avg=151.09ms min=89.16ms max=226.33ms count=7
+10-24 13:29:06.755 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:06.756 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:06.756 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:06.934 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(6)
+10-24 13:29:06.981 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(10)
+10-24 13:29:07.026 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(9)
+10-24 13:29:07.254 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(6)
+10-24 13:29:07.309 W/ProcessStats(  522): Tracking association SourceState{41e35ec com.google.android.apps.nexuslauncher/10169 BFgs #17102} whose proc state 4 is better than process ProcessState{79303c4 com.google.android.googlequicksearchbox:search/10132 pkg=com.google.android.googlequicksearchbox} proc state 5 (2 skipped)
+10-24 13:29:07.317 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(8)
+10-24 13:29:07.326 D/Maestro ( 8713): View hierarchy received in 571 ms
+10-24 13:29:07.432 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=1248.0, y[0]=638.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=250508, downTime=250508, deviceId=-1, source=0x1002, displayId=0, eventId=-840013070 }
+10-24 13:29:07.512 D/ConnectivityService(  522): requestNetwork for uid/pid:10128/2835 activeRequest: null callbackRequest: 156 [NetworkRequest [ REQUEST id=157, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10128 RequestorUid: 10128 RequestorPkg: com.google.android.dialer UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+10-24 13:29:07.529 D/EGL_emulation( 8305): app_time_stats: avg=605.05ms min=51.33ms max=4608.29ms count=9
+10-24 13:29:07.541 D/ConnectivityService(  522): NetReassign [157 : null → 100] [c 1] [a 0] [i 1]
+10-24 13:29:07.541 D/WifiNetworkFactory(  522): got request NetworkRequest [ REQUEST id=157, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10128 RequestorUid: 10128 RequestorPkg: com.google.android.dialer UnderlyingNetworks: Null] ]
+10-24 13:29:07.541 D/UntrustedWifiNetworkFactory(  522): got request NetworkRequest [ REQUEST id=157, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10128 RequestorUid: 10128 RequestorPkg: com.google.android.dialer UnderlyingNetworks: Null] ]
+10-24 13:29:07.541 D/OemPaidWifiNetworkFactory(  522): got request NetworkRequest [ REQUEST id=157, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10128 RequestorUid: 10128 RequestorPkg: com.google.android.dialer UnderlyingNetworks: Null] ]
+10-24 13:29:07.541 D/MultiInternetWifiNetworkFactory(  522): got request NetworkRequest [ REQUEST id=157, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10128 RequestorUid: 10128 RequestorPkg: com.google.android.dialer UnderlyingNetworks: Null] ]
+10-24 13:29:07.549 I/DialerConstellationSyncWorker( 2835): com.android.dialer.businessvoice.control.worker.ConstellationSyncWorker.startWork:66 starting work
+10-24 13:29:07.589 I/DialerCountryCodeProvider( 2835): com.android.dialer.businessvoice.verifiedcall.impl.i18n.CountryCodeProvider.getSimCountryCodeInternal:85 returning Redacted-2-chars
+10-24 13:29:07.620 D/EGL_emulation( 8305): app_time_stats: avg=144.77ms min=46.39ms max=233.45ms count=7
+10-24 13:29:07.629 I/DialerCachedVerifiedNumberProvider( 2835): com.android.dialer.businessvoice.verifiedcall.impl.constellation.CachedVerifiedNumberProvider.refreshConstellationInfo:190 Retrieving constellation info and refreshing the cache.
+10-24 13:29:07.720 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=1248.0, y[0]=638.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=250751, downTime=250508, deviceId=-1, source=0x1002, displayId=0, eventId=-485813293 }
+10-24 13:29:07.753 D/OomAdjuster(  522): Not killing cached processes
+10-24 13:29:07.884 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(21)
+10-24 13:29:07.983 W/gle.android.gms( 5739): Long monitor contention with owner binder:5739_C (6218) at void com.google.android.gms.common.apiservice.LifecycleSynchronizer.onBeforeDispatching()(:com.google.android.gms@231818047@23.18.18 (190800-535401451):9) waiters=0 in void com.google.android.gms.common.apiservice.LifecycleSynchronizer.onServiceStart() for 120ms
+10-24 13:29:08.065 D/BoundBrokerSvc( 5739): onBind: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+10-24 13:29:08.065 D/BoundBrokerSvc( 5739): Loading bound service for intent: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+10-24 13:29:08.073 D/BoundBrokerSvc( 5739): onUnbind: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+10-24 13:29:08.118 E/constellation( 5739): [api_verify_phone_operation] Failed to generate Client Signature
+10-24 13:29:08.118 E/constellation( 5739): acwp: Stored private key deleted
+10-24 13:29:08.118 E/constellation( 5739): 	at acos.e(:com.google.android.gms@231818047@23.18.18 (190800-535401451):4)
+10-24 13:29:08.118 E/constellation( 5739): 	at acos.d(:com.google.android.gms@231818047@23.18.18 (190800-535401451):1)
+10-24 13:29:08.118 E/constellation( 5739): 	at acoa.c(:com.google.android.gms@231818047@23.18.18 (190800-535401451):22)
+10-24 13:29:08.118 E/constellation( 5739): 	at acoa.f(:com.google.android.gms@231818047@23.18.18 (190800-535401451):12)
+10-24 13:29:08.118 E/constellation( 5739): 	at avsy.eo(:com.google.android.gms@231818047@23.18.18 (190800-535401451):1)
+10-24 13:29:08.118 E/constellation( 5739): 	at avtf.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):14)
+10-24 13:29:08.118 E/constellation( 5739): 	at dfhf.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):2)
+10-24 13:29:08.118 E/constellation( 5739): 	at aced.c(:com.google.android.gms@231818047@23.18.18 (190800-535401451):6)
+10-24 13:29:08.118 E/constellation( 5739): 	at aced.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):7)
+10-24 13:29:08.118 E/constellation( 5739): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-24 13:29:08.118 E/constellation( 5739): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-24 13:29:08.118 E/constellation( 5739): 	at acjn.run(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
+10-24 13:29:08.118 E/constellation( 5739): 	at java.lang.Thread.run(Thread.java:1012)
+10-24 13:29:08.159 W/DialerVerifiedNumberProvider( 2835): com.android.dialer.businessvoice.verifiedcall.impl.constellation.VerifiedNumberProvider.lambda$getConstellationResponse$1:155 Failed to get constellation token.
+10-24 13:29:08.159 W/DialerVerifiedNumberProvider( 2835): nkq: 5004: 
+10-24 13:29:08.159 W/DialerVerifiedNumberProvider( 2835): 	at nov.au(PG:1)
+10-24 13:29:08.159 W/DialerVerifiedNumberProvider( 2835): 	at nnf.g(PG:2)
+10-24 13:29:08.159 W/DialerVerifiedNumberProvider( 2835): 	at npo.a(Unknown Source:2)
+10-24 13:29:08.159 W/DialerVerifiedNumberProvider( 2835): 	at npy.dm(PG:9)
+10-24 13:29:08.159 W/DialerVerifiedNumberProvider( 2835): 	at ncz.onTransact(PG:4)
+10-24 13:29:08.159 W/DialerVerifiedNumberProvider( 2835): 	at android.os.Binder.execTransactInternal(Binder.java:1344)
+10-24 13:29:08.159 W/DialerVerifiedNumberProvider( 2835): 	at android.os.Binder.execTransact(Binder.java:1275)
+10-24 13:29:08.162 W/DialerConstellationSyncWorker( 2835): com.android.dialer.businessvoice.control.worker.ConstellationSyncWorker.lambda$syncConstellation$2:110 Constellation api request failed, status code: 5004
+10-24 13:29:08.163 I/WM-WorkerWrapper( 2835): Worker result RETRY for Work [ id=9eca0978-9a27-4f6e-a853-19760c3b5b61, tags={ com.google.apps.tiktok.contrib.work.TikTokListenableWorker, TikTokWorker#com.android.dialer.businessvoice.control.worker.ConstellationSyncWorker } ]
+10-24 13:29:08.344 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(3)
+10-24 13:29:08.681 D/StatusBarIconController(  835): ignoring old pipeline callback because the new wifi icon is enabled
+10-24 13:29:08.751 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc42788 : 5(20480 size) total buffers - 1(4096 size) used buffers - 2201/2206 (recycle/alloc) - 17/2205 (fetch/transfer)
+10-24 13:29:08.803 D/EGL_emulation( 8305): app_time_stats: avg=314.68ms min=56.74ms max=503.06ms count=4
+10-24 13:29:08.814 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:08.815 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:08.817 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:08.822 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(6)
+10-24 13:29:08.888 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(39)
+10-24 13:29:08.936 D/EGL_emulation( 8305): app_time_stats: avg=438.64ms min=144.31ms max=598.51ms count=3
+10-24 13:29:09.203 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(4)
+10-24 13:29:09.220 D/Maestro ( 8713): View hierarchy received in 406 ms
+10-24 13:29:09.357 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:09.357 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:09.358 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:09.412 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc425018 : 5(40960 size) total buffers - 1(8192 size) used buffers - 2235/2240 (recycle/alloc) - 5/2239 (fetch/transfer)
+10-24 13:29:09.456 D/Maestro ( 8713): View hierarchy received in 99 ms
+10-24 13:29:09.568 D/AutofillManagerService(  522): onBackKeyPressed()
+10-24 13:29:09.882 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(52)
+10-24 13:29:09.973 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc424238 : 5(10485760 size) total buffers - 5(10485760 size) used buffers - 1251/1256 (recycle/alloc) - 5/1255 (fetch/transfer)
+10-24 13:29:10.099 D/EGL_emulation( 8305): app_time_stats: avg=126.96ms min=42.04ms max=220.76ms count=9
+10-24 13:29:10.230 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:10.237 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:10.260 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:10.303 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(33)
+10-24 13:29:10.357 D/Maestro ( 8713): View hierarchy received in 127 ms
+10-24 13:29:10.395 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(48)
+10-24 13:29:10.512 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:10.512 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:10.513 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:10.513 I/netd    (  335): tetherGetStats() -> {[]} <0.53ms>
+10-24 13:29:10.518 I/netd    (  335): bandwidthSetGlobalAlert(2097152) <0.10ms>
+10-24 13:29:10.530 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(4)
+10-24 13:29:10.564 D/Maestro ( 8713): View hierarchy received in 52 ms
+10-24 13:29:10.674 D/AutofillManagerService(  522): onBackKeyPressed()
+10-24 13:29:10.751 D/EGL_emulation( 8305): app_time_stats: avg=482.65ms min=49.07ms max=1031.89ms count=4
+10-24 13:29:10.795 W/WindowOnBackDispatcher( 8305): sendCancelIfRunning: isInProgress=falsecallback=androidx.compose.material3.ModalBottomSheetDialogLayout$Api34Impl$createBackCallback$1@3343c0e
+10-24 13:29:10.856 D/CoreBackPreview(  522): Window{4570d50 u0 com.sublearn.app.debug/com.sublearn.app.MainActivity}: Setting back callback null
+10-24 13:29:10.874 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:29:10.884 W/InputManager-JNI(  522): Input channel object '4570d50 com.sublearn.app.debug/com.sublearn.app.MainActivity (client)' was disposed without first being removed with the input manager!
+10-24 13:29:10.896 I/BpBinder(  401): onLastStrongRef automatically unlinking death recipients: 
+10-24 13:29:10.921 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(33)
+10-24 13:29:10.942 V/WindowManager(  522): Unknown focus tokens, dropping reportFocusChanged
+10-24 13:29:11.077 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(7)
+10-24 13:29:11.079 I/ImeTracker(  522): com.sublearn.app.debug:97d79a0e: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+10-24 13:29:11.079 I/ImeTracker(  522): com.sublearn.app.debug:97d79a0e: onCancelled at PHASE_SERVER_SHOULD_HIDE
+10-24 13:29:11.080 I/GoogleInputMethodService( 1533): GoogleInputMethodService.onFinishInput():3227 
+10-24 13:29:11.087 I/GoogleInputMethodService( 1533): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 0, unlocked = true
+10-24 13:29:11.087 I/GoogleInputMethodService( 1533): GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=com.sublearn.app.debug fieldId=0 fieldName=null extras=null}, false)
+10-24 13:29:11.087 I/GoogleInputMethodService( 1533): GoogleInputMethodService.shouldHideHeaderOnInitialState():4008 ShouldHideHeaderOnInitialState = false
+10-24 13:29:11.088 I/GoogleInputMethodService( 1533): GoogleInputMethodService.updateDeviceLockedStatus():2087 repeatCheckTimes = 2, unlocked = true
+10-24 13:29:11.148 D/EGL_emulation( 8305): app_time_stats: avg=131.12ms min=57.27ms max=253.77ms count=8
+10-24 13:29:11.203 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(50)
+10-24 13:29:11.282 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(29)
+10-24 13:29:11.735 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:11.736 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:11.736 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:11.736 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:11.924 D/Maestro ( 8713): View hierarchy received in 188 ms
+10-24 13:29:11.953 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:11.953 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:11.953 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:12.071 D/Maestro ( 8713): View hierarchy received in 118 ms
+10-24 13:29:12.192 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:12.192 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:12.193 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:12.212 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(16)
+10-24 13:29:12.252 D/EGL_emulation( 8305): app_time_stats: avg=100.34ms min=47.31ms max=132.77ms count=11
+10-24 13:29:12.323 D/Maestro ( 8713): View hierarchy received in 131 ms
+10-24 13:29:12.403 D/WindowManager(  522): captureDisplay
+10-24 13:29:12.456 W/System  ( 8683): A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+10-24 13:29:12.456 W/System  ( 8683): java.lang.Throwable: Explicit termination method 'HardwareBuffer.close' not called
+10-24 13:29:12.456 W/System  ( 8683): 	at dalvik.system.CloseGuard.openWithCallSite(CloseGuard.java:288)
+10-24 13:29:12.456 W/System  ( 8683): 	at dalvik.system.CloseGuard.open(CloseGuard.java:257)
+10-24 13:29:12.456 W/System  ( 8683): 	at android.hardware.HardwareBuffer.<init>(HardwareBuffer.java:266)
+10-24 13:29:12.456 W/System  ( 8683): A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+10-24 13:29:12.456 W/System  ( 8683): java.lang.Throwable: Explicit termination method 'HardwareBuffer.close' not called
+10-24 13:29:12.456 W/System  ( 8683): 	at dalvik.system.CloseGuard.openWithCallSite(CloseGuard.java:288)
+10-24 13:29:12.456 W/System  ( 8683): 	at dalvik.system.CloseGuard.open(CloseGuard.java:257)
+10-24 13:29:12.456 W/System  ( 8683): 	at android.hardware.HardwareBuffer.<init>(HardwareBuffer.java:266)
+10-24 13:29:12.505 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(7)
+10-24 13:29:12.838 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_DOWN, actionButton=0, id[0]=0, x[0]=480.0, y[0]=950.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=255954, downTime=255954, deviceId=-1, source=0x1002, displayId=0, eventId=-13001628 }
+10-24 13:29:13.327 D/EGL_emulation( 8305): app_time_stats: avg=119.37ms min=106.06ms max=130.48ms count=9
+10-24 13:29:13.502 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(4)
+10-24 13:29:13.542 D/TaplEvents( 1085): TIS / TouchInteractionService.onInputEvent: MotionEvent { action=ACTION_UP, actionButton=0, id[0]=0, x[0]=1872.0, y[0]=950.0, toolType[0]=TOOL_TYPE_FINGER, buttonState=0, classification=NONE, metaState=0, flags=0x0, edgeFlags=0x0, pointerCount=1, historySize=0, eventTime=256659, downTime=255954, deviceId=-1, source=0x1002, displayId=0, eventId=-511405970 }
+10-24 13:29:13.564 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:13.565 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:13.565 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:13.654 D/Maestro ( 8713): View hierarchy received in 90 ms
+10-24 13:29:13.755 D/Maestro ( 8713): Requesting view hierarchy
+10-24 13:29:13.756 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:13.757 W/QueryController( 8713): Could not detect idle state.
+10-24 13:29:13.774 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(14)
+10-24 13:29:13.872 D/Maestro ( 8713): View hierarchy received in 117 ms
+10-24 13:29:13.935 D/WindowManager(  522): captureDisplay
+10-24 13:29:14.064 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(12)
+10-24 13:29:14.190 D/BufferPoolAccessor2.0(  469): bufferpool2 0x76cbacc42788 : 5(20480 size) total buffers - 1(4096 size) used buffers - 2432/2437 (recycle/alloc) - 18/2436 (fetch/transfer)
+10-24 13:29:14.331 D/EGL_emulation( 8305): app_time_stats: avg=125.49ms min=88.39ms max=153.70ms count=8
+10-24 13:29:14.727 D/BufferPoolAccessor2.0( 8305): bufferpool2 0x7794cc425018 : 5(40960 size) total buffers - 1(8192 size) used buffers - 2460/2465 (recycle/alloc) - 5/2464 (fetch/transfer)
+10-24 13:29:14.754 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(11)
+10-24 13:29:14.948 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(24)
+10-24 13:29:14.976 D/AudioFlinger(  397): mixer(0x73be152b0930) throttle end: throttle time(4)
+10-24 13:29:15.236 D/StatusBarIconController(  835): ignoring old pipeline callbacks, because the new mobile icons are enabled
+10-24 13:29:15.429 I/logd    (    0): logdr: UID=2000 GID=2000 PID=9938 n tail=0 logMask=99 pid=0 start=0ns deadline=0ns

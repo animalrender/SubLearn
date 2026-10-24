@@ -1,0 +1,8 @@
+Running on test
+ > Flow 04-learn
+Launch app "com.sublearn.app.debug" with clear state... COMPLETED
+Assert that "Open a video" is visible... COMPLETED
+Tap on "Learn"... COMPLETED
+Assert that "Coming soon" is visible... COMPLETED
+Assert that "Browser, PDF and image learning.*" is visible... COMPLETED
+Take screenshot 04-learn... COMPLETED

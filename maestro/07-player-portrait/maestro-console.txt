@@ -1,0 +1,21 @@
+Running on test
+ > Flow 07-player-portrait
+Tap on (Optional) "Got it"... WARNED
+
+
+ Warning: Element not found: Text matching regex: Got it
+Assert that "360 × 640" is visible... COMPLETED
+Assert that "SubLearn-UI-Fixture.mp4" is visible... COMPLETED
+Assert that "FIT" is visible... COMPLETED
+Take screenshot 07-player-portrait-controls... COMPLETED
+Tap on "More"... COMPLETED
+Tap on "Layout mode"... COMPLETED
+Assert that "Drag subtitle layers to move them.*" is visible... COMPLETED
+Assert that "OK" is visible... COMPLETED
+Take screenshot 07-player-portrait-layout-mode... COMPLETED
+Swipe from (80%, 39%) to (15%, 50%) in 800 ms... COMPLETED
+Assert that "OK" is visible... COMPLETED
+Tap on "OK"... COMPLETED
+Assert that "Drag subtitle layers to move them.*" is not visible... COMPLETED
+Swipe from (20%, 91%) to (78%, 91%) in 700 ms... COMPLETED
+Take screenshot 07-player-portrait-scrub... COMPLETED
